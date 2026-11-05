@@ -126,94 +126,10 @@ jobs:
         run: |
           python3 tests/gui_native_render_integration.py build/dukto-gui.app/Contents/MacOS/dukto-gui --platform cocoa --report build/macos-native-render.json
           python3 tests/gui_process_recovery_integration.py build/dukto-cli build/server-panel-process-probe --report build/macos-native-process-recovery.json
-      - name: Protocol integration Windows
-        if: ${{ !cancelled() && steps.compile.outcome == 'success' && runner.os == 'Windows' }}
-        run: |
-          python -X utf8 tests/parallel_failure_integration.py build/Release/dukto-cli.exe --report build/parallel-failure.json
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          python -X utf8 tests/legacy_integration.py build/Release/dukto-cli.exe --report build/legacy.json
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          python -X utf8 tests/cli_contracts.py build/Release/dukto-cli.exe --report build/cli.json
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          python -X utf8 tests/crash_integration.py build/Release/dukto-cli.exe --report build/crash.json
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          python -X utf8 tests/windows_path_integration.py build/Release/dukto-cli.exe --report build/windows-path.json
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          python -X utf8 tests/windows_signal_integration.py build/Release/dukto-cli.exe --report build/windows-signal.json
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          python -X utf8 tests/service_integration.py build/Release/dukto-cli.exe --report build/service.json
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          python -X utf8 tests/client_list_integration.py build/Release/dukto-cli.exe --report build/client-list.json
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          python -X utf8 tests/credential_rotation_integration.py build/Release/dukto-cli.exe --report build/credential-rotation.json
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          python -X utf8 tests/session_expiry_integration.py build/Release/dukto-cli.exe --report build/session-expiry.json
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          python -X utf8 tests/task_admission_integration.py build/Release/dukto-cli.exe --report build/task-admission-upload.json
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          python -X utf8 tests/task_admission_integration.py build/Release/dukto-cli.exe --mode download --report build/task-admission-download.json
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          python -X utf8 tests/task_admission_integration.py build/Release/dukto-cli.exe --mode mixed --report build/task-admission-mixed.json
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          python -X utf8 tests/transfer_retry_integration.py build/Release/dukto-cli.exe --report build/transfer-retry.json
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          python -X utf8 tests/conflict_fail_integration.py build/Release/dukto-cli.exe --report build/conflict-fail.json
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          python -X utf8 tests/transfer_recovery_integration.py build/Release/dukto-cli.exe --on-conflict fail --threads 4 --resume-threads 8 --files 4 --payload-mib 8 --checkpoint-percent 50 --report build/conflict-fail-recovery.json
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          python -X utf8 tests/transfer_integration.py build/Release/dukto-cli.exe --report build/transfer.json
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          python -X utf8 tests/transfer_recovery_integration.py build/Release/dukto-cli.exe --report build/transfer-recovery.json
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          python -X utf8 tests/parallel_transfer_integration.py build/Release/dukto-cli.exe --report build/parallel-transfer.json
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          python -X utf8 tests/transfer_recovery_integration.py build/Release/dukto-cli.exe --threads 4 --resume-threads 8 --files 4 --payload-mib 8 --checkpoint-percent 50 --report build/parallel-recovery.json
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          python -X utf8 tests/parallel_isolation_integration.py build/Release/dukto-cli.exe --report build/parallel-isolation.json
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          python -X utf8 tests/byte_progress_integration.py build/Release/dukto-cli.exe --report build/byte-progress.json
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          python -X utf8 tests/transfer_faults_integration.py build/Release/dukto-cli.exe --report build/transfer-faults.json
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          python -X utf8 tests/final_ack_integration.py build/Release/dukto-cli.exe --report build/final-ack.json
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          python -X utf8 tests/final_ack_integration.py build/Release/dukto-cli.exe --auto-retries 3 --report build/final-ack-auto-retry.json
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          python -X utf8 tests/gui_process_recovery_integration.py build/Release/dukto-cli.exe build/Release/server-panel-process-probe.exe --report build/gui-process-recovery.json
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          python -X utf8 tests/task_store_integration.py build/Release/task-store-probe.exe --report build/task-store.json
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          python -X utf8 tests/secure_channel_integration.py build/Release/secure-channel-probe.exe --openssl .tools/openssl/Library/bin/openssl.exe --report build/secure-channel.json
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-      - name: Protocol integration Unix
-        if: ${{ !cancelled() && steps.compile.outcome == 'success' && runner.os != 'Windows' }}
-        run: |
-          python3 tests/parallel_failure_integration.py build/dukto-cli --report build/parallel-failure.json
-          python3 tests/legacy_integration.py build/dukto-cli --report build/legacy.json
-          python3 tests/cli_contracts.py build/dukto-cli --report build/cli.json
-          python3 tests/crash_integration.py build/dukto-cli --report build/crash.json
-          python3 tests/posix_path_integration.py build/dukto-cli --report build/posix-path.json
-          python3 tests/service_integration.py build/dukto-cli --report build/service.json
-          python3 tests/client_list_integration.py build/dukto-cli --report build/client-list.json
-          python3 tests/credential_rotation_integration.py build/dukto-cli --report build/credential-rotation.json
-          python3 tests/session_expiry_integration.py build/dukto-cli --report build/session-expiry.json
-          python3 tests/task_admission_integration.py build/dukto-cli --report build/task-admission-upload.json
-          python3 tests/task_admission_integration.py build/dukto-cli --mode download --report build/task-admission-download.json
-          python3 tests/task_admission_integration.py build/dukto-cli --mode mixed --report build/task-admission-mixed.json
-          python3 tests/transfer_retry_integration.py build/dukto-cli --report build/transfer-retry.json
-          python3 tests/conflict_fail_integration.py build/dukto-cli --report build/conflict-fail.json
-          python3 tests/transfer_recovery_integration.py build/dukto-cli --on-conflict fail --threads 4 --resume-threads 8 --files 4 --payload-mib 8 --checkpoint-percent 50 --report build/conflict-fail-recovery.json
-          python3 tests/transfer_integration.py build/dukto-cli --report build/transfer.json
-          python3 tests/transfer_recovery_integration.py build/dukto-cli --report build/transfer-recovery.json
-          python3 tests/parallel_transfer_integration.py build/dukto-cli --report build/parallel-transfer.json
-          python3 tests/transfer_recovery_integration.py build/dukto-cli --threads 4 --resume-threads 8 --files 4 --payload-mib 8 --checkpoint-percent 50 --report build/parallel-recovery.json
-          python3 tests/parallel_isolation_integration.py build/dukto-cli --report build/parallel-isolation.json
-          python3 tests/byte_progress_integration.py build/dukto-cli --report build/byte-progress.json
-          python3 tests/transfer_faults_integration.py build/dukto-cli --report build/transfer-faults.json
-          python3 tests/final_ack_integration.py build/dukto-cli --report build/final-ack.json
-          python3 tests/final_ack_integration.py build/dukto-cli --auto-retries 3 --report build/final-ack-auto-retry.json
-          python3 tests/gui_process_recovery_integration.py build/dukto-cli build/server-panel-process-probe --report build/gui-process-recovery.json
-          python3 tests/task_store_integration.py build/task-store-probe --report build/task-store.json
+      # 日期：2026-11-05；各专项独立执行并保存退出码，任何失败仍使协议总步骤失败。
+      - name: Protocol integration all independent cases
+        if: ${{ !cancelled() && steps.compile.outcome == 'success' }}
+        run: python -X utf8 scripts/ci_protocol.py --build-directory build
       - name: Real disk exhaustion on isolated Linux tmpfs
         if: runner.os == 'Linux'
         shell: bash

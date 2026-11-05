@@ -11,6 +11,7 @@ import shutil
 import socket
 import sqlite3
 import ssl
+import stat
 import struct
 import subprocess
 import tempfile
@@ -58,7 +59,8 @@ class TimedTransfer(TransferProcess):
 
     # 日期：2026-11-05；结束后取得小型诊断，不把网络发送量当作持久复用量。
     def evidence(self):
-        return {"elapsedSeconds": round(time.monotonic() - self.started, 3),
+        return {"timingBasis": "client event observation; upload single-channel progress may be read at block acknowledgement",
+                "elapsedSeconds": round(time.monotonic() - self.started, 3),
                 "milestones": self.milestones, "eventCounts": dict(self.counts),
                 "maxReceivedBytes": self.received, "maxDurableBytes": self.durable,
                 "recentEvents": list(self.recent)}
@@ -83,14 +85,57 @@ class Session(IndependentSession):
 class ExpiryProxy(SlowProxy):
     rate = 512 * 1024
 
+    # 日期：2026-11-05；最多保留128个方向的固定计数，不保存TLS密文正文或无限历史。
+    def __init__(self, target):
+        self.observation_lock = threading.Lock()
+        self.observations = deque(maxlen=128)
+        self.sequence = 0
+        super().__init__(target)
+
+    # 日期：2026-11-05；发起本组进程前取序号和单调时间，排除先前配对/策略连接。
+    def mark(self):
+        with self.observation_lock:
+            return {"sequence": self.sequence, "started": time.monotonic()}
+
+    # 日期：2026-11-05；只报告本组密文转发量和时间，密文字节不充当正文或持久确认量。
+    def evidence(self, marker):
+        with self.observation_lock:
+            records = [dict(value) for value in self.observations if value["sequence"] >= marker["sequence"]]
+        for value in records:
+            for key in ("started", "firstForwarded", "lastForwarded"):
+                if key in value:
+                    value[key + "AfterCaseSeconds"] = round(value.pop(key) - marker["started"], 3)
+            value["throttleSeconds"] = round(value["throttleSeconds"], 3)
+        return {"scope": "opaque TLS forwarding including handshake and control; not durable payload bytes",
+                "directions": records}
+
     # 日期：2026-11-05；默认每通道 512 KiB/s；诊断可显式调速，不能假定任何主机都能在到期前落盘。
     def pump(self, source, destination):
         try:
+            direction = "to-server" if destination.getpeername()[1] == self.target else "to-client"
+        except OSError:
+            return
+        with self.observation_lock:
+            record = {"sequence": self.sequence, "started": time.monotonic(), "forwardedBytes": 0,
+                      "reads": 0, "largestRead": 0, "throttleSeconds": 0.0,
+                      "direction": direction}
+            self.sequence += 1
+            self.observations.append(record)
+        try:
             while not self.stopped.is_set():
                 data = source.recv(16384)
-                if not data or self.stopped.wait(len(data) / self.rate):
+                delay = len(data) / self.rate
+                if not data or self.stopped.wait(delay):
                     break
                 destination.sendall(data)
+                with self.observation_lock:
+                    now = time.monotonic()
+                    record.setdefault("firstForwarded", now)
+                    record["lastForwarded"] = now
+                    record["forwardedBytes"] += len(data)
+                    record["reads"] += 1
+                    record["largestRead"] = max(record["largestRead"], len(data))
+                    record["throttleSeconds"] += delay
         except OSError:
             pass
         finally:
@@ -120,6 +165,24 @@ def confirmed(state, task):
     path = state / f"receive-{task}.sqlite"
     with closing(sqlite3.connect(f"{path.as_uri()}?mode=ro", uri=True, timeout=1)) as database:
         return database.execute("SELECT COALESCE(SUM(confirmed),0) FROM files").fetchone()[0]
+
+
+# 日期：2026-11-05；独立读取最多16条接收日志及自有临时文件大小，区分无正文和未满持久块。
+def receiver_files(state, task, destination):
+    path = state / f"receive-{task}.sqlite"
+    with closing(sqlite3.connect(f"{path.as_uri()}?mode=ro", uri=True, timeout=1)) as database:
+        rows = database.execute("SELECT id,temporary,state,confirmed FROM files ORDER BY id LIMIT 16").fetchall()
+    records = []
+    for file, temporary, state, durable in rows:
+        candidate = destination / temporary
+        assert candidate.resolve().is_relative_to(destination.resolve())
+        record = {"file": file, "state": state, "durableBytes": durable, "temporaryExists": candidate.exists()}
+        if candidate.exists():
+            information = candidate.lstat()
+            assert stat.S_ISREG(information.st_mode)
+            record["temporaryFileBytes"] = information.st_size
+        records.append(record)
+    return records
 
 
 # 日期：2026-11-05；原生进程必须自行失败，无伪完成；TLS 数据通道先结束可使控制端得到网络错误。
@@ -288,6 +351,7 @@ def main():
         port = free_port()
         proxy = ExpiryProxy(port)
         active = None
+        output = None
         service = subprocess.Popen([executable, "serve", "start", "--bind", "127.0.0.1", "--port", str(port),
                                     "--state-directory", str(server), "--json"],
                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
@@ -362,6 +426,7 @@ def main():
                     proxy.rate = args.expiry_rate_kib * 1024
                     set_seconds(args.expiry_seconds)
                     prior_expiries = output.session_expiries
+                    marker = proxy.mark()
                     active = TimedTransfer(executable, client, [*arguments, "--threads", str(channels)])
                     task = active.task(timeout=args.ready_timeout)
                     code, stage = expired_transfer(active, args.expiry_timeout)
@@ -373,7 +438,9 @@ def main():
                     prefix = confirmed(state, task)
                     case = {"direction": direction, "channels": channels, "taskId": task,
                             "totalBytes": total, "confirmedAtExpiry": prefix, "clientExitCode": code,
-                            "clientStage": stage, "timeline": observed, "passed": False}
+                            "clientStage": stage, "timeline": observed, "passed": False,
+                            "receiverFiles": receiver_files(state, task, shared / target.name if direction == "upload" else target),
+                            "encryptedProxy": proxy.evidence(marker)}
                     cases.append(case)
                     print(json.dumps({"kind": "session-expiry-observation", **case}, ensure_ascii=False), flush=True)
                     assert 0 < prefix < total and not final.exists(), (prefix, total, status)
@@ -394,10 +461,12 @@ def main():
                 active.process.wait(timeout=10)
             service.kill()
             service.wait(timeout=10)
-            service_output = output.finish()
-            assert not service.stderr.read()
+            # 日期：2026-11-05；启动失败也保存有界诊断；先写报告再断言，避免清理错误掩盖原始失败。
+            service_output = output.finish() if output else {"drainStarted": False, "trailingOutput": service.stdout.read(8192)}
+            service_error = service.stderr.read(8192)
             proxy.close()
-            passed = len(cases) == 2 * len(args.channels) and all(case["passed"] for case in cases)
+            passed = (not service_error and len(cases) == 2 * len(args.channels)
+                      and all(case["passed"] for case in cases))
             report = {"date": "2026-11-05", "passed": passed, "binarySha256": binary_sha,
                       "scriptSha256": script_sha, "resumeBudgetSeconds": args.resume_timeout,
                       "timingConfiguration": timing,
@@ -406,9 +475,10 @@ def main():
                                                               args.resume_timeout) == (20, 512, 45, 30, 90),
                       "defaultResumeGatePassed": passed and args.resume_timeout == 90,
                       "negotiation": negotiation_result, "checks": checks, "cases": cases,
-                      "serverOutput": service_output,
+                      "serverOutput": service_output, "serverStderr": service_error,
                       "scope": "real local TLS and independent frames; application-boundary expiry, idle/frame I/O waits remain bounded by frame timeout; no wall-clock modification or physical network claim"}
             Path(args.report).write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+            assert not service_error, service_error
 
 
 if __name__ == "__main__":

@@ -26,7 +26,7 @@
 
 ## 结果与下一步
 
-初次提供的 airen3339/dukto-next 对本机账号仅有读取权限。用户随后明确授权使用当前 29583855 账号创建公开仓库并操作上传、编译，已创建 [29583855/dukto-next](https://github.com/29583855/dukto-next)。现已上传跨平台共用源码与工作流并实际执行多轮原生编译，初始提交 a51a5ec；当前已编译源码 9198cb5d1f5d49edd855307f5b2aa383f3e3204c。
+初次提供的 airen3339/dukto-next 对本机账号仅有读取权限。用户随后明确授权使用当前 29583855 账号创建公开仓库并操作上传、编译，已创建 [29583855/dukto-next](https://github.com/29583855/dukto-next)。现已上传跨平台共用源码与工作流并实际执行多轮原生编译，初始提交 a51a5ec；当前已编译源码 336049615719a597c3251f491d33b4d31a9dbec5。
 
 macOS 编译成功后即保存实际 GUI/独立 CLI，artifact 为 `macos-compiled-X64` 和 `macos-compiled-ARM64`；内部 tar 保留应用链接和可执行权限，附源码提交 SHA、许可证及摘要。这是仍需匹配 Qt5/OpenSSL 的编译输出，自包含发布包、签名和公证继续单独验收。每个原生 runner 无论成功或失败均保存日志与 JSON，截图也加入归档；对应 artifact 为 `validation-macos-15-intel` 和 `validation-macos-15`。[原工作流静态记录](validation/2026-11-05/ci-structure-r28.json)仅反映运行前历史状态。现在 remoteActionsExecuted=true，实际编译与测试记录见下表，不能用整体 CI 失败掩盖已通过子项，也不能用编译通过冒称整体 CI 成功。
 
@@ -64,3 +64,16 @@ CI 通过后继续实际桌面交互、三平台互通、macOS 独立 GUI/CLI �
 - [ ] 独立打包部署、所有原生交互/选择器、物理 LAN、三平台3×3、长时稳定性、签名公证、干净系统、第三方对应源码重建及完整交付仍开放。
 
 同一运行四个runner现已全部结束，整体为failure；Windows会话/排队通过，重试中的远程暂停返回4/parallel而预期7，另记R29-03。两Mac已列通过项不变，后续业务继续验收。[完整终态](validation/2026-11-05/terminal-state-r29.json)与[全量附件](validation/2026-11-05/github-evidence-r29-all-runners-terminal/receipt.json)保留。
+
+## 最新编译与独立专项验证（3360496，2026-11-05）
+
+[本轮CI](https://github.com/29583855/dukto-next/actions/runs/41958459234)已编译两个Mac架构，附件已下载并核对GitHub ZIP、内部tar、源码提交、Mach-O CPU和执行权限；原始字节存于本机dist/macos-compiled-20261105-r30。
+
+| 架构 | 原生编译附件 | tar SHA-256 |
+| --- | --- | --- |
+| Apple Silicon | [ARM64](https://github.com/29583855/dukto-next/actions/runs/41958459234/artifacts/13383893253) | 4a372e85ce5edf06e4301579b68126d5ad62031c9da251af3266e6edc9acda81 |
+| Intel | [X64](https://github.com/29583855/dukto-next/actions/runs/41958459234/artifacts/13384610507) | 080af8e6f97542760e528eab5c65377e9adde1736967acfe3e726bfa4fbe6f9f |
+
+[原生报告与失败证据](validation/2026-11-05/github-evidence-r30-intel-terminal/receipt.json)保留。ARM64为18/18 CTest（188.53秒）；Intel为17/18，UDP连锁5000次变更超过原10000ms门槛，QTest诊断需12450ms。两者20项独立TLS、Cocoa主入口、面板4→8进程恢复及四组逐连接错误根因专项通过。两Mac仍在单通道上传到期时确认0字节，完整协议步骤未通过，后续专项尚未执行。
+
+新增诊断记录客户端分阶段事件时间，但单通道上传会到块确认时才消费接收进度，不能把客户端首个进度时间冒称服务端首个正文时间。下一轮增加接收日志/临时文件大小及有界不透明TLS代理计数，原20秒会话、512KiB/s、45秒退出、30秒就绪、90秒恢复继续保持。CI将逐项执行并汇总所有既有专项，失败仍导致总步骤失败，后续专项可提供独立结果。自包含部署、签名、公证、干净系统和完整发布仍未完成。
