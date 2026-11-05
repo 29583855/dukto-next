@@ -1,12 +1,12 @@
 # Dukto 功能复现与跨平台传输项目
 
-更新日期：2026-11-05
+更新日期：2026-11-06
 
 项目以 `Dukto/` 内的 Dukto R6 为功能参考，开发 Windows、macOS、Linux 共用内核的桌面应用和独立命令行程序，增加服务器上传/下载、多线程提速及可靠恢复能力。
 
 当前已建立 C++14 共用核心、Qt Quick 2 桌面端和独立 CLI。Windows 已验证与原版文件/目录/文本双向互传、超过 4 GiB、10 万文件、100 轮接收，以及首次说明/设置/截图/单实例和有界头像模块。完整原版交互、服务器、多线程、恢复和跨平台验收继续按计划推进。原版目录保留用于对照。
 
-公开仓库为[29583855/dukto-next](https://github.com/29583855/dukto-next)。当前d0a8e01已完成Intel/Apple Silicon的C++14 GUI与独立CLI编译、依赖部署及实际包迁移，各五份业务报告与225份应用源码核验通过；[Mac下载](docs/macOS独立预览包.md)已更新。Windows、Linux glibc/musl和双Mac各21核心通过，Alpine完整36协议已核验；当前四runner完整协议仍运行。Linux及Windows当前已验预览包保持31f3db3。公开skip与其余功能验收、签名公证和正式发布继续，完整交付未完成，见[构建摘要](docs/构建验证摘要.md)及[公开索引](docs/current-validation.json)。
+公开仓库为[29583855/dukto-next](https://github.com/29583855/dukto-next)。d0a8e01的双Mac实际GUI/独立CLI预览包及各225份应用源码已核验，[下载入口](docs/macOS独立预览包.md)保持可用；同提交四runner各21核心、146协议和Alpine36协议原报告已逐份核验。新源码d2a5359增加持久晚期跳过与原生身份约束清理，通过Windows UCRT/MSVC完整各21回归、跳过专项各33项；[新原生矩阵](https://github.com/29583855/dukto-next/actions/runs/42061143560)继续。Linux/Windows已验包仍为31f3db3。公开skip、协议/任务衔接及完整主计划继续，完整交付未完成，见[构建摘要](docs/构建验证摘要.md)及[公开索引](docs/current-validation.json)。
 
 ## 文档入口
 

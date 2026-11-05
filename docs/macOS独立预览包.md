@@ -31,7 +31,7 @@ GUI保留Dukto设备/最近/关于布局，底部“服务器 · 上传 / 下载
 
 本机持久归档：`dist/macos-preview-20261105-r57-receive-preparation/BUILD-RECEIPT.json`。[逐项核验](validation/2026-11-05/delivery-r57-packages-summary.json)和[公开验证索引](current-validation.json)记录实际范围。
 
-d0a8e01的五种原生环境各21项核心/GUI通过；Alpine完整36协议原报告SHA已核验。当前四runner完整运行42049324101仍待双Mac协议终态，Windows和Ubuntu完整job已通过。较早27b8d21四runner各20核心/146协议和双Mac APFS14业务/26故障方向/14设备清理已逐份核验，属于其自身提交。
+d0a8e01的五种原生环境各21项核心/GUI通过；Alpine完整36协议原报告SHA已核验。同提交四runner完整运行42049324101现已终态success，各21核心及146份协议子报告全部读取并核对SHA。新d2a5359的晚期skip原生验证另见[当前矩阵](https://github.com/29583855/dukto-next/actions/runs/42061143560)，此包仍绑定d0a8e01。较早27b8d21四runner各20核心/146协议和双Mac APFS14业务/26故障方向/14设备清理已逐份核验，属于其自身提交。
 
 此包使用adhoc签名；Developer ID、公证/Gatekeeper、干净Mac、完整第三方对应源码/独立重建及正式发布尚未完成。公开skip及其他主计划未完成项继续验收，`deliveryComplete=false`。旧31f3db3包和全部历史失败证据保留。
 
