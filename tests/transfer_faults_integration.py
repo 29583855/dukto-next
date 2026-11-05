@@ -56,6 +56,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("executable")
     parser.add_argument("--report", required=True)
+    parser.add_argument("--on-conflict", choices=("rename", "overwrite"), default="rename")
     args = parser.parse_args()
     executable = str(Path(args.executable).resolve())
     executable_sha = digest(Path(executable))
@@ -108,7 +109,7 @@ def main():
                     client = root / (key + "-client")
                     paired, _ = run(executable, client, ["pair", "--to", f"127.0.0.1:{proxy.port}",
                         "--fingerprint", identity["fingerprint"], "--credential-file", offer["credentialFile"]])
-                    arguments = [direction, "--share", "data", "--threads", "4"]
+                    arguments = [direction, "--share", "data", "--threads", "4", "--on-conflict", args.on_conflict]
                     arguments += (["--path", str(source), "--remote-path", key] if direction == "upload" else
                                   ["--remote-path", key + "/source.bin", "--output", str(target)])
                     active = TransferProcess(executable, client, arguments)
@@ -165,7 +166,7 @@ def main():
             server_error.close()
             assert not error, (error, list(recent))
     Path(args.report).write_text(json.dumps({"date": "2026-11-05", "passed": True,
-        "executableSha256": executable_sha, "testScriptSha256": script_sha,
+        "executableSha256": executable_sha, "testScriptSha256": script_sha, "conflictPolicy": args.on_conflict,
         "sourceChangeDeadlineSeconds": 30, "authorizationDeadlineSeconds": 15,
         "sampleSha256": expected, "cases": results,
         "scope": "selected mid-transfer content/authorization/root faults; partial data retained, no disk-full or final-ack-loss claim"},

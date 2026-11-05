@@ -62,6 +62,9 @@ def commands(build):
     add("transfer-faults", "transfer_faults_integration")
     add("final-ack", "final_ack_integration")
     add("final-ack-auto-retry", "final_ack_integration", "--auto-retries", "3")
+    add("overwrite-faults", "transfer_faults_integration", "--on-conflict", "overwrite")
+    add("overwrite-final-ack", "final_ack_integration", "--on-conflict", "overwrite")
+    add("overwrite-final-ack-auto-retry", "final_ack_integration", "--on-conflict", "overwrite", "--auto-retries", "3")
     add("gui-process-recovery", "gui_process_recovery_integration",
         str(binary / ("server-panel-process-probe" + suffix)))
     add("task-store", "task_store_integration", executable=str(binary / ("task-store-probe" + suffix)))

@@ -1,0 +1,84 @@
+name: Native overwrite fault and completion qualification
+on:
+  workflow_dispatch:
+jobs:
+  qualification:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022, ubuntu-22.04, macos-15, macos-15-intel]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Windows Qt
+        if: runner.os == 'Windows'
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '5.15.2'
+          arch: win64_msvc2019_64
+          cache: true
+      - name: Install Linux Qt
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y qtbase5-dev qtdeclarative5-dev qtquickcontrols2-5-dev libqt5sql5-sqlite libssl-dev
+      - name: Install macOS Qt
+        if: runner.os == 'macOS'
+        run: |
+          brew install qt@5 openssl@3
+          echo "CMAKE_PREFIX_PATH=$(brew --prefix qt@5)" >> "$GITHUB_ENV"
+          echo "OPENSSL_ROOT_DIR=$(brew --prefix openssl@3)" >> "$GITHUB_ENV"
+          echo "$(brew --prefix qt@5)/bin" >> "$GITHUB_PATH"
+          echo "$(brew --prefix openssl@3)/bin" >> "$GITHUB_PATH"
+      - name: Windows TLS runtime
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          python scripts/ci_tls_runtime.py
+          "$PWD/.tools/openssl/Library/bin" >> $env:GITHUB_PATH
+      # 日期：2026-11-05；只改验证输入，原生CLI仍用C++14；原完整矩阵和包运行继续保持。
+      - name: Configure C++14 CLI
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DDUKTO_BUILD_TESTS=OFF
+      - name: Build CLI
+        id: compile
+        run: cmake --build build --config Release --target dukto-cli --parallel 4
+      - name: Overwrite source permission and root faults
+        if: ${{ !cancelled() && steps.compile.outcome == 'success' }}
+        shell: bash
+        run: |
+          binary=build/dukto-cli
+          if [[ "$RUNNER_OS" == Windows ]]; then binary=build/Release/dukto-cli.exe; fi
+          python -u -X utf8 tests/transfer_faults_integration.py "$binary" --on-conflict overwrite --report build/overwrite-faults.json
+      - name: Overwrite final acknowledgement loss with manual retry
+        if: ${{ !cancelled() && steps.compile.outcome == 'success' }}
+        shell: bash
+        run: |
+          binary=build/dukto-cli
+          if [[ "$RUNNER_OS" == Windows ]]; then binary=build/Release/dukto-cli.exe; fi
+          python -u -X utf8 tests/final_ack_integration.py "$binary" --on-conflict overwrite --report build/overwrite-final-ack.json
+      - name: Overwrite final acknowledgement loss with automatic retry
+        if: ${{ !cancelled() && steps.compile.outcome == 'success' }}
+        shell: bash
+        run: |
+          binary=build/dukto-cli
+          if [[ "$RUNNER_OS" == Windows ]]; then binary=build/Release/dukto-cli.exe; fi
+          python -u -X utf8 tests/final_ack_integration.py "$binary" --on-conflict overwrite --auto-retries 3 --report build/overwrite-final-ack-auto.json
+      # 日期：2026-11-05；只填充独立64MiB tmpfs，内核ENOSPC后释放本测试filler并验证原件保护/恢复覆盖。
+      - name: Overwrite isolated Linux disk exhaustion and recovery
+        if: ${{ !cancelled() && steps.compile.outcome == 'success' && runner.os == 'Linux' }}
+        shell: bash
+        run: |
+          mount="$RUNNER_TEMP/dukto-overwrite-limited"
+          mkdir "$mount"
+          sudo mount -t tmpfs -o "size=64m,uid=$(id -u),gid=$(id -g)" tmpfs "$mount"
+          trap 'sudo umount "$mount"' EXIT
+          for channels in 1 4 16; do
+            python -u -X utf8 tests/parallel_disk_integration.py build/dukto-cli --limited-directory "$mount" --threads "$channels" --on-conflict overwrite --report "build/overwrite-disk-$channels.json"
+          done
+      - name: Preserve native fault evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: overwrite-qualification-${{ matrix.os }}
+          path: build/*.json

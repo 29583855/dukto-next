@@ -76,7 +76,7 @@ class FinalAckProxy(SlowProxy):
                 pass
 
 
-# 日期：2026-11-05；六个用例均执行真实首次传输和同请求重试，原有同名文件不能被覆盖，也不能生成第三份。
+# 日期：2026-11-05；六个用例均执行真实首次传输和同请求重试，按原策略验证同名保护或原子覆盖及无重复副本。
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("executable")
@@ -84,6 +84,7 @@ def main():
     parser.add_argument("--auto-retries", type=int, choices=(0, 3), default=0)
     # 日期：2026-11-05；包内运行保持 EXE 与依赖相邻，开发目录默认复制避免构建文件占用。
     parser.add_argument("--in-place", action="store_true")
+    parser.add_argument("--on-conflict", choices=("rename", "overwrite"), default="rename")
     args = parser.parse_args()
     executable = str(Path(args.executable).resolve())
     executable_sha = digest(Path(executable))
@@ -138,10 +139,10 @@ def main():
                         original = destination / sample.name
                         original.write_bytes(b"original user data")
                         original_sha = digest(original)
-                        final = destination / "source (2).bin"
+                        final = original if args.on_conflict == "overwrite" else destination / "source (2).bin"
                         request = str(uuid.uuid4())
                         arguments = [direction, "--share", "data", "--threads", str(channels), "--request-id", request,
-                                     "--retries", str(args.auto_retries)]
+                                     "--retries", str(args.auto_retries), "--on-conflict", args.on_conflict]
                         arguments += (["--path", str(sample), "--remote-path", key] if direction == "upload" else
                                       ["--remote-path", key + "/source.bin", "--output", str(destination)])
                         proxy.final, proxy.task = final, None
@@ -166,16 +167,40 @@ def main():
                         proxy.armed = False
                         status, _ = run(executable, client, ["task", "--task", proxy.task])
                         assert status["state"] == "completed" and status["bytes"] == status["total"], status
-                        assert digest(final) == expected and digest(original) == original_sha
+                        if args.on_conflict == "overwrite":
+                            assert status["conflict"] == "overwrite", status
+                        else:
+                            assert "conflict" not in status, status
+                        assert digest(final) == expected
+                        assert digest(original) == (expected if args.on_conflict == "overwrite" else original_sha)
                         result = transfer(executable, client, arguments)
                         assert result["taskId"] == proxy.task and result["requestId"] == request
                         assert result["state"] == "completed"
-                        assert sorted(path.name for path in destination.iterdir() if not path.name.startswith(".")) == ["source (2).bin", "source.bin"]
-                        assert digest(final) == expected and digest(original) == original_sha
+                        if args.on_conflict == "overwrite":
+                            assert result["conflict"] == "overwrite", result
+                        else:
+                            assert "conflict" not in result, result
+                        expected_names = ["source.bin"] if args.on_conflict == "overwrite" else ["source (2).bin", "source.bin"]
+                        assert sorted(path.name for path in destination.iterdir() if not path.name.startswith(".")) == expected_names
+                        assert digest(final) == expected
+                        assert digest(original) == (expected if args.on_conflict == "overwrite" else original_sha)
+                        if args.on_conflict == "overwrite":
+                            # 日期：2026-11-05；完成后用户独立替换inode，再次重试必须保留后来文件；下载按原日志明确拒绝。
+                            replacement = destination / "later-user-edit.tmp"
+                            replacement.write_bytes(b"later independent user replacement")
+                            later_sha = digest(replacement)
+                            os.replace(replacement, final)
+                            later = transfer(executable, client, arguments, 6 if direction == "download" else 0)
+                            assert digest(final) == later_sha
+                            if direction == "upload":
+                                assert later["taskId"] == proxy.task and later["state"] == "completed"
+                            else:
+                                assert later["code"] == 6, later
+                            assert [path.name for path in destination.iterdir() if not path.name.startswith(".")] == ["source.bin"]
                         cases.append({"direction": direction, "channels": channels, "taskId": proxy.task, "requestId": request,
                                       "droppedEncryptedBytes": proxy.dropped_bytes,
                                       "serverCompletedBeforeDrop": proxy.completed_snapshot, "clientFirstError": error,
-                                      "automaticRetries": args.auto_retries, "retrySameTask": True, "sha256": expected, "originalPreserved": True, "noDuplicateCopy": True})
+                                      "automaticRetries": args.auto_retries, "retrySameTask": True, "sha256": expected, "originalPreserved": args.on_conflict == "rename", "originalReplaced": args.on_conflict == "overwrite", "noDuplicateCopy": True, "laterUserReplacementProtected": args.on_conflict == "overwrite"})
                         print(key + ": final confirmation lost; same task retry verified", flush=True)
             finally:
                 if active and active.process.poll() is None:
@@ -187,7 +212,7 @@ def main():
                 service_error.seek(0)
                 assert not service_error.read()
     Path(args.report).write_text(json.dumps({"date": "2026-11-05", "passed": True, "cases": cases, "executableSha256": executable_sha,
-        "scriptSha256": digest(Path(__file__)), "inPlaceRequested": args.in_place,
+        "scriptSha256": digest(Path(__file__)), "inPlaceRequested": args.in_place, "conflictPolicy": args.on_conflict,
         "scope": "actual final task response loss after durable server completion, real opaque TLS proxy, same-request retries; arbitrary power-loss offsets remain open"},
         ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 

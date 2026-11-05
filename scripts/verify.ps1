@@ -49,6 +49,13 @@ foreach ($test in @('parallel_failure_integration', 'conflict_fail_integration',
 }
 & $pythonExe -X utf8 "$projectRoot/tests/final_ack_integration.py" "$binaryDirectory/dukto-cli.exe" --auto-retries 3 --report "$reportDirectory/final-ack-auto-retry.json"
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+# 日期：2026-11-05；覆盖策略独立验证中途源变化/撤权/根改配及最终确认丢失，保持默认专项。
+& $pythonExe -X utf8 "$projectRoot/tests/transfer_faults_integration.py" "$binaryDirectory/dukto-cli.exe" --on-conflict overwrite --report "$reportDirectory/overwrite-faults.json"
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+foreach ($ackRetries in @(0, 3)) {
+    & $pythonExe -X utf8 "$projectRoot/tests/final_ack_integration.py" "$binaryDirectory/dukto-cli.exe" --on-conflict overwrite --auto-retries $ackRetries --report "$reportDirectory/overwrite-final-ack-$ackRetries.json"
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+}
 # 日期：2026-11-05；同一队列另验纯下载及上传/下载混合，避免仅上传覆盖而遗漏另一方向。
 foreach ($admissionMode in @('download', 'mixed')) {
     & $pythonExe -X utf8 "$projectRoot/tests/task_admission_integration.py" "$binaryDirectory/dukto-cli.exe" --mode $admissionMode --report "$reportDirectory/task-admission-$admissionMode.json"

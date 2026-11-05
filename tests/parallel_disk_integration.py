@@ -30,7 +30,7 @@ def exhaust(path, capacity):
 
 
 # 日期：2026-11-05；每方向独立元数据、身份与目标，首次已同步块后才填盘，不能把预检查拒绝当作中途故障。
-def exercise(executable, mount, capacity, channels, direction):
+def exercise(executable, mount, capacity, channels, direction, policy):
     with tempfile.TemporaryDirectory(prefix="dukto-parallel-enospc-", dir=mount) as limited, \
             tempfile.TemporaryDirectory(prefix="dukto-parallel-enospc-state-") as temporary:
         root, target = Path(temporary).resolve(), Path(limited).resolve()
@@ -74,7 +74,7 @@ def exercise(executable, mount, capacity, channels, direction):
                     raise AssertionError("Service startup deadline")
                 run(executable, client, ["pair", "--to", f"127.0.0.1:{proxy.port}", "--fingerprint", identity["fingerprint"],
                                          "--credential-file", offer["credentialFile"]])
-                arguments = [direction, "--share", "data", "--threads", str(channels)]
+                arguments = [direction, "--share", "data", "--threads", str(channels), "--on-conflict", policy]
                 arguments += (["--path", str(source)] if direction == "upload" else
                               ["--remote-path", source.name, "--output", str(target)])
                 active = TransferProcess(executable, client, arguments)
@@ -106,14 +106,19 @@ def exercise(executable, mount, capacity, channels, direction):
                     assert result["taskId"] == task
                     recovery = "same download task resumed"
                 assert result["state"] == "completed" and result["total"] == str(size)
-                files = [path for path in target.iterdir() if path.is_file() and not path.name.startswith(".dukto-") and path != original]
-                assert len(files) == 1 and digest(files[0]) == expected
-                assert original.read_bytes() == b"existing user data must survive"
+                files = [path for path in target.iterdir() if path.is_file() and not path.name.startswith(".dukto-")]
+                if policy == "overwrite":
+                    assert files == [original] and digest(original) == expected
+                else:
+                    copied = [path for path in files if path != original]
+                    assert len(files) == 2 and len(copied) == 1 and digest(copied[0]) == expected
+                    assert original.read_bytes() == b"existing user data must survive"
                 print(f"{direction}: content, original protection and recovery passed", flush=True)
                 return {"direction": direction, "channels": channels, "passed": True, "bytes": str(size),
                         "confirmedBeforeFull": confirmed, "fillerBytes": filled, "kernelError": "ENOSPC", "failure": failed,
                         "retainedPartCountAfterFailure": len(retained), "recovery": recovery, "sha256": expected,
-                        "sameNameOriginalPreserved": True}
+                        "originalPreservedBeforePublication": True, "sameNameOriginalPreserved": policy == "rename",
+                        "originalReplacedAfterRecovery": policy == "overwrite", "conflictPolicy": policy}
             finally:
                 if active and active.process.poll() is None:
                     active.finish(kill=True)
@@ -132,6 +137,7 @@ def main():
     parser.add_argument("--threads", type=int, choices=(1, 4, 16), default=4)
     parser.add_argument("--report", type=Path, required=True)
     parser.add_argument("--filesystem-bytes", type=int, default=64 * 1024**2)
+    parser.add_argument("--on-conflict", choices=("rename", "overwrite"), default="rename")
     args = parser.parse_args()
     assert os.name == "posix"
     mount = args.limited_directory.resolve()
@@ -140,10 +146,11 @@ def main():
     assert os.path.ismount(mount) and capacity == args.filesystem_bytes
     assert 32 * 1024**2 <= capacity <= 512 * 1024**2
     executable = str(Path(args.executable).resolve())
-    cases = [exercise(executable, mount, capacity, args.threads, direction) for direction in ("upload", "download")]
+    cases = [exercise(executable, mount, capacity, args.threads, direction, args.on_conflict) for direction in ("upload", "download")]
     args.report.parent.mkdir(parents=True, exist_ok=True)
     args.report.write_text(json.dumps({"date": "2026-11-05", "passed": True, "filesystemBytes": capacity,
-        "cases": cases, "platform": os.uname().sysname,
+        "cases": cases, "platform": os.uname().sysname, "conflictPolicy": args.on_conflict,
+        "executableSha256": digest(Path(executable)), "scriptSha256": digest(Path(__file__)),
         "scope": "newer TLS real data and isolated actual ENOSPC on the reported native filesystem; no power-loss or untested operating-system qualification"},
         ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print("Parallel TLS disk-full and recovery passed")

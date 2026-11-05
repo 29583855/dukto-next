@@ -69,6 +69,25 @@ jobs:
           diskutil info -plist "$mount" > build/apfs-tls16-filesystem.log
           capacity=$(python -c 'import os,sys; s=os.statvfs(sys.argv[1]); print(s.f_blocks*s.f_frsize)' "$mount")
           python -X utf8 tests/parallel_disk_integration.py build/dukto-cli --limited-directory "$mount" --filesystem-bytes "$capacity" --threads 16 --report build/apfs-tls16-disk.json
+      # 日期：2026-11-05；已有原件在中途ENOSPC前保持，释放空间恢复后原子覆盖；各并发档位独立APFS镜像。
+      - name: Explicit overwrite APFS disk exhaustion and recovery
+        if: ${{ !cancelled() && steps.compile.outcome == 'success' }}
+        shell: bash
+        run: |
+          for channels in 1 4 16; do
+            image="$RUNNER_TEMP/dukto-overwrite-$channels-limited.dmg"
+            mount="$RUNNER_TEMP/dukto-overwrite-$channels-mount"
+            test ! -e "$image"
+            mkdir "$mount"
+            hdiutil create -size 256m -fs APFS -volname "Dukto-Overwrite-$channels" "$image"
+            hdiutil attach -nobrowse -mountpoint "$mount" "$image"
+            trap 'hdiutil detach "$mount"' EXIT
+            diskutil info -plist "$mount" > "build/apfs-overwrite-$channels-filesystem.log"
+            capacity=$(python -c 'import os,sys; s=os.statvfs(sys.argv[1]); print(s.f_blocks*s.f_frsize)' "$mount")
+            python -u -X utf8 tests/parallel_disk_integration.py build/dukto-cli --limited-directory "$mount" --filesystem-bytes "$capacity" --threads "$channels" --on-conflict overwrite --report "build/apfs-overwrite-$channels-disk.json"
+            hdiutil detach "$mount"
+            trap - EXIT
+          done
       - name: Preserve APFS native evidence
         if: always()
         uses: actions/upload-artifact@v4
