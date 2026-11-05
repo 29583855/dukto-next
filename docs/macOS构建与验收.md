@@ -128,3 +128,7 @@ CI 通过后继续实际桌面交互、三平台互通、macOS 独立 GUI/CLI �
 - [x] 2627d48[完整CI终态](https://github.com/29583855/dukto-next/actions/runs/41970484287)为Windows/Ubuntu success，两Mac failure。Windows各18项CTest及28/28协议通过，含新初始化竞争及20项TLS；实际八进程预持锁竞争0.663秒，活持锁者5.026秒仍正确拒绝。两Mac各18项CTest、20项TLS/Cocoa及24/26协议通过，仅两个旧夹具中途暂停专项失败；新夹具上述原生独立复验已通过，历史失败保留。
 - [x] Windows r17实际独立ZIP系统PATH迁移通过，SHA4825c481916e8daa5ee81b0d3180737a87a3e143b12f3a509892110f7fdba944，包含2627d48初始化轮询和新测试输入。185份应用源码与1bc2774完整核对；24受信签名包的364个部署文件、53份许可重新核对。与旧r16分开保留，不借用旧包SHA。
 - [ ] 1bc2774新完整四平台CI仍在执行，当前Ubuntu已成功，其他runner继续。独立Linux187文件快照已送入新/home/dukto/checkpoint-r35，按glibc→musl顺序全新构建，旧长测及旧资格目录未改。Mac预览包为adhoc开发包；Developer ID/公证、独立干净Mac、完整对应源码、原版全基线/完整原生交互、全预算/回收、四冲突策略、24小时、物理LAN、3×3及正式发布仍未完成。deliveryComplete=false。
+
+## v0.37 完整原生CI追加证据
+
+2026-11-05，固定1bc2774完整运行41971957335的Mac ARM64与Intel均成功：每架构18CTest和26/26协议专项通过，包括新的rename/fail检查点协调、会话、4→8恢复及字节进度。该运行整体仍因Windows旧协议异常帧超时为failure。双Mac旧预览包的SHA和源码身份不变；新增加的逐项分页属于下一源码修订，另行原生编译验证，不能借用旧包结果。

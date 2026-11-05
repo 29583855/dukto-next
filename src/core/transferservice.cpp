@@ -5,6 +5,7 @@
 #include "paralleltransfer.h"
 #include "shares.h"
 #include "taskstore.h"
+#include "transferitems.h"
 #include "transferprogress.h"
 #include "transferscheduler.h"
 #include <QCoreApplication>
@@ -58,8 +59,11 @@ QJsonObject manageTransfer(PrivateStore &store, const Principal &principal,
         result["tasks"] = visible;
         return result;
     }
+    const bool items = type == next::Type::TaskQuery && request.contains("itemsAfter");
+    const bool itemsInfo = type == next::Type::TaskQuery && request.contains("itemsInfo");
     const QUuid id(request["taskId"].toString());
-    if (request.size() != 1 || id.isNull() ||
+    if (request.size() != (items || itemsInfo ? 2 : 1) ||
+        (itemsInfo && request["itemsInfo"] != QJsonValue(true)) || id.isNull() ||
         request["taskId"] != id.toString(QUuid::WithoutBraces) ||
         (type != next::Type::TaskQuery && type != next::Type::Pause && type != next::Type::Cancel &&
          type != next::Type::Resume))
@@ -70,6 +74,18 @@ QJsonObject manageTransfer(PrivateStore &store, const Principal &principal,
         principal, task.share, task.direction == "upload" ? Access::Upload : Access::Download);
     if (root->share().root != task.root)
         throw Error(ExitCode::Permission, QStringLiteral("任务共享根已改配"), "task");
+    if (itemsInfo)
+        return task.publicInfo();
+    if (items) {
+        // 日期：2026-11-05；查询不取得执行锁或推进任务；授权仍在服务回包前再次核对。
+        if (task.direction != "upload")
+            throw Error(ExitCode::Config, QStringLiteral("下载结果须从客户端本地接收记录读取"),
+                        "items");
+        const auto after = next::decimal(request["itemsAfter"], std::numeric_limits<qint64>::max());
+        return transferItems(store, task,
+                             "manifest-" + id.toString(QUuid::WithoutBraces) + ".sqlite",
+                             root->resolve(task.relative, false), after);
+    }
     if (type == next::Type::Pause || type == next::Type::Cancel)
         task = tasks.requestStop(principal.client, id, type == next::Type::Pause);
     auto lease = tasks.tryAcquire(principal.client, id);

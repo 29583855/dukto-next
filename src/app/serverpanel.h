@@ -62,6 +62,7 @@ class ServerPanel final : public QObject {
     Q_PROPERTY(QString clientsAfter READ clientsAfter NOTIFY changed)
     Q_PROPERTY(bool clientsMore READ clientsMore NOTIFY changed)
     Q_PROPERTY(int sessionSeconds READ sessionSeconds NOTIFY changed)
+    Q_PROPERTY(QVariantMap itemPage READ itemPage NOTIFY changed)
   public:
     // 日期：2026-11-04；独立保存服务器资料/接收日志，保留原版设备页与接收配置。
     explicit ServerPanel(const QString &directory, QObject *parent = nullptr);
@@ -103,6 +104,8 @@ class ServerPanel final : public QObject {
     bool clientsMore() const;
     // 日期：2026-11-05；本机新认证连接的会话时长，收到实际策略事件后才更新。
     int sessionSeconds() const;
+    // 日期：2026-11-05；只保留一页逐项证据及其任务/资料身份，不随翻页累积结果。
+    QVariantMap itemPage() const;
     // 日期：2026-11-04；执行显式用户动作，额外控制槽使活动传输可被暂停/取消。
     Q_INVOKABLE void execute(const QString &operation, const QVariantMap &options);
     // 日期：2026-11-04；启动/停止本机 TLS 服务，不自动共享用户目录或开放 R6 接收。
@@ -136,6 +139,7 @@ class ServerPanel final : public QObject {
     QString clientsAfter_;
     bool clientsMore_ = false;
     int sessionSeconds_ = 86400;
+    QJsonObject itemPage_;
     ServerAction *action_ = nullptr;
     ServerAction *control_ = nullptr;
     dukto::ServiceListener *listener_ = nullptr;

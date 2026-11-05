@@ -40,7 +40,7 @@ if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 # 日期：2026-11-05；短命进程资源采样必须保留活动进程错误和内存上限。
 & $pythonExe -X utf8 "$projectRoot/tests/process_sampling_integration.py" --report "$reportDirectory/process-sampling.json"
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-foreach ($test in @('parallel_failure_integration', 'conflict_fail_integration', 'legacy_integration', 'cli_contracts', 'crash_integration', 'windows_path_integration', 'windows_signal_integration', 'service_integration', 'client_list_integration', 'credential_rotation_integration', 'session_expiry_integration', 'task_admission_integration', 'transfer_retry_integration', 'transfer_integration', 'transfer_recovery_integration', 'parallel_transfer_integration', 'parallel_isolation_integration', 'byte_progress_integration', 'transfer_faults_integration', 'final_ack_integration')) {
+foreach ($test in @('parallel_failure_integration', 'conflict_fail_integration', 'task_items_integration', 'legacy_integration', 'cli_contracts', 'crash_integration', 'windows_path_integration', 'windows_signal_integration', 'service_integration', 'client_list_integration', 'credential_rotation_integration', 'session_expiry_integration', 'task_admission_integration', 'transfer_retry_integration', 'transfer_integration', 'transfer_recovery_integration', 'parallel_transfer_integration', 'parallel_isolation_integration', 'byte_progress_integration', 'transfer_faults_integration', 'final_ack_integration')) {
     & $pythonExe -X utf8 "$projectRoot/tests/$test.py" "$binaryDirectory/dukto-cli.exe" --report "$reportDirectory/$test.json"
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }

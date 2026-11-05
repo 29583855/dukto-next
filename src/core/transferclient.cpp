@@ -3,9 +3,12 @@
 #include "files.h"
 #include "paralleltransfer.h"
 #include "service.h"
+#include "transferitems.h"
 #include "transferprogress.h"
 #include <QCoreApplication>
 #include <QFileInfo>
+#include <QJsonArray>
+#include <limits>
 
 namespace dukto {
 namespace {
@@ -263,6 +266,80 @@ QJsonObject RemoteClient::upload(const QUuid &requestId, const QString &share,
     auto result = completedTask(channel_, correlation_, id, requestId, "upload", share, relative,
                                 manifest.summary(), conflict);
     result["channels"] = QString::number(actual);
+    return result;
+}
+
+// 日期：2026-11-05；能力显式协商后读取持久明细；下载接收结果始终来自当前本机日志。
+QJsonObject RemoteClient::items(const QUuid &id, PrivateStore &local, quint64 after) {
+    if (!capabilities_.contains("task-items-v1"))
+        throw Error(ExitCode::Config, QStringLiteral("服务器未提供逐项查询，请先升级服务器"),
+                    "items");
+    if (id.isNull())
+        throw Error(ExitCode::Config, QStringLiteral("任务明细UUID无效"), "items");
+    const auto info = request(next::Type::TaskQuery, next::Type::TaskState,
+                              {{"taskId", id.toString(QUuid::WithoutBraces)}, {"itemsInfo", true}});
+    if (info["taskId"] != id.toString(QUuid::WithoutBraces))
+        throw Error(ExitCode::Integrity, QStringLiteral("任务明细身份不同"), "items");
+    TransferTask task;
+    task.id = id;
+    task.request = QUuid(info["requestId"].toString());
+    task.direction = info["direction"].toString();
+    task.share = info["share"].toString();
+    task.relative = info["path"].toString();
+    task.state = info["state"].toString();
+    task.error = info["error"].toInt(-1);
+    task.entries = next::decimal(info["entries"], 10000000);
+    task.total = next::decimal(info["total"], std::numeric_limits<qint64>::max());
+    task.manifest = QByteArray::fromHex(info["manifest"].toString().toLatin1());
+    task.conflict = info.contains("conflict") ? checkedConflictPolicy(info["conflict"].toString())
+                                              : ConflictPolicy::Rename;
+    if (task.request.isNull() || task.error < 0 || task.error > 7 ||
+        (task.direction != "upload" && task.direction != "download") ||
+        (task.manifest.isEmpty() ? task.entries != 0 || task.total != 0
+                                 : task.manifest.size() != 32) ||
+        info["manifest"] != QString::fromLatin1(task.manifest.toHex()))
+        throw Error(ExitCode::Integrity, QStringLiteral("逐项查询任务字段无效"), "items");
+    if (after > static_cast<quint64>(task.entries))
+        throw Error(ExitCode::Config, QStringLiteral("任务明细起点无效"), "items");
+    auto result = task.direction == "download"
+                      ? localDownloadItems(local, server_, profile_.client, task, after)
+                      : request(next::Type::TaskQuery, next::Type::TaskState,
+                                {{"taskId", id.toString(QUuid::WithoutBraces)},
+                                 {"itemsAfter", QString::number(after)}});
+    const auto following = next::decimal(result["after"], task.entries);
+    if (result["version"] != 1 || result["taskId"] != id.toString(QUuid::WithoutBraces) ||
+        result["manifest"] != info["manifest"] || result["direction"] != task.direction ||
+        result["conflict"] != conflictPolicyName(task.conflict) || !result["available"].isBool() ||
+        !result["more"].isBool() || result["currentContentVerified"] != QJsonValue(false) ||
+        !result["entries"].isArray() || result["entries"].toArray().size() > 100 ||
+        following < after || (result["more"].toBool() && following == after))
+        throw Error(ExitCode::Integrity, QStringLiteral("逐项查询分页响应无效"), "items");
+    quint64 previous = after;
+    for (const auto &value : result["entries"].toArray()) {
+        const auto entry = value.toObject();
+        const auto sequence = next::decimal(entry["id"], task.entries);
+        const auto bytes = next::decimal(entry["bytes"], std::numeric_limits<qint64>::max());
+        const auto confirmed = next::decimal(entry["confirmedBytes"], bytes);
+        const auto hash = QByteArray::fromHex(entry["sha256"].toString().toLatin1());
+        if (sequence != previous + 1 ||
+            !QStringList{"not-executed", "planned", "receiving", "committing", "copied"}.contains(
+                entry["disposition"].toString()) ||
+            (entry["type"] != "file" && entry["type"] != "directory") ||
+            !entry["target"].isString() ||
+            (entry["type"] == "directory" ? bytes || confirmed || !hash.isEmpty()
+                                          : hash.size() != 32) ||
+            entry["sha256"] != QString::fromLatin1(hash.toHex()) ||
+            (entry["disposition"] == "copied" && confirmed != bytes))
+            throw Error(ExitCode::Integrity, QStringLiteral("逐项查询条目无效"), "items");
+        validateRelativePath(entry["path"].toString());
+        if (!entry["target"].toString().isEmpty())
+            validateRelativePath(entry["target"].toString());
+        previous = sequence;
+    }
+    if (previous != following ||
+        (result["available"] == QJsonValue(false) &&
+         (!result["entries"].toArray().isEmpty() || result["more"].toBool())))
+        throw Error(ExitCode::Integrity, QStringLiteral("逐项查询末尾游标不同"), "items");
     return result;
 }
 

@@ -239,7 +239,7 @@ int runServiceCommand(const QCommandLineParser &parser, const QStringList &argum
     }
     if (command != "pair" && command != "auth" && command != "rotate" && command != "list" &&
         command != "upload" && command != "download" && command != "tasks" && command != "task" &&
-        command != "pause" && command != "cancel" && !resuming)
+        command != "pause" && command != "cancel" && command != "task-items" && !resuming)
         throw dukto::Error(dukto::ExitCode::Config, QStringLiteral("远程命令无效"), "arguments");
     if (arguments.size() != 1)
         throw dukto::Error(dukto::ExitCode::Config, QStringLiteral("远程命令不接受额外位置参数"),
@@ -397,6 +397,42 @@ int runServiceCommand(const QCommandLineParser &parser, const QStringList &argum
         profile.server = remote.serverId();
         profile.paired = true;
         dukto::saveProfile(clients, profile);
+    }
+    if (command == "task-items") {
+        const QUuid id(parser.value("task"));
+        if (parser.values("task").size() != 1 || id.isNull() ||
+            parser.value("task") != id.toString(QUuid::WithoutBraces) ||
+            parser.values("after").size() > 1)
+            throw dukto::Error(dukto::ExitCode::Config,
+                               QStringLiteral("请指定规范 --task UUID 和单个 --after"),
+                               "arguments");
+        auto after =
+            dukto::next::decimal(parser.value("after"), std::numeric_limits<qint64>::max());
+        dukto::PrivateStore local(QDir(stateDirectory).filePath("transfers"), true);
+        remote.close();
+        for (int count = 0; count < 100000; ++count) {
+            // 日期：2026-11-05；每页独立认证及关闭，10万文件翻页不耗尽单会话请求上限。
+            dukto::RemoteClient query(profile, timeout(parser), &cancelled);
+            query.authenticate();
+            auto page = query.items(id, local, after);
+            query.close();
+            const auto more = page["more"].toBool();
+            after = page["after"].toString().toULongLong();
+            page["eventVersion"] = 1;
+            page["event"] = "task-items";
+            page["message"] =
+                page["available"].toBool()
+                    ? QStringLiteral("本页%1项，接收端持久记录；不代表当前文件重新校验")
+                          .arg(page["entries"].toArray().size())
+                    : QStringLiteral("本机接收记录或冻结清单尚不可用：%1")
+                          .arg(page["reason"].toString());
+            output(page);
+            if (!parser.isSet("all") || !more) {
+                return 0;
+            }
+        }
+        throw dukto::Error(dukto::ExitCode::Config,
+                           QStringLiteral("明细翻页次数已达上限，请按游标继续"), "items");
     }
     if (command == "tasks") {
         auto after =

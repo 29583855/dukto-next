@@ -48,6 +48,25 @@ Rectangle {
         };
     }
 
+    // 日期：2026-11-05；用户可读的逐项处置；历史检查点不等于此刻重新校验文件。
+    function dispositionText(value) {
+        const names = {
+            "copied": "已复制并提交",
+            "not-executed": "尚无接收记录",
+            "planned": "准备中",
+            "receiving": "接收中",
+            "committing": "提交中，结果待确认"
+        };
+        return names[value] || value;
+    }
+
+    // 日期：2026-11-05；明细游标只取同资料和同任务的已确认上一页，首屏从0开始。
+    function queryItems(nextPage) {
+        let options = remoteOptions();
+        options.after = nextPage && panel.itemPage.taskId === taskId.text && panel.itemPage.profile === profile.text ? panel.itemPage.after : "0";
+        panel.execute("task-items", options);
+    }
+
     // 日期：2026-11-04；本机共享与主体授权使用相同显式复选框，默认不开放。
     function localOptions() {
         return {
@@ -436,6 +455,7 @@ Rectangle {
                                     enabled: !panel.busy
                                     Layout.fillWidth: true
                                 }
+
                             }
 
                             Label {
@@ -461,7 +481,9 @@ Rectangle {
                                 Layout.fillWidth: true
                                 color: "#777"
                             }
+
                         }
+
                     }
 
                     RowLayout {
@@ -664,6 +686,57 @@ Rectangle {
                             text: "取消任务"
                             enabled: !panel.controlBusy
                             onClicked: panel.execute("cancel", page.remoteOptions())
+                        }
+
+                    }
+
+                    RowLayout {
+                        Button {
+                            objectName: "serverItemsFirstButton"
+                            text: "逐项明细"
+                            enabled: !panel.controlBusy && taskId.text.length === 36
+                            onClicked: page.queryItems(false)
+                        }
+
+                        Button {
+                            objectName: "serverItemsNextButton"
+                            text: "下一页"
+                            enabled: !panel.controlBusy && panel.itemPage.taskId === taskId.text && panel.itemPage.profile === profile.text && !!panel.itemPage.more
+                            onClicked: page.queryItems(true)
+                        }
+
+                    }
+
+                    ColumnLayout {
+                        visible: panel.itemPage.taskId === taskId.text && panel.itemPage.profile === profile.text
+                        Layout.fillWidth: true
+
+                        Label {
+                            objectName: "serverItemsSummary"
+                            text: panel.itemPage.available ? "接收端持久记录（每页最多100项）。批次状态：" + page.stateText(panel.itemPage.taskState) + "；当前文件如有改动需重新校验。" : "本机尚无可用接收记录或冻结清单。下载明细须在原下载机器查询。"
+                            textFormat: Text.PlainText
+                            wrapMode: Text.WordWrap
+                            Layout.fillWidth: true
+                        }
+
+                        ListView {
+                            objectName: "serverItemsList"
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: Math.min(240, contentHeight)
+                            clip: true
+                            model: panel.itemPage.entries || []
+
+                            delegate: Label {
+                                width: ListView.view.width
+                                text: modelData.path + " → " + (modelData.target || "尚无目标") + "\n" + page.dispositionText(modelData.disposition) + " · 检查点 " + modelData.confirmedBytes + " / " + modelData.bytes + " B"
+                                textFormat: Text.PlainText
+                                wrapMode: Text.WrapAnywhere
+                                padding: 5
+                            }
+
+                            ScrollBar.vertical: ScrollBar {
+                            }
+
                         }
 
                     }

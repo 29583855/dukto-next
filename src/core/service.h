@@ -53,6 +53,8 @@ class RemoteClient final {
     QJsonObject manage(const QUuid &task, next::Type operation = next::Type::TaskQuery);
     // 日期：2026-11-04；分页取当前主体仍有权限的任务，进程重启后可找回既有请求与任务 ID。
     QJsonObject tasks(quint64 after = 0);
+    // 日期：2026-11-05；上传查询远端接收日志，下载核对本机证据；每页有界，不依据发送完成伪造落盘。
+    QJsonObject items(const QUuid &task, PrivateStore &local, quint64 after = 0);
     // 日期：2026-11-05；非默认冲突策略先协商能力并绑定请求，上传由接收服务执行。
     QJsonObject upload(const QUuid &request, const QString &share, const QString &relative,
                        StrongManifest &manifest,

@@ -305,6 +305,13 @@ void ServerAction::run() {
                                     operation == "pause"    ? dukto::next::Type::Pause
                                     : operation == "cancel" ? dukto::next::Type::Cancel
                                                             : dukto::next::Type::TaskQuery);
+        } else if (operation == "task-items") {
+            dukto::PrivateStore local(QDir(directory_).filePath("transfers"), true);
+            result_ = remote.items(id(options_["taskId"]), local,
+                                   dukto::next::decimal(options_.value("after", "0").toString(),
+                                                        std::numeric_limits<qint64>::max()));
+            result_["event"] = "task-items";
+            result_["profile"] = alias;
         } else if (operation == "tasks") {
             result_ = remote.tasks(dukto::next::decimal(options_.value("after", "0").toString(),
                                                         std::numeric_limits<qint64>::max()));
@@ -427,6 +434,11 @@ int ServerPanel::sessionSeconds() const {
     return sessionSeconds_;
 }
 
+// 日期：2026-11-05；返回完整单页身份，界面据此阻止另一任务或资料的旧明细混入当前任务。
+QVariantMap ServerPanel::itemPage() const {
+    return itemPage_.toVariantMap();
+}
+
 // 日期：2026-11-05；按实际返回类型刷新模型，错误保留既有任务供重新查询与恢复。
 void ServerPanel::accept(const QJsonObject &event, int code) {
     if (event.isEmpty())
@@ -456,7 +468,12 @@ void ServerPanel::accept(const QJsonObject &event, int code) {
     }
     if (event["event"] == "session-policy")
         sessionSeconds_ = event["seconds"].toString().toInt();
-    if (event["event"] == "clients") {
+    if (event["event"] == "task-items") {
+        itemPage_ = event;
+        status_ = event["available"].toBool()
+                      ? QStringLiteral("本页接收明细%1项").arg(event["entries"].toArray().size())
+                      : QStringLiteral("本机接收记录或冻结清单不可用");
+    } else if (event["event"] == "clients") {
         clients_ = event["entries"].toArray();
         clientsAfter_ = event["after"].toString();
         clientsMore_ = event["more"].toBool();
@@ -490,7 +507,7 @@ void ServerPanel::accept(const QJsonObject &event, int code) {
 // 日期：2026-11-04；普通操作一个槽、控制一个槽，拒绝无界创建线程。
 void ServerPanel::execute(const QString &operation, const QVariantMap &options) {
     const bool control = operation == "tasks" || operation == "task" || operation == "pause" ||
-                         operation == "cancel";
+                         operation == "cancel" || operation == "task-items";
     auto &slot = control ? control_ : action_;
     if (slot) {
         status_ = QStringLiteral("该操作槽仍忙，请等待或断开当前操作");

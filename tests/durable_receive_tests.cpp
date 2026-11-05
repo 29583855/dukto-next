@@ -1,6 +1,9 @@
 #include "core/durablereceive.h"
 #include "core/error.h"
 #include "core/files.h"
+#include "core/protocol.h"
+#include "core/transferitems.h"
+#include <QJsonDocument>
 
 #include <QCoreApplication>
 #include <QDir>
@@ -102,6 +105,94 @@ int crashWorker(const QString &root, const QString &mode) {
 class DurableReceiveTests final : public QObject {
     Q_OBJECT
   private slots:
+    // 日期：2026-11-05；长名称使报文字节预算先于100项触发；查询只读且包含尚无接收记录的项目。
+    void itemPageByteBudgetAndBinding() {
+        QTemporaryDir root;
+        QVERIFY(root.isValid());
+        dukto::PrivateStore store(root.filePath("state"), true);
+        dukto::StrongManifest manifest(store, "source.sqlite", true);
+        const auto emptyHash = QCryptographicHash::hash({}, QCryptographicHash::Sha256);
+        for (quint64 sequence = 1; sequence <= 220; ++sequence) {
+            dukto::StrongEntry entry{
+                sequence, QString::number(sequence).rightJustified(4, '0') + QString(1500, 'x'),
+                {},       false,
+                0,        emptyHash};
+            manifest.append(entry);
+        }
+        manifest.seal();
+        dukto::TransferTask task;
+        task.id = Task;
+        task.direction = "upload";
+        task.state = "transferring";
+        task.entries = 220;
+        task.manifest = QByteArray::fromHex(manifest.summary()["sha256"].toString().toLatin1());
+        quint64 after = 0;
+        int count = 0;
+        do {
+            const auto page =
+                dukto::transferItems(store, task, "source.sqlite", root.path(), after);
+            const auto entries = page["entries"].toArray();
+            QVERIFY(page["available"].toBool());
+            QVERIFY(!entries.isEmpty() && entries.size() < 100);
+            QVERIFY(QJsonDocument(page).toJson(QJsonDocument::Compact).size() <
+                    dukto::next::ControlLimit);
+            QCOMPARE(entries.first().toObject()["disposition"].toString(), QString("not-executed"));
+            QVERIFY(!page["currentContentVerified"].toBool());
+            count += entries.size();
+            const auto following = page["after"].toString().toULongLong();
+            QVERIFY(following > after);
+            after = following;
+            if (!page["more"].toBool())
+                break;
+        } while (true);
+        QCOMPARE(count, 220);
+        QCOMPARE(after, quint64(220));
+        QVERIFY(!dukto::transferItems(store, task, "source.sqlite", root.path(), after)["more"]
+                     .toBool());
+        QVERIFY_EXCEPTION_THROWN(
+            dukto::transferItems(store, task, "source.sqlite", root.path(), 221), dukto::Error);
+        task.manifest[0] = char(task.manifest[0] ^ 1);
+        QVERIFY_EXCEPTION_THROWN(dukto::transferItems(store, task, "source.sqlite", root.path()),
+                                 dukto::Error);
+    }
+
+    // 日期：2026-11-05；打开着的真实接收日志可只读查询；策略、任务和目标根不符均拒绝。
+    void itemPageActiveAndCompleted() {
+        QTemporaryDir root;
+        fixture(root.path());
+        dukto::PrivateStore store(root.filePath("private"));
+        dukto::StrongManifest manifest(store, "source.sqlite", false);
+        dukto::TransferTask task;
+        task.id = Task;
+        task.direction = "upload";
+        task.state = "transferring";
+        task.entries = 1;
+        task.total = SampleBytes;
+        task.manifest = QByteArray::fromHex(manifest.summary()["sha256"].toString().toLatin1());
+        dukto::DurableReceive receiver(store,
+                                       "receive-" + Task.toString(QUuid::WithoutBraces) + ".sqlite",
+                                       Task, manifest, root.filePath("output"));
+        receiver.open(1, "sample.bin");
+        transmit(receiver, 0, dukto::StrongBlockBytes);
+        auto page = dukto::transferItems(store, task, "source.sqlite", root.filePath("output"));
+        auto item = page["entries"].toArray().first().toObject();
+        QCOMPARE(item["disposition"].toString(), QString("receiving"));
+        QCOMPARE(item["confirmedBytes"].toString(), QString::number(dukto::StrongBlockBytes));
+        transmit(receiver, 1);
+        receiver.finish();
+        page = dukto::transferItems(store, task, "source.sqlite", root.filePath("output"));
+        item = page["entries"].toArray().first().toObject();
+        QCOMPARE(item["disposition"].toString(), QString("copied"));
+        QCOMPARE(item["target"].toString(), QString("sample.bin"));
+        QCOMPARE(item["confirmedBytes"].toString(), QString::number(SampleBytes));
+        QVERIFY_EXCEPTION_THROWN(dukto::transferItems(store, task, "source.sqlite", root.path()),
+                                 dukto::Error);
+        task.conflict = dukto::ConflictPolicy::Fail;
+        QVERIFY_EXCEPTION_THROWN(
+            dukto::transferItems(store, task, "source.sqlite", root.filePath("output")),
+            dukto::Error);
+    }
+
     // 日期：2026-11-05；未知值不能隐式保留双方，仍未开放的跳过/覆盖也明确报参数错误。
     void conflictPolicyStrictDecode() {
         QVERIFY(dukto::checkedConflictPolicy("rename") == dukto::ConflictPolicy::Rename);

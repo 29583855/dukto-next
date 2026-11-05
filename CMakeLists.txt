@@ -42,6 +42,7 @@ add_library(dukto-core
     src/core/browse.cpp
     src/core/strongmanifest.cpp
     src/core/taskstore.cpp
+    src/core/transferitems.cpp
     src/core/durablereceive.cpp
     src/core/receivetree.cpp
     src/core/fileexchange.cpp

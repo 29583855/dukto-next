@@ -101,7 +101,7 @@ dukto-cli download --state-directory <客户状态目录> --profile office --sha
 dukto-cli download --profile office --share docs --remote-path backup.bin --output <本地已有目录> --threads 8 --retries 3 --deadline-seconds 7200 --json
 ```
 
-公共任务控制（Windows 与 Alpine Linux 已实测）：
+公共任务控制（各平台验收范围见实施进度）：
 
 ```text
 dukto-cli tasks --state-directory <客户状态目录> --profile office --all --json
@@ -191,3 +191,7 @@ Windows r13 预览包实际迁移及第三方文件/许可映射通过，但包�
 2026-11-05 v0.30：并行控制线程先保留原始错误，持久暂停/取消返回7；Windows UCRT真实TLS四组根因专项与十四组重试通过。Mac短会话测试增加有界时序和失败JSON，原时限保持；跨平台结果及完整范围见计划。
 
 2026-11-05 Mac独立开发预览：Intel与Apple Silicon的GUI/CLI已在原生CI编译并通过包内依赖迁移、16通道双向及4→8恢复；两架构另通过56组会话/故障/字节进度专项。[下载、校验和运行](docs/macOS独立预览包.md)。Windows新r17包含初始化轮询修复并通过实际ZIP迁移；完整项目仍按计划逐项验收。
+
+## 新版任务逐项查询
+
+新版构建提供 `dukto-cli task-items --profile office --task <UUID> --state-directory <原客户状态目录> --all --json`。每页最多100项，`--after`可单独继续；普通终端也逐项显示。GUI的服务器“任务”页可查看逐项明细。上传读取服务器的接收证据，下载须在原下载机器保留本机记录；缺失记录会明确显示不可用。查询不重新校验或重写当前文件。详细语义及实际支持边界见[接收证据分页](docs/decisions/0010-任务逐项接收证据分页.md)。

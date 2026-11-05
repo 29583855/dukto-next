@@ -67,6 +67,19 @@ void output(const QJsonObject &event, bool json) {
                    << file.value("bytes").toString() << " B) " << file.value("sha256").toString()
                    << '\n';
         }
+    } else if (event.value("event") == "task-items") {
+        stream << event.value("message").toString() << '\n';
+        for (const auto &value : event.value("entries").toArray()) {
+            const auto item = value.toObject();
+            // 日期：2026-11-05；名称用JSON转义，换行和控制字符不能伪造额外的终端结果行。
+            const auto names = QJsonDocument(QJsonArray{item["path"], item["target"]})
+                                   .toJson(QJsonDocument::Compact);
+            stream << item["id"].toString() << ' ' << item["disposition"].toString() << ' '
+                   << QString::fromUtf8(names) << ' ' << item["confirmedBytes"].toString() << '/'
+                   << item["bytes"].toString() << " B\n";
+        }
+        if (event.value("more").toBool())
+            stream << "after=" << event.value("after").toString() << '\n';
     } else if (event.value("event") == "listing") {
         stream << event.value("share").toString() << ':' << event.value("path").toString() << '\n';
         for (const auto &value : event.value("entries").toArray()) {
@@ -162,7 +175,7 @@ int main(int argc, char **argv) {
     parser.addPositionalArgument(
         "command", "discover / send / send-text / receive / receipts / "
                    "serve / pair / auth / rotate / list / upload / download / tasks / task "
-                   "/ pause / cancel / resume / doctor / config / help");
+                   "/ task-items / pause / cancel / resume / doctor / config / help");
     parser.addPositionalArgument("arguments", "config show / config set <key> <value>",
                                  "[arguments...]");
     parser.addOptions(
@@ -263,8 +276,8 @@ int main(int argc, char **argv) {
                 : QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
         if (command == "serve" || command == "pair" || command == "auth" || command == "rotate" ||
             command == "list" || command == "upload" || command == "download" ||
-            command == "tasks" || command == "task" || command == "pause" || command == "cancel" ||
-            command == "resume")
+            command == "tasks" || command == "task" || command == "task-items" ||
+            command == "pause" || command == "cancel" || command == "resume")
             return runServiceCommand(
                 parser, args, stateDirectory,
                 [json](const QJsonObject &event) { output(event, json); },

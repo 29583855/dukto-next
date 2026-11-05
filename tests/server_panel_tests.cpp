@@ -290,6 +290,12 @@ class ServerPanelTests final : public QObject {
         QTRY_VERIFY_WITH_TIMEOUT(!client.busy(), 30000);
         QCOMPARE(client.task()["taskId"].toString(), downloadedTask);
         QCOMPARE(QDir(output).entryList(QDir::Files).size(), 1);
+        client.execute("task-items", {{"taskId", downloadedTask}});
+        QTRY_VERIFY_WITH_TIMEOUT(!client.controlBusy(), 30000);
+        QVERIFY(client.itemPage()["available"].toBool());
+        QCOMPARE(client.itemPage()["entries"].toList().size(), 1);
+        QCOMPARE(client.itemPage()["entries"].toList()[0].toMap()["disposition"].toString(),
+                 QString("copied"));
         client.execute("tasks", {});
         QTRY_VERIFY_WITH_TIMEOUT(!client.controlBusy(), 30000);
         QCOMPARE(client.tasks().size(), 2);
@@ -367,6 +373,17 @@ class ServerPanelTests final : public QObject {
             click(button);
             return true;
         };
+        // 日期：2026-11-05；实际生产按钮查询下载接收证据，模型与目录浏览/任务列表相互独立。
+        sections->setProperty("currentIndex", 1);
+        QVERIFY(visibleClick("serverItemsFirstButton", taskFlick));
+        QTRY_VERIFY_WITH_TIMEOUT(!client.controlBusy(), 30000);
+        QCOMPARE(client.itemPage()["taskId"].toString(), downloadedTask);
+        QCOMPARE(client.itemPage()["entries"].toList()[0].toMap()["disposition"].toString(),
+                 QString("copied"));
+        QVERIFY(!client.itemPage()["more"].toBool());
+        auto itemsNext = root->findChild<QQuickItem *>("serverItemsNextButton");
+        QVERIFY(itemsNext && !itemsNext->isEnabled());
+        QVERIFY(view.grabFramebuffer().save("Testing/QtTest/server-task-items.png"));
         const auto interactiveOutput = temporary.filePath("interactive-output");
         QVERIFY(QDir().mkpath(interactiveOutput));
         auto remotePath = root->findChild<QObject *>("serverRemotePath");

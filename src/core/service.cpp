@@ -4,6 +4,8 @@
 #include "error.h"
 #include "paralleltransfer.h"
 #include "sessionpolicy.h"
+#include "shares.h"
+#include "taskstore.h"
 #include "transferservice.h"
 
 #include <QJsonArray>
@@ -41,7 +43,8 @@ QJsonArray capabilities() {
             "task-control-v1",
             "parallel-transfer-v1",
             "byte-progress-v1",
-            "conflict-fail-v1"};
+            "conflict-fail-v1",
+            "task-items-v1"};
 }
 
 // 日期：2026-11-04；服务端只接受精确 1.0 能力协商，认证消息不能跳过协议入口。
@@ -466,7 +469,19 @@ void ServiceWorker::run() {
                 frame.header.type == next::Type::Pause || frame.header.type == next::Type::Cancel ||
                 frame.header.type == next::Type::Resume) {
                 const auto result = manageTransfer(store, account, request, frame.header.type);
-                reauthenticate();
+                const auto current = reauthenticate();
+                // 日期：2026-11-05；页查询期间撤权或共享根改配后，不发布旧根的相对路径明细。
+                if (request.contains("itemsAfter") || request.contains("itemsInfo")) {
+                    TaskStore tasks(store);
+                    const auto task =
+                        tasks.task(current.client, QUuid(request["taskId"].toString()));
+                    const auto held = Shares(store).open(
+                        current, task.share,
+                        task.direction == "upload" ? Access::Upload : Access::Download);
+                    if (held->share().root != task.root)
+                        throw Error(ExitCode::Permission,
+                                    QStringLiteral("明细查询期间共享根已改配"), "items");
+                }
                 channel.write(next::Type::TaskState, correlation, result);
                 continue;
             }
