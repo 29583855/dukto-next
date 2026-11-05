@@ -409,6 +409,32 @@ void PosixDirectory::removeEntry(const QString &name) const {
         throw Error(ExitCode::Disk, QStringLiteral("私有状态文件清理失败"), "identity");
 }
 
+// 日期：2026-11-05；只删除原生身份仍匹配的普通临时项；POSIX不宣称具备外部改名CAS。
+void PosixDirectory::removeOwnedTemporary(const QString &name, const QByteArray &identity,
+                                          bool directory) const {
+    verify();
+    if (name.isEmpty() || name == "." || name == ".." || name.contains('/') ||
+        name.contains(QChar::Null) || identity.isEmpty())
+        throw Error(ExitCode::Permission, QStringLiteral("临时清理键或身份无效"), "receive");
+    const auto encoded = QFile::encodeName(name);
+    struct stat info;
+    if (::fstatat(descriptor_, encoded.constData(), &info, AT_SYMLINK_NOFOLLOW) != 0) {
+        if (errno == ENOENT) {
+            synchronize();
+            return;
+        }
+        throw Error(ExitCode::Disk, QStringLiteral("无法核对待清理临时项"), "receive");
+    }
+    const auto observed = QByteArray::number(static_cast<qulonglong>(info.st_dev)) + ':' +
+                          QByteArray::number(static_cast<qulonglong>(info.st_ino));
+    if ((directory ? !S_ISDIR(info.st_mode) : !S_ISREG(info.st_mode)) || observed != identity)
+        throw Error(ExitCode::Integrity, QStringLiteral("待清理临时项已被替换"), "receive");
+    verify();
+    if (::unlinkat(descriptor_, encoded.constData(), directory ? AT_REMOVEDIR : 0) != 0)
+        throw Error(ExitCode::Disk, QStringLiteral("自有临时项清理失败，保留证据"), "receive");
+    synchronize();
+}
+
 // 日期：2026-11-04；目录树同名分配也使用相对固定句柄的 mkdirat，避免符号链接替换重定向。
 bool PosixDirectory::createChild(const QString &name) const {
     verify();
@@ -475,6 +501,49 @@ void replaceReceivedFile(const QString &source, const QString &destination) {
                     QStringLiteral("原子覆盖失败，系统错误码 %1").arg(GetLastError()), "commit");
 }
 #endif
+
+// 日期：2026-11-05；Windows锁定父目录并以DELETE句柄验证/删除同一对象，POSIX使用固定父描述符。
+void removeReceivedTemporary(const QString &path, const QByteArray &identity, bool directory) {
+    const QFileInfo information(path);
+#ifdef Q_OS_WIN
+    NativeDirectoryLock parent(information.absolutePath(), false);
+    const auto native = nativeLongPath(path);
+    const auto handle = CreateFileW(
+        reinterpret_cast<LPCWSTR>(native.utf16()), DELETE | FILE_READ_ATTRIBUTES, FILE_SHARE_READ,
+        nullptr, OPEN_EXISTING, FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+    if (handle == INVALID_HANDLE_VALUE) {
+        if (GetLastError() == ERROR_FILE_NOT_FOUND)
+            return;
+        throw Error(ExitCode::Disk, QStringLiteral("无法固定待清理临时项"), "receive");
+    }
+    try {
+        BY_HANDLE_FILE_INFORMATION info;
+        if (GetFileType(handle) != FILE_TYPE_DISK || !GetFileInformationByHandle(handle, &info) ||
+            (info.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) ||
+            bool(info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != directory)
+            throw Error(ExitCode::Integrity, QStringLiteral("待清理临时项类型已变化"), "receive");
+        const auto observed =
+            QByteArray::number(static_cast<qulonglong>(info.dwVolumeSerialNumber)) + ':' +
+            QByteArray::number(static_cast<qulonglong>(info.nFileIndexHigh)) + ':' +
+            QByteArray::number(static_cast<qulonglong>(info.nFileIndexLow));
+        if (identity.isEmpty() || observed != identity)
+            throw Error(ExitCode::Integrity, QStringLiteral("待清理临时项身份已变化"), "receive");
+        FILE_DISPOSITION_INFO disposition;
+        disposition.DeleteFile = TRUE;
+        if (!SetFileInformationByHandle(handle, FileDispositionInfo, &disposition,
+                                        sizeof(disposition)))
+            throw Error(ExitCode::Disk, QStringLiteral("自有临时项清理失败，保留证据"), "receive");
+    } catch (...) {
+        CloseHandle(handle);
+        throw;
+    }
+    if (!CloseHandle(handle))
+        throw Error(ExitCode::Disk, QStringLiteral("临时清理句柄关闭失败"), "receive");
+#else
+    PosixDirectory parent(information.absolutePath(), false);
+    parent.removeOwnedTemporary(information.fileName(), identity, directory);
+#endif
+}
 
 // 日期：2026-11-05；同名的 NFC/大小写别名使用同一预约，Linux 额外串行不影响安全性。
 TargetReservation::TargetReservation(const QString &destination) {

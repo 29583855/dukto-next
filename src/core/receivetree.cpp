@@ -61,7 +61,15 @@ QString DurableReceive::prepareCopy(quint64 file, const std::function<void()> &c
     QByteArray native;
     const bool newlyCreated = !query.next();
     if (newlyCreated) {
-        if ((conflict_ == ConflictPolicy::Fail || conflict_ == ConflictPolicy::Skip) &&
+        if (conflict_ == ConflictPolicy::Skip &&
+            QFileInfo::exists(resolveInside(root_, destination))) {
+            query.finish();
+            TargetReservation reservation(resolveInside(root_, destination));
+            if (!reservation.acquired())
+                throw Error(ExitCode::Permission, QStringLiteral("目录已有活动预约"), "conflict");
+            return commitLateSkip(file, {}, {}, check).path;
+        }
+        if (conflict_ == ConflictPolicy::Fail &&
             QFileInfo::exists(resolveInside(root_, destination)))
             throw Error(ExitCode::Permission, QStringLiteral("接收目录已存在，冲突策略要求停止"),
                         "conflict");
@@ -213,7 +221,9 @@ QString DurableReceive::prepareCopy(quint64 file, const std::function<void()> &c
                             QStringLiteral("目录发布期间出现同名目标，保留原目录与临时证据"),
                             "conflict");
             }
-            if ((conflict_ == ConflictPolicy::Fail || conflict_ == ConflictPolicy::Skip))
+            if (conflict_ == ConflictPolicy::Skip)
+                return commitLateSkip(file, temporary, native, check).path;
+            if (conflict_ == ConflictPolicy::Fail)
                 throw Error(ExitCode::Permission, QStringLiteral("目录提交时出现同名目标"),
                             "conflict");
             continue;

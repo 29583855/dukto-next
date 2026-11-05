@@ -180,10 +180,14 @@ DurableReceive::DurableReceive(PrivateStore &store, const QString &name, const Q
                             {"root", root_},
                             {"rootIdentity", QString::fromLatin1(rootLock_->identity())}};
     if (conflict_ != ConflictPolicy::Rename) {
-        bindingInfo["version"] = conflict_ == ConflictPolicy::Skip ? 3 : 2;
+        bindingInfo["version"] = conflict_ == ConflictPolicy::Skip ? 4 : 2;
         bindingInfo["conflict"] = conflictPolicyName(conflict_);
     }
     const auto binding = next::encodeControl(bindingInfo);
+    auto legacyInfo = bindingInfo;
+    legacyInfo["version"] = 3;
+    const auto legacyBinding = next::encodeControl(legacyInfo);
+    bool migrateSkip = false;
     // 日期：2026-11-04；先验证单文件状态键，再构造锁路径，防止锁名发生路径穿越。
     const bool exists = store.exists(name);
     ownership_.reset(new QLockFile(QDir(store.directory()).filePath(name + ".lock")));
@@ -228,7 +232,9 @@ DurableReceive::DurableReceive(PrivateStore &store, const QString &name, const Q
             query.prepare("SELECT spec FROM binding");
             execute(query);
             if (query.next()) {
-                if (query.value(0).toByteArray() != binding || query.next())
+                const auto storedBinding = query.value(0).toByteArray();
+                migrateSkip = conflict_ == ConflictPolicy::Skip && storedBinding == legacyBinding;
+                if ((!migrateSkip && storedBinding != binding) || query.next())
                     throw Error(ExitCode::Integrity, QStringLiteral("接收日志任务绑定不匹配"),
                                 "receive");
             } else {
@@ -248,11 +254,42 @@ DurableReceive::DurableReceive(PrivateStore &store, const QString &name, const Q
                     sql("CREATE TABLE item_failures(id INTEGER PRIMARY KEY,spec BLOB NOT NULL,"
                         "phase TEXT NOT NULL,code INTEGER NOT NULL,stage TEXT NOT NULL,"
                         "resolved INTEGER NOT NULL)");
+                    sql("CREATE TABLE skip_final(id INTEGER PRIMARY KEY CHECK(id>0),"
+                        "spec BLOB NOT NULL CHECK(length(spec)<=65536),"
+                        "cleaned INTEGER NOT NULL CHECK(cleaned IN(0,1)))");
                     sql("COMMIT");
                 } else {
-                    sql("SELECT id FROM item_failures LIMIT 0");
+                    sql("SELECT id,spec,temporary,target,native,state,confirmed FROM files LIMIT "
+                        "0");
+                    sql("SELECT id,source,spec,temporary,target,native,state FROM directories "
+                        "LIMIT 0");
+                    sql("SELECT file,block,sha FROM blocks LIMIT 0");
+                    sql("SELECT id,spec,phase,code,stage,resolved FROM item_failures LIMIT 0");
                 }
+                finalSkipsEnabled_ = !migrateSkip;
                 verifySkipDecisions(check);
+                if (migrateSkip) {
+                    // 日期：2026-11-05；仅精确v3绑定且旧记录全部验证后升级；v4缺表绝不补建。
+                    sql("BEGIN IMMEDIATE");
+                    try {
+                        sql("CREATE TABLE skip_final(id INTEGER PRIMARY KEY CHECK(id>0),"
+                            "spec BLOB NOT NULL CHECK(length(spec)<=65536),"
+                            "cleaned INTEGER NOT NULL CHECK(cleaned IN(0,1)))");
+                        query.finish();
+                        query.prepare("UPDATE binding SET spec=?");
+                        query.addBindValue(binding);
+                        execute(query);
+                        if (check)
+                            check();
+                        verifyRoot();
+                        sql("COMMIT");
+                    } catch (...) {
+                        database_.rollback();
+                        throw;
+                    }
+                    finalSkipsEnabled_ = true;
+                }
+                verifyFinalSkips(check);
             } else {
                 // 日期：2026-11-05；绑定验证通过后事务增加旁表，旧文件/目录/块架构保持原样。
                 sql("BEGIN IMMEDIATE");
@@ -407,18 +444,44 @@ QByteArray DurableReceive::digest(qint64 offset, qint64 bytes, const std::functi
 // 日期：2026-11-04；兼容单通道顺序模式，只保留重读通过的连续前缀检查点。
 quint64 DurableReceive::open(quint64 file, const QString &destination,
                              const std::function<void()> &check) {
+    if (conflict_ == ConflictPolicy::Skip)
+        throw Error(ExitCode::Config, QStringLiteral("跳过策略必须使用显式正文打开接口"),
+                    "receive");
     return openFile(file, destination, check, false);
 }
 
 // 日期：2026-11-04；稀疏模式保留后到先存的块，恢复不因前面缺块丢弃后面的有效数据。
 quint64 DurableReceive::openSparse(quint64 file, const QString &destination,
                                    const std::function<void()> &check) {
+    if (conflict_ == ConflictPolicy::Skip)
+        throw Error(ExitCode::Config, QStringLiteral("跳过策略必须使用显式正文打开接口"),
+                    "receive");
     return openFile(file, destination, check, true);
+}
+
+// 日期：2026-11-05；跳过结果和块序号分开返回，确认字节不会冒充复制成功。
+DurableReceive::Opened DurableReceive::openDisposition(quint64 file, const QString &destination,
+                                                       const std::function<void()> &check,
+                                                       bool sparse) {
+    const auto block = openFile(file, destination, check, sparse);
+    const bool skipped = current_->state == "skipped";
+    const auto root = skipped ? next::decimal(skipDecision(file)["skippedRoot"], file) : 0;
+    return {{current_->target, skipped, root}, block};
 }
 
 // 日期：2026-11-04；并行文件保持独立上下文；达到窗口上限时拒绝，不把文件数转成无界句柄。
 void DurableReceive::openConcurrent(quint64 file, const QString &destination,
                                     const std::function<void()> &check) {
+    if (conflict_ == ConflictPolicy::Skip)
+        throw Error(ExitCode::Config, QStringLiteral("跳过策略必须使用显式并行打开接口"),
+                    "receive");
+    openConcurrentDisposition(file, destination, check);
+}
+
+// 日期：2026-11-05；保持16文件窗口，已跳过项不占正文句柄额度。
+DurableReceive::Opened
+DurableReceive::openConcurrentDisposition(quint64 file, const QString &destination,
+                                          const std::function<void()> &check) {
     if (parked_.count(file) || current_->entry.id == file)
         throw Error(ExitCode::Config, QStringLiteral("文件已在接收窗口中"), "receive");
     const auto active = parked_.size() + (current_->file ? 1 : 0);
@@ -427,7 +490,7 @@ void DurableReceive::openConcurrent(quint64 file, const QString &destination,
     if (current_->file)
         parked_.emplace(current_->entry.id, std::move(current_));
     try {
-        openFile(file, destination, check, true);
+        return openDisposition(file, destination, check, true);
     } catch (...) {
         if (!current_)
             current_.reset(new Cursor);
@@ -451,7 +514,8 @@ void DurableReceive::activate(quint64 file) {
 
 // 日期：2026-11-04；未完成文件必须保留到窗口收尾或析构，不能通过关闭游标冒充完成。
 void DurableReceive::closeCurrent() {
-    if (current_->state != "completed" || !current_->partials.empty())
+    if ((current_->state != "completed" && current_->state != "skipped") ||
+        !current_->partials.empty())
         throw Error(ExitCode::Config, QStringLiteral("接收文件尚未完成提交"), "receive");
     current_.reset(new Cursor);
 }
@@ -460,6 +524,10 @@ void DurableReceive::closeCurrent() {
 quint64 DurableReceive::openFile(quint64 file, const QString &destination,
                                  const std::function<void()> &check, bool sparse) try {
     verifyRoot();
+    if (conflict_ == ConflictPolicy::Skip && check) {
+        check();
+        verifyRoot();
+    }
     current_.reset(new Cursor);
     current_->sparse = sparse;
     current_->entry = manifest_.entry(file);
@@ -468,12 +536,18 @@ quint64 DurableReceive::openFile(quint64 file, const QString &destination,
     current_->original = validateRelativePath(destination);
     if (conflict_ == ConflictPolicy::Skip) {
         const auto decision = skipDecision(file);
-        if (decision["action"] != "receive" || decision["path"] != destination)
+        if (decision["path"] != destination)
             throw Error(ExitCode::Integrity, QStringLiteral("未决定接收或已跳过的项目不得打开正文"),
                         "receive");
+        if (decision["action"] == "skip") {
+            cleanupFinalSkip(file, check);
+            current_->state = "skipped";
+            current_->target = destination;
+            return 0;
+        }
     }
     const auto originalPath = resolveInside(root_, current_->original);
-    if (conflict_ == ConflictPolicy::Overwrite) {
+    if (conflict_ == ConflictPolicy::Overwrite || conflict_ == ConflictPolicy::Skip) {
         current_->reservation.reset(new TargetReservation(originalPath));
         if (!current_->reservation->acquired())
             throw Error(ExitCode::Permission, QStringLiteral("覆盖目标已有活动接收任务"),
@@ -495,7 +569,15 @@ quint64 DurableReceive::openFile(quint64 file, const QString &destination,
                         "conflict");
     }
     if (newlyCreated) {
-        if ((conflict_ == ConflictPolicy::Fail || conflict_ == ConflictPolicy::Skip) &&
+        if (conflict_ == ConflictPolicy::Skip && QFileInfo::exists(originalPath)) {
+            query.finish();
+            commitLateSkip(file, {}, {}, check);
+            current_->target = destination;
+            current_->state = "skipped";
+            current_->reservation.reset();
+            return 0;
+        }
+        if (conflict_ == ConflictPolicy::Fail &&
             QFileInfo::exists(resolveInside(root_, current_->original)))
             throw Error(ExitCode::Permission, QStringLiteral("接收目标已存在，冲突策略要求停止"),
                         "conflict");
@@ -554,6 +636,15 @@ quint64 DurableReceive::openFile(quint64 file, const QString &destination,
         current_->file.reset(new ReceiveFile(temporaryPath, false));
         if (current_->file->identity() != current_->native)
             throw Error(ExitCode::Integrity, QStringLiteral("接收临时文件已被替换"), "receive");
+    }
+    if (conflict_ == ConflictPolicy::Skip && QFileInfo::exists(originalPath)) {
+        current_->file->verify();
+        current_->file.reset();
+        commitLateSkip(file, current_->temporary, current_->native, check);
+        current_->state = "skipped";
+        current_->confirmed = 0;
+        current_->reservation.reset();
+        return 0;
     }
     qint64 valid = 0;
     current_->nextBlock = 0;
@@ -714,7 +805,7 @@ void DurableReceive::write(quint64 block, quint32 offset, const QByteArray &byte
 void DurableReceive::recoverCommit(const std::function<void()> &check) {
     const auto destination = resolveInside(root_, current_->target);
     std::unique_ptr<TargetReservation> reservation;
-    if (conflict_ != ConflictPolicy::Overwrite) {
+    if (conflict_ != ConflictPolicy::Overwrite && conflict_ != ConflictPolicy::Skip) {
         reservation.reset(new TargetReservation(destination));
         if (!reservation->acquired())
             throw Error(ExitCode::Permission, QStringLiteral("提交恢复目标已有活动接收任务"),
@@ -762,19 +853,46 @@ void DurableReceive::recoverCommit(const std::function<void()> &check) {
         digest(0, current_->entry.bytes, check) != current_->entry.sha256)
         throw Error(ExitCode::Integrity, QStringLiteral("提交中临时文件证据不匹配"), "commit");
     reservation.reset();
-    finish(check);
+    finishDisposition(check);
 }
 
 // 日期：2026-11-05；全摘要通过后记录提交意图，失败策略在原子发布竞争时停止且保护已有目标。
-QString DurableReceive::finish(const std::function<void()> &check) try {
+QString DurableReceive::finish(const std::function<void()> &check) {
+    if (conflict_ == ConflictPolicy::Skip)
+        throw Error(ExitCode::Config, QStringLiteral("跳过策略必须使用显式最终处置接口"),
+                    "receive");
+    return finishDisposition(check).path;
+}
+
+// 日期：2026-11-05；本任务已发布结果恢复为copied；外部同名冲突才可形成持久最终跳过。
+DurableReceive::Preparation
+DurableReceive::finishDisposition(const std::function<void()> &check) try {
     verifyRoot();
+    if (conflict_ == ConflictPolicy::Skip && check) {
+        check();
+        verifyRoot();
+    }
+    if (conflict_ == ConflictPolicy::Skip && current_->entry.id &&
+        !finalSkipDecision(current_->entry.id).isEmpty()) {
+        current_->file.reset();
+        current_->partials.clear();
+        current_->target = current_->entry.relative;
+        current_->state = "skipped";
+        current_->confirmed = 0;
+        current_->reservation.reset();
+    }
+    if (current_->state == "skipped") {
+        cleanupFinalSkip(current_->entry.id, check);
+        const auto decision = skipDecision(current_->entry.id);
+        return {current_->target, true, next::decimal(decision["skippedRoot"], current_->entry.id)};
+    }
     if (!current_->file || current_->confirmed != current_->entry.bytes ||
         !current_->partials.empty() ||
         (current_->state != "receiving" && current_->state != "committing" &&
          current_->state != "completed"))
         throw Error(ExitCode::Integrity, QStringLiteral("文件尚未完整接收"), "commit");
     if (current_->state == "completed")
-        return current_->target;
+        return {current_->target, false, 0};
     if (current_->file->device().size() != current_->entry.bytes ||
         digest(0, current_->entry.bytes, check) != current_->entry.sha256)
         throw Error(ExitCode::Integrity, QStringLiteral("接收全文件摘要不匹配"), "commit");
@@ -784,7 +902,7 @@ QString DurableReceive::finish(const std::function<void()> &check) try {
             suffix == 0 ? current_->original : renamedPath(current_->original, suffix));
         const auto target = resolveInside(root_, candidate);
         std::unique_ptr<TargetReservation> reservation;
-        if (conflict_ != ConflictPolicy::Overwrite) {
+        if (conflict_ != ConflictPolicy::Overwrite && conflict_ != ConflictPolicy::Skip) {
             reservation.reset(new TargetReservation(target));
             if (!reservation->acquired()) {
                 if ((conflict_ == ConflictPolicy::Fail || conflict_ == ConflictPolicy::Skip))
@@ -829,7 +947,17 @@ QString DurableReceive::finish(const std::function<void()> &check) try {
             if (current_->file->identity() != current_->native)
                 throw Error(ExitCode::Integrity, QStringLiteral("提交竞争中临时文件被替换"),
                             "commit");
-            if ((conflict_ == ConflictPolicy::Fail || conflict_ == ConflictPolicy::Skip))
+            if (conflict_ == ConflictPolicy::Skip) {
+                current_->file.reset();
+                const auto result = commitLateSkip(current_->entry.id, current_->temporary,
+                                                   current_->native, check);
+                current_->partials.clear();
+                current_->state = "skipped";
+                current_->confirmed = 0;
+                current_->reservation.reset();
+                return result;
+            }
+            if (conflict_ == ConflictPolicy::Fail)
                 throw Error(ExitCode::Permission,
                             QStringLiteral("提交时目标已存在，原文件保持不变"), "conflict");
             continue;
@@ -841,7 +969,7 @@ QString DurableReceive::finish(const std::function<void()> &check) try {
         if (current_->file->identity() != current_->native)
             throw Error(ExitCode::Integrity, QStringLiteral("最终文件原生身份不匹配"), "commit");
         save("completed", candidate, current_->entry.bytes);
-        return candidate;
+        return {candidate, false, 0};
     }
     throw Error(ExitCode::Disk, QStringLiteral("同名文件过多，无法独占提交"), "commit");
 } catch (const Error &error) {

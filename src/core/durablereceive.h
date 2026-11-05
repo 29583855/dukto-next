@@ -29,6 +29,18 @@ class DurableReceive final {
         bool skipped = false;
         quint64 skippedRoot = 0;
     };
+    struct Opened {
+        Preparation disposition;
+        quint64 nextBlock = 0;
+    };
+    // 日期：2026-11-05；显式返回打开时的最终跳过；正文偏移仅在未跳过时有效。
+    Opened openDisposition(quint64 file, const QString &destination,
+                           const std::function<void()> &check = {}, bool sparse = false);
+    // 日期：2026-11-05；最多16文件共用日志；窗口调用者必须检查显式处置。
+    Opened openConcurrentDisposition(quint64 file, const QString &destination,
+                                     const std::function<void()> &check = {});
+    // 日期：2026-11-05；发布竞争的跳过先FULL提交再清理，不能以字符串返回掩盖最终结果。
+    Preparation finishDisposition(const std::function<void()> &check = {});
     // 日期：2026-11-05；跳过先持久化再返回；普通接收仍需实际同步/提交才能成为copied。
     Preparation prepareDisposition(quint64 file, const std::function<void()> &check = {});
     // 日期：2026-11-05；持久预约并核对目录映射；默认保留双方，显式覆盖仅复用安全普通目录。
@@ -72,6 +84,17 @@ class DurableReceive final {
     void recordFailure(quint64 file, const QString &phase, const Error &error) noexcept;
     // 日期：2026-11-05；与完成状态在同一事务解决旧错误，随后新的失败仍可重新记录。
     void resolveFailure(quint64 file);
+    // 日期：2026-11-05；规范读取最终跳过，核对原准备与临时项证据；不从当前目标推断历史。
+    QJsonObject finalSkipDecision(quint64 file) const;
+    // 日期：2026-11-05；将最终跳过覆盖到有效处置，原receive准备记录保持不可变。
+    QJsonObject applyFinalSkip(const StrongEntry &entry, const QJsonObject &decision) const;
+    // 日期：2026-11-05；安全同类型目标与预约保持到FULL提交，随后按原生身份清理自有临时项。
+    Preparation commitLateSkip(quint64 file, const QString &temporary, const QByteArray &native,
+                               const std::function<void()> &check);
+    // 日期：2026-11-05；清理可跨重启续做；未知身份、被替换和非空目录必须保留并报错。
+    void cleanupFinalSkip(quint64 file, const std::function<void()> &check);
+    // 日期：2026-11-05；最终表有界分页核对，不允许孤立、重复或超过准备范围的记录。
+    void verifyFinalSkips(const std::function<void()> &check);
     struct Partial {
         quint32 offset = 0;
         QCryptographicHash hash{QCryptographicHash::Sha256};
@@ -96,6 +119,7 @@ class DurableReceive final {
     QString root_;
     ConflictPolicy conflict_;
     quint64 nextDecision_ = 1;
+    bool finalSkipsEnabled_ = false;
 #ifdef Q_OS_WIN
     std::unique_ptr<NativeDirectoryLock> rootLock_;
 #else

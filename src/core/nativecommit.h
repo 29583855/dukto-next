@@ -64,6 +64,9 @@ class PosixDirectory final {
     void removeTemporary(const QString &name) const;
     // 日期：2026-11-04；显式状态清理检查 unlinkat 结果，除不存在外的错误必须报告。
     void removeEntry(const QString &name) const;
+    // 日期：2026-11-05；只清理身份匹配的普通临时项或空目录，父描述符固定且不递归。
+    void removeOwnedTemporary(const QString &name, const QByteArray &identity,
+                              bool directory) const;
     // 日期：2026-11-04；独占创建单层子目录，已有同名项返回 false，其余错误明确失败。
     bool createChild(const QString &name) const;
 
@@ -83,6 +86,9 @@ bool renameNoReplace(const QString &source, const QString &destination, bool dur
 // 日期：2026-11-05；固定父目录后原子替换同名普通文件；原文件在发布之前保持完整。
 void replaceReceivedFile(const QString &source, const QString &destination);
 #endif
+
+// 日期：2026-11-05；清理已持久最终跳过的自有临时项；Windows按原生句柄删除，POSIX固定父目录。
+void removeReceivedTemporary(const QString &path, const QByteArray &identity, bool directory);
 
 // 预约文件位于目标父目录；仅协调本程序的新执行者，不宣称文件系统具有路径 CAS。
 class TargetReservation final {

@@ -40,8 +40,8 @@ QJsonObject DurableReceive::skipDecision(quint64 file) const {
     execute(query);
     if (!query.next())
         throw Error(ExitCode::Integrity, QStringLiteral("清单项目缺少持久接收决定"), "receive");
-    const auto value =
-        checkedDecision(entry, query.value(0).toByteArray(), query.value(1).toByteArray());
+    const auto value = applyFinalSkip(
+        entry, checkedDecision(entry, query.value(0).toByteArray(), query.value(1).toByteArray()));
     const bool skipped = value["action"] == "skip";
     const auto root = next::decimal(value["skippedRoot"], file);
     const int slash = entry.relative.lastIndexOf('/');
@@ -60,7 +60,8 @@ QJsonObject DurableReceive::skipDecision(quint64 file) const {
     const auto parentId = query.value(0).toULongLong();
     const auto parentEntry = manifest_.entry(parentId);
     const auto parent =
-        checkedDecision(parentEntry, query.value(1).toByteArray(), query.value(2).toByteArray());
+        applyFinalSkip(parentEntry, checkedDecision(parentEntry, query.value(1).toByteArray(),
+                                                    query.value(2).toByteArray()));
     const bool parentSkipped = parent["action"] == "skip";
     const auto parentRoot = next::decimal(parent["skippedRoot"], parentId);
     if (!parentEntry.directory || parentEntry.relative != entry.relative.left(slash) ||
@@ -224,9 +225,14 @@ DurableReceive::prepareDisposition(quint64 file, const std::function<void()> &ch
             check();
     }
     const bool skipped = decision["action"] == "skip";
-    if (!skipped)
+    if (!skipped) {
         prepareCopy(file, check);
-    return {entry.relative, skipped, next::decimal(decision["skippedRoot"], file)};
+        decision = skipDecision(file);
+    }
+    if (decision["action"] == "skip")
+        cleanupFinalSkip(file, check);
+    return {entry.relative, decision["action"] == "skip",
+            next::decimal(decision["skippedRoot"], file)};
 } catch (const Error &error) {
     recordFailure(file, "prepare", error);
     throw;
