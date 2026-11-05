@@ -63,3 +63,6 @@ v0.51：当前c3fc781双包迁移/覆盖/恢复报告保留原范围。新增APF
 
 
 本轮补记（v0.54）：8c8becd四runner核心步骤通过，完整协议仍执行。双Mac物理空间预留盘满14报告/26方向业务均通过；42036465929仍failure，唯一失败为Intel TLS4业务成功后的hdiutil detach资源忙/16。新CI助手仅对自建镜像普通卸载作20秒/8次重试并独立报告，仍待原生复验；原业务错误5/时限不变。公开摘要见[current-validation.json](current-validation.json)，原矩阵及全部历史失败保留。
+
+
+本轮补记（v0.55）：8c8becd的Ubuntu/双Mac完整job和Alpine完整运行已通过，Windows协议终态待收集。f6128b6双Mac14业务报告/26方向均通过，整体仍failure，Intel TLS1清理为16后旧路径消失/1；新设备映射状态机七项通过，原生复验待执行。新增处置基础在Windows两套工具链通过，尚未接入skip；现有下载包仍精确31f3db3。

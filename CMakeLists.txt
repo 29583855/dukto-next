@@ -41,6 +41,7 @@ add_library(dukto-core
     src/core/shares.cpp
     src/core/browse.cpp
     src/core/strongmanifest.cpp
+    src/core/dispositionjournal.cpp
     src/core/taskstore.cpp
     src/core/transferitems.cpp
     src/core/durablereceive.cpp
@@ -115,6 +116,9 @@ if(DUKTO_BUILD_TESTS)
     add_executable(strong-manifest-tests tests/strong_manifest_tests.cpp)
     target_link_libraries(strong-manifest-tests PRIVATE dukto-core Qt5::Test)
     dukto_add_qt_test(strong-manifest-tests)
+    add_executable(disposition-journal-tests tests/disposition_journal_tests.cpp)
+    target_link_libraries(disposition-journal-tests PRIVATE dukto-core Qt5::Test)
+    dukto_add_qt_test(disposition-journal-tests)
     add_executable(task-store-tests tests/task_store_tests.cpp)
     target_link_libraries(task-store-tests PRIVATE dukto-core Qt5::Test)
     dukto_add_qt_test(task-store-tests)
