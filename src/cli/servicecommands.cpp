@@ -423,8 +423,9 @@ int runServiceCommand(const QCommandLineParser &parser, const QStringList &argum
             operation->resume(remote, resumeId);
             auto value =
                 command == "upload"
-                    ? remote.upload(request, share, relative, upload->get(), progress,
-                                    dukto::checkedChannels(parser.value("threads")), conflict)
+                    ? remote.upload(request, share, relative, *transferState, upload->get(),
+                                    progress, dukto::checkedChannels(parser.value("threads")),
+                                    conflict)
                     : remote.download(request, share, relative, *transferState,
                                       QFileInfo(parser.value("output")).absoluteFilePath(),
                                       progress, dukto::checkedChannels(parser.value("threads")),

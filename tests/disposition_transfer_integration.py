@@ -15,8 +15,8 @@ from transfer_integration import digest, transfer
 
 
 # 日期：2026-11-06；只读测试自有数据库，独立核对冻结清单、真实目标及连续完成前缀。
-def verify_journal(state, manifest_name, task, destination, conflict, complete=True):
-    ledger = state / f"disposition-{task}.sqlite"
+def verify_journal(state, manifest_name, task, destination, conflict, complete=True, sender=False):
+    ledger = state / f"{'upload-disposition' if sender else 'disposition'}-{task}.sqlite"
     assert ledger.is_file(), ledger
     with closing(sqlite3.connect(f"{(state / manifest_name).as_uri()}?mode=ro", uri=True)) as database:
         entries = database.execute("SELECT id,relative,directory,bytes,sha FROM entries ORDER BY id").fetchall()
@@ -82,19 +82,23 @@ def completed_case(executable, root, server, client, shared, channels, direction
         local = verify_journal(client / "transfers", f"download-{task}.sqlite", task, destination, conflict)
         assert local["records"] == remote["records"]
     else:
-        local = None
+        # 日期：2026-11-06；发送清单为临时库，独立用服务器冻结清单核对本机发送日志及实际目标。
+        manifest_copy = client / "transfers" / f"test-manifest-{task}.sqlite"
+        shutil.copyfile(server / "service" / f"manifest-{task}.sqlite", manifest_copy)
+        local = verify_journal(client / "transfers", manifest_copy.name, task, destination, conflict, sender=True)
+        assert local["records"] == remote["records"]
     if conflict == "rename":
         assert remote["records"][0]["path"] != remote["records"][0]["entry"]["path"]
         assert (destination / source.name / "资料/large.bin").read_bytes() == b"existing-user-data"
     repeated = transfer(executable, client, operation)
     assert repeated["taskId"] == task
     assert verify_journal(server / "service", f"manifest-{task}.sqlite", task, destination, conflict) == remote
-    if local:
-        assert verify_journal(client / "transfers", f"download-{task}.sqlite", task, destination, conflict) == local
+    assert verify_journal(client / "transfers", f"download-{task}.sqlite" if direction == "download" else manifest_copy.name,
+                          task, destination, conflict, sender=direction == "upload") == local
     # 日期：2026-11-06；只有一例篡改本测试私有日志；完整任务重试必须拒绝旧处置不一致，原数据保持可恢复。
-    tamper_checked = direction == "download" and channels == 4 and conflict == "rename"
+    tamper_checked = channels == 4 and conflict == "rename"
     if tamper_checked:
-        ledger = client / "transfers" / f"disposition-{task}.sqlite"
+        ledger = client / "transfers" / f"{'disposition' if direction == 'download' else 'upload-disposition'}-{task}.sqlite"
         with closing(sqlite3.connect(ledger)) as database:
             original, = database.execute("SELECT spec FROM items WHERE id=1").fetchone()
             changed = json.loads(original)
@@ -107,11 +111,12 @@ def completed_case(executable, root, server, client, shared, channels, direction
             database.execute("UPDATE items SET spec=? WHERE id=1", (original,))
             database.commit()
         assert transfer(executable, client, operation)["taskId"] == task
-        assert verify_journal(client / "transfers", f"download-{task}.sqlite", task, destination, conflict)["records"] == local["records"]
+        assert verify_journal(client / "transfers", f"download-{task}.sqlite" if direction == "download" else manifest_copy.name,
+                              task, destination, conflict, sender=direction == "upload")["records"] == local["records"]
     return {"taskId": task, "direction": direction, "channels": channels, "conflict": conflict,
             "entries": remote["recordedEntries"], "actualTargetsVerified": True,
-            "retryDidNotDuplicateRecords": True, "bothDownloadJournalsMatch": local is not None,
-            "corruptCompletedDownloadRefused": tamper_checked}
+            "retryDidNotDuplicateRecords": True, "bothJournalsMatch": local is not None,
+            "corruptCompletedLocalJournalRefused": tamper_checked}
 
 
 # 日期：2026-11-06；正文前冲突不能写copied；单通道上传先完成再冲突必须保留真实前缀。
@@ -145,6 +150,11 @@ def failed_case(executable, root, server, client, shared, channels, direction):
         assert remote["recordedEntries"] == 0
     if direction == "download":
         local = verify_journal(client / "transfers", f"download-{task}.sqlite", task, destination, "fail", False)
+        assert local["records"] == remote["records"]
+    else:
+        manifest_copy = client / "transfers" / f"test-manifest-{task}.sqlite"
+        shutil.copyfile(server / "service" / f"manifest-{task}.sqlite", manifest_copy)
+        local = verify_journal(client / "transfers", manifest_copy.name, task, destination, "fail", False, sender=True)
         assert local["records"] == remote["records"]
     assert (destination / second.name).read_bytes() == b"original-user-data"
     return {"direction": direction, "channels": channels, "taskId": task,

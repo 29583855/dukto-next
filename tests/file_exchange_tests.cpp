@@ -1,3 +1,4 @@
+#include "core/dispositionjournal.h"
 #include "core/error.h"
 #include "core/fileexchange.h"
 #include "core/files.h"
@@ -126,6 +127,13 @@ class FileExchangeTests final : public QObject {
                 QCOMPARE(corrupt.write(QByteArray(contents.size(), 'z')), qint64(contents.size()));
             }
         }
+        if (!download && stage < 2) {
+            // 日期：2026-11-06；早期完成样本带历史条目确认；本用例仍专门攻击批次确认字段。
+            dukto::DispositionJournal previous(
+                local, "upload-disposition-" + Task.toString(QUuid::WithoutBraces) + ".sqlite",
+                Task, source, "rename");
+            previous.append(1, "data.bin", "copied");
+        }
         dukto::PrivateStore identityStore(temporary.filePath("identity"), true);
         const auto identity = dukto::initializeIdentity(identityStore, {"127.0.0.1"});
         const auto clientId = QUuid::createUuid();
@@ -209,7 +217,7 @@ class FileExchangeTests final : public QObject {
                     peer.write(dukto::next::Type::TaskState, correlation, result);
                 }
             }
-            if (download && stage < 2) {
+            if ((download || attack == -1) && stage < 2) {
                 const auto close = peer.read();
                 if (close.header.type != dukto::next::Type::Close)
                     throw dukto::Error(dukto::ExitCode::Config, "close", "test");
@@ -240,7 +248,7 @@ class FileExchangeTests final : public QObject {
             try {
                 const auto actual =
                     download ? client.download(requestId, "data", "", local, output, progress)
-                             : client.upload(requestId, "data", "", source, progress);
+                             : client.upload(requestId, "data", "", local, source, progress);
                 succeeded = actual["state"] == "completed";
             } catch (const dukto::Error &error) {
                 rejected = error.code == dukto::ExitCode::Integrity;

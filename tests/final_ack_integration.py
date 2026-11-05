@@ -177,15 +177,20 @@ def main():
                         # 日期：2026-11-06；最终确认丢失时实际接收已完成，双端处置必须与目标和清单相符。
                         journal = verify_journal(state / "service", f"manifest-{proxy.task}.sqlite", proxy.task,
                                                  destination, args.on_conflict)
-                        legacy_rebuilt = direction == "download" and channels == 4 and args.auto_retries == 0
+                        legacy_rebuilt = channels == 4 and args.auto_retries == 0
                         if direction == "download":
                             local = verify_journal(client / "transfers", f"download-{proxy.task}.sqlite", proxy.task,
                                                    destination, args.on_conflict)
                             assert local["records"] == journal["records"]
-                            if legacy_rebuilt:
-                                # 日期：2026-11-06；移动本测试私有日志模拟旧版已完成任务，重试须按实际接收证据补齐。
-                                receipt = client / "transfers" / f"disposition-{proxy.task}.sqlite"
-                                receipt.rename(root / f"saved-disposition-{proxy.task}.sqlite")
+                        else:
+                            # 日期：2026-11-06；丢弃的片段可能包含最后条目确认，发送端只允许保留真实连续前缀。
+                            local = verify_journal(client / "transfers", state / "service" / f"manifest-{proxy.task}.sqlite",
+                                                   proxy.task, destination, args.on_conflict, False, sender=True)
+                            assert local["records"] == journal["records"][:local["recordedEntries"]]
+                        if legacy_rebuilt:
+                            # 日期：2026-11-06；双向分别模拟旧版本没有本机日志，须从实际接收证据补齐。
+                            receipt = client / "transfers" / f"{'disposition' if direction == 'download' else 'upload-disposition'}-{proxy.task}.sqlite"
+                            receipt.rename(root / f"saved-disposition-{proxy.task}.sqlite")
                         result = transfer(executable, client, arguments)
                         assert result["taskId"] == proxy.task and result["requestId"] == request
                         assert result["state"] == "completed"
@@ -204,6 +209,10 @@ def main():
                             rebuilt = verify_journal(client / "transfers", f"download-{proxy.task}.sqlite", proxy.task,
                                                      destination, args.on_conflict)
                             assert rebuilt["records"] == journal["records"]
+                        else:
+                            rebuilt = verify_journal(client / "transfers", state / "service" / f"manifest-{proxy.task}.sqlite",
+                                                     proxy.task, destination, args.on_conflict, sender=True)
+                            assert rebuilt["records"] == journal["records"]
                         if args.on_conflict == "overwrite":
                             # 日期：2026-11-05；完成后用户独立替换inode，再次重试必须保留后来文件；下载按原日志明确拒绝。
                             replacement = destination / "later-user-edit.tmp"
@@ -220,7 +229,7 @@ def main():
                         cases.append({"direction": direction, "channels": channels, "taskId": proxy.task, "requestId": request,
                                       "droppedEncryptedBytes": proxy.dropped_bytes,
                                       "serverCompletedBeforeDrop": proxy.completed_snapshot, "clientFirstError": error,
-                                      "dispositionJournalVerified": True, "legacyDownloadJournalRebuilt": legacy_rebuilt,
+                                      "dispositionJournalVerified": True, "legacyLocalJournalRebuilt": legacy_rebuilt,
                                       "automaticRetries": args.auto_retries, "retrySameTask": True, "sha256": expected, "originalPreserved": args.on_conflict == "rename", "originalReplaced": args.on_conflict == "overwrite", "noDuplicateCopy": True, "laterUserReplacementProtected": args.on_conflict == "overwrite"})
                         print(key + ": final confirmation lost; same task retry verified", flush=True)
             finally:

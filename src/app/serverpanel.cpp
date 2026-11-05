@@ -298,7 +298,7 @@ void ServerAction::run() {
                 auto value =
                     operation == "upload"
                         ? remote.upload(
-                              request, share, relative, manifest->get(), update,
+                              request, share, relative, *transfers, manifest->get(), update,
                               dukto::checkedChannels(options_.value("channels", "1").toString()),
                               conflict)
                         : remote.download(

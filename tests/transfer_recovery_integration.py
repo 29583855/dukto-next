@@ -382,6 +382,11 @@ def main():
                         local_outcomes = verify_journal(client_state / "transfers", f"download-{task}.sqlite", task,
                                                         final.parent, args.on_conflict)
                         assert local_outcomes["records"] == outcomes["records"]
+                    else:
+                        # 日期：2026-11-06；上传发送端进程退出或暂停后仍持久确认同一连续清单，不凭发送字节猜测完成。
+                        local_outcomes = verify_journal(client_state / "transfers", server_state / "service" / f"manifest-{task}.sqlite",
+                                                        task, final.parent, args.on_conflict, sender=True)
+                        assert local_outcomes["records"] == outcomes["records"]
                     assert len(list(final.parent.iterdir())) == 1
                     status, _ = run(executable, client_state, ["task", "--task", task])
                     assert status["state"] == "completed" and not status["executionActive"]

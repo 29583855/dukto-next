@@ -50,6 +50,8 @@ def commands(build):
     add("task-items", "task_items_integration")
     # 日期：2026-11-06；真实双向/多通道和失败前缀核验自动处置，不能以独立日志单测代替接线。
     add("disposition-transfer", "disposition_transfer_integration")
+    # 日期：2026-11-06；本机发送确认缺项必须按分页接收证据恢复，矛盾证据不可记成功。
+    add("upload-receipt", "upload_receipt_integration")
     add("item-failures", "item_failures_integration")
     recovery = ("--threads", "4", "--resume-threads", "8", "--files", "4", "--payload-mib", "8",
                 "--checkpoint-percent", "50")

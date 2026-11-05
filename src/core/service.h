@@ -63,9 +63,9 @@ class RemoteClient final {
     QJsonObject tasks(quint64 after = 0);
     // 日期：2026-11-05；上传查询远端接收日志，下载核对本机证据；每页有界，不依据发送完成伪造落盘。
     QJsonObject items(const QUuid &task, PrivateStore &local, quint64 after = 0);
-    // 日期：2026-11-05；非默认冲突策略先协商能力并绑定请求，上传由接收服务执行。
+    // 日期：2026-11-06；上传绑定本地请求并记录接收确认；完成重试缺项须核对远端逐项证据。
     QJsonObject upload(const QUuid &request, const QString &share, const QString &relative,
-                       StrongManifest &manifest,
+                       PrivateStore &local, StrongManifest &manifest,
                        const std::function<void(const QJsonObject &)> &progress = {},
                        int channels = 1, ConflictPolicy conflict = ConflictPolicy::Rename);
     // 日期：2026-11-05；客户端下载按持久策略执行，本地请求和接收日志均禁止改变原策略。

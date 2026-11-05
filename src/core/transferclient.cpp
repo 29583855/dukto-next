@@ -179,9 +179,10 @@ void verifyLocalDownload(PrivateStore &local, const QUuid &id, const QString &de
 }
 } // namespace
 
-// 日期：2026-11-05；非默认策略先协商再创建任务，策略贯穿全部确认，上传由服务接收日志执行。
+// 日期：2026-11-06；上传本地绑定与逐项持久确认共用单/多通道，完成重试只凭接收证据补齐。
 QJsonObject RemoteClient::upload(const QUuid &requestId, const QString &share,
-                                 const QString &relative, StrongManifest &manifest,
+                                 const QString &relative, PrivateStore &local,
+                                 StrongManifest &manifest,
                                  const std::function<void(const QJsonObject &)> &progress,
                                  int channels, ConflictPolicy conflict) {
     checkedChannels(QString::number(channels));
@@ -189,7 +190,30 @@ QJsonObject RemoteClient::upload(const QUuid &requestId, const QString &share,
     if ((conflict == ConflictPolicy::Fail && !capabilities_.contains("conflict-fail-v1")) ||
         (conflict == ConflictPolicy::Overwrite && !capabilities_.contains("conflict-overwrite-v1")))
         throw Error(ExitCode::Config, QStringLiteral("服务器未协商所选冲突策略能力"), "conflict");
-    QJsonObject create{{"requestId", requestId.toString(QUuid::WithoutBraces)},
+    if (requestId.isNull())
+        throw Error(ExitCode::Config, QStringLiteral("上传请求UUID无效"), "transfer");
+    const auto requestKey = requestId.toString(QUuid::WithoutBraces);
+    QLockFile requestLock(local.directory() + "/upload-request-" + requestKey + ".lock");
+    requestLock.setStaleLockTime(0);
+    if (!requestLock.tryLock(0))
+        throw Error(ExitCode::Permission, QStringLiteral("本地同一上传请求正在执行"), "transfer");
+    const auto binding =
+        next::encodeControl({{"version", 1},
+                             {"server", server_.toString(QUuid::WithoutBraces)},
+                             {"client", profile_.client.toString(QUuid::WithoutBraces)},
+                             {"share", share},
+                             {"path", relative},
+                             {"conflict", conflictPolicyName(conflict)},
+                             {"manifest", manifest.summary()}});
+    const auto requestName = "upload-request-" + requestKey + ".json";
+    if (local.exists(requestName)) {
+        if (local.read(requestName) != binding)
+            throw Error(ExitCode::Integrity,
+                        QStringLiteral("同一上传请求已绑定其他服务、清单或策略"), "disposition");
+    } else {
+        local.write(requestName, binding);
+    }
+    QJsonObject create{{"requestId", requestKey},
                        {"share", share},
                        {"path", relative},
                        {"manifest", manifest.summary()}};
@@ -208,8 +232,92 @@ QJsonObject RemoteClient::upload(const QUuid &requestId, const QString &share,
     }
     const auto initial = request(next::Type::CreateUpload, next::Type::Task, create);
     const auto id = checkedTask(initial, requestId, "upload", share, relative, conflict);
+    const auto key = id.toString(QUuid::WithoutBraces);
+    // 日期：2026-11-06；不同请求或服务不得通过重复任务ID接管原发送处置，即使清单相同。
+    QLockFile taskLock(local.directory() + "/upload-task-" + key + ".lock");
+    taskLock.setStaleLockTime(0);
+    if (!taskLock.tryLock(0))
+        throw Error(ExitCode::Permission, QStringLiteral("本地已有同一上传任务执行者"),
+                    "disposition");
+    const auto taskName = "upload-task-" + key + ".json";
+    const auto taskBinding =
+        next::encodeControl({{"requestId", requestKey}, {"binding", next::parseControl(binding)}});
+    if (local.exists(taskName)) {
+        if (local.read(taskName) != taskBinding)
+            throw Error(ExitCode::Integrity, QStringLiteral("上传任务已绑定其他请求"),
+                        "disposition");
+    } else {
+        local.write(taskName, taskBinding);
+    }
+    const auto dispositionCheck = [&]() {
+        // 日期：2026-11-06；日志遍历和完成恢复持续响应取消；缓冲中的最终帧由读取负责校验。
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 1);
+        if (cancel_ && cancel_->load())
+            throw Error(ExitCode::Cancelled, QStringLiteral("上传处置校验已取消"), "disposition");
+    };
+    DispositionJournal outcomes(local, "upload-disposition-" + key + ".sqlite", id, manifest,
+                                conflictPolicyName(conflict), dispositionCheck);
+    const auto recoverCompleted = [&](const QJsonObject &task) {
+        // 日期：2026-11-06；服务器已完成而本机缺项时，每页独立认证，避免清单规模耗尽会话请求额度。
+        checkCompletedSummary(task, manifest.summary());
+        close();
+        const auto state = outcomes.summary(false, dispositionCheck);
+        if (state["complete"] == QJsonValue(true))
+            return;
+        if (!capabilities_.contains("task-items-v1"))
+            throw Error(ExitCode::Config,
+                        QStringLiteral("本地上传确认缺失，服务器不支持逐项证据恢复，请升级服务器"),
+                        "disposition");
+        const auto count = next::decimal(manifest.summary()["entries"], 10000000);
+        quint64 after = 0;
+        do {
+            dispositionCheck();
+            RemoteClient query(profile_, timeoutMs_, cancel_);
+            query.authenticate();
+            const auto current = query.manage(id);
+            if (checkedTask(current, requestId, "upload", share, relative, conflict) != id)
+                throw Error(ExitCode::Integrity, QStringLiteral("上传恢复任务身份不同"),
+                            "disposition");
+            checkCompletedSummary(current, manifest.summary());
+            const auto page = query.items(id, local, after);
+            query.close();
+            if (page["available"] != QJsonValue(true) || page["taskState"] != "completed" ||
+                page["taskError"] != QJsonValue(0) ||
+                page["manifest"] != manifest.summary()["sha256"])
+                throw Error(ExitCode::Integrity, QStringLiteral("已完成上传缺少接收端逐项证据"),
+                            "disposition");
+            for (const auto &value : page["entries"].toArray()) {
+                dispositionCheck();
+                const auto item = value.toObject();
+                const auto entry = manifest.entry(++after);
+                const auto expected = entry.publicInfo();
+                for (auto field = expected.begin(); field != expected.end(); ++field)
+                    if (item[field.key()] != field.value())
+                        throw Error(ExitCode::Integrity,
+                                    QStringLiteral("上传接收证据与本地冻结条目不同"),
+                                    "disposition");
+                if (item["disposition"] != "copied" ||
+                    item["confirmedBytes"] != expected["bytes"] ||
+                    item["target"].toString().isEmpty())
+                    throw Error(ExitCode::Integrity, QStringLiteral("上传条目尚无持久复制确认"),
+                                "disposition");
+                outcomes.append(entry.id, item["target"].toString(), "copied");
+            }
+            if (page["after"] != QString::number(after) ||
+                page["more"] != QJsonValue(after < count))
+                throw Error(ExitCode::Integrity, QStringLiteral("上传接收证据分页未覆盖冻结清单"),
+                            "disposition");
+            if (progress)
+                progress(
+                    {{"taskId", key},
+                     {"event", "receipt-recovery"},
+                     {"message",
+                      QStringLiteral("正在核对已完成上传的接收确认 %1/%2").arg(after).arg(count)}});
+        } while (after < count);
+        outcomes.summary(true, dispositionCheck);
+    };
     if (initial["state"] == "completed") {
-        checkCompletedSummary(initial, manifest.summary());
+        recoverCompleted(initial);
         if (progress)
             progress(initial);
         return initial;
@@ -231,7 +339,7 @@ QJsonObject RemoteClient::upload(const QUuid &requestId, const QString &share,
     if (checkedTask(ready, requestId, "upload", share, relative, conflict) != id)
         throw Error(ExitCode::Integrity, QStringLiteral("上传就绪任务身份不同"), "transfer");
     if (ready["state"] == "completed") {
-        checkCompletedSummary(ready, manifest.summary());
+        recoverCompleted(ready);
         if (progress)
             progress(ready);
         return ready;
@@ -241,6 +349,8 @@ QJsonObject RemoteClient::upload(const QUuid &requestId, const QString &share,
     if (progress)
         progress(ready);
     const auto completed = [&](const StrongEntry &entry, const QString &path) {
+        // 日期：2026-11-06；只有接收端已确认的最终名称才能记copied，写盘失败不得发布完成事件。
+        outcomes.append(entry.id, path, "copied");
         // 日期：2026-11-04；逐文件事件仅含公开名称与最终相对名称，不含源绝对路径和凭据。
         if (progress)
             progress({{"taskId", id.toString(QUuid::WithoutBraces)},
@@ -271,6 +381,8 @@ QJsonObject RemoteClient::upload(const QUuid &requestId, const QString &share,
     } else {
         sendStrongTree(channel_, id, manifest, correlation_, {}, completed);
     }
+    // 日期：2026-11-06；逐项接收确认必须完整，字节发送结束不能代替处置完整性。
+    outcomes.summary(true, dispositionCheck);
     auto result = completedTask(channel_, correlation_, id, requestId, "upload", share, relative,
                                 manifest.summary(), conflict);
     result["channels"] = QString::number(actual);
