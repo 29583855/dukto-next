@@ -51,6 +51,8 @@ bool knownType(Type type) {
     case Type::Pause:
     case Type::Resume:
     case Type::TaskAdmitted:
+    case Type::DispositionSummary:
+    case Type::DispositionAck:
     case Type::Progress:
         return true;
     }

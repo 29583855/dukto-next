@@ -131,6 +131,7 @@ void serveTransfer(next::SecureChannel &channel, PrivateStore &store, const Prin
     const bool byteProgress = request.contains("byteProgress");
     const bool queuedProtocol = request.contains("queue");
     const bool explicitConflict = request.contains("conflict");
+    const bool peerDisposition = request.contains("dispositionSummary");
     if (explicitConflict && request["conflict"] != QJsonValue("fail") &&
         request["conflict"] != QJsonValue("overwrite"))
         throw Error(ExitCode::Config, QStringLiteral("未协商或未知的冲突策略"), "conflict");
@@ -139,7 +140,9 @@ void serveTransfer(next::SecureChannel &channel, PrivateStore &store, const Prin
     const int channels = parallel ? checkedChannels(request["channels"]) : 1;
     if ((!upload && type != next::Type::CreateDownload) ||
         request.size() != (upload ? 4 : 3) + (parallel ? 1 : 0) + (byteProgress ? 1 : 0) +
-                              (queuedProtocol ? 1 : 0) + (explicitConflict ? 1 : 0) ||
+                              (queuedProtocol ? 1 : 0) + (explicitConflict ? 1 : 0) +
+                              (peerDisposition ? 1 : 0) ||
+        (peerDisposition && request["dispositionSummary"] != QJsonValue(true)) ||
         (queuedProtocol && request["queue"] != QJsonValue(true)) ||
         (byteProgress && request["byteProgress"] != QJsonValue(true)) ||
         !request["share"].isString() || !request["path"].isString() ||
@@ -173,6 +176,7 @@ void serveTransfer(next::SecureChannel &channel, PrivateStore &store, const Prin
     heartbeat.start();
     bool scanning = !upload || !task.manifest.isEmpty();
     bool waiting = false;
+    bool confirming = false;
     const auto work = [&]() {
         // 日期：2026-11-04；授权配置每 250ms 重查，固定根每片段核对；独立控制连接可写停止请求。
         channel.checkpoint("transfer");
@@ -188,10 +192,34 @@ void serveTransfer(next::SecureChannel &channel, PrivateStore &store, const Prin
                             "transfer");
             authorization.restart();
         }
-        if ((scanning || waiting) && heartbeat.elapsed() >= 250) {
-            channel.write(next::Type::TaskState, correlation,
-                          {{"taskId", key}, {"state", waiting ? "queued" : "scanning"}});
+        if ((scanning || waiting || confirming) && heartbeat.elapsed() >= 250) {
+            if (confirming)
+                channel.write(next::Type::TaskState, correlation, {{"state", "busy"}});
+            else
+                channel.write(next::Type::TaskState, correlation,
+                              {{"taskId", key}, {"state", waiting ? "queued" : "scanning"}});
             heartbeat.restart();
+        }
+    };
+    const auto confirmDisposition = [&](const QJsonObject &summary) {
+        // 日期：2026-11-06；等待期间持续检查授权和停止；只接受同序号、全部字段精确相同的确认。
+        confirming = true;
+        channel.write(next::Type::DispositionSummary, correlation, summary);
+        for (;;) {
+            work();
+            const auto frame = channel.read();
+            work();
+            const auto value = next::parseControl(frame.payload);
+            if (frame.header.correlation != correlation)
+                throw Error(ExitCode::Integrity, QStringLiteral("处置摘要确认序号不同"),
+                            "disposition");
+            if (frame.header.type == next::Type::TaskState &&
+                value == QJsonObject{{"state", "busy"}})
+                continue;
+            if (frame.header.type != next::Type::DispositionAck || value != summary)
+                throw Error(ExitCode::Integrity, QStringLiteral("收发两端处置摘要不同"),
+                            "disposition");
+            return;
         }
     };
     std::unique_ptr<StrongManifest> manifest;
@@ -242,7 +270,7 @@ void serveTransfer(next::SecureChannel &channel, PrivateStore &store, const Prin
                             "completion");
             DispositionJournal outcomes(store, outcomeName, task.id, *manifest,
                                         conflictPolicyName(task.conflict), work, true);
-            outcomes.summary(true, work);
+            const auto disposition = outcomes.summary(true, work);
             if (upload) {
                 DurableReceive::verifyCompleted(
                     store, "receive-" + key + ".sqlite", task.id, *manifest, selected,
@@ -301,7 +329,20 @@ void serveTransfer(next::SecureChannel &channel, PrivateStore &store, const Prin
             task = tasks.task(principal.client, task.id);
             if (task.state == "committing")
                 task = tasks.advance(*lease, task.revision, "completed", task.total);
-            channel.write(next::Type::TaskState, correlation, task.publicInfo());
+            if (peerDisposition) {
+                // 日期：2026-11-06；此首帧只报告已核验历史，客户端须补齐本机证据并完成本连接双向确认。
+                auto context = task.publicInfo();
+                context["confirmationRequired"] = true;
+                channel.write(next::Type::TaskState, correlation, context);
+                confirmDisposition(disposition);
+                authorize();
+                auto result = task.publicInfo();
+                result["dispositionSummary"] = disposition;
+                result["dispositionConfirmed"] = true;
+                channel.write(next::Type::TaskState, correlation, result);
+            } else {
+                channel.write(next::Type::TaskState, correlation, task.publicInfo());
+            }
             return;
         }
         // 日期：2026-11-05；旧执行者退出后的状态先恢复到
@@ -440,13 +481,28 @@ void serveTransfer(next::SecureChannel &channel, PrivateStore &store, const Prin
                 sendStrongTree(channel, task.id, *manifest, correlation, work, completed);
         }
         // 日期：2026-11-06；最终任务状态之前完整重验，不能用字节进度相等代替逐项完成。
-        outcomes.summary(true, work);
+        confirming = peerDisposition;
+        const auto disposition = outcomes.summary(true, work);
         work();
         const auto latest = tasks.task(principal.client, task.id);
         task = tasks.advance(*lease, latest.revision, "verifying", processed);
+        if (peerDisposition)
+            confirmDisposition(disposition);
+        // 日期：2026-11-06；确认等待结束强制重新认证，不能让忙心跳或刚失效的权限越过完成边界。
+        const auto completionRoot = Shares(store).open(reauthenticate(), share, access);
+        root->verify();
+        if (completionRoot->share().root != task.root ||
+            !tasks.task(principal.client, task.id).desired.isEmpty())
+            throw Error(ExitCode::Permission, QStringLiteral("处置确认后任务授权已变化"),
+                        "completion");
         task = tasks.advance(*lease, task.revision, "committing", processed);
         task = tasks.advance(*lease, task.revision, "completed", processed);
-        channel.write(next::Type::TaskState, correlation, task.publicInfo());
+        auto result = task.publicInfo();
+        if (peerDisposition) {
+            result["dispositionSummary"] = disposition;
+            result["dispositionConfirmed"] = true;
+        }
+        channel.write(next::Type::TaskState, correlation, result);
     } catch (const Error &error) {
         // 日期：2026-11-06；共享占用耗尽短等待仍保留检查点；显式恢复重验同一临时文件，完整性失败仍终止。
         const auto current = tasks.task(principal.client, task.id);

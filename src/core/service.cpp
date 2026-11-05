@@ -46,7 +46,8 @@ QJsonArray capabilities() {
             "conflict-fail-v1",
             "conflict-overwrite-v1",
             "task-items-v1",
-            "task-item-failures-v1"};
+            "task-item-failures-v1",
+            "disposition-summary-v1"};
 }
 
 // 日期：2026-11-04；服务端只接受精确 1.0 能力协商，认证消息不能跳过协议入口。
@@ -475,6 +476,9 @@ void ServiceWorker::run() {
         const auto first = channel.read();
         correlation = first.header.correlation;
         hello(first);
+        const bool peerDisposition =
+            next::parseControl(first.payload)["capabilities"].toArray().contains(
+                "disposition-summary-v1");
         channel.write(next::Type::HelloAck, correlation,
                       {{"version", "1.0"},
                        {"capabilities", capabilities()},
@@ -535,6 +539,10 @@ void ServiceWorker::run() {
             }
             if (frame.header.type == next::Type::CreateUpload ||
                 frame.header.type == next::Type::CreateDownload) {
+                // 日期：2026-11-06；必须在当前Hello声明能力，不能只凭创建字段启用新确认流程。
+                if (request.contains("dispositionSummary") && !peerDisposition)
+                    throw Error(ExitCode::Config, QStringLiteral("对端未协商处置摘要能力"),
+                                "disposition");
                 serveTransfer(channel, store, account, reauthenticate, request, frame.header.type,
                               correlation);
                 continue;

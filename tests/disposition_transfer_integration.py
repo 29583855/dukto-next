@@ -55,6 +55,7 @@ def verify_journal(state, manifest_name, task, destination, conflict, complete=T
 
 # 日期：2026-11-06；三种公开策略和1/4/16通道都执行真实重名传输；跨窗口、空项和Unicode同时覆盖。
 def completed_case(executable, root, server, client, shared, channels, direction, conflict):
+    from disposition_summary_integration import verify_summary
     key = f"{direction}-{channels}-{conflict}"
     source = root / f"source-{key}"
     (source / "资料/空目录").mkdir(parents=True)
@@ -76,6 +77,7 @@ def completed_case(executable, root, server, client, shared, channels, direction
                  "--request-id", str(uuid.uuid4())]
     result = transfer(executable, client, operation)
     task = result["taskId"]
+    summary = verify_summary(result, server / "service" / f"disposition-{task}.sqlite")
     remote = verify_journal(server / "service", f"manifest-{task}.sqlite", task, destination, conflict)
     assert remote["recordedEntries"] > 32
     if direction == "download":
@@ -92,6 +94,7 @@ def completed_case(executable, root, server, client, shared, channels, direction
         assert (destination / source.name / "资料/large.bin").read_bytes() == b"existing-user-data"
     repeated = transfer(executable, client, operation)
     assert repeated["taskId"] == task
+    assert verify_summary(repeated, server / "service" / f"disposition-{task}.sqlite") == summary
     assert verify_journal(server / "service", f"manifest-{task}.sqlite", task, destination, conflict) == remote
     assert verify_journal(client / "transfers", f"download-{task}.sqlite" if direction == "download" else manifest_copy.name,
                           task, destination, conflict, sender=direction == "upload") == local
@@ -198,7 +201,7 @@ def main():
     report.parent.mkdir(parents=True, exist_ok=True)
     report.write_text(json.dumps({"date": "2026-11-06", "passed": True, "completed": completed, "partial": failed,
                                  "executableSha256": digest(Path(executable)), "scriptSha256": digest(Path(__file__)),
-                                 "scope": "copied journal integration; public skip and wire disposition summary not enabled"},
+                                 "scope": "copied journal and negotiated peer summary integration; public skip remains disabled"},
                                 ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
