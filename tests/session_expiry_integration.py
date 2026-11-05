@@ -1,6 +1,7 @@
 """日期：2026-11-05；真实 TLS 会话截止、策略隔离、多通道正文中途到期和原任务恢复。"""
 
 import argparse
+from collections import Counter, deque
 from contextlib import closing
 import hashlib
 import json
@@ -22,6 +23,45 @@ from process_output import JsonOutputDrain, timeout_evidence
 from service_integration import free_port, run
 from transfer_integration import digest, transfer
 from transfer_recovery_integration import SlowProxy, TransferProcess, wait_state
+
+
+class TimedTransfer(TransferProcess):
+    # 日期：2026-11-05；只保留固定数量时间点与最近事件，用于区分准备、正文接收和检查点耗时。
+    def __init__(self, executable, state, arguments):
+        self.started = time.monotonic()
+        self.milestones = {}
+        self.recent = deque(maxlen=16)
+        self.counts = Counter()
+        self.received = 0
+        self.durable = 0
+        super().__init__(executable, state, arguments)
+
+    # 日期：2026-11-05；仍将全部事件交给原断言队列，诊断不改变应用、时限或传输状态。
+    def read(self):
+        for line in self.process.stdout:
+            event = json.loads(line)
+            elapsed = round(time.monotonic() - self.started, 3)
+            key = event.get("event", "")
+            self.counts[key] += 1
+            self.recent.append({"seconds": elapsed, "event": event})
+            if key == "transfer-state" and event.get("state") in ("queued", "scanning", "checking", "transferring"):
+                self.milestones.setdefault(event["state"], elapsed)
+            if key == "byte-progress":
+                self.received = max(self.received, int(event.get("receivedBytes", "0")))
+                self.durable = max(self.durable, int(event.get("bytes", "0")))
+                if self.received:
+                    self.milestones.setdefault("firstReceivedBytes", elapsed)
+                if self.durable:
+                    self.milestones.setdefault("firstDurableBytes", elapsed)
+            self.events.put(event)
+        self.events.put(None)
+
+    # 日期：2026-11-05；结束后取得小型诊断，不把网络发送量当作持久复用量。
+    def evidence(self):
+        return {"elapsedSeconds": round(time.monotonic() - self.started, 3),
+                "milestones": self.milestones, "eventCounts": dict(self.counts),
+                "maxReceivedBytes": self.received, "maxDurableBytes": self.durable,
+                "recentEvents": list(self.recent)}
 
 
 class Session(IndependentSession):
@@ -229,6 +269,7 @@ def main():
     binary_sha = digest(Path(executable))
     script_sha = digest(Path(__file__))
     checks, cases = [], []
+    negotiation_result = None
     with tempfile.TemporaryDirectory(prefix="dukto-session-") as temporary:
         root = Path(temporary).resolve()
         server, client, shared = root / "server", root / "client", root / "shared"
@@ -321,14 +362,20 @@ def main():
                     proxy.rate = args.expiry_rate_kib * 1024
                     set_seconds(args.expiry_seconds)
                     prior_expiries = output.session_expiries
-                    active = TransferProcess(executable, client, [*arguments, "--threads", str(channels)])
+                    active = TimedTransfer(executable, client, [*arguments, "--threads", str(channels)])
                     task = active.task(timeout=args.ready_timeout)
                     code, stage = expired_transfer(active, args.expiry_timeout)
+                    observed = active.evidence()
                     active = None
                     # 日期：2026-11-05；新连接采用正常时长再查任务，避免查询自身因测试短策略重复到期。
                     set_seconds(86400)
                     status = wait_state(executable, client, task, "interrupted")
                     prefix = confirmed(state, task)
+                    case = {"direction": direction, "channels": channels, "taskId": task,
+                            "totalBytes": total, "confirmedAtExpiry": prefix, "clientExitCode": code,
+                            "clientStage": stage, "timeline": observed, "passed": False}
+                    cases.append(case)
+                    print(json.dumps({"kind": "session-expiry-observation", **case}, ensure_ascii=False), flush=True)
                     assert 0 < prefix < total and not final.exists(), (prefix, total, status)
                     assert output.session_expiries > prior_expiries, list(output.recent)
                     proxy.rate = 4 * 1024 * 1024
@@ -338,10 +385,8 @@ def main():
                     assert digest(final) == expected and len(list(final.parent.iterdir())) == 1
                     retried = transfer(executable, client, [*arguments, "--threads", "4"])
                     assert retried["taskId"] == task and len(list(final.parent.iterdir())) == 1
-                    cases.append({"direction": direction, "channels": channels, "resumeChannels": 16,
-                                  "totalBytes": total, "confirmedAtExpiry": prefix,
-                                  "restoredBytes": restored, "resumeSeconds": resume_seconds,
-                                  "clientExitCode": code, "clientStage": stage, "passed": True})
+                    case.update(resumeChannels=16, restoredBytes=restored,
+                                resumeSeconds=resume_seconds, passed=True)
                     print(f"{direction}/{channels}: expired at {prefix}, same task resumed and SHA verified", flush=True)
         finally:
             if active and active.process.poll() is None:
@@ -352,15 +397,18 @@ def main():
             service_output = output.finish()
             assert not service.stderr.read()
             proxy.close()
-    report = {"date": "2026-11-05", "passed": True, "binarySha256": binary_sha,
-              "scriptSha256": script_sha, "resumeBudgetSeconds": args.resume_timeout,
-              "timingConfiguration": timing,
-              "defaultTimingGatesPassed": (args.expiry_seconds, args.expiry_rate_kib, args.expiry_timeout,
-                                            args.ready_timeout, args.resume_timeout) == (20, 512, 45, 30, 90),
-              "defaultResumeGatePassed": args.resume_timeout == 90, "negotiation": negotiation_result, "checks": checks, "cases": cases,
-              "serverOutput": service_output,
-              "scope": "real local TLS and independent frames; application-boundary expiry, idle/frame I/O waits remain bounded by frame timeout; no wall-clock modification or physical network claim"}
-    Path(args.report).write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+            passed = len(cases) == 2 * len(args.channels) and all(case["passed"] for case in cases)
+            report = {"date": "2026-11-05", "passed": passed, "binarySha256": binary_sha,
+                      "scriptSha256": script_sha, "resumeBudgetSeconds": args.resume_timeout,
+                      "timingConfiguration": timing,
+                      "defaultTimingGatesPassed": passed and (args.expiry_seconds, args.expiry_rate_kib,
+                                                              args.expiry_timeout, args.ready_timeout,
+                                                              args.resume_timeout) == (20, 512, 45, 30, 90),
+                      "defaultResumeGatePassed": passed and args.resume_timeout == 90,
+                      "negotiation": negotiation_result, "checks": checks, "cases": cases,
+                      "serverOutput": service_output,
+                      "scope": "real local TLS and independent frames; application-boundary expiry, idle/frame I/O waits remain bounded by frame timeout; no wall-clock modification or physical network claim"}
+            Path(args.report).write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
 if __name__ == "__main__":

@@ -129,6 +129,8 @@ jobs:
       - name: Protocol integration Windows
         if: ${{ !cancelled() && steps.compile.outcome == 'success' && runner.os == 'Windows' }}
         run: |
+          python -X utf8 tests/parallel_failure_integration.py build/Release/dukto-cli.exe --report build/parallel-failure.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           python -X utf8 tests/legacy_integration.py build/Release/dukto-cli.exe --report build/legacy.json
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           python -X utf8 tests/cli_contracts.py build/Release/dukto-cli.exe --report build/cli.json
@@ -186,6 +188,7 @@ jobs:
       - name: Protocol integration Unix
         if: ${{ !cancelled() && steps.compile.outcome == 'success' && runner.os != 'Windows' }}
         run: |
+          python3 tests/parallel_failure_integration.py build/dukto-cli --report build/parallel-failure.json
           python3 tests/legacy_integration.py build/dukto-cli --report build/legacy.json
           python3 tests/cli_contracts.py build/dukto-cli --report build/cli.json
           python3 tests/crash_integration.py build/dukto-cli --report build/crash.json

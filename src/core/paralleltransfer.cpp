@@ -516,7 +516,7 @@ void ParallelTransfer::clientLane(next::SecureChannel &channel, const QJsonObjec
     }
 }
 
-// 日期：2026-11-05；数据连接认证并核对实时授权后转入数据额度，不能仅凭公开任务 UUID 加入。
+// 日期：2026-11-05；授权与停止请求分别分类；同组失败保留根因，不能被其他通道的取消覆盖。
 void serveParallelLane(next::SecureChannel &channel, PrivateStore &store,
                        const Principal &principal, const std::function<Principal()> &reauthenticate,
                        const QJsonObject &request, quint64 correlation) {
@@ -537,27 +537,37 @@ void serveParallelLane(next::SecureChannel &channel, PrivateStore &store,
         !secureEqual(state->token, token))
         throw Error(ExitCode::Permission, QStringLiteral("数据通道票据不属于当前活动任务"),
                     "parallel");
+    state->check();
     const auto lane = static_cast<int>(next::decimal(request["lane"], state->count - 1));
     TaskStore tasks(store, false);
     const auto task = tasks.task(principal.client, state->task);
     const auto access = state->receiver ? Access::Upload : Access::Download;
     auto root = Shares(store).open(principal, task.share, access);
-    if (root->share().root != task.root || task.manifest != state->identity ||
-        task.state != "transferring" || !task.desired.isEmpty())
+    if (root->share().root != task.root || task.manifest != state->identity)
         throw Error(ExitCode::Permission, QStringLiteral("数据通道任务权限或状态已经变化"),
+                    "parallel");
+    if (!task.desired.isEmpty() || task.state == "pausing" || task.state == "paused" ||
+        task.state == "cancelling" || task.state == "cancelled")
+        throw Error(ExitCode::Cancelled, QStringLiteral("数据通道任务已请求暂停或取消"),
+                    "parallel");
+    if (task.state != "transferring")
+        throw Error(ExitCode::Permission, QStringLiteral("数据通道任务当前不在传输状态"),
                     "parallel");
     channel.classifyAsData();
     state->attach(lane);
     QElapsedTimer authorization;
     authorization.start();
     const auto work = [&]() {
-        // 日期：2026-11-04；每片段固定根检查，每 250ms 重查凭据/授权/停止请求，保持撤权语义。
+        // 日期：2026-11-05；每250ms重查凭据/授权，持久停止属于取消，撤权仍属于权限错误。
         root->verify();
         if (authorization.elapsed() >= 250) {
             const auto current = Shares(store).open(reauthenticate(), task.share, access);
             const auto status = tasks.task(principal.client, task.id);
-            if (current->share().root != task.root || !status.desired.isEmpty())
-                throw Error(ExitCode::Permission, QStringLiteral("数据通道授权或任务请求已变化"),
+            if (current->share().root != task.root)
+                throw Error(ExitCode::Permission, QStringLiteral("数据通道授权根已变化"),
+                            "parallel");
+            if (!status.desired.isEmpty())
+                throw Error(ExitCode::Cancelled, QStringLiteral("数据通道任务已请求暂停或取消"),
                             "parallel");
             authorization.restart();
         }
@@ -576,15 +586,16 @@ void serveParallelLane(next::SecureChannel &channel, PrivateStore &store,
         channel.observeCancellation(nullptr);
         state->stop(std::current_exception());
         state->finished(lane);
+        state->check();
         throw;
     }
 }
 
-// 日期：2026-11-04；发送控制循环只交换目录/文件完成，实际块由各数据线程同时从固定源读取。
+// 日期：2026-11-05；控制循环异常先发布同组根因，随后数据线程退出仍报告该原始错误。
 void ParallelTransfer::sendTree(
     next::SecureChannel &control, StrongManifest &manifest, quint64 correlation,
     const std::function<void()> &check,
-    const std::function<void(const StrongEntry &, const QString &)> &completed) {
+    const std::function<void(const StrongEntry &, const QString &)> &completed) try {
     const auto work = [&]() {
         // 日期：2026-11-04；控制心跳只由接收调度者发送，避免双向空闲心跳遗留到下一条请求。
         state_->check();
@@ -618,14 +629,17 @@ void ParallelTransfer::sendTree(
             throw Error(ExitCode::Integrity, QStringLiteral("空清单并行确认不同"), "parallel");
     }
     state_->waitAll(true, work);
+} catch (...) {
+    state_->stop(std::current_exception());
+    throw;
 }
 
-// 日期：2026-11-05；单一日志执行者轮转消费 16 条网络输入，确认后即给空闲通道派发下一个缺块。
+// 日期：2026-11-05；单一日志执行者轮转接收；冲突/磁盘/完整性异常先发布根因，再取消数据线程。
 void ParallelTransfer::receiveTree(
     next::SecureChannel &control, StrongManifest &manifest, DurableReceive &receiver,
     quint64 correlation, const std::function<void()> &check,
     const std::function<void(const StrongEntry &, const QString &)> &completed,
-    TransferProgress *progress) {
+    TransferProgress *progress) try {
     Pulse pulse(control, correlation, *state_, check);
     const auto work = [&]() {
         // 日期：2026-11-04；日志重读、网络等待和全文件摘要共用当前控制心跳及实时授权检查。
@@ -760,5 +774,8 @@ void ParallelTransfer::receiveTree(
                        {"manifest", QString::fromLatin1(state_->identity.toHex())},
                        {"kind", "empty"}});
     }
+} catch (...) {
+    state_->stop(std::current_exception());
+    throw;
 }
 } // namespace dukto
