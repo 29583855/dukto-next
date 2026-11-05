@@ -32,6 +32,9 @@ jobs:
           QT_QPA_PLATFORM: offscreen
           QT_QUICK_BACKEND: software
         run: ctest --test-dir build --output-on-failure --output-log build/ctest.log
+      # 日期：2026-11-05；主窗口入口与独立ServerPage分别验证，原生X11和高DPI场景不互相替代。
+      - name: Main window server navigation
+        run: xvfb-run -a python -X utf8 tests/main_window_navigation_integration.py build/ui-tests --platform xcb --report build/main-window-navigation.json
       - name: Deploy native glibc preview
         id: deploy
         run: |
@@ -77,5 +80,6 @@ jobs:
             build/*.json
             build/*.sha256
             build/*.png
+            build/main-window-navigation/**
             build/Testing/Temporary/*
             build/Testing/QtTest/*

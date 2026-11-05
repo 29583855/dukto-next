@@ -145,6 +145,7 @@ Rectangle {
 
             Button {
                 text: "‹ 返回"
+                objectName: "serverBackButton"
                 onClicked: page.closeRequested()
             }
 
@@ -171,14 +172,17 @@ Rectangle {
             Layout.fillWidth: true
 
             TabButton {
+                objectName: "serverConnectionTab"
                 text: "连接与文件"
             }
 
             TabButton {
+                objectName: "serverTaskTab"
                 text: "任务"
             }
 
             TabButton {
+                objectName: "serverLocalTab"
                 text: "本机共享"
             }
 

@@ -33,7 +33,7 @@ jobs:
           cache: true
       - name: Install Linux Qt
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y libssl-dev qtbase5-dev qtdeclarative5-dev qtquickcontrols2-5-dev libqt5sql5-sqlite qml-module-qtquick-controls2 qml-module-qtquick-layouts qml-module-qtquick-window2 qml-module-qtquick2 qml-module-qtqml qml-module-qtqml-models2 qml-module-qtqml-workerscript2 qml-module-qtgraphicaleffects
+        run: sudo apt-get update && sudo apt-get install -y libssl-dev qtbase5-dev qtdeclarative5-dev qtquickcontrols2-5-dev libqt5sql5-sqlite qml-module-qtquick-controls2 qml-module-qtquick-layouts qml-module-qtquick-window2 qml-module-qtquick2 qml-module-qtqml qml-module-qtqml-models2 qml-module-qtqml-workerscript2 qml-module-qtgraphicaleffects xvfb xauth
       - name: Install macOS Qt5
         if: runner.os == 'macOS'
         run: |
@@ -122,6 +122,16 @@ jobs:
         env:
           QT_QPA_PLATFORM: offscreen
         run: ctest --test-dir build -C Release --output-on-failure --output-log build/ctest.log
+      # 日期：2026-11-05；从主窗口真实点击服务器入口，原生场景及offscreen高DPI分别留存，不能以单独面板代替入口。
+      - name: Windows main window server navigation
+        if: ${{ !cancelled() && steps.compile.outcome == 'success' && runner.os == 'Windows' }}
+        run: python -X utf8 tests/main_window_navigation_integration.py build/Release/ui-tests.exe --platform windows --report build/main-window-navigation.json
+      - name: Cocoa main window server navigation
+        if: ${{ !cancelled() && steps.compile.outcome == 'success' && runner.os == 'macOS' }}
+        run: python -X utf8 tests/main_window_navigation_integration.py build/ui-tests --platform cocoa --report build/main-window-navigation.json
+      - name: X11 main window server navigation
+        if: ${{ !cancelled() && steps.compile.outcome == 'success' && runner.os == 'Linux' }}
+        run: xvfb-run -a python -X utf8 tests/main_window_navigation_integration.py build/ui-tests --platform xcb --report build/main-window-navigation.json
       # 日期：2026-11-05；核心失败日志立即单独归档，后续协议继续原门槛且保留原失败。
       - name: Preserve core diagnostics before protocol suite
         if: ${{ !cancelled() && steps.compile.outcome == 'success' }}
@@ -130,6 +140,7 @@ jobs:
           name: core-validation-${{ matrix.os }}
           path: |
             build/ctest.log
+            build/main-window-navigation/**
             build/Testing/Temporary/*
             build/Testing/QtTest/*
       - name: Native Cocoa GUI render and process recovery
@@ -169,5 +180,6 @@ jobs:
             build/*.log
             build/*.json
             build/*.png
+            build/main-window-navigation/**
             build/Testing/Temporary/*
             build/Testing/QtTest/*

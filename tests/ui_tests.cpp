@@ -5,8 +5,12 @@
 #include <QDragEnterEvent>
 #include <QDragMoveEvent>
 #include <QDropEvent>
+#include <QFont>
+#include <QJsonArray>
+#include <QJsonDocument>
 #include <QMimeData>
 #include <QQmlContext>
+#include <QQmlEngine>
 #include <QQuickItem>
 #include <QQuickWidget>
 #include <QQuickWindow>
@@ -28,14 +32,125 @@ class UiTests final : public QObject {
         return nullptr;
     }
 
-    // 日期：2026-11-04；按照真实 QML 控件的场景位置点击，不能直接调用控制器伪装交互。
+    // 日期：2026-11-05；渲染并完成待处理布局后按实际场景位置点击，不直接调用控制器或控件槽。
     void click(QQuickWidget &view, QQuickItem *item) {
         QVERIFY(item);
+        QVERIFY(!view.grabFramebuffer().isNull());
         const auto point = item->mapToScene(item->boundingRect().center()).toPoint();
+        QVERIFY(item->isVisible() && item->isEnabled());
+        QVERIFY(view.rect().contains(point));
         QTest::mouseClick(&view, Qt::LeftButton, Qt::NoModifier, point);
     }
 
   private slots:
+
+    // 日期：2026-11-05；产品最小尺寸与默认尺寸均须打开完整面板，禁止只验单独ServerPage。
+    void serverEntryThroughMainQml_data() {
+        QTest::addColumn<QSize>("size");
+        QTest::newRow("compact") << QSize(360, 560);
+        QTest::newRow("default") << QSize(430, 700);
+    }
+
+    // 日期：2026-11-05；从生产主窗口实际点击服务器入口，必须只打开一个根级全屏面板。
+    void serverEntryThroughMainQml() {
+        QFETCH(QSize, size);
+        QTemporaryDir temporary;
+        QVERIFY(temporary.isValid());
+        QSettings::setDefaultFormat(QSettings::IniFormat);
+        QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, temporary.path());
+        const auto output = temporary.filePath("output");
+        QVERIFY(QDir().mkpath(output));
+        QSettings settings(QSettings::IniFormat, QSettings::UserScope, "DuktoNext", "Desktop");
+        settings.setValue("output", output);
+        settings.sync();
+        QTcpServer reservation;
+        QVERIFY(reservation.listen(QHostAddress::LocalHost, 0));
+        const auto port = reservation.serverPort();
+        reservation.close();
+        Controller controller(port, nullptr, temporary.filePath("state"));
+        QQuickWidget view;
+        view.setResizeMode(QQuickWidget::SizeRootObjectToView);
+        view.resize(size);
+        QSignalSpy warnings(view.engine(), &QQmlEngine::warnings);
+        QVERIFY(warnings.isValid());
+        view.rootContext()->setContextProperty("controller", &controller);
+        view.rootContext()->setContextProperty("applicationVersion", DUKTO_VERSION);
+        view.setSource(QUrl("qrc:/ui/Main.qml"));
+        QCOMPARE(view.status(), QQuickWidget::Ready);
+        view.show();
+        auto root = view.rootObject();
+        QVERIFY(root);
+        auto terms = root->findChild<QObject *>("termsDialog");
+        QVERIFY(terms);
+        QTRY_VERIFY(terms->property("visible").toBool());
+        QTRY_VERIFY(terms->property("opened").toBool());
+        QVERIFY(terms->property("x").toDouble() >= 0 && terms->property("y").toDouble() >= 0);
+        QVERIFY(terms->property("height").toDouble() <= view.height());
+        QVERIFY(QDir().mkpath("Testing/QtTest"));
+        QVERIFY(view.grabFramebuffer().save(
+            QString("Testing/QtTest/main-terms-%1x%2.png").arg(size.width()).arg(size.height())));
+        click(view, root->findChild<QQuickItem *>("acceptTermsButton"));
+        QTRY_VERIFY(controller.termsAccepted());
+        QTRY_VERIFY(!terms->property("visible").toBool());
+        click(view, root->findChild<QQuickItem *>("serverPageButton"));
+        const auto panels = root->findChildren<QObject *>("serverDialog");
+        QCOMPARE(panels.size(), 1);
+        auto panel = panels.first();
+        QTRY_VERIFY(panel->property("visible").toBool());
+        QTRY_VERIFY(panel->property("opened").toBool());
+        QCOMPARE(panel->property("width").toInt(), view.width());
+        QCOMPARE(panel->property("height").toInt(), view.height());
+        QCOMPARE(panel->property("x").toInt(), 0);
+        QCOMPARE(panel->property("y").toInt(), 0);
+        auto content = panel->property("contentItem").value<QQuickItem *>();
+        QVERIFY(content);
+        QCOMPARE(content->property("panel").value<QObject *>(), controller.server());
+        auto sections = findItem(content, "serverSections");
+        auto profile = findItem(content, "serverProfile");
+        QVERIFY(sections && profile);
+        profile->setProperty("text", "main-window-profile");
+        const QStringList tabs{"serverTaskTab", "serverLocalTab", "serverConnectionTab"};
+        for (int index = 0; index < tabs.size(); ++index) {
+            const auto target = findItem(content, tabs[index]);
+            QVERIFY(target);
+            click(view, target);
+            QTRY_COMPARE(sections->property("currentIndex").toInt(), (index + 1) % 3);
+        }
+        QVERIFY(QDir().mkpath("Testing/QtTest"));
+        const auto image = view.grabFramebuffer();
+        const auto stem =
+            QString("Testing/QtTest/main-server-%1x%2").arg(size.width()).arg(size.height());
+        QVERIFY(image.save(stem + ".png"));
+        const QJsonObject geometry{
+            {"platform", QGuiApplication::platformName()},
+            {"requestedSize", QJsonArray{size.width(), size.height()}},
+            {"logicalSize", QJsonArray{view.width(), view.height()}},
+            {"pixels", QJsonArray{image.width(), image.height()}},
+            {"devicePixelRatio", view.devicePixelRatioF()},
+            {"popupInstances", root->findChildren<QObject *>("serverDialog").size()}};
+        QFile evidence(stem + ".json");
+        QVERIFY(evidence.open(QIODevice::WriteOnly));
+        const auto encoded = QJsonDocument(geometry).toJson();
+        QCOMPARE(evidence.write(encoded), qint64(encoded.size()));
+        evidence.close();
+        for (int attempt = 0; attempt < 2; ++attempt) {
+            click(view, findItem(content, "serverBackButton"));
+            QTRY_VERIFY(!panel->property("visible").toBool());
+            click(view, root->findChild<QQuickItem *>("serverPageButton"));
+            QTRY_VERIFY(panel->property("opened").toBool());
+            QCOMPARE(root->findChildren<QObject *>("serverDialog").size(), 1);
+            QCOMPARE(panel->property("contentItem").value<QQuickItem *>(), content);
+            QCOMPARE(profile->property("text").toString(), QString("main-window-profile"));
+        }
+        // 日期：2026-11-05；父窗口变化时同一弹层跟随实际内容区域，不能沿用旧窗口尺寸。
+        view.resize(size.width() + 40, size.height() + 20);
+        QTRY_COMPARE(panel->property("width").toInt(), view.width());
+        QTRY_COMPARE(panel->property("height").toInt(), view.height());
+        click(view, findItem(content, "serverBackButton"));
+        QTRY_VERIFY(!panel->property("visible").toBool());
+        QCOMPARE(warnings.count(), 0);
+    }
+
     // 日期：2026-11-04；通过生产 QML 实测混合拖放、剪贴板发送及收到文本的选区/全文复制。
     void dragClipboardAndTextThroughQml() {
         QTemporaryDir temporary;
@@ -175,14 +290,29 @@ class UiTests final : public QObject {
     }
 };
 
-// 日期：2026-11-04；软件渲染配合隔离的 offscreen 平台测试真实 QML，不连接用户剪贴板。
+// 日期：2026-11-05；默认offscreen隔离剪贴板；显式原生模式只准执行不接触剪贴板的服务器入口测试。
 int main(int argc, char **argv) {
-    qputenv("QT_QPA_PLATFORM", "offscreen");
+    const auto native = qgetenv("DUKTO_TEST_UI_PLATFORM");
+    if (!native.isEmpty() && native != "windows" && native != "cocoa" && native != "xcb" &&
+        native != "wayland")
+        return 2;
+    qputenv("QT_QPA_PLATFORM", native.isEmpty() ? QByteArray("offscreen") : native);
+    QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+    qRegisterMetaType<QList<QQmlError>>("QList<QQmlError>");
 #ifdef Q_OS_WIN
     qputenv("QT_QPA_FONTDIR", (qEnvironmentVariable("WINDIR", "C:/Windows") + "/Fonts").toUtf8());
 #endif
     QQuickWindow::setSceneGraphBackend(QSGRendererInterface::Software);
     QApplication app(argc, argv);
+#ifdef Q_OS_WIN
+    // 日期：2026-11-05；与产品主入口使用相同Windows字体，布局和点击坐标按实际应用字体计算。
+    QApplication::setFont(QFont("Microsoft YaHei UI", 10));
+#endif
+    if (!native.isEmpty() && (QGuiApplication::platformName().toLatin1() != native ||
+                              !app.arguments().contains("serverEntryThroughMainQml") ||
+                              app.arguments().contains("dragClipboardAndTextThroughQml")))
+        return 2;
     UiTests tests;
     return QTest::qExec(&tests, argc, argv);
 }

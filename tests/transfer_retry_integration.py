@@ -243,9 +243,11 @@ def main():
             active.append(operation)
             events = finish(operation, 3, 5)
             elapsed = time.monotonic() - started
-            assert events[-1]["stage"] == "deadline" and elapsed < 4
-            assert any(event.get("state") == "queued" for event in events)
-            assert not any(event.get("event") == "transfer-retrying" for event in events)
+            # 日期：2026-11-05；保留原1秒/4秒与queued门槛，失败打印有界真实事件，不能从期限退出反推排队已发生。
+            diagnostic = {"kind": "queue-deadline", "seconds": round(elapsed, 3), "events": events[-16:]}
+            assert events[-1]["stage"] == "deadline" and elapsed < 4, diagnostic
+            assert any(event.get("state") == "queued" for event in events), diagnostic
+            assert not any(event.get("event") == "transfer-retrying" for event in events), diagnostic
             assert not list(destination.iterdir())
             cases.append({"kind": "queue-deadline", "seconds": round(elapsed, 3), "exitCode": 3, "retries": 0})
             for operation in active:

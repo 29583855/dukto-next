@@ -479,24 +479,6 @@ Rectangle {
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
 
-                            Popup {
-                                id: serverDialog
-
-                                objectName: "serverDialog"
-                                width: root.width
-                                height: root.height
-                                padding: 0
-                                modal: true
-                                closePolicy: Popup.CloseOnEscape
-
-                                contentItem: ServerPage {
-                                    panel: controller.server
-                                    accent: root.accent
-                                    onCloseRequested: serverDialog.close()
-                                }
-
-                            }
-
                         }
 
                     }
@@ -505,6 +487,25 @@ Rectangle {
 
             }
 
+        }
+
+    }
+
+    // 日期：2026-11-05；服务器弹层由主窗口唯一持有，首页入口可访问，避免落入重复按钮的局部作用域。
+    Popup {
+        id: serverDialog
+
+        objectName: "serverDialog"
+        width: root.width
+        height: root.height
+        padding: 0
+        modal: true
+        closePolicy: Popup.CloseOnEscape
+
+        contentItem: ServerPage {
+            panel: controller.server
+            accent: root.accent
+            onCloseRequested: serverDialog.close()
         }
 
     }
@@ -890,12 +891,15 @@ Rectangle {
         modal: true
         closePolicy: Popup.NoAutoClose
 
-        contentItem: ColumnLayout {
+        // 日期：2026-11-05；正文按已知可用宽度换行，列的自然高度不回依赖Dialog高度，避免紧凑窗口绑定循环。
+        contentItem: Column {
+            width: termsDialog.availableWidth
+            spacing: 12
             Label {
                 textFormat: Text.PlainText
                 text: "本项目参考 Dukto R6，并保留跨平台桌面与命令行入口。\n\nR6 兼容传输用于可信局域网；接收目录可在设置中修改。文件默认保留同名原文件。\n\n本程序不向原版旧站点发送匿名统计。"
                 wrapMode: Text.WordWrap
-                Layout.fillWidth: true
+                width: parent.width
                 color: "#666"
                 lineHeight: 1.5
             }
@@ -903,7 +907,7 @@ Rectangle {
             Button {
                 text: "开始使用"
                 objectName: "acceptTermsButton"
-                Layout.fillWidth: true
+                width: parent.width
                 onClicked: {
                     controller.acceptTerms();
                     termsDialog.close();

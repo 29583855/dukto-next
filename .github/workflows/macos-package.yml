@@ -23,9 +23,12 @@ jobs:
           echo "$(brew --prefix qt@5)/bin" >> "$GITHUB_PATH"
           python -m pip install psutil
       - name: Configure C++14 application
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DDUKTO_BUILD_TESTS=OFF
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
       - name: Compile GUI and CLI
         run: cmake --build build --parallel 4
+      # 日期：2026-11-05；原生主窗口入口、紧凑布局与高DPI回归通过后才部署本次实际包。
+      - name: Validate Cocoa main window server navigation
+        run: python -X utf8 tests/main_window_navigation_integration.py build/ui-tests --platform cocoa --report build/main-window-navigation.json
       - name: Deploy native preview
         id: deploy
         run: python -X utf8 scripts/package_macos.py --output package-output
@@ -44,3 +47,4 @@ jobs:
             build/*.json
             build/*.log
             build/*.png
+            build/main-window-navigation/**

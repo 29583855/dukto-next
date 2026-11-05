@@ -34,6 +34,9 @@ if ($testExitCode -ne 0) {
     }
     exit $testExitCode
 }
+# 日期：2026-11-05；真实主窗口点击/返回/重开及三页导航，原生Windows与隔离高DPI场景分别留证。
+& $pythonExe -X utf8 "$projectRoot/tests/main_window_navigation_integration.py" "$binaryDirectory/ui-tests.exe" --platform windows --report "$reportDirectory/main-window-navigation.json"
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 # 日期：2026-11-05；源码快照先按摘要校验再刷新构建输入时间，避免后续 Linux 增量混用旧对象。
 & $pythonExe -X utf8 "$projectRoot/tests/source_snapshot_integration.py" --report "$reportDirectory/source-snapshot.json"
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
