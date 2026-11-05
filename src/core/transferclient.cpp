@@ -387,16 +387,19 @@ QJsonObject RemoteClient::upload(const QUuid &requestId, const QString &share,
         throw Error(ExitCode::Integrity, QStringLiteral("上传就绪清单不同"), "transfer");
     if (progress)
         progress(ready);
-    const auto completed = [&](const StrongEntry &entry, const QString &path) {
+    const auto completed = [&](const StrongEntry &entry,
+                               const DurableReceive::Preparation &result) {
+        const auto &path = result.path;
         // 日期：2026-11-06；只有接收端已确认的最终名称才能记copied，写盘失败不得发布完成事件。
-        outcomes.append(entry.id, path, "copied");
+        outcomes.append(entry.id, path, result.skipped ? "skipped" : "copied", result.skippedRoot);
         // 日期：2026-11-04；逐文件事件仅含公开名称与最终相对名称，不含源绝对路径和凭据。
         if (progress)
             progress({{"taskId", id.toString(QUuid::WithoutBraces)},
-                      {"event", "file-completed"},
+                      {"event", result.skipped ? "file-skipped" : "file-completed"},
                       {"file", QString::number(entry.id)},
                       {"path", path},
-                      {"bytes", QString::number(entry.bytes)}});
+                      {"bytes", QString::number(result.skipped ? 0 : entry.bytes)},
+                      {"logicalBytes", QString::number(entry.bytes)}});
     };
     TransferProgress meter(channel_, correlation_, id,
                            QByteArray::fromHex(manifest.summary()["sha256"].toString().toLatin1()),
@@ -656,16 +659,19 @@ QJsonObject RemoteClient::download(const QUuid &requestId, const QString &share,
     // 日期：2026-11-06；本地接收结果先持久化再发布事件；缓存授信及分页不随文件数增长。
     DispositionJournal outcomes(local, "disposition-" + key + ".sqlite", id, manifest,
                                 conflictPolicyName(conflict), dispositionCheck);
-    const auto completed = [&](const StrongEntry &entry, const QString &path) {
+    const auto completed = [&](const StrongEntry &entry,
+                               const DurableReceive::Preparation &result) {
+        const auto &path = result.path;
         // 日期：2026-11-06；当前公开策略均为copied；最终skip须先完成协议协商。
-        outcomes.append(entry.id, path, "copied");
+        outcomes.append(entry.id, path, result.skipped ? "skipped" : "copied", result.skippedRoot);
         // 日期：2026-11-04；事件逐条输出，十万文件不会累积成内存中的结果数组。
         if (progress)
             progress({{"taskId", key},
-                      {"event", "file-completed"},
+                      {"event", result.skipped ? "file-skipped" : "file-completed"},
                       {"file", QString::number(entry.id)},
                       {"path", path},
-                      {"bytes", QString::number(entry.bytes)}});
+                      {"bytes", QString::number(result.skipped ? 0 : entry.bytes)},
+                      {"logicalBytes", QString::number(entry.bytes)}});
     };
     TransferProgress meter(channel_, correlation_, id, expected,
                            summary["bytes"].toString().toLongLong(), true, byteProgress, progress);

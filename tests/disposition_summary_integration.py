@@ -22,12 +22,21 @@ from service_integration import free_port, run
 from transfer_integration import digest, transfer
 
 
+class FrameBoundaryReset(ConnectionResetError):
+    """日期：2026-11-06；仅表示尚未读取下一帧任何字节时收到RST，不能代表业务成功。"""
+
+
 # 日期：2026-11-06；独立读取固定报头及有界正文；结束不把截断帧当作成功。
 def read_frame(connection):
     def exact(size, eof=False):
         data = bytearray()
         while len(data) < size:
-            part = connection.recv(size - len(data))
+            try:
+                part = connection.recv(size - len(data))
+            except ConnectionResetError as error:
+                if eof and not data:
+                    raise FrameBoundaryReset("reset before next frame") from error
+                raise AssertionError("reset within relay frame") from error
             if not part and eof and not data:
                 return None
             assert part, "truncated relay frame"
@@ -109,6 +118,7 @@ class Relay:
         self.hit = self.acks = 0
         self.state_at_ack = None
         self.error = None
+        self.boundary_reset = None
         self.stopped = threading.Event()
         self.sockets = []
         certificate, key = root / "relay.crt", root / "relay.key"
@@ -150,6 +160,14 @@ class Relay:
                     destination = upstream if source is downstream else downstream
                     if not self.forward(source, destination, "ack" if source is downstream else "summary"):
                         return
+        except FrameBoundaryReset:
+            # 日期：2026-11-06；只把已命中拒绝攻击后的帧间RST列为候选，调用者必须验证退出及持久结果。
+            if self.hit == 1 and self.attack not in ("valid", "busy", "legacy", "drop"):
+                self.boundary_reset = {"side": "ack" if source is downstream else "summary",
+                                       "operation": "read-next-header", "partialFrameBytes": 0,
+                                       "attackHit": self.hit}
+            elif not self.stopped.is_set():
+                self.error = "UnexpectedFrameBoundaryReset"
         except Exception as error:
             if not self.stopped.is_set():
                 self.error = type(error).__name__
@@ -203,7 +221,7 @@ class Relay:
         write_frame(destination, header, payload)
         return True
 
-    # 日期：2026-11-06；严格回收两个转发线程和测试连接，错误不能被后台异常吞掉。
+    # 日期：2026-11-06；严格回收单个转发线程和测试连接，错误不能被后台异常吞掉。
     def close(self):
         self.worker.join(25)
         self.listener.close()
@@ -275,7 +293,9 @@ def case(executable, root, server, client, shared, identity, profile_path, profi
     return {"direction": direction, "attack": attack, "side": side, "historical": historical,
             "clientExitCode": expected, "taskState": state, "taskError": error,
             "acksForwardedOrIntercepted": relay.acks, "stateAtAck": relay.state_at_ack,
-            "bodyIntact": True, "sameTaskRetryVerified": state in ("interrupted", "completed")}
+            "bodyIntact": True, "sameTaskRetryVerified": state in ("interrupted", "completed"),
+            "transportBoundaryReset": relay.boundary_reset,
+            "rejectionStateVerified": expected != 0}
 
 
 class WireSession(IndependentSession):

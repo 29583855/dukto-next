@@ -6,6 +6,7 @@
 #include "shares.h"
 #include "sourcefile.h"
 #include "taskstore.h"
+#include "transferdisposition.h"
 #include "transferprogress.h"
 #include "transferscheduler.h"
 #include <QDateTime>
@@ -54,6 +55,8 @@ struct ParallelState {
     std::condition_variable changed;
     std::exception_ptr failure;
     std::array<Lane, MaximumLanes> lanes;
+    bool explicitDispositions = false;
+    std::map<quint64, bool> dispositionWindow;
     std::unique_ptr<BufferCredit> credit;
     std::shared_ptr<TransferAdmission> admission;
 
@@ -298,6 +301,15 @@ void senderLane(next::SecureChannel &channel, ParallelState &state,
         expected["block"] = QString::number(block);
         if (frame.header.type != next::Type::Attach || job != expected)
             throw Error(ExitCode::Integrity, QStringLiteral("并行块任务绑定无效"), "parallel");
+        {
+            // 日期：2026-11-06；只信当前控制连接已确认的16项窗口；跳过/未裁决不能读取正文。
+            std::lock_guard<std::mutex> lock(state.mutex);
+            const auto allowed = state.dispositionWindow.find(file);
+            if (state.explicitDispositions &&
+                (allowed == state.dispositionWindow.end() || !allowed->second))
+                throw Error(ExitCode::Integrity, QStringLiteral("并行正文未经逐项接收确认"),
+                            "disposition");
+        }
         const auto entry = manifest.entry(file);
         const auto blocks = manifest.blocks(file, block);
         if (entry.directory || entry.source.isEmpty() || blocks.isEmpty() ||
@@ -392,7 +404,8 @@ int checkedChannels(const QJsonValue &value) {
 std::unique_ptr<ParallelTransfer>
 ParallelTransfer::createServer(const QString &directory, const QUuid &owner, const QUuid &task,
                                StrongManifest &manifest, bool receiver, int requested,
-                               const std::shared_ptr<TransferAdmission> &admission) {
+                               const std::shared_ptr<TransferAdmission> &admission,
+                               bool dispositions) {
     checkedChannels(QString::number(requested));
     auto state = std::make_shared<ParallelState>();
     if (!admission || admission->lanes() != requested)
@@ -406,6 +419,8 @@ ParallelTransfer::createServer(const QString &directory, const QUuid &owner, con
     state->identity = QByteArray::fromHex(manifest.summary()["sha256"].toString().toLatin1());
     state->source = manifest.backing();
     state->receiver = receiver;
+    // 日期：2026-11-06；在注册票据前启用正文门禁，工作线程不能抢先接受未裁决块。
+    state->explicitDispositions = dispositions;
     state->expires = QDateTime::currentMSecsSinceEpoch() + 30000;
     {
         std::lock_guard<std::mutex> lock(registryMutex);
@@ -437,7 +452,7 @@ ParallelTransfer::ParallelTransfer(std::shared_ptr<ParallelState> state)
 
 // 日期：2026-11-04；票据字段精确匹配，服务端授信通道数与秘密都不允许宽松转换。
 ParallelTransfer::ParallelTransfer(const QJsonObject &ticket, const QUuid &task,
-                                   const QByteArray &manifest, bool receiver)
+                                   const QByteArray &manifest, bool receiver, bool dispositions)
     : state_(std::make_shared<ParallelState>()) {
     const QUuid session(ticket["sessionId"].toString());
     const auto token = QByteArray::fromHex(ticket["token"].toString().toLatin1());
@@ -454,6 +469,8 @@ ParallelTransfer::ParallelTransfer(const QJsonObject &ticket, const QUuid &task,
     state_->count = checkedChannels(ticket["lanes"]);
     state_->credit.reset(new BufferCredit(state_->count * 1024 * 1024, true));
     state_->receiver = receiver;
+    // 日期：2026-11-06；先固定协商模式再允许startClients，防止控制树开始前读取源正文。
+    state_->explicitDispositions = dispositions;
     state_->expires = QDateTime::currentMSecsSinceEpoch() + 30000;
 }
 
@@ -607,7 +624,12 @@ void serveParallelLane(next::SecureChannel &channel, PrivateStore &store,
 void ParallelTransfer::sendTree(
     next::SecureChannel &control, StrongManifest &manifest, quint64 correlation,
     const std::function<void()> &check,
-    const std::function<void(const StrongEntry &, const QString &)> &completed) try {
+    const std::function<void(const StrongEntry &, const DurableReceive::Preparation &)> &completed,
+    bool dispositions) try {
+    // 日期：2026-11-06；本次控制交换必须使用票据发布前固定的模式，禁止运行中升级绕过门禁。
+    if (state_->receiver || dispositions != state_->explicitDispositions)
+        throw Error(ExitCode::Integrity, QStringLiteral("并行发送处置模式与会话不同"),
+                    "disposition");
     const auto work = [&]() {
         // 日期：2026-11-04；控制心跳只由接收调度者发送，避免双向空闲心跳遗留到下一条请求。
         state_->check();
@@ -617,19 +639,56 @@ void ParallelTransfer::sendTree(
     };
     state_->waitAll(false, work);
     const auto count = next::decimal(manifest.summary()["entries"], 10000000);
-    for (quint64 file = 1; file <= count; ++file) {
-        const auto entry = manifest.entry(file);
-        auto object = identity(*state_, file);
-        object["kind"] = entry.directory ? "directory" : "parallel-file";
-        const auto response = read(control, correlation, work);
-        const auto value = next::parseControl(response.payload);
-        object["path"] = value["path"];
-        if (response.header.type != next::Type::Completed || value != object ||
-            !value["path"].isString())
-            throw Error(ExitCode::Integrity, QStringLiteral("并行文件完成确认不同"), "parallel");
-        const auto path = validateRelativePath(value["path"].toString());
-        if (completed)
-            completed(entry, path);
+    for (quint64 first = 1; first <= count; first += MaximumLanes) {
+        const auto last = qMin<quint64>(count, first + MaximumLanes - 1);
+        std::array<DurableReceive::Preparation, MaximumLanes> prepared;
+        if (dispositions) {
+            {
+                // 日期：2026-11-06；前窗口块已完成；窗口映射受锁保护，所有数据线程只能读取。
+                std::lock_guard<std::mutex> lock(state_->mutex);
+                state_->dispositionWindow.clear();
+            }
+            for (quint64 file = first; file <= last; ++file) {
+                const auto entry = manifest.entry(file);
+                auto expected = identity(*state_, file);
+                expected["kind"] = entry.directory ? "directory" : "parallel-file";
+                const auto response = read(control, correlation, work);
+                const auto value = next::parseControl(response.payload);
+                auto &decision = prepared[file - first];
+                decision = readTransferDisposition(value, manifest, file, false);
+                addTransferDisposition(expected, decision, false);
+                if (response.header.type != next::Type::ItemDisposition || value != expected)
+                    throw Error(ExitCode::Integrity, QStringLiteral("并行窗口接收决定不同"),
+                                "disposition");
+                {
+                    // 日期：2026-11-06；先发布本机工作者可见决定，再回显允许对端调度。
+                    std::lock_guard<std::mutex> lock(state_->mutex);
+                    state_->dispositionWindow.emplace(file, !decision.skipped && !entry.directory);
+                }
+                control.write(next::Type::ItemDispositionAck, correlation, expected);
+            }
+        }
+        for (quint64 file = first; file <= last; ++file) {
+            const auto entry = manifest.entry(file);
+            auto object = identity(*state_, file);
+            object["kind"] = entry.directory ? "directory" : "parallel-file";
+            const auto response = read(control, correlation, work);
+            const auto value = next::parseControl(response.payload);
+            DurableReceive::Preparation result;
+            object["path"] = value["path"];
+            if (dispositions) {
+                result =
+                    readTransferDisposition(value, manifest, file, true, &prepared[file - first]);
+                addTransferDisposition(object, result, true);
+            }
+            if (response.header.type != next::Type::Completed || value != object ||
+                !value["path"].isString())
+                throw Error(ExitCode::Integrity, QStringLiteral("并行文件完成确认不同"),
+                            "parallel");
+            result.path = validateRelativePath(value["path"].toString());
+            if (completed)
+                completed(entry, result);
+        }
     }
     if (!count) {
         const auto response = read(control, correlation, work);
@@ -642,7 +701,9 @@ void ParallelTransfer::sendTree(
     }
     state_->waitAll(true, work);
 } catch (...) {
+    // 日期：2026-11-06；控制读取超时不能遮盖数据工作者已记录的原始处置拒绝。
     state_->stop(std::current_exception());
+    state_->check();
     throw;
 }
 
@@ -650,8 +711,12 @@ void ParallelTransfer::sendTree(
 void ParallelTransfer::receiveTree(
     next::SecureChannel &control, StrongManifest &manifest, DurableReceive &receiver,
     quint64 correlation, const std::function<void()> &check,
-    const std::function<void(const StrongEntry &, const QString &)> &completed,
-    TransferProgress *progress) try {
+    const std::function<void(const StrongEntry &, const DurableReceive::Preparation &)> &completed,
+    TransferProgress *progress, bool dispositions) try {
+    // 日期：2026-11-06；接收控制交换必须与启动前固定的模式相符，禁止临时切换协议。
+    if (!state_->receiver || dispositions != state_->explicitDispositions)
+        throw Error(ExitCode::Integrity, QStringLiteral("并行接收处置模式与会话不同"),
+                    "disposition");
     Pulse pulse(control, correlation, *state_, check);
     const auto work = [&]() {
         // 日期：2026-11-04；日志重读、网络等待和全文件摘要共用当前控制心跳及实时授权检查。
@@ -670,7 +735,7 @@ void ParallelTransfer::receiveTree(
     };
     struct FileJob {
         StrongEntry entry;
-        QString path;
+        DurableReceive::Preparation disposition;
         quint64 next = 0;
         quint64 blocks = 0;
     };
@@ -681,15 +746,35 @@ void ParallelTransfer::receiveTree(
             work();
             FileJob item;
             item.entry = manifest.entry(file);
-            item.path = receiver.prepare(file, work);
-            if (!item.entry.directory) {
-                receiver.openConcurrent(file, item.path, work);
-                if (progress)
-                    progress->restored(receiver.confirmed());
-                item.blocks = static_cast<quint64>(item.entry.bytes / StrongBlockBytes +
-                                                   (item.entry.bytes % StrongBlockBytes != 0));
+            item.disposition = receiver.prepareDisposition(file, work);
+            if (!item.entry.directory && !item.disposition.skipped) {
+                const auto opened =
+                    receiver.openConcurrentDisposition(file, item.disposition.path, work);
+                item.disposition = opened.disposition;
+                if (!item.disposition.skipped) {
+                    if (progress)
+                        progress->restored(receiver.confirmed());
+                    item.blocks = static_cast<quint64>(item.entry.bytes / StrongBlockBytes +
+                                                       (item.entry.bytes % StrongBlockBytes != 0));
+                }
             }
+            if (item.disposition.skipped && !dispositions)
+                throw Error(ExitCode::Config, QStringLiteral("未协商并行跳过处置"), "disposition");
             window.push_back(std::move(item));
+        }
+        if (dispositions) {
+            for (const auto &item : window) {
+                // 日期：2026-11-06；持久准备先于回包；整个窗口回显验证完毕之前不分配任何正文块。
+                auto decision = identity(*state_, item.entry.id);
+                decision["kind"] = item.entry.directory ? "directory" : "parallel-file";
+                addTransferDisposition(decision, item.disposition, false);
+                control.write(next::Type::ItemDisposition, correlation, decision);
+                const auto ack = read(control, correlation, work);
+                if (ack.header.type != next::Type::ItemDispositionAck ||
+                    next::parseControl(ack.payload) != decision)
+                    throw Error(ExitCode::Integrity, QStringLiteral("并行接收决定回显不同"),
+                                "disposition");
+            }
         }
         std::array<QJsonObject, MaximumLanes> jobs;
         std::array<quint32, MaximumLanes> offsets{};
@@ -702,7 +787,7 @@ void ParallelTransfer::receiveTree(
                 const auto index = cursor;
                 cursor = (cursor + 1) % window.size();
                 auto &item = window[index];
-                if (item.entry.directory || item.next == item.blocks)
+                if (item.entry.directory || item.disposition.skipped || item.next == item.blocks)
                     continue;
                 receiver.activate(item.entry.id);
                 while (item.next < item.blocks && receiver.hasBlock(item.next)) {
@@ -759,11 +844,13 @@ void ParallelTransfer::receiveTree(
         }
         for (auto &item : window) {
             // 日期：2026-11-04；窗口所有块均已确认才做长全摘要，其他通道此时空闲心跳而非阻塞写入。
-            if (!item.entry.directory) {
+            if (!item.entry.directory && !item.disposition.skipped) {
                 receiver.activate(item.entry.id);
-                item.path = receiver.finish(work);
+                item.disposition = receiver.finishDisposition(work);
                 receiver.closeCurrent();
             }
+            if (item.disposition.skipped && !dispositions)
+                throw Error(ExitCode::Config, QStringLiteral("未协商并行最终跳过"), "disposition");
             if (item.entry.id == count) {
                 closeLanes();
                 if (progress)
@@ -771,10 +858,12 @@ void ParallelTransfer::receiveTree(
             }
             auto object = identity(*state_, item.entry.id);
             object["kind"] = item.entry.directory ? "directory" : "parallel-file";
-            object["path"] = item.path;
+            object["path"] = item.disposition.path;
+            if (dispositions)
+                addTransferDisposition(object, item.disposition, true);
             control.write(next::Type::Completed, correlation, object);
             if (completed)
-                completed(item.entry, item.path);
+                completed(item.entry, item.disposition);
         }
     }
     if (!count) {
@@ -787,7 +876,9 @@ void ParallelTransfer::receiveTree(
                        {"kind", "empty"}});
     }
 } catch (...) {
+    // 日期：2026-11-06；控制读取超时不能遮盖数据工作者已记录的原始处置拒绝。
     state_->stop(std::current_exception());
+    state_->check();
     throw;
 }
 } // namespace dukto

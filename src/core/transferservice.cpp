@@ -458,11 +458,14 @@ void serveTransfer(next::SecureChannel &channel, PrivateStore &store, const Prin
                                    // 日期：2026-11-05；单线程限频快照同步任务查询，不增加逐片段数据库事务。
                                    record(value["bytes"].toString().toLongLong());
                                });
-        const auto completed = [&](const StrongEntry &entry, const QString &path) {
+        const auto completed = [&](const StrongEntry &entry,
+                                   const DurableReceive::Preparation &result) {
+            const auto &path = result.path;
             // 日期：2026-11-06；当前公开三种策略均为copied；skip仍拒绝，后续须协商显式处置。
-            outcomes.append(entry.id, path, "copied");
+            outcomes.append(entry.id, path, result.skipped ? "skipped" : "copied",
+                            result.skippedRoot);
             // 日期：2026-11-05；文件完成与跨文件已确认块取较大值，避免多文件窗口完成时进度回退。
-            completedBytes += entry.bytes;
+            completedBytes += result.skipped ? 0 : entry.bytes;
             record(completedBytes);
         };
         if (upload) {

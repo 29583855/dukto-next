@@ -2,6 +2,7 @@
 #include "error.h"
 #include "files.h"
 #include "sourcefile.h"
+#include "transferdisposition.h"
 #include "transferprogress.h"
 #include <QElapsedTimer>
 #include <QJsonArray>
@@ -215,15 +216,17 @@ void receiveStrongManifest(next::SecureChannel &channel, const QUuid &task,
 }
 
 // 日期：2026-11-05；按强清单顺序发送，限定同请求失败观察；接收最终映射仍只返回相对路径。
-void sendStrongTree(next::SecureChannel &channel, const QUuid &task, StrongManifest &manifest,
-                    quint64 correlation, const std::function<void()> &check,
-                    const std::function<void(const StrongEntry &, const QString &)> &completed) {
+void sendStrongTree(
+    next::SecureChannel &channel, const QUuid &task, StrongManifest &manifest, quint64 correlation,
+    const std::function<void()> &check,
+    const std::function<void(const StrongEntry &, const DurableReceive::Preparation &)> &completed,
+    bool dispositions) {
     SendFailureScope failureScope(channel, correlation);
     const auto count = next::decimal(manifest.summary()["entries"], 10000000);
     for (quint64 id = 1; id <= count; ++id) {
         checkpoint(channel, check);
         const auto entry = manifest.entry(id);
-        QString path;
+        DurableReceive::Preparation result;
         if (entry.directory) {
             auto object = identity(task, id, manifest);
             object["kind"] = "directory";
@@ -231,25 +234,31 @@ void sendStrongTree(next::SecureChannel &channel, const QUuid &task, StrongManif
             const auto ack = next::parseControl(
                 frame(channel, next::Type::Attached, correlation, check).payload);
             auto expected = object;
-            expected["path"] = ack["path"];
+            if (dispositions) {
+                result = readTransferDisposition(ack, manifest, id, true);
+                addTransferDisposition(expected, result, true);
+            } else {
+                expected["path"] = ack["path"];
+            }
             if (ack != expected || !ack["path"].isString())
                 throw Error(ExitCode::Integrity, QStringLiteral("目录接收确认身份无效"),
                             "transfer");
-            path = validateRelativePath(ack["path"].toString());
+            result.path = validateRelativePath(ack["path"].toString());
         } else {
-            path = sendStrongFile(channel, task, manifest, id, correlation, check);
+            result.path = sendStrongFile(channel, task, manifest, id, correlation, check,
+                                         dispositions, &result);
         }
         if (completed)
-            completed(entry, path);
+            completed(entry, result);
     }
 }
 
 // 日期：2026-11-05；子文件始终进入本任务已预约父目录，目录/文件完成事件逐项报告。
-void receiveStrongTree(next::SecureChannel &channel, const QUuid &task, StrongManifest &manifest,
-                       DurableReceive &receiver, quint64 correlation,
-                       const std::function<void()> &check,
-                       const std::function<void(const StrongEntry &, const QString &)> &completed,
-                       TransferProgress *progress) {
+void receiveStrongTree(
+    next::SecureChannel &channel, const QUuid &task, StrongManifest &manifest,
+    DurableReceive &receiver, quint64 correlation, const std::function<void()> &check,
+    const std::function<void(const StrongEntry &, const DurableReceive::Preparation &)> &completed,
+    TransferProgress *progress, bool dispositions) {
     const auto count = next::decimal(manifest.summary()["entries"], 10000000);
     Pulse pulse(channel, correlation, check);
     const auto work = [&]() {
@@ -258,7 +267,7 @@ void receiveStrongTree(next::SecureChannel &channel, const QUuid &task, StrongMa
     };
     for (quint64 id = 1; id <= count; ++id) {
         const auto entry = manifest.entry(id);
-        QString path;
+        DurableReceive::Preparation result;
         if (entry.directory) {
             auto object = identity(task, id, manifest);
             object["kind"] = "directory";
@@ -266,24 +275,29 @@ void receiveStrongTree(next::SecureChannel &channel, const QUuid &task, StrongMa
                 next::parseControl(frame(channel, next::Type::Attach, correlation, check).payload);
             if (attach != object)
                 throw Error(ExitCode::Integrity, QStringLiteral("目录接收绑定无效"), "transfer");
-            path = receiver.prepare(id, work);
-            object["path"] = path;
+            result = receiver.prepareDisposition(id, work);
+            if (result.skipped && !dispositions)
+                throw Error(ExitCode::Config, QStringLiteral("未协商显式跳过处置"), "disposition");
+            object["path"] = result.path;
+            if (dispositions)
+                addTransferDisposition(object, result, true);
             if (progress && id == count)
                 progress->publish(true);
             channel.write(next::Type::Attached, correlation, object);
         } else {
-            const auto target = receiver.prepare(id, work);
-            path = receiveStrongFile(channel, task, manifest, receiver, id, target, correlation,
-                                     check, progress);
+            result = receiver.prepareDisposition(id, work);
+            result.path = receiveStrongFile(channel, task, manifest, receiver, id, result.path,
+                                            correlation, check, progress, dispositions, &result);
         }
         if (completed)
-            completed(entry, path);
+            completed(entry, result);
     }
 }
 
 // 日期：2026-11-04；只从固定源句柄读取，发送时同时校验块及全文件强摘要，不依赖大小/mtime。
 QString sendStrongFile(next::SecureChannel &channel, const QUuid &task, StrongManifest &manifest,
-                       quint64 file, quint64 correlation, const std::function<void()> &check) {
+                       quint64 file, quint64 correlation, const std::function<void()> &check,
+                       bool dispositions, DurableReceive::Preparation *outcome) {
     const auto entry = manifest.entry(file);
     if (entry.directory || entry.source.isEmpty())
         throw Error(ExitCode::Config, QStringLiteral("发送文件缺少本地强清单源"), "transfer");
@@ -292,13 +306,31 @@ QString sendStrongFile(next::SecureChannel &channel, const QUuid &task, StrongMa
     channel.write(next::Type::Attach, correlation, object);
     const auto ready =
         next::parseControl(frame(channel, next::Type::Attached, correlation, check).payload);
+    DurableReceive::Preparation prepared;
+    auto readyIdentity = object;
+    readyIdentity["block"] = ready["block"];
+    readyIdentity["bytes"] = ready["bytes"];
+    if (dispositions) {
+        prepared = readTransferDisposition(ready, manifest, file, false);
+        addTransferDisposition(readyIdentity, prepared, false);
+        if (ready != readyIdentity)
+            throw Error(ExitCode::Integrity, QStringLiteral("文件准备包含未知字段"), "disposition");
+        if (prepared.skipped) {
+            if (ready["block"] != "0" || ready["bytes"] != "0")
+                throw Error(ExitCode::Integrity, QStringLiteral("跳过不能声明正文恢复字节"),
+                            "disposition");
+            if (outcome)
+                *outcome = prepared;
+            return prepared.path;
+        }
+    }
     const auto blocks = static_cast<quint64>(entry.bytes / StrongBlockBytes +
                                              (entry.bytes % StrongBlockBytes != 0));
     const auto first = next::decimal(ready["block"], blocks);
     const auto bytes = next::decimal(ready["bytes"], static_cast<quint64>(entry.bytes));
     const auto expectedPrefix =
         first == blocks ? entry.bytes : static_cast<qint64>(first) * StrongBlockBytes;
-    if (ready.size() != 5 || ready["taskId"] != object["taskId"] ||
+    if (ready.size() != (dispositions ? 8 : 5) || ready["taskId"] != object["taskId"] ||
         ready["file"] != object["file"] || ready["manifest"] != object["manifest"] ||
         bytes != static_cast<quint64>(expectedPrefix))
         throw Error(ExitCode::Integrity, QStringLiteral("接收端恢复确认不匹配"), "transfer");
@@ -350,18 +382,29 @@ QString sendStrongFile(next::SecureChannel &channel, const QUuid &task, StrongMa
     channel.write(next::Type::Finish, correlation, object);
     const auto completed =
         next::parseControl(frame(channel, next::Type::Completed, correlation, check).payload);
-    if (completed.size() != 4 || completed["taskId"] != object["taskId"] ||
+    DurableReceive::Preparation result;
+    auto expectedCompleted = object;
+    expectedCompleted["path"] = completed["path"];
+    if (dispositions) {
+        result = readTransferDisposition(completed, manifest, file, true, &prepared);
+        addTransferDisposition(expectedCompleted, result, true);
+    }
+    if (completed != expectedCompleted || completed["taskId"] != object["taskId"] ||
         completed["file"] != object["file"] || completed["manifest"] != object["manifest"] ||
         !completed["path"].isString())
         throw Error(ExitCode::Integrity, QStringLiteral("接收最终确认身份不匹配"), "transfer");
-    return validateRelativePath(completed["path"].toString());
+    result.path = validateRelativePath(completed["path"].toString());
+    if (outcome)
+        *outcome = result;
+    return result.path;
 }
 
 // 日期：2026-11-05；只有完整块落盘同步后发送块确认；最终独占提交和日志同步后发送文件完成。
 QString receiveStrongFile(next::SecureChannel &channel, const QUuid &task, StrongManifest &manifest,
                           DurableReceive &receiver, quint64 file, const QString &destination,
                           quint64 correlation, const std::function<void()> &check,
-                          TransferProgress *progress) {
+                          TransferProgress *progress, bool dispositions,
+                          DurableReceive::Preparation *outcome) {
     const auto object = identity(task, file, manifest);
     const auto attach =
         next::parseControl(frame(channel, next::Type::Attach, correlation, check).payload);
@@ -372,13 +415,23 @@ QString receiveStrongFile(next::SecureChannel &channel, const QUuid &task, Stron
         // 日期：2026-11-04；恢复重读和最终摘要期间同样持续重查授权及网络连接。
         pulse();
     };
-    const auto first = receiver.open(file, destination, work);
-    if (progress)
+    const auto opened = receiver.openDisposition(file, destination, work);
+    const auto first = opened.nextBlock;
+    if (opened.disposition.skipped && !dispositions)
+        throw Error(ExitCode::Config, QStringLiteral("未协商显式文件跳过"), "disposition");
+    if (progress && !opened.disposition.skipped)
         progress->restored(receiver.confirmed());
     auto ready = object;
     ready["block"] = QString::number(first);
-    ready["bytes"] = QString::number(receiver.confirmed());
+    ready["bytes"] = QString::number(opened.disposition.skipped ? 0 : receiver.confirmed());
+    if (dispositions)
+        addTransferDisposition(ready, opened.disposition, false);
     channel.write(next::Type::Attached, correlation, ready);
+    if (opened.disposition.skipped) {
+        if (outcome)
+            *outcome = opened.disposition;
+        return opened.disposition.path;
+    }
     const auto entry = manifest.entry(file);
     const auto blocks = static_cast<quint64>(entry.bytes / StrongBlockBytes +
                                              (entry.bytes % StrongBlockBytes != 0));
@@ -409,12 +462,18 @@ QString receiveStrongFile(next::SecureChannel &channel, const QUuid &task, Stron
     if (next::parseControl(frame(channel, next::Type::Finish, correlation, check).payload) !=
         object)
         throw Error(ExitCode::Integrity, QStringLiteral("文件结束身份不匹配"), "transfer");
-    const auto path = receiver.finish(work);
+    const auto result = receiver.finishDisposition(work);
+    if (result.skipped && !dispositions)
+        throw Error(ExitCode::Config, QStringLiteral("未协商最终跳过处置"), "disposition");
     auto completed = object;
-    completed["path"] = path;
+    completed["path"] = result.path;
+    if (dispositions)
+        addTransferDisposition(completed, result, true);
     if (progress && file == next::decimal(manifest.summary()["entries"], 10000000))
         progress->publish(true);
     channel.write(next::Type::Completed, correlation, completed);
-    return path;
+    if (outcome)
+        *outcome = result;
+    return result.path;
 }
 } // namespace dukto

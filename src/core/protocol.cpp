@@ -53,6 +53,8 @@ bool knownType(Type type) {
     case Type::TaskAdmitted:
     case Type::DispositionSummary:
     case Type::DispositionAck:
+    case Type::ItemDisposition:
+    case Type::ItemDispositionAck:
     case Type::Progress:
         return true;
     }

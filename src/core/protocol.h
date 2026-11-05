@@ -49,7 +49,9 @@ enum class Type : quint16 {
     Progress = 50,
     TaskAdmitted = 51,
     DispositionSummary = 52,
-    DispositionAck = 53
+    DispositionAck = 53,
+    ItemDisposition = 54,
+    ItemDispositionAck = 55
 };
 
 struct Header {

@@ -676,8 +676,12 @@ DurableReceive::openConcurrentDisposition(quint64 file, const QString &destinati
     const auto active = parked_.size() + (current_->file ? 1 : 0);
     if (active >= 16)
         throw Error(ExitCode::Permission, QStringLiteral("并行接收文件窗口已满"), "receive");
-    if (current_->file)
+    if (current_->file) {
+        // 日期：2026-11-06；先分配空游标再停放旧文件，openFile的检查回调始终能读取有效状态。
+        std::unique_ptr<Cursor> next(new Cursor);
         parked_.emplace(current_->entry.id, std::move(current_));
+        current_ = std::move(next);
+    }
     try {
         return openDisposition(file, destination, check, true);
     } catch (...) {

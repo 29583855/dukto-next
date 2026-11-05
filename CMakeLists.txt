@@ -48,6 +48,7 @@ add_library(dukto-core
     src/core/receivetree.cpp
     src/core/receiveskip.cpp
     src/core/receiveskipfinal.cpp
+    src/core/transferdisposition.cpp
     src/core/fileexchange.cpp
     src/core/paralleltransfer.cpp
     src/core/transferservice.cpp

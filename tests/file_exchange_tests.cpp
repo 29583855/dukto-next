@@ -3,10 +3,18 @@
 #include "core/fileexchange.h"
 #include "core/files.h"
 #include "core/identity.h"
+#include "core/paralleltransfer.h"
 #include "core/service.h"
+#include "core/shares.h"
+#include "core/taskstore.h"
+#include "core/transferdisposition.h"
 #include "core/transferprogress.h"
+#include "core/transferscheduler.h"
 #include <QDir>
+#include <QEventLoop>
 #include <QFile>
+#include <QJsonDocument>
+#include <QProcess>
 #include <QTcpServer>
 #include <QTemporaryDir>
 #include <QThread>
@@ -31,6 +39,10 @@ class ExchangeServer final : public QTcpServer {
     // 日期：2026-11-04；读取工作结果前完成线程同步，避免并发读写错误文本。
     bool done() {
         return worker_ && worker_->wait(10000);
+    }
+    // 日期：2026-11-06；非阻塞探测供独立服务主线程泵送连接事件，完成后同步错误文本。
+    bool completed() {
+        return worker_ && worker_->wait(0);
     }
 
   protected:
@@ -64,11 +76,843 @@ void importManifest(dukto::StrongManifest &source, dukto::StrongManifest &destin
     }
     destination.seal(QByteArray::fromHex(source.summary()["sha256"].toString().toLatin1()));
 }
+
+// 日期：2026-11-06；独立服务进程拥有监听器与全部数据线程，不与客户机叠加进程内授信。
+int parallelDispositionServer(const QString &directory) {
+    dukto::PrivateStore setup(directory);
+    const auto config = dukto::next::parseControl(setup.read("parallel-fixture.json"));
+    const QUuid owner(config["owner"].toString());
+    const QUuid task(config["task"].toString());
+    const bool download = config["download"].toBool();
+    const auto output = config["output"].toString();
+    const auto lanes = config["lanes"].toInt();
+    const auto scenario = config["scenario"].toInt();
+    const auto hash = QByteArray::fromHex(config["manifest"].toString().toLatin1());
+    const auto identity = dukto::loadIdentity(setup);
+    dukto::TransferScheduler scheduler;
+    auto admission =
+        std::make_shared<dukto::TransferAdmission>(scheduler, directory, owner, task, lanes, false);
+    if (!admission->tryStart())
+        throw dukto::Error(dukto::ExitCode::Permission, "fixture admission", "test");
+    dukto::ServiceListener listener(directory, 5000);
+    if (!listener.listen(QHostAddress::LocalHost, 0))
+        throw dukto::Error(dukto::ExitCode::Network, "fixture listen", "test");
+    ExchangeServer server;
+    server.operation = [&](qintptr descriptor) {
+        // 日期：2026-11-06；控制线程独占接收日志，数据线程仍经过生产认证/授权及块分配器。
+        dukto::PrivateStore store(directory);
+        dukto::StrongManifest incoming(store, "wire.sqlite", true);
+        dukto::next::SecureChannel peer(5000);
+        peer.accept(descriptor, identity.configuration());
+        dukto::receiveStrongManifest(peer, task, incoming, hash, 1);
+        std::unique_ptr<dukto::StrongManifest> outgoing;
+        if (download)
+            outgoing.reset(new dukto::StrongManifest(store, "source.sqlite", false));
+        auto &manifest = download ? *outgoing : incoming;
+        auto data = dukto::ParallelTransfer::createServer(directory, owner, task, manifest,
+                                                          !download, lanes, admission, true);
+        peer.write(dukto::next::Type::ChannelTicket, 2, data->ticket());
+        dukto::DispositionJournal journal(store, "server-outcome.sqlite", task, manifest, "skip");
+        const auto completed = [&](const dukto::StrongEntry &entry,
+                                   const dukto::DurableReceive::Preparation &result) {
+            // 日期：2026-11-06；结果使用真实持久处置，不用传输字节推测copied。
+            journal.append(entry.id, result.path, result.skipped ? "skipped" : "copied",
+                           result.skippedRoot);
+        };
+        if (download) {
+            data->sendTree(peer, manifest, 2, {}, completed, true);
+        } else {
+            bool lateCreated = false;
+            dukto::DurableReceive receiver(store, "receive.sqlite", task, manifest, output,
+                                           dukto::ConflictPolicy::Skip);
+            data->receiveTree(
+                peer, manifest, receiver, 2,
+                [&]() {
+                    // 日期：2026-11-06；正文确认后才出现外部目标，验证最终skipped保留原件。
+                    if (scenario == 2 && !lateCreated && receiver.confirmed() > 0) {
+                        QFile target(output + "/item-00.bin");
+                        const QByteArray original("unchanged-original");
+                        if (!target.open(QIODevice::WriteOnly) ||
+                            target.write(original) != original.size())
+                            throw dukto::Error(dukto::ExitCode::Disk, "fixture write", "test");
+                        lateCreated = true;
+                    }
+                },
+                completed, nullptr, true);
+            store.write("parallel-late.json",
+                        dukto::next::encodeControl({{"created", lateCreated}}));
+        }
+        store.write("parallel-result.json", dukto::next::encodeControl(journal.summary()));
+        const auto close = peer.read();
+        if (close.header.type != dukto::next::Type::Close || close.header.correlation != 3)
+            throw dukto::Error(dukto::ExitCode::Integrity, "close", "test");
+        peer.write(dukto::next::Type::Closed, 3, {});
+    };
+    if (!server.listen(QHostAddress::LocalHost, 0))
+        throw dukto::Error(dukto::ExitCode::Network, "fixture control listen", "test");
+    const auto ports = dukto::next::encodeControl(
+        {{"controlPort", int(server.serverPort())}, {"dataPort", int(listener.serverPort())}});
+    std::fprintf(stdout, "%s\n", ports.constData());
+    std::fflush(stdout);
+    QElapsedTimer deadline;
+    deadline.start();
+    while (!server.completed()) {
+        if (deadline.elapsed() > 30000)
+            throw dukto::Error(dukto::ExitCode::Network, "fixture deadline", "test");
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 10);
+        QThread::msleep(1);
+    }
+    if (!server.error.isEmpty())
+        throw dukto::Error(dukto::ExitCode::Integrity, server.error, "fixture-server");
+    listener.stop();
+    return 0;
+}
+
 } // namespace
 
 class FileExchangeTests final : public QObject {
     Q_OBJECT
   private slots:
+
+    // 日期：2026-11-06；单条真实数据连接足够覆盖门禁状态机，4/16通道业务另有独立进程全量测试。
+    void rejectedParallelDisposition_data() {
+        QTest::addColumn<int>("stage");
+        QTest::addColumn<int>("attack");
+        for (int stage = 0; stage < 3; ++stage)
+            for (int attack = 0; attack < 10; ++attack)
+                QTest::newRow(qPrintable(QString("%1-%2").arg(stage).arg(attack)))
+                    << stage << attack;
+        QTest::newRow("body-before-decision") << 3 << 0;
+        QTest::newRow("body-after-skip") << 4 << 0;
+    }
+
+    // 日期：2026-11-06；独立对端只发送畸形控制或未授权块请求，源删除后仍须返回处置错误。
+    void rejectedParallelDisposition() {
+        QFETCH(int, stage);
+        QFETCH(int, attack);
+        QTemporaryDir temporary;
+        const auto path = temporary.filePath("data.bin");
+        QFile file(path);
+        QVERIFY(file.open(QIODevice::WriteOnly));
+        QCOMPARE(file.write("body"), qint64(4));
+        file.close();
+        QVERIFY(QDir().mkpath(temporary.filePath("output")));
+        QFile original(temporary.filePath("output/data.bin"));
+        QVERIFY(original.open(QIODevice::WriteOnly));
+        QCOMPARE(original.write("original"), qint64(8));
+        original.close();
+        dukto::PrivateStore store(temporary.filePath("private"), true);
+        dukto::StrongManifest manifest(store, "source.sqlite", true);
+        manifest.scan({path});
+        QVERIFY(QFile::remove(path));
+        const auto hash = QByteArray::fromHex(manifest.summary()["sha256"].toString().toLatin1());
+        const auto service = dukto::initializeIdentity(store, {"127.0.0.1"});
+        const auto client = QUuid::createUuid();
+        const auto session = QUuid::createUuid().toString(QUuid::WithoutBraces);
+        const QJsonObject ticket{{"sessionId", session},
+                                 {"taskId", Task.toString(QUuid::WithoutBraces)},
+                                 {"manifest", QString::fromLatin1(hash.toHex())},
+                                 {"token", QString(64, 'a')},
+                                 {"lanes", "1"}};
+        const QJsonObject identity{
+            {"taskId", ticket["taskId"]}, {"manifest", ticket["manifest"]}, {"file", "1"}};
+        std::atomic_bool releaseBody{false};
+        std::atomic_int bodyRequests{0};
+        std::atomic_int unexpectedBodies{0};
+        ExchangeServer lane;
+        lane.operation = [&](qintptr descriptor) {
+            // 日期：2026-11-06；独立数据端完整进行TLS/Hello/认证/加入，再尝试未经控制裁决的块请求。
+            dukto::next::SecureChannel peer(3000);
+            peer.accept(descriptor, service.configuration());
+            const auto hello = peer.read();
+            peer.write(dukto::next::Type::HelloAck, hello.header.correlation,
+                       {{"version", "1.0"},
+                        {"serverId", service.id.toString(QUuid::WithoutBraces)},
+                        {"capabilities", QJsonArray{"parallel-transfer-v1"}}});
+            const auto auth = peer.read();
+            peer.write(dukto::next::Type::Authenticated, auth.header.correlation,
+                       dukto::Principal{client, 1, {{"data", true, true, true}}}.publicInfo());
+            const auto attach = peer.read();
+            peer.write(dukto::next::Type::Attached, attach.header.correlation,
+                       {{"sessionId", session}, {"lane", "0"}});
+            if (stage >= 3) {
+                QElapsedTimer deadline;
+                deadline.start();
+                while (stage == 4 && !releaseBody.load()) {
+                    if (deadline.elapsed() > 3000)
+                        throw dukto::Error(dukto::ExitCode::Network, "fixture release deadline",
+                                           "test");
+                    QThread::msleep(1);
+                }
+                auto job = identity;
+                job["block"] = "0";
+                ++bodyRequests;
+                peer.write(dukto::next::Type::Attach, attach.header.correlation, job);
+            }
+            try {
+                for (;;) {
+                    const auto response = peer.read();
+                    if (response.header.type != dukto::next::Type::TaskState)
+                        ++unexpectedBodies;
+                }
+            } catch (const dukto::Error &error) {
+                if (error.code != dukto::ExitCode::Network)
+                    throw;
+            }
+        };
+        QVERIFY(lane.listen(QHostAddress::LocalHost, 0));
+        ExchangeServer control;
+        control.operation = [&](qintptr descriptor) {
+            // 日期：2026-11-06；逐字段攻击本项准备/最终/回显，数据端始终不提供任何备用源内容。
+            dukto::next::SecureChannel peer(3000);
+            peer.accept(descriptor, service.configuration());
+            auto value = identity;
+            value["kind"] = "parallel-file";
+            value["path"] = "data.bin";
+            value["disposition"] = "skip";
+            value["skippedRoot"] = "1";
+            auto kind = dukto::next::Type::ItemDisposition;
+            quint64 correlation = 2;
+            if (stage == 1 || stage == 4) {
+                peer.write(kind, correlation, value);
+                const auto ack = peer.read();
+                if (ack.header.type != dukto::next::Type::ItemDispositionAck ||
+                    dukto::next::parseControl(ack.payload) != value)
+                    throw dukto::Error(dukto::ExitCode::Integrity, "fixture disposition ack",
+                                       "test");
+                value["disposition"] = "skipped";
+                kind = dukto::next::Type::Completed;
+                if (stage == 4)
+                    releaseBody = true;
+            } else if (stage == 2) {
+                const auto decision = peer.read();
+                if (decision.header.type != dukto::next::Type::ItemDisposition ||
+                    dukto::next::parseControl(decision.payload) != value)
+                    throw dukto::Error(dukto::ExitCode::Integrity, "fixture receive decision",
+                                       "test");
+                kind = dukto::next::Type::ItemDispositionAck;
+            }
+            if (attack == 0)
+                value["taskId"] = QUuid::createUuid().toString(QUuid::WithoutBraces);
+            if (attack == 1)
+                value["file"] = "2";
+            if (attack == 2)
+                value["manifest"] = QString(64, '0');
+            if (attack == 3)
+                value["path"] = "../escape";
+            if (attack == 4)
+                value["disposition"] = stage == 1 ? "copied" : "receive";
+            if (attack == 5)
+                value["skippedRoot"] = "01";
+            if (attack == 6)
+                value["unknown"] = true;
+            if (attack == 7)
+                value.remove("path");
+            if (attack == 8)
+                kind = dukto::next::Type::Attached;
+            if (attack == 9)
+                correlation = 3;
+            if (stage < 3)
+                peer.write(kind, correlation, value);
+            try {
+                const auto response = peer.read();
+                Q_UNUSED(response);
+                throw dukto::Error(dukto::ExitCode::Integrity, "unexpected rejection response",
+                                   "test");
+            } catch (const dukto::Error &error) {
+                if (error.code != dukto::ExitCode::Network)
+                    throw;
+            }
+        };
+        QVERIFY(control.listen(QHostAddress::LocalHost, 0));
+        const dukto::ClientProfile profile{"test",
+                                           "127.0.0.1",
+                                           lane.serverPort(),
+                                           "127.0.0.1",
+                                           service.certificate.digest(QCryptographicHash::Sha256),
+                                           service.id,
+                                           client,
+                                           QByteArray(32, 'x'),
+                                           true};
+        QString failureStage;
+        {
+            dukto::next::SecureChannel peer(3000);
+            peer.connectTo("127.0.0.1", control.serverPort(), "127.0.0.1",
+                           QSslConfiguration::defaultConfiguration(), profile.fingerprint);
+            dukto::ParallelTransfer transfer(ticket, Task, hash, stage == 2, true);
+            transfer.startClients(profile, 3000, stage == 2 ? nullptr : &manifest);
+            try {
+                if (stage == 2) {
+                    dukto::DurableReceive receiver(store, "receive.sqlite", Task, manifest,
+                                                   temporary.filePath("output"),
+                                                   dukto::ConflictPolicy::Skip);
+                    transfer.receiveTree(peer, manifest, receiver, 2, {}, {}, nullptr, true);
+                } else {
+                    transfer.sendTree(peer, manifest, 2, {}, {}, true);
+                }
+            } catch (const dukto::Error &error) {
+                if (error.code == dukto::ExitCode::Integrity ||
+                    error.code == dukto::ExitCode::Config)
+                    failureStage = error.stage;
+            }
+        }
+        QVERIFY(lane.done());
+        QVERIFY(control.done());
+        QVERIFY2(lane.error.isEmpty(), qPrintable(lane.error));
+        QVERIFY2(control.error.isEmpty(), qPrintable(control.error));
+        QVERIFY(failureStage == "disposition" || failureStage == "parallel" ||
+                failureStage == "protocol");
+        if (stage >= 3)
+            QCOMPARE(failureStage, QString("disposition"));
+        QCOMPARE(bodyRequests.load(), stage >= 3 ? 1 : 0);
+        QCOMPARE(unexpectedBodies.load(), 0);
+        QCOMPARE(dukto::hashFile(temporary.filePath("output/data.bin")),
+                 QCryptographicHash::hash("original", QCryptographicHash::Sha256));
+    }
+
+    // 日期：2026-11-06；固定清单检验处置路径、规范根、祖先约束及准备至完成的单向变化。
+    void dispositionFields_data() {
+        QTest::addColumn<int>("attack");
+        for (int attack = -4; attack < 20; ++attack)
+            QTest::newRow(qPrintable(QString::number(attack))) << attack;
+    }
+
+    // 日期：2026-11-06；数据全部由独立常量构造，不用发送编码器替畸形消息做规范化。
+    void dispositionFields() {
+        QFETCH(int, attack);
+        QTemporaryDir temporary;
+        dukto::PrivateStore store(temporary.filePath("private"), true);
+        dukto::StrongManifest manifest(store, "manifest.sqlite", true);
+        const auto empty = QCryptographicHash::hash({}, QCryptographicHash::Sha256);
+        manifest.append({1, "bundle", "", true, 0, {}});
+        manifest.append({2, "bundle/a", "", false, 0, empty});
+        manifest.append({3, "other", "", true, 0, {}});
+        manifest.append({4, "other/b", "", false, 0, empty});
+        manifest.seal();
+        QJsonObject value{{"path", "bundle/a"}, {"disposition", "skip"}, {"skippedRoot", "1"}};
+        dukto::DurableReceive::Preparation prepared{"bundle/a", true, 1};
+        bool final = attack == -1 || attack >= 15;
+        const dukto::DurableReceive::Preparation *prior = final ? &prepared : nullptr;
+        if (final)
+            value["disposition"] = "skipped";
+        if (attack == -3) {
+            value["disposition"] = "receive";
+            value["skippedRoot"] = "0";
+        }
+        if (attack == -2)
+            value["skippedRoot"] = "2";
+        if (attack == 0)
+            value["path"] = "../a";
+        if (attack == 1)
+            value["path"] = "other/b";
+        if (attack == 2)
+            value["path"] = 2;
+        if (attack == 3)
+            value["disposition"] = true;
+        if (attack == 4)
+            value["disposition"] = "skipped";
+        if (attack == 5)
+            value["disposition"] = "receive";
+        if (attack == 6)
+            value["skippedRoot"] = 1;
+        if (attack == 7)
+            value["skippedRoot"] = "01";
+        if (attack == 8)
+            value["skippedRoot"] = "0";
+        if (attack == 9)
+            value["skippedRoot"] = "3";
+        if (attack == 10)
+            value["skippedRoot"] = "-1";
+        if (attack == 11)
+            value["skippedRoot"] = "18446744073709551616";
+        if (attack == 12)
+            value.remove("path");
+        if (attack == 13)
+            value.remove("disposition");
+        if (attack == 14)
+            value.remove("skippedRoot");
+        if (attack == 15) {
+            value["disposition"] = "copied";
+            value["skippedRoot"] = "0";
+        }
+        if (attack == 16)
+            value["skippedRoot"] = "2";
+        if (attack == 17)
+            prepared = {"bundle/a", false, 0};
+        if (attack == 18)
+            prepared.path = "other/b";
+        if (attack == 19)
+            value["disposition"] = "skip";
+        bool rejected = false;
+        try {
+            const auto result = dukto::readTransferDisposition(value, manifest, 2, final, prior);
+            QCOMPARE(result.path, QString("bundle/a"));
+        } catch (const dukto::Error &) {
+            rejected = true;
+        }
+        QCOMPARE(rejected, attack >= 0);
+        QJsonObject encoded;
+        QVERIFY_EXCEPTION_THROWN(
+            dukto::addTransferDisposition(encoded, {"bundle/a", false, 1}, false), dukto::Error);
+        QVERIFY_EXCEPTION_THROWN(
+            dukto::addTransferDisposition(encoded, {"bundle/a", true, 0}, false), dukto::Error);
+    }
+
+    // 日期：2026-11-06；真实TLS覆盖准备帧和最终帧全部身份字段、类型、序号及未协商扩展。
+    void rejectedDispositionWire_data() {
+        QTest::addColumn<bool>("final");
+        QTest::addColumn<bool>("explicitMode");
+        QTest::addColumn<int>("attack");
+        for (bool final : {false, true})
+            for (int attack = -1; attack < (final ? 11 : 14); ++attack)
+                QTest::newRow(
+                    qPrintable(QString("%1-%2").arg(final ? "final" : "prepare").arg(attack)))
+                    << final << true << attack;
+        QTest::newRow("legacy-extension-refused") << false << false << 14;
+    }
+
+    // 日期：2026-11-06；准备攻击在源文件删除后运行，必须在打开源正文之前拒绝；最后确认使用真实空文件。
+    void rejectedDispositionWire() {
+        QFETCH(bool, final);
+        QFETCH(bool, explicitMode);
+        QFETCH(int, attack);
+        QTemporaryDir temporary;
+        const auto path = temporary.filePath("empty.bin");
+        QFile file(path);
+        QVERIFY(file.open(QIODevice::WriteOnly));
+        file.close();
+        dukto::PrivateStore store(temporary.filePath("private"), true);
+        dukto::StrongManifest manifest(store, "manifest.sqlite", true);
+        manifest.scan({path});
+        if (!final)
+            QVERIFY(QFile::remove(path));
+        const auto service = dukto::initializeIdentity(store, {"127.0.0.1"});
+        ExchangeServer server;
+        int observedAfterReply = 0;
+        server.operation = [&](qintptr descriptor) {
+            // 日期：2026-11-06；只修改自有响应，观察对端是否继续发送正文/结束帧；错误路径不伪造成功。
+            dukto::next::SecureChannel peer(3000);
+            peer.accept(descriptor, service.configuration());
+            const auto attach = peer.read();
+            if (attach.header.type != dukto::next::Type::Attach || attach.header.correlation != 2)
+                throw dukto::Error(dukto::ExitCode::Integrity, "fixture attach", "test");
+            auto object = dukto::next::parseControl(attach.payload);
+            object["block"] = "0";
+            object["bytes"] = "0";
+            object["path"] = "empty.bin";
+            object["disposition"] = final ? "receive" : "skip";
+            object["skippedRoot"] = final ? "0" : "1";
+            if (final) {
+                peer.write(dukto::next::Type::Attached, 2, object);
+                const auto finish = peer.read();
+                if (finish.header.type != dukto::next::Type::Finish)
+                    throw dukto::Error(dukto::ExitCode::Integrity, "fixture finish", "test");
+                object.remove("block");
+                object.remove("bytes");
+                object["disposition"] = "copied";
+            }
+            auto kind = final ? dukto::next::Type::Completed : dukto::next::Type::Attached;
+            quint64 correlation = 2;
+            if (attack == 0)
+                object["taskId"] = QUuid::createUuid().toString(QUuid::WithoutBraces);
+            if (attack == 1)
+                object["file"] = "2";
+            if (attack == 2)
+                object["manifest"] = QString(64, '0');
+            if (attack == 3)
+                object["path"] = "../escape";
+            if (attack == 4)
+                object["disposition"] = final ? "receive" : "skipped";
+            if (attack == 5)
+                object["skippedRoot"] = 1;
+            if (attack == 6)
+                object["unknown"] = true;
+            if (attack == 7)
+                object.remove("path");
+            if (attack == 8)
+                kind = dukto::next::Type::ItemDisposition;
+            if (attack == 9)
+                correlation = 9;
+            if (attack == 10)
+                object["skippedRoot"] = "01";
+            if (attack == 11)
+                object["block"] = "1";
+            if (attack == 12)
+                object["bytes"] = "1";
+            if (attack == 13)
+                object["block"] = 0;
+            peer.write(kind, correlation, object);
+            try {
+                const auto response = peer.read();
+                observedAfterReply = static_cast<int>(response.header.type);
+                if (attack != -1 || response.header.type != dukto::next::Type::Close)
+                    throw dukto::Error(dukto::ExitCode::Integrity,
+                                       "unexpected post-rejection frame", "test");
+                peer.write(dukto::next::Type::Closed, 3, {});
+            } catch (const dukto::Error &error) {
+                if (attack == -1 || error.code != dukto::ExitCode::Network)
+                    throw;
+            }
+        };
+        QVERIFY(server.listen(QHostAddress::LocalHost, 0));
+        bool rejected = false;
+        {
+            dukto::next::SecureChannel channel(3000);
+            channel.connectTo("127.0.0.1", server.serverPort(), "127.0.0.1",
+                              QSslConfiguration::defaultConfiguration(),
+                              service.certificate.digest(QCryptographicHash::Sha256));
+            try {
+                dukto::DurableReceive::Preparation result;
+                QCOMPARE(
+                    dukto::sendStrongFile(channel, Task, manifest, 1, 2, {}, explicitMode, &result),
+                    QString("empty.bin"));
+                QCOMPARE(result.skipped, !final);
+                channel.write(dukto::next::Type::Close, 3, {});
+                QCOMPARE(channel.read().header.type, dukto::next::Type::Closed);
+            } catch (const dukto::Error &error) {
+                rejected = (error.code == dukto::ExitCode::Integrity ||
+                            error.code == dukto::ExitCode::Config) &&
+                           (error.stage == "disposition" || error.stage == "transfer" ||
+                            error.stage == "protocol");
+            }
+        }
+        QVERIFY(server.done());
+        QVERIFY2(server.error.isEmpty(), qPrintable(server.error));
+        QCOMPARE(rejected, attack != -1);
+        QCOMPARE(observedAfterReply, attack == -1 ? static_cast<int>(dukto::next::Type::Close) : 0);
+    }
+
+    // 日期：2026-11-06；覆盖双向4/16条实际TLS数据连接、混合/全跳过、跨16项窗口及末端竞争。
+    void parallelDispositions_data() {
+        QTest::addColumn<bool>("download");
+        QTest::addColumn<int>("lanes");
+        QTest::addColumn<int>("scenario");
+        for (bool download : {false, true})
+            for (int lanes : {4, 16})
+                for (int scenario = 0; scenario < 4; ++scenario) {
+                    const auto name = QString("%1-%2-%3")
+                                          .arg(download ? "download" : "upload")
+                                          .arg(lanes)
+                                          .arg(scenario)
+                                          .toLatin1();
+                    QTest::newRow(name.constData()) << download << lanes << scenario;
+                }
+    }
+
+    // 日期：2026-11-06；仅控制测试夹具协调双方，清单/数据/结果全部使用真实生产TLS与持久日志。
+    void parallelDispositions() {
+        QFETCH(bool, download);
+        QFETCH(int, lanes);
+        QFETCH(int, scenario);
+        QTemporaryDir temporary;
+        const auto input = temporary.filePath("input");
+        const auto output = temporary.filePath("output");
+        const auto shared = temporary.filePath("shared");
+        QVERIFY(QDir().mkpath(input));
+        QVERIFY(QDir().mkpath(output));
+        QVERIFY(QDir().mkpath(shared));
+        const QByteArray contents(4099, 'p');
+        const QByteArray original("unchanged-original");
+        const auto write = [](const QString &path, const QByteArray &bytes) {
+            // 日期：2026-11-06；所有样本写入显式检查完整长度，源删除后不得有备用正文。
+            QFile file(path);
+            if (!file.open(QIODevice::WriteOnly) || file.write(bytes) != bytes.size())
+                throw dukto::Error(dukto::ExitCode::Disk, "fixture write", "test");
+        };
+        QStringList paths;
+        for (int index = 0; index < 35; ++index) {
+            const auto name = QString("item-%1.bin").arg(index, 2, 10, QLatin1Char('0'));
+            write(input + '/' + name, index == 34 ? QByteArray{} : contents);
+            paths.append(input + '/' + name);
+            if (scenario == 1 || (scenario == 0 && index % 2 == 0))
+                write(output + '/' + name, original);
+        }
+        const auto owner = QUuid::createUuid();
+        const auto credential = dukto::randomCredential();
+        dukto::PrivateStore serviceStore(temporary.filePath("service"), true);
+        dukto::PrivateStore clientStore(temporary.filePath("client"), true);
+        const auto identity = dukto::initializeIdentity(serviceStore, {"127.0.0.1"});
+        const dukto::Grant grant{"data", true, true, true};
+        dukto::Shares(serviceStore).set({grant, shared});
+        dukto::AuthStore authorization(serviceStore);
+        const auto offer = authorization.issue({grant});
+        authorization.pair(offer.credential, owner, credential);
+        dukto::PrivateStore &sourceStore = download ? serviceStore : clientStore;
+        dukto::StrongManifest source(sourceStore, "source.sqlite", true);
+        source.scan(paths);
+        const auto sourceHash =
+            QByteArray::fromHex(source.summary()["sha256"].toString().toLatin1());
+        dukto::TaskStore tasks(serviceStore);
+        auto task = tasks.create(owner, QUuid::createUuid(), download ? "download" : "upload",
+                                 "data", "", shared, download ? QByteArray{} : sourceHash);
+        auto lease = tasks.acquire(owner, task.id);
+        task = tasks.bindManifest(*lease, source.summary());
+        task = tasks.advance(*lease, task.revision, "transferring", 0);
+        for (int index = 0; index < 35; ++index)
+            if (scenario == 1 || (scenario == 0 && index % 2 == 0))
+                QVERIFY(QFile::remove(paths[index]));
+        serviceStore.write(
+            "parallel-fixture.json",
+            dukto::next::encodeControl({{"owner", owner.toString(QUuid::WithoutBraces)},
+                                        {"task", task.id.toString(QUuid::WithoutBraces)},
+                                        {"download", download},
+                                        {"output", output},
+                                        {"lanes", lanes},
+                                        {"scenario", scenario},
+                                        {"manifest", QString::fromLatin1(sourceHash.toHex())}}));
+        QProcess server;
+        server.setProgram(QCoreApplication::applicationFilePath());
+        server.setArguments({"--parallel-disposition-server", serviceStore.directory()});
+        server.start();
+        QVERIFY(server.waitForStarted(10000));
+        QByteArray response;
+        QElapsedTimer startup;
+        startup.start();
+        while (!response.contains('\n') && startup.elapsed() < 10000) {
+            server.waitForReadyRead(100);
+            response += server.readAllStandardOutput();
+        }
+        QVERIFY2(response.contains('\n'), server.readAllStandardError().constData());
+        const auto ports = dukto::next::parseControl(response.trimmed());
+        const dukto::ClientProfile profile{"test",
+                                           "127.0.0.1",
+                                           quint16(ports["dataPort"].toInt()),
+                                           "127.0.0.1",
+                                           identity.certificate.digest(QCryptographicHash::Sha256),
+                                           identity.id,
+                                           owner,
+                                           credential,
+                                           true};
+        QJsonObject senderSummary;
+        QJsonObject receiverSummary;
+        bool lateCreated = false;
+        dukto::next::SecureChannel channel(5000);
+        channel.connectTo("127.0.0.1", quint16(ports["controlPort"].toInt()), "127.0.0.1",
+                          QSslConfiguration::defaultConfiguration(),
+                          identity.certificate.digest(QCryptographicHash::Sha256));
+        dukto::sendStrongManifest(channel, task.id, source, 1);
+        const auto ticket = channel.read();
+        QCOMPARE(ticket.header.type, dukto::next::Type::ChannelTicket);
+        QCOMPARE(ticket.header.correlation, quint64(2));
+        dukto::ParallelTransfer data(dukto::next::parseControl(ticket.payload), task.id, sourceHash,
+                                     download, true);
+        data.startClients(profile, 5000, download ? nullptr : &source);
+        dukto::DispositionJournal journal(clientStore, "client-outcome.sqlite", task.id, source,
+                                          "skip");
+        const auto completed = [&](const dukto::StrongEntry &entry,
+                                   const dukto::DurableReceive::Preparation &result) {
+            // 日期：2026-11-06；客户端独立逐项累积，最终与服务器摘要逐字段比较。
+            journal.append(entry.id, result.path, result.skipped ? "skipped" : "copied",
+                           result.skippedRoot);
+        };
+        if (download) {
+            dukto::DurableReceive receiver(clientStore, "receive.sqlite", task.id, source, output,
+                                           dukto::ConflictPolicy::Skip);
+            data.receiveTree(
+                channel, source, receiver, 2,
+                [&]() {
+                    // 日期：2026-11-06；下载同样在正文确认后引入竞争，不能省略服务发送方向。
+                    if (scenario == 2 && !lateCreated && receiver.confirmed() > 0) {
+                        write(output + "/item-00.bin", original);
+                        lateCreated = true;
+                    }
+                },
+                completed, nullptr, true);
+            receiverSummary = journal.summary();
+        } else {
+            data.sendTree(channel, source, 2, {}, completed, true);
+            senderSummary = journal.summary();
+        }
+        channel.write(dukto::next::Type::Close, 3, {});
+        QCOMPARE(channel.read().header.type, dukto::next::Type::Closed);
+        QVERIFY(server.waitForFinished(10000));
+        QCOMPARE(server.exitStatus(), QProcess::NormalExit);
+        QVERIFY2(server.exitCode() == 0, server.readAllStandardError().constData());
+        const auto remoteSummary =
+            dukto::next::parseControl(serviceStore.read("parallel-result.json"));
+        if (download)
+            senderSummary = remoteSummary;
+        else {
+            receiverSummary = remoteSummary;
+            lateCreated =
+                dukto::next::parseControl(serviceStore.read("parallel-late.json"))["created"]
+                    .toBool();
+        }
+        QCOMPARE(senderSummary, receiverSummary);
+        const auto expectedCopied = scenario == 0   ? 17
+                                    : scenario == 1 ? 0
+                                    : scenario == 2 ? 33
+                                                    : 34;
+        QCOMPARE(senderSummary["copiedBytes"].toString(),
+                 QString::number(qint64(expectedCopied) * contents.size()));
+        QCOMPARE(lateCreated, scenario == 2);
+        for (int index = 0; index < 35; ++index) {
+            const auto name = QString("item-%1.bin").arg(index, 2, 10, QLatin1Char('0'));
+            const bool skipped =
+                scenario == 1 || (scenario == 0 && index % 2 == 0) || (scenario == 2 && index == 0);
+            const auto expected = skipped ? original : index == 34 ? QByteArray{} : contents;
+            QCOMPARE(dukto::hashFile(output + '/' + name),
+                     QCryptographicHash::hash(expected, QCryptographicHash::Sha256));
+        }
+    }
+
+    // 日期：2026-11-06；双向真实TLS覆盖混合子树、全部跳过、复制和正文结束时的发布竞争。
+    void explicitDispositions_data() {
+        QTest::addColumn<bool>("download");
+        QTest::addColumn<int>("scenario");
+        for (bool download : {false, true})
+            for (int scenario = 0; scenario < 4; ++scenario) {
+                const auto name =
+                    QString("%1-%2").arg(download ? "download" : "upload").arg(scenario).toLatin1();
+                QTest::newRow(name.constData()) << download << scenario;
+            }
+    }
+
+    // 日期：2026-11-06；冻结后删除被跳过源文件，只有不打开正文才能通过；双方独立持久摘要必须完全一致。
+    void explicitDispositions() {
+        QFETCH(bool, download);
+        QFETCH(int, scenario);
+        QTemporaryDir temporary;
+        const auto input = temporary.filePath("input");
+        const auto output = temporary.filePath("output");
+        QVERIFY(QDir().mkpath(input + "/b-existing/subtree"));
+        QVERIFY(QDir().mkpath(output));
+        const QByteArray contents(4099, 's');
+        const QByteArray original("preserved-target");
+        const auto write = [](const QString &path, const QByteArray &bytes) {
+            // 日期：2026-11-06；样本写入失败即终止，不允许缺失原件形成假阳性。
+            QFile file(path);
+            if (!file.open(QIODevice::WriteOnly) || file.write(bytes) != bytes.size())
+                throw dukto::Error(dukto::ExitCode::Disk, "fixture write", "test");
+        };
+        write(input + "/a-fresh.bin", contents);
+        write(input + "/b-existing/subtree/data.bin", contents);
+        write(input + "/c-existing.bin", contents);
+        write(input + "/d-empty.bin", {});
+        if (scenario < 2) {
+            QVERIFY(QDir().mkpath(output + "/b-existing"));
+            write(output + "/c-existing.bin", original);
+            if (scenario == 1) {
+                write(output + "/a-fresh.bin", original);
+                write(output + "/d-empty.bin", original);
+            }
+        }
+        dukto::PrivateStore sourceStore(temporary.filePath("source"), true);
+        dukto::PrivateStore destinationStore(temporary.filePath("destination"), true);
+        dukto::StrongManifest source(sourceStore, "manifest.sqlite", true);
+        source.scan(scenario == 2 ? QStringList{input + "/a-fresh.bin"}
+                                  : QStringList{input + "/a-fresh.bin", input + "/b-existing",
+                                                input + "/c-existing.bin", input + "/d-empty.bin"});
+        const auto hash = QByteArray::fromHex(source.summary()["sha256"].toString().toLatin1());
+        if (scenario < 2) {
+            QVERIFY(QFile::remove(input + "/c-existing.bin"));
+            QVERIFY(QDir(input + "/b-existing").removeRecursively());
+            if (scenario == 1) {
+                QVERIFY(QFile::remove(input + "/a-fresh.bin"));
+                QVERIFY(QFile::remove(input + "/d-empty.bin"));
+            }
+        }
+        dukto::PrivateStore identityStore(temporary.filePath("identity"), true);
+        const auto identity = dukto::initializeIdentity(identityStore, {"127.0.0.1"});
+        QJsonObject senderSummary;
+        QJsonObject receiverSummary;
+        bool lateCreated = false;
+        const auto send = [&](dukto::next::SecureChannel &channel, dukto::PrivateStore &store) {
+            // 日期：2026-11-06；每个线程重新打开自己的只读清单及结果日志，禁止跨线程SQLite连接。
+            dukto::StrongManifest manifest(store, "manifest.sqlite", false);
+            dukto::DispositionJournal journal(store, "send.sqlite", Task, manifest, "skip");
+            dukto::sendStrongManifest(channel, Task, manifest, 1);
+            dukto::sendStrongTree(
+                channel, Task, manifest, 2, {},
+                [&](const dukto::StrongEntry &entry,
+                    const dukto::DurableReceive::Preparation &result) {
+                    // 日期：2026-11-06；发送端只根据本次严格验证的处置累积独立收据。
+                    journal.append(entry.id, result.path, result.skipped ? "skipped" : "copied",
+                                   result.skippedRoot);
+                },
+                true);
+            senderSummary = journal.summary();
+        };
+        const auto receive = [&](dukto::next::SecureChannel &channel, dukto::PrivateStore &store) {
+            // 日期：2026-11-06；接收端仅从公开分页导入清单，原件及跳过根由生产持久日志裁决。
+            dukto::StrongManifest manifest(store, "wire.sqlite", true);
+            dukto::receiveStrongManifest(channel, Task, manifest, hash, 1);
+            dukto::DurableReceive receiver(store, "receive.sqlite", Task, manifest, output,
+                                           dukto::ConflictPolicy::Skip);
+            dukto::DispositionJournal journal(store, "receive-outcome.sqlite", Task, manifest,
+                                              "skip");
+            dukto::receiveStrongTree(
+                channel, Task, manifest, receiver, 2,
+                [&]() {
+                    // 日期：2026-11-06；整文件正文已同步后再创建竞争目标，验证最终裁决能从receive变为skipped。
+                    if (scenario == 2 && !lateCreated && receiver.confirmed() == contents.size()) {
+                        write(output + "/a-fresh.bin", original);
+                        lateCreated = true;
+                    }
+                },
+                [&](const dukto::StrongEntry &entry,
+                    const dukto::DurableReceive::Preparation &result) {
+                    // 日期：2026-11-06；接收端摘要独立读取真实裁决，不能把已传正文冒充copied。
+                    journal.append(entry.id, result.path, result.skipped ? "skipped" : "copied",
+                                   result.skippedRoot);
+                },
+                nullptr, true);
+            receiverSummary = journal.summary();
+        };
+        ExchangeServer server;
+        server.operation = [&](qintptr descriptor) {
+            // 日期：2026-11-06；真实认证TLS只处理当前测试私有目录，socket及SQLite在工作线程创建销毁。
+            dukto::next::SecureChannel peer(5000);
+            peer.accept(descriptor, identity.configuration());
+            dukto::PrivateStore store(download ? sourceStore.directory()
+                                               : destinationStore.directory());
+            if (download)
+                send(peer, store);
+            else
+                receive(peer, store);
+            const auto close = peer.read();
+            if (close.header.type != dukto::next::Type::Close || close.header.correlation != 3)
+                throw dukto::Error(dukto::ExitCode::Integrity, "close", "test");
+            peer.write(dukto::next::Type::Closed, 3, {});
+        };
+        QVERIFY(server.listen(QHostAddress::LocalHost, 0));
+        dukto::next::SecureChannel channel(5000);
+        channel.connectTo("127.0.0.1", server.serverPort(), "127.0.0.1",
+                          QSslConfiguration::defaultConfiguration(),
+                          identity.certificate.digest(QCryptographicHash::Sha256));
+        if (download)
+            receive(channel, destinationStore);
+        else
+            send(channel, sourceStore);
+        channel.write(dukto::next::Type::Close, 3, {});
+        QCOMPARE(channel.read().header.type, dukto::next::Type::Closed);
+        QVERIFY(server.done());
+        QVERIFY2(server.error.isEmpty(), qPrintable(server.error));
+        QCOMPARE(senderSummary, receiverSummary);
+        const auto expectedCopied = scenario == 0   ? contents.size()
+                                    : scenario == 3 ? contents.size() * 3
+                                                    : 0;
+        QCOMPARE(senderSummary["copiedBytes"].toString(), QString::number(expectedCopied));
+        QCOMPARE(lateCreated, scenario == 2);
+        const auto sha = [](const QByteArray &bytes) {
+            // 日期：2026-11-06；直接从样本常量计算独立期望摘要。
+            return QCryptographicHash::hash(bytes, QCryptographicHash::Sha256);
+        };
+        QCOMPARE(dukto::hashFile(output + "/a-fresh.bin"),
+                 sha(scenario == 1 || scenario == 2 ? original : contents));
+        if (scenario != 2) {
+            QCOMPARE(dukto::hashFile(output + "/c-existing.bin"),
+                     sha(scenario < 2 ? original : contents));
+            QCOMPARE(QFileInfo::exists(output + "/b-existing/subtree"), scenario == 3);
+            QCOMPARE(dukto::hashFile(output + "/d-empty.bin"),
+                     sha(scenario == 1 ? original : QByteArray{}));
+        }
+        QVERIFY(QDir(output)
+                    .entryList({".dukto-*.part", ".dukto-*.dir"},
+                               QDir::Files | QDir::Dirs | QDir::Hidden | QDir::NoDotAndDotDot)
+                    .isEmpty());
+    }
+
     // 日期：2026-11-05；双向初始、就绪和最终三处完成确认均覆盖合法总计及八类畸形字段。
     void completedSummary_data() {
         QTest::addColumn<bool>("download");
@@ -446,6 +1290,8 @@ int main(int argc, char **argv) {
     QCoreApplication application(argc, argv);
     FileExchangeTests tests;
     try {
+        if (argc == 3 && QString::fromLocal8Bit(argv[1]) == "--parallel-disposition-server")
+            return parallelDispositionServer(QString::fromLocal8Bit(argv[2]));
         return QTest::qExec(&tests, argc, argv);
     } catch (const dukto::Error &error) {
         const auto diagnostic = (error.stage + ": " + error.message).toUtf8();

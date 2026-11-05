@@ -18,10 +18,10 @@ class ParallelTransfer final {
     static std::unique_ptr<ParallelTransfer>
     createServer(const QString &state, const QUuid &owner, const QUuid &task,
                  StrongManifest &manifest, bool receiver, int requested,
-                 const std::shared_ptr<TransferAdmission> &admission);
+                 const std::shared_ptr<TransferAdmission> &admission, bool dispositions = false);
     // 日期：2026-11-04；客户端仅接受绑定当前任务和清单的严格票据，不从任务历史重用临时令牌。
     ParallelTransfer(const QJsonObject &ticket, const QUuid &task, const QByteArray &manifest,
-                     bool receiver);
+                     bool receiver, bool dispositions = false);
     // 日期：2026-11-04；任何退出路径先取消所有本地通道，再等待线程归还缓冲、socket 和 SQLite。
     ~ParallelTransfer();
     ParallelTransfer(const ParallelTransfer &) = delete;
@@ -36,13 +36,16 @@ class ParallelTransfer final {
     // 日期：2026-11-04；文件元数据走控制连接，块任务由接收端分配到独立数据线程。
     void sendTree(next::SecureChannel &control, StrongManifest &manifest, quint64 correlation,
                   const std::function<void()> &check = {},
-                  const std::function<void(const StrongEntry &, const QString &)> &completed = {});
+                  const std::function<void(const StrongEntry &,
+                                           const DurableReceive::Preparation &)> &completed = {},
+                  bool dispositions = false);
     // 日期：2026-11-05；接收日志仅在当前控制线程访问，数据线程通过每通道一个片段槽交付。
     void
     receiveTree(next::SecureChannel &control, StrongManifest &manifest, DurableReceive &receiver,
                 quint64 correlation, const std::function<void()> &check = {},
-                const std::function<void(const StrongEntry &, const QString &)> &completed = {},
-                TransferProgress *progress = nullptr);
+                const std::function<void(const StrongEntry &, const DurableReceive::Preparation &)>
+                    &completed = {},
+                TransferProgress *progress = nullptr, bool dispositions = false);
     // 日期：2026-11-04；客户端已经完成 TLS/认证后进入专用数据循环，不与控制 socket 跨线程共享。
     static void clientLane(next::SecureChannel &channel, const QJsonObject &ticket, int lane,
                            const std::shared_ptr<ParallelState> &state,
