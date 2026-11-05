@@ -2,11 +2,20 @@
 
 import os
 import platform
+import sys
 import subprocess
 
 import psutil
 
-from soak_transfer import metrics
+from soak_transfer import metrics as portable_metrics
+
+
+# 日期：2026-11-05；Darwin 的私有内存指标采用系统 physical footprint，其余平台保持既有指标。
+def metrics(target):
+    if sys.platform == "darwin":
+        from macos_process_sampling import memory_metrics
+        return memory_metrics(target)
+    return portable_metrics(target)
 
 
 # 日期：2026-11-05；Linux 在进程退出的短窗口可能先拒绝 fd 采样，最多等 100ms 确认真实退出。
@@ -29,10 +38,10 @@ def thread_inventory(process, windows_inventory):
     if os.name == "nt":
         return windows_inventory(process)
     target = psutil.Process(process.pid)
+    if sys.platform == "darwin":
+        from macos_process_sampling import thread_inventory as native_inventory
+        return native_inventory(target)
     threads = target.threads()
-    if platform.system() == "Darwin":
-        return [{"id": item.id, "userTime": item.user_time, "systemTime": item.system_time}
-                for item in threads]
     from pathlib import Path
     return [{"id": item.id, "name": Path(f"/proc/{process.pid}/task/{item.id}/comm").read_text().strip()}
             for item in threads]

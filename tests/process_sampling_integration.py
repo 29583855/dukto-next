@@ -34,11 +34,13 @@ def main():
                     raise RuntimeError("memory bound relaxed")
                 except AssertionError:
                     checks.append("512MiB bound retained")
-            with patch.object(process_sampling.platform, "system", return_value="Darwin"):
-                inventory = process_sampling.thread_inventory(child, lambda _: [])
-                if sys.platform != "win32":
-                    assert inventory and all("id" in entry for entry in inventory)
-                    checks.append("Darwin branch schema simulated on POSIX")
+            inventory = process_sampling.thread_inventory(child, lambda _: [])
+            if sys.platform != "win32":
+                assert inventory and all(entry["id"] > 0 for entry in inventory)
+                checks.append("real native thread inventory")
+            measured = process_sampling.metrics(psutil.Process(child.pid))
+            assert measured["rss"] > 0 and measured["private"] > 0 and measured["threads"] > 0
+            checks.append("real child memory and thread sampling")
         finally:
             child.kill()
             child.wait(10)
@@ -55,7 +57,8 @@ def main():
     assert not path.exists()
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps({"date": "2026-11-05", "passed": True, "checks": checks,
-        "shortLivedChildren": 50, "nativeMacOSVerified": sys.platform == "darwin"}, indent=2) + "\n", encoding="utf-8")
+        "shortLivedChildren": 50, "nativeMacOSVerified": sys.platform == "darwin",
+        "privateMetric": "physical_footprint" if sys.platform == "darwin" else ("PrivateUsage" if sys.platform == "win32" else "USS")}, indent=2) + "\n", encoding="utf-8")
 
 
 if __name__ == "__main__":

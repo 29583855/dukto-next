@@ -30,7 +30,6 @@ jobs:
         with:
           version: ${{ matrix.qt }}
           arch: ${{ matrix.arch }}
-          modules: qtquickcontrols2
           cache: true
       - name: Install Linux Qt
         if: runner.os == 'Linux'
