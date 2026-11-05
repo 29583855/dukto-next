@@ -83,3 +83,8 @@ v0.62范围补记：b9d9b78双架构原生编译及部署成功，原迁移步�
 
 
 v0.68：Mac下载仍为本页已验db8c774双包；同生产输入Windows r25/Linux5857073实际包已核验。五环境各21核心、Ubuntu/Apple Silicon各39及Alpine39协议已验，Windows/Intel完整终态继续。[当前回执](ci-verification-20261106-r68.json)。
+
+
+### v0.69 新源码资格说明（2026-11-06）
+
+最新生产源码4da0b12增加双端处置摘要确认，双Windows核心与协议专项通过；精确新提交的原生CI及双Mac部署包已启动，终态和原附件待核验。本页下载仍为已验db8c774生产输入，不声称包含新协议。上一db8c774五环境各21核心、四runner159及Alpine39协议原报告SHA均已核验。见[本轮回执](ci-verification-20261106-r69.json)。

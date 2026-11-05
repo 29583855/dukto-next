@@ -124,3 +124,8 @@ v0.41当前可用Windows r20：dist/windows-preview-20261105-r20/DuktoNext-windo
 
 
 v0.51：r23同一fe8373a7 CLI原位运行已完成证书生命周期七检查及双向检查点复用，报告windows-r23-certificate-lifecycle-r50-inplace.json。复制单个EXE离开包的首轮测试无法定位SQL插件，原失败保留，新增--in-place保持EXE旁依赖布局。r23仍早于0017发送期修复，新包/原生盘满另验。
+
+
+### v0.69 新源码资格说明（2026-11-06）
+
+最新生产源码4da0b12增加双端处置摘要确认，双Windows核心与协议专项通过；精确新提交的原生CI及双Mac部署包已启动，终态和原附件待核验。本页下载仍为已验db8c774生产输入，不声称包含新协议。上一db8c774五环境各21核心、四runner159及Alpine39协议原报告SHA均已核验。见[本轮回执](ci-verification-20261106-r69.json)。
