@@ -100,12 +100,14 @@ class ExpiryProxy(SlowProxy):
     # 日期：2026-11-05；只报告本组密文转发量和时间，密文字节不充当正文或持久确认量。
     def evidence(self, marker):
         with self.observation_lock:
-            records = [dict(value) for value in self.observations if value["sequence"] >= marker["sequence"]]
+            records = [{**value, "milestones": list(value["milestones"])}
+                       for value in self.observations if value["sequence"] >= marker["sequence"]]
         for value in records:
             for key in ("started", "firstForwarded", "lastForwarded"):
                 if key in value:
                     value[key + "AfterCaseSeconds"] = round(value.pop(key) - marker["started"], 3)
-            value["throttleSeconds"] = round(value["throttleSeconds"], 3)
+            for key in ("throttleSeconds", "actualThrottleSeconds", "receiveWaitSeconds", "sendWaitSeconds"):
+                value[key] = round(value[key], 3)
         return {"scope": "opaque TLS forwarding including handshake and control; not durable payload bytes",
                 "directions": records}
 
@@ -118,24 +120,41 @@ class ExpiryProxy(SlowProxy):
         with self.observation_lock:
             record = {"sequence": self.sequence, "started": time.monotonic(), "forwardedBytes": 0,
                       "reads": 0, "largestRead": 0, "throttleSeconds": 0.0,
-                      "direction": direction}
+                      "actualThrottleSeconds": 0.0, "receiveWaitSeconds": 0.0,
+                      "sendWaitSeconds": 0.0, "milestones": [], "direction": direction}
             self.sequence += 1
             self.observations.append(record)
         try:
             while not self.stopped.is_set():
+                receiving = time.monotonic()
                 data = source.recv(16384)
+                received = time.monotonic()
                 delay = len(data) / self.rate
-                if not data or self.stopped.wait(delay):
+                stopped = not data or self.stopped.wait(delay)
+                throttled = time.monotonic()
+                with self.observation_lock:
+                    record["receiveWaitSeconds"] += received - receiving
+                    record["actualThrottleSeconds"] += throttled - received
+                if stopped:
                     break
                 destination.sendall(data)
                 with self.observation_lock:
                     now = time.monotonic()
+                    record["sendWaitSeconds"] += now - throttled
                     record.setdefault("firstForwarded", now)
                     record["lastForwarded"] = now
                     record["forwardedBytes"] += len(data)
                     record["reads"] += 1
                     record["largestRead"] = max(record["largestRead"], len(data))
                     record["throttleSeconds"] += delay
+                    if (len(record["milestones"]) < 32
+                            and record["forwardedBytes"] >= (len(record["milestones"]) + 1) * 262144):
+                        record["milestones"].append({
+                            "forwardedBytes": record["forwardedBytes"],
+                            "afterConnectionSeconds": round(now - record["started"], 3),
+                            "receiveWaitSeconds": round(record["receiveWaitSeconds"], 3),
+                            "actualThrottleSeconds": round(record["actualThrottleSeconds"], 3),
+                            "sendWaitSeconds": round(record["sendWaitSeconds"], 3)})
         except OSError:
             pass
         finally:
@@ -314,6 +333,8 @@ def main():
     parser.add_argument("executable")
     parser.add_argument("--report", required=True)
     parser.add_argument("--channels", type=int, nargs="+", default=[1, 4, 16])
+    parser.add_argument("--directions", choices=("upload", "download"), nargs="+",
+                        default=["upload", "download"])
     parser.add_argument("--resume-timeout", type=int, default=90)
     parser.add_argument("--expiry-seconds", type=int, default=20)
     parser.add_argument("--expiry-rate-kib", type=int, default=512)
@@ -406,7 +427,7 @@ def main():
             expected, total = digest(source), source.stat().st_size
             shutil.copyfile(source, shared / source.name)
             for channels in args.channels:
-                for direction in ("upload", "download"):
+                for direction in args.directions:
                     request = str(uuid.uuid4())
                     target = root / f"{direction}-{channels}"
                     target.mkdir()
@@ -465,11 +486,11 @@ def main():
             service_output = output.finish() if output else {"drainStarted": False, "trailingOutput": service.stdout.read(8192)}
             service_error = service.stderr.read(8192)
             proxy.close()
-            passed = (not service_error and len(cases) == 2 * len(args.channels)
+            passed = (not service_error and len(cases) == len(args.directions) * len(args.channels)
                       and all(case["passed"] for case in cases))
             report = {"date": "2026-11-05", "passed": passed, "binarySha256": binary_sha,
                       "scriptSha256": script_sha, "resumeBudgetSeconds": args.resume_timeout,
-                      "timingConfiguration": timing,
+                      "timingConfiguration": timing, "directions": args.directions,
                       "defaultTimingGatesPassed": passed and (args.expiry_seconds, args.expiry_rate_kib,
                                                               args.expiry_timeout, args.ready_timeout,
                                                               args.resume_timeout) == (20, 512, 45, 30, 90),

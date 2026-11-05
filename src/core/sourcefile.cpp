@@ -18,7 +18,7 @@
 namespace dukto {
 namespace {
 // 日期：2026-11-04；只作进程内身份比较，明确取字段，避免填充字节导致不确定的变化判断。
-QByteArray fileIdentity(int descriptor) {
+QByteArray fileIdentity(int descriptor, bool contents = true) {
     QByteArray result;
 #ifdef Q_OS_WIN
     const auto handle = reinterpret_cast<HANDLE>(_get_osfhandle(descriptor));
@@ -28,9 +28,12 @@ QByteArray fileIdentity(int descriptor) {
     if (info.dwFileAttributes & (FILE_ATTRIBUTE_REPARSE_POINT | FILE_ATTRIBUTE_DIRECTORY))
         throw Error(ExitCode::Permission, QStringLiteral("源文件不是普通文件或属于重解析点"),
                     "read");
+    for (const auto value : {info.dwVolumeSerialNumber, info.nFileIndexHigh, info.nFileIndexLow})
+        result += QByteArray::number(static_cast<qulonglong>(value)) + ':';
+    if (!contents)
+        return result;
     for (const auto value :
-         {info.dwVolumeSerialNumber, info.nFileIndexHigh, info.nFileIndexLow, info.nFileSizeHigh,
-          info.nFileSizeLow, info.ftLastWriteTime.dwHighDateTime,
+         {info.nFileSizeHigh, info.nFileSizeLow, info.ftLastWriteTime.dwHighDateTime,
           info.ftLastWriteTime.dwLowDateTime})
         result += QByteArray::number(static_cast<qulonglong>(value)) + ':';
 #else
@@ -40,8 +43,10 @@ QByteArray fileIdentity(int descriptor) {
     if (!S_ISREG(info.st_mode))
         throw Error(ExitCode::Permission, QStringLiteral("源文件不是普通文件"), "read");
     result = QByteArray::number(static_cast<qulonglong>(info.st_dev)) + ':' +
-             QByteArray::number(static_cast<qulonglong>(info.st_ino)) + ':' +
-             QByteArray::number(static_cast<qlonglong>(info.st_size)) + ':';
+             QByteArray::number(static_cast<qulonglong>(info.st_ino)) + ':';
+    if (!contents)
+        return result;
+    result += QByteArray::number(static_cast<qlonglong>(info.st_size)) + ':';
 #ifdef Q_OS_MACOS
     for (const auto &time : {info.st_mtimespec, info.st_ctimespec})
 #else
@@ -89,6 +94,7 @@ SourceFile::SourceFile(const QString &path) {
         throw Error(ExitCode::Disk, file_.errorString(), "read");
     }
     identity_ = fileIdentity(file_.handle());
+    objectIdentity_ = fileIdentity(file_.handle(), false);
 }
 
 // 日期：2026-11-04；成员按声明逆序析构，文件的关闭先于父目录锁的释放。
@@ -99,21 +105,32 @@ QFile &SourceFile::device() {
     return file_;
 }
 
-// 日期：2026-11-04；路径替换不会读取替换后的数据，检测到替换或原生属性变化时拒绝成功。
+// 日期：2026-11-05；传输源与私有小文件仍核对大小/mtime/ctime，内容变化必须拒绝成功。
 void SourceFile::verify() const {
-    if (fileIdentity(file_.handle()) != identity_)
+    verifyIdentity(true);
+}
+
+// 日期：2026-11-05；共享SQLite可由独立连接原地写入，只允许同一个普通文件，不能接受路径或父目录替换。
+void SourceFile::verifyObject() const {
+    verifyIdentity(false);
+}
+
+// 日期：2026-11-05；两种模式共用普通文件类型、原生对象和固定路径检查，严格模式再比较内容元数据。
+void SourceFile::verifyIdentity(bool contents) const {
+    const auto &expected = contents ? identity_ : objectIdentity_;
+    if (fileIdentity(file_.handle(), contents) != expected)
         throw Error(ExitCode::Integrity, QStringLiteral("读取期间源文件已变化"), "read");
 #ifndef Q_OS_WIN
     const int current = parent_->openRead(name_);
     QByteArray observed;
     try {
-        observed = fileIdentity(current);
+        observed = fileIdentity(current, contents);
     } catch (...) {
         ::close(current);
         throw;
     }
     ::close(current);
-    if (observed != identity_)
+    if (observed != expected)
         throw Error(ExitCode::Integrity, QStringLiteral("源文件路径在读取期间已被替换"), "read");
 #endif
 }

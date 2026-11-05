@@ -42,9 +42,13 @@ jobs:
       - name: Original UDP chain limit
         if: ${{ !cancelled() && steps.compile.outcome == 'success' }}
         run: build/core-tests discoveryYieldsAndRejectsMalformedGoodbye -o build/discovery-chain.log,txt -o build/discovery-chain.xml,junitxml
-      - name: Single channel session original limits
+      # 日期：2026-11-05；两个方向独立诊断，保持原20秒/512KiB/s/90秒门槛。
+      - name: Single channel upload session original limits
         if: ${{ !cancelled() && steps.compile.outcome == 'success' }}
-        run: python -X utf8 tests/session_expiry_integration.py build/dukto-cli --channels 1 --report build/session-expiry.json
+        run: python -X utf8 tests/session_expiry_integration.py build/dukto-cli --channels 1 --directions upload --report build/session-expiry-upload.json
+      - name: Single channel download session original limits
+        if: ${{ !cancelled() && steps.compile.outcome == 'success' }}
+        run: python -X utf8 tests/session_expiry_integration.py build/dukto-cli --channels 1 --directions download --report build/session-expiry-download.json
       - name: Preserve native diagnostic evidence
         if: always()
         uses: actions/upload-artifact@v4

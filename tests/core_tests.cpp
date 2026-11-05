@@ -16,9 +16,11 @@
 #include <QtEndian>
 #include <QtTest>
 #include <array>
+#include <atomic>
 #include <exception>
 #include <limits>
 #include <stdexcept>
+#include <thread>
 #ifdef Q_OS_WIN
 #ifndef NOMINMAX
 #define NOMINMAX
@@ -72,6 +74,64 @@ class CoreTests final : public QObject {
         QVERIFY_EXCEPTION_THROWN(reopened.write("identity.json", "must not replace unsafe file"),
                                  dukto::Error);
     }
+    // 日期：2026-11-05；共享SQLite文件可并发原地写入，原生对象/权限核验不得把内容更新误报为替换。
+    void privateMutableFileValidation() {
+        QTemporaryDir temporary;
+        dukto::PrivateStore store(temporary.filePath("private"), true);
+        store.write("mutable.sqlite", "fixed-size");
+        const auto path = temporary.filePath("private/mutable.sqlite");
+        std::atomic_bool stop{false};
+        std::atomic_bool ready{false};
+        std::atomic_bool failed{false};
+        std::atomic_int writes{0};
+        std::thread writer([&]() {
+            // 日期：2026-11-05；固定大小单字节更新反复推进mtime/ctime，不改变文件类型、归属或原生对象。
+            QFile file(path);
+            if (!file.open(QIODevice::ReadWrite)) {
+                failed.store(true);
+                ready.store(true);
+                return;
+            }
+            char value = 'a';
+            ready.store(true);
+            while (!stop.load()) {
+                if (!file.seek(0) || file.write(&value, 1) != 1 || !file.flush()) {
+                    failed.store(true);
+                    return;
+                }
+                value = value == 'a' ? 'b' : 'a';
+                ++writes;
+                QThread::yieldCurrentThread();
+            }
+        });
+        QElapsedTimer startup;
+        startup.start();
+        while (!ready.load() && startup.elapsed() < 2000)
+            QThread::msleep(1);
+        const bool started = ready.load();
+        std::exception_ptr failure;
+        try {
+            if (started && !failed.load())
+                for (int index = 0; index < 1000; ++index)
+                    if (store.validateFile("mutable.sqlite") != 10)
+                        throw std::runtime_error("Mutable file size differs");
+        } catch (...) {
+            failure = std::current_exception();
+        }
+        stop.store(true);
+        writer.join();
+        QVERIFY(started);
+        QVERIFY(!failed.load());
+        QVERIFY(writes.load() > 0);
+        if (failure) {
+            try {
+                std::rethrow_exception(failure);
+            } catch (const std::exception &error) {
+                QFAIL(error.what());
+            }
+        }
+    }
+
     // 日期：2026-11-04；原生源读取固定普通文件；Windows 拒绝替换，POSIX
     // 替换后仍读原对象并拒绝成功。
     void sourceObjectPinned() {
@@ -95,6 +155,7 @@ class CoreTests final : public QObject {
             QVERIFY(source.device().seek(0));
             QCOMPARE(source.device().readAll(), QByteArray("original"));
             QVERIFY_EXCEPTION_THROWN(source.verify(), dukto::Error);
+            QVERIFY_EXCEPTION_THROWN(source.verifyObject(), dukto::Error);
 #endif
         }
         QVERIFY(QFile::remove(path));
@@ -112,6 +173,7 @@ class CoreTests final : public QObject {
         QVERIFY(file.open(QIODevice::Append));
         QCOMPARE(file.write("after"), qint64(5));
         file.close();
+        source.verifyObject();
         QVERIFY_EXCEPTION_THROWN(source.verify(), dukto::Error);
     }
 #ifndef Q_OS_WIN

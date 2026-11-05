@@ -17,8 +17,12 @@ class SourceFile final {
     QFile &device();
     // 日期：2026-11-04；核对打开对象的身份、大小、原生修改时间及 POSIX 路径身份。
     void verify() const;
+    // 日期：2026-11-05；仅供共享可变状态库核验原生对象；传输源应使用严格verify。
+    void verifyObject() const;
 
   private:
+    // 日期：2026-11-05；普通文件和路径身份始终验证，内容元数据只在严格源读取时要求稳定。
+    void verifyIdentity(bool contents) const;
 #ifdef Q_OS_WIN
     std::unique_ptr<NativeDirectoryLock> parent_;
 #else
@@ -27,5 +31,6 @@ class SourceFile final {
 #endif
     QFile file_;
     QByteArray identity_;
+    QByteArray objectIdentity_;
 };
 } // namespace dukto

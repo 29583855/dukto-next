@@ -198,7 +198,9 @@ qint64 PrivateStore::validateFile(const QString &name) const {
     SourceFile source(path(name));
     verifyFile(source.device());
     const auto size = source.device().size();
-    source.verify();
+    // 日期：2026-11-05；SQLite连接可并发更新页，不把mtime/大小变化误报成源替换；类型/路径/所有者仍重验。
+    source.verifyObject();
+    verifyFile(source.device());
     return size;
 }
 
