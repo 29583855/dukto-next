@@ -1,5 +1,5 @@
 {
-  "observedUtc": "2026-11-05T21:13:33.045873+00:00",
+  "observedUtc": "2026-11-05T21:33:13.280381+00:00",
   "productionCommit": "db8c77476d7a52870c0beeb579e5ea8d88c701ff",
   "testCommit": "db8c77476d7a52870c0beeb579e5ea8d88c701ff",
   "packages": [
@@ -24,17 +24,26 @@
     {
       "architecture": "x86_64",
       "archive": "DuktoNext-linux-glibc-x64-preview.tar.gz",
-      "sha256": "184402a446c14d99b9918c1bcbe961a28d4170a1e2dfb45654704b9a3c401dcf",
-      "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42030410632/artifacts/13415898193",
-      "applicationSourceFiles": 213,
-      "sourceCommit": "31f3db3bfb5a8bf70b6217afd50df3284e27934c"
+      "sha256": "a05fe6ad7434cf3e77d9fab68abbd817055c31e3a4ffcaf59c75366d3daf4556",
+      "sourceCommit": "5857073de686df38c2f3ee8dc1feb0ce98efdf4d",
+      "verifiedFiles": 708,
+      "verifiedLinks": 2,
+      "nativeImages": 132,
+      "applicationSourceFiles": 242,
+      "inputCliSha256": "225c7791c91696851ca96008c4334751424c538b7859d3c725d75d7626263b79",
+      "inputGuiSha256": "d2136b19fee544fd94a150c4ceb6ca2e9f4da771e084323824833ba0e9db6995",
+      "cleanSystemQualified": false,
+      "releaseQualified": false,
+      "artifactSha256": "3acc78726f1bb41ad613f1aeaa382a1e2fabfe569fbafc2ce3f6d06ddffe72f0",
+      "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42111269030/artifacts/13455131861",
+      "runtimeMigrationBothDisplaysQualified": true
     }
   ],
   "packageRuntime": {
     "macOS": "db8c774 arm64/x86_64 passed; ten child report hashes, four screenshots and240 exact Git source files per package verified",
-    "linux": "X11 and Wayland passed; embedded overwrite/recovery verified",
-    "windows": "r24 passed including same-CLI certificate lifecycle",
-    "windowsZipSha256": "ad02396dbba52a80df3e21315d79aa10936ea44a1fc7a77fae97f355801826ee"
+    "linux": "5857073 exact242 source files,132 ELF and X11/Wayland embedded business reports verified",
+    "windows": "r25 current production; system PATH migration and four current feature suites passed",
+    "windowsZipSha256": "529b14ec96e57e2e1735f896efe2eaab243b034aa7616a6462b725411f325c9c"
   },
   "apfsPhysical": {
     "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42043472400",
@@ -63,7 +72,13 @@
     "allProtocolReportHashesVerified": false,
     "fourCoreStepsPassed": true,
     "coreTargetsEach": 21,
-    "coreEvidence": "docs/ci-verification-20261106-r67.json"
+    "coreEvidence": "docs/ci-verification-20261106-r67.json",
+    "verifiedProtocolCases": 78,
+    "verifiedProtocolRunners": [
+      "ubuntu-22.04",
+      "macos-15"
+    ],
+    "evidence": "docs/ci-verification-20261106-r68.json"
   },
   "nativeMuslRunUrl": "https://github.com/29583855/dukto-next/actions/runs/42107308948",
   "originalFailureRunsRetained": [
@@ -79,22 +94,24 @@
   ],
   "releaseQualified": false,
   "deliveryComplete": false,
-  "planVersion": "v0.67",
-  "currentSourceStage": "db8c774 dual macOS deployed previews delivered; five native21 core suites verified; full159/39 protocol evidence pending",
+  "planVersion": "v0.68",
+  "currentSourceStage": "current production GUI/CLI previews verified on three platforms; five21 cores and Ubuntu/ARM39+musl39 original protocols verified; Windows/Intel full and current Windows24h pending",
   "nativeMusl": {
     "sourceCommit": "db8c77476d7a52870c0beeb579e5ea8d88c701ff",
     "runId": 42107308948,
     "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42107308948",
-    "status": "in_progress",
-    "workflowConclusion": null,
-    "originalEvidenceVerified": false,
+    "status": "completed",
+    "workflowConclusion": "success",
+    "originalEvidenceVerified": true,
     "expectedCoreTargets": 21,
     "expectedProtocolCases": 39,
-    "fullProtocolPending": true,
-    "allProtocolReportHashesVerified": false,
+    "fullProtocolPending": false,
+    "allProtocolReportHashesVerified": true,
     "coreTargets": 21,
     "coreSuitePassed": true,
-    "coreEvidence": "docs/ci-verification-20261106-r67.json"
+    "coreEvidence": "docs/ci-verification-20261106-r67.json",
+    "protocolCases": 39,
+    "evidence": "docs/ci-verification-20261106-r68.json"
   },
   "apfsCleanupR54": {
     "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42039126426",
@@ -471,7 +488,7 @@
       "sourceCommit": "31f3db3bfb5a8bf70b6217afd50df3284e27934c"
     }
   ],
-  "publicVerificationReceipt": "docs/ci-verification-20261106-r67.json",
+  "publicVerificationReceipt": "docs/ci-verification-20261106-r68.json",
   "lastVerifiedCopiedFull": {
     "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42065923177",
     "sourceCommit": "74dd5cec71fde472b940e869661d6e8533042a65",
@@ -770,5 +787,145 @@
       "applicationSourceFiles": 213,
       "sourceCommit": "31f3db3bfb5a8bf70b6217afd50df3284e27934c"
     }
-  ]
+  ],
+  "previousPackagesR67": [
+    {
+      "architecture": "arm64",
+      "archive": "DuktoNext-macos-arm64-preview.tar.gz",
+      "sha256": "7d15cd96fc09a38168148032cb9d29377c59f1ddf5aee93cd30b5eac5cb9e737",
+      "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42107313757/artifacts/13451189600",
+      "applicationSourceFiles": 240,
+      "sourceCommit": "db8c77476d7a52870c0beeb579e5ea8d88c701ff",
+      "localArchive": "dist/macos-preview-20261106-r66-completed-history/macos-preview-ARM64/package-output/DuktoNext-macos-arm64-preview.tar.gz"
+    },
+    {
+      "architecture": "x86_64",
+      "archive": "DuktoNext-macos-x86_64-preview.tar.gz",
+      "sha256": "128700eba825b3a27b70e830bbbd2130497fe4ae9a2488b5ce923b5d24007f05",
+      "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42107313757/artifacts/13452643926",
+      "applicationSourceFiles": 240,
+      "sourceCommit": "db8c77476d7a52870c0beeb579e5ea8d88c701ff",
+      "localArchive": "dist/macos-preview-20261106-r66-completed-history/macos-preview-X64/package-output/DuktoNext-macos-x86_64-preview.tar.gz"
+    },
+    {
+      "architecture": "x86_64",
+      "archive": "DuktoNext-linux-glibc-x64-preview.tar.gz",
+      "sha256": "184402a446c14d99b9918c1bcbe961a28d4170a1e2dfb45654704b9a3c401dcf",
+      "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42030410632/artifacts/13415898193",
+      "applicationSourceFiles": 213,
+      "sourceCommit": "31f3db3bfb5a8bf70b6217afd50df3284e27934c"
+    }
+  ],
+  "windowsPreview": {
+    "archive": "dist/windows-preview-20261106-r25-completed-history/DuktoNext-windows-x64-preview.zip",
+    "sha256": "529b14ec96e57e2e1735f896efe2eaab243b034aa7616a6462b725411f325c9c",
+    "applicationSourceFiles": 242,
+    "allSourceBlobsMatchExactGitCommit": true,
+    "binaries": {
+      "dukto-cli.exe": "7e10b8a7045c3786a76e1c255ab004fd8bf6bc26a2ee78dfddda5aed121e55de",
+      "dukto-gui.exe": "18ebca5db10446fe680abf00191dcf47eac3ae99c6e7d111c5816309fb93cb37"
+    },
+    "signedDependencyFiles": 364,
+    "signedDependencyPackages": 24,
+    "signedLicenseFiles": 53,
+    "runtimePassed": true,
+    "systemPathOnly": true,
+    "extraChecks": [
+      {
+        "name": "completed-history",
+        "path": "E:/project/dukto/docs/validation/2026-11-06/windows-r25-extra/completed-history.json",
+        "exitCode": 0,
+        "passed": true,
+        "sha256": "71f9d8a4a626e1037e389579268b7be6d0f6e84759bb8308b921c7cb83b227e5"
+      },
+      {
+        "name": "upload-receipt",
+        "path": "E:/project/dukto/docs/validation/2026-11-06/windows-r25-extra/upload-receipt.json",
+        "exitCode": 0,
+        "passed": true,
+        "sha256": "2a1154d005551b22115b2b51c580ac81d49704358e670a66d4675ecf37ee9b2c"
+      },
+      {
+        "name": "disposition",
+        "path": "E:/project/dukto/docs/validation/2026-11-06/windows-r25-extra/disposition.json",
+        "exitCode": 0,
+        "passed": true,
+        "sha256": "070426b381bb4ca7036efba671603681537751345b7ea9afdda402d3cadb9924"
+      },
+      {
+        "name": "certificate",
+        "path": "E:/project/dukto/docs/validation/2026-11-06/windows-r25-extra/certificate.json",
+        "exitCode": 0,
+        "passed": true,
+        "sha256": "07d0aad098e74fda5e8d228502b89e4139685361394c81fc7a80be872930fbca"
+      }
+    ],
+    "evidence": {
+      "runtime": {
+        "path": "docs/validation/2026-11-06/windows-r25-package-runtime.json",
+        "sha256": "df023dfd0c4dbb46d5fc4309a5bb2c5c6253fa871c42e77886033fdcedf9662a"
+      },
+      "source": {
+        "path": "docs/validation/2026-11-06/windows-r25-source-linkage.json",
+        "sha256": "4b9fad2dc8327f99dc9cc7970b82c69e9a997b79c8a7e0726da1f9401d3e218a"
+      },
+      "dependencies": {
+        "path": "docs/validation/2026-11-06/windows-r25-signed-payload-map.json",
+        "sha256": "797f1089b3b3eb9407af9343e126f4a399754d456b612239efc9bd091e65c62a"
+      },
+      "extra": {
+        "path": "docs/validation/2026-11-06/windows-r25-extra/summary.json",
+        "sha256": "d130e6f72e58a877ef0074c10c590248f752aa9ff31dd141a5fab8b842ef9450"
+      }
+    }
+  },
+  "linuxPreview": {
+    "package": {
+      "architecture": "x86_64",
+      "archive": "DuktoNext-linux-glibc-x64-preview.tar.gz",
+      "sha256": "a05fe6ad7434cf3e77d9fab68abbd817055c31e3a4ffcaf59c75366d3daf4556",
+      "sourceCommit": "5857073de686df38c2f3ee8dc1feb0ce98efdf4d",
+      "verifiedFiles": 708,
+      "verifiedLinks": 2,
+      "nativeImages": 132,
+      "applicationSourceFiles": 242,
+      "inputCliSha256": "225c7791c91696851ca96008c4334751424c538b7859d3c725d75d7626263b79",
+      "inputGuiSha256": "d2136b19fee544fd94a150c4ceb6ca2e9f4da771e084323824833ba0e9db6995",
+      "cleanSystemQualified": false,
+      "releaseQualified": false,
+      "artifactSha256": "3acc78726f1bb41ad613f1aeaa382a1e2fabfe569fbafc2ce3f6d06ddffe72f0",
+      "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42111269030/artifacts/13455131861",
+      "runtimeMigrationBothDisplaysQualified": true
+    },
+    "bothDisplayRuntimesPassed": true,
+    "nativeCoreTargets": 21,
+    "embeddedBusinessReportsEach": 3,
+    "evidence": {
+      "path": "docs/validation/2026-11-06/github-evidence-r67-completed-history-terminal/verified-summary.json",
+      "sha256": "9c2b2213779e557c78f91efc0d40845b76b168e743f5d7af9502e00186e8b69b"
+    },
+    "binaryIdentityScope": "ELF and launcher package hashes checked; overwrite/recovery reports hash launcher; transfer report has no executable hash field",
+    "localInitialVerifierSchemaFailureRetained": {
+      "path": "docs/validation/2026-11-06/github-evidence-r67-completed-history-terminal/local-verifier-first-failure.json",
+      "sha256": "a8ffe8897a521dab8c933533fa101fda1f61a653b0c882357c39ce1af8f625b3"
+    }
+  },
+  "currentWindowsLong": {
+    "sourceCommit": "5857073de686df38c2f3ee8dc1feb0ce98efdf4d",
+    "productionCommit": "db8c77476d7a52870c0beeb579e5ea8d88c701ff",
+    "smokeRounds": 20,
+    "smokePassed": true,
+    "requestedSeconds": 86400,
+    "status": "running",
+    "session": 23745,
+    "qualificationComplete": false,
+    "fixedInputs": {
+      "path": "docs/validation/2026-11-06/current-windows-r25-long/launch.json",
+      "sha256": "5170c94fec76096d0d194eae1976839a5a76fa0c840173eea5504b7a2178934a"
+    },
+    "smokeEvidence": {
+      "path": "docs/validation/2026-11-06/current-windows-r25-long/smoke20.json",
+      "sha256": "6834868d91c1b56cfcbc6c02bac5e62e1cb66f9bfb3dc5646d8b83b8b233ba80"
+    }
+  }
 }

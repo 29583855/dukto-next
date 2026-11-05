@@ -80,3 +80,6 @@ v0.61范围补记：上传发送端持久确认/缺项恢复已公开为b9d9b78�
 
 
 v0.62范围补记：b9d9b78双架构原生编译及部署成功，原迁移步骤因临时库glob包含持久处置日志而失败，未替换已验包。修正已上传3fbec42，[双架构新部署42083741936](https://github.com/29583855/dukto-next/actions/runs/42083741936)正在实际运行；本页当前下载仍是74dd5ce，取得终态并核验新产物后更新。
+
+
+v0.68：Mac下载仍为本页已验db8c774双包；同生产输入Windows r25/Linux5857073实际包已核验。五环境各21核心、Ubuntu/Apple Silicon各39及Alpine39协议已验，Windows/Intel完整终态继续。[当前回执](ci-verification-20261106-r68.json)。

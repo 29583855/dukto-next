@@ -1,21 +1,17 @@
 # Linux 独立预览包
 
-当前31f3db3包含发送期远端错误保留、显式覆盖、目录合并、目标预约及首页服务器入口修复；旧d4626d0包含入口作用域缺陷，旧验证按原范围保留。
+当前5857073包与db8c774生产输入相同，包含历史完成任务只读重验、逐项处置及确认恢复；GUI与独立CLI均已实际迁移验证。
 
-更新日期：2026-11-05。当前目标为 Ubuntu 24.04 或更新版本的 x86_64 glibc 环境，要求 glibc 2.39 或更新版本。此包不覆盖 Alpine musl、其他架构或 macOS；正式发布资格仍为 false。
+更新日期：2026-11-06。目标为Ubuntu24.04或更新的x86_64 glibc环境，要求glibc2.39起及系统CJK字体。正式发布资格仍为false。
 
 
-## 当前可下载包（2026-11-05）
+## 当前可下载包（2026-11-06）
 
-[下载x86_64 glibc预览包](https://github.com/29583855/dukto-next/actions/runs/42030410632/artifacts/13415898193)（GitHub附件下载可能需要登录）。ZIP内含tar、SHA清单和迁移证据。内部tar SHA-256：
+[下载x86_64 glibc预览包](https://github.com/29583855/dukto-next/actions/runs/42111269030/artifacts/13455131861)（GitHub附件可能需要登录）。ZIP内含tar、SHA及原始证据。内部tar SHA-256：a05fe6ad7434cf3e77d9fab68abbd817055c31e3a4ffcaf59c75366d3daf4556。
 
-```text
-184402a446c14d99b9918c1bcbe961a28d4170a1e2dfb45654704b9a3c401dcf
-```
+包源5857073，生产输入与db8c774相同。242份应用源码与精确Git树全集一致，708文件、2链接和132 ELF核验通过；21核心及主窗口导航通过。实际Xvfb/X11、Weston/Wayland迁移各自通过16通道双向、1/4/16覆盖及4→8恢复，三份内嵌业务报告均已读。两张实际截图已查看，中文/控件正常。GUI需系统CJK字体，例如fonts-wqy-zenhei。
 
-源码31f3db3，Ubuntu24.04/glibc2.39起，x86_64，GUI和独立CLI。实际Xvfb/X11和Weston/Wayland迁移、16通道双向、1/4/16覆盖及4→8恢复均通过；两个显示报告的内部业务结果已逐项核对。708文件、2链接、132 ELF及213应用输入与精确Git树匹配，两实际截图已查看，中文显示正常。GUI需系统CJK字体，例如fonts-wqy-zenhei。
-
-[完整回执](validation/2026-11-05/github-evidence-r52-peer-close-linux-terminal/receipt.json)。原31f3db3完整矩阵和Alpine完整协议有会话到期日志观察失败，保留原failure；本机两种Linux独立64MiB tmpfs五报告/九故障方向均通过，不代替完整协议或完整原生桌面资格。干净系统、物理桌面、第三方对应源码/重建及正式发布继续未完成。
+[公开回执](ci-verification-20261106-r68.json)分别绑定ELF和启动器摘要；覆盖/恢复子报告记录启动器摘要，transfer子报告未提供程序摘要，身份范围由实际归档及已验测试输入绑定。原附件持久保存在dist/linux-preview-20261106-r67-completed-history-terminal。Xvfb/Weston不替代物理桌面、干净系统、完整第三方源码或正式发布验收。
 
 ## 构建依赖
 
@@ -61,7 +57,7 @@ python3 tests/linux_package_integration.py <tar包> --platform wayland --report 
 
 调用方分别提供真实 X11/Wayland 会话。测试核对依赖实际从迁移目录加载、CLI 不加载图形模块、GUI 原生平台插件与渲染、SQLite/TLS、16 通道双向及幂等重试。Xvfb/Weston 的结果属于虚拟显示环境，不替代物理桌面、物理局域网或干净系统验收。
 
-当前最新固定源码正在 Ubuntu 重建，完成后顺序执行大于虚拟机内存的文件专项、打包及两种显示会话迁移验证；结果结束前不标记打包通过。较早源码的 X11/Wayland 面板验证与最新包验收分别记录在主计划。
+2026-11-05当时记录：固定源码正在 Ubuntu 重建，完成后顺序执行大于虚拟机内存的文件专项、打包及两种显示会话迁移验证；结果结束前不标记打包通过。较早源码的 X11/Wayland 面板验证与最新包验收分别记录在主计划。
 
 
 2026-11-05 会话/公平排队 160 文件固定快照已完成构建及 17/17 CTest，完整业务驱动已结束归档，但会话/隔离/256 MiB 恢复失败仍开放。r5 包生成成功后，X11/Wayland 迁移都捕获 OpenSSL 实际来自系统路径，因此尚不能作为通过的独立包。
@@ -98,3 +94,16 @@ v0.48完整协议补记：f230f3d的Ubuntu22 job及原生Alpine均已31/31终态
 
 
 v0.51：本页当前包双向1/4/16覆盖与已有文件4→8恢复通过；旧f230f3d包保留。新增真实盘满单通道上传暴露远端5/磁盘错误被3/网络错误遮盖，本包尚未包含0017修复；新源码和新包资格分别验收。
+
+
+## 31f3db3下载记录（历史，2026-11-05）
+
+[下载x86_64 glibc预览包](https://github.com/29583855/dukto-next/actions/runs/42030410632/artifacts/13415898193)（GitHub附件下载可能需要登录）。ZIP内含tar、SHA清单和迁移证据。内部tar SHA-256：
+
+```text
+184402a446c14d99b9918c1bcbe961a28d4170a1e2dfb45654704b9a3c401dcf
+```
+
+源码31f3db3，Ubuntu24.04/glibc2.39起，x86_64，GUI和独立CLI。实际Xvfb/X11和Weston/Wayland迁移、16通道双向、1/4/16覆盖及4→8恢复均通过；两个显示报告的内部业务结果已逐项核对。708文件、2链接、132 ELF及213应用输入与精确Git树匹配，两实际截图已查看，中文显示正常。GUI需系统CJK字体，例如fonts-wqy-zenhei。
+
+[完整回执](validation/2026-11-05/github-evidence-r52-peer-close-linux-terminal/receipt.json)。原31f3db3完整矩阵和Alpine完整协议有会话到期日志观察失败，保留原failure；本机两种Linux独立64MiB tmpfs五报告/九故障方向均通过，不代替完整协议或完整原生桌面资格。干净系统、物理桌面、第三方对应源码/重建及正式发布继续未完成。
