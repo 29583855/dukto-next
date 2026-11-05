@@ -6,7 +6,7 @@
 
 当前已建立 C++14 共用核心、Qt Quick 2 桌面端和独立 CLI。Windows 已验证与原版文件/目录/文本双向互传、超过 4 GiB、10 万文件、100 轮接收，以及首次说明/设置/截图/单实例和有界头像模块。完整原版交互、服务器、多线程、恢复和跨平台验收继续按计划推进。原版目录保留用于对照。
 
-公开仓库为[29583855/dukto-next](https://github.com/29583855/dukto-next)。31f3db3的双Mac、Linux及Windows r24实际预览包已编译并通过迁移。原生完整矩阵8c8becd的146+36项协议原报告SHA已核验；新增持久处置基础27b8d21的Alpine20项CTest/36协议和双Mac APFS14业务/26方向/14设备清理已通过，四runner完整协议继续。持久跳过准备已通过Windows双工具链最终各21项CTest，公开skip尚未接入。当前下载、验证和剩余范围见[构建摘要](docs/构建验证摘要.md)及[公开索引](docs/current-validation.json)。完整交付未完成。
+公开仓库为[29583855/dukto-next](https://github.com/29583855/dukto-next)。当前d0a8e01已完成Intel/Apple Silicon的C++14 GUI与独立CLI编译、依赖部署及实际包迁移，各五份业务报告与225份应用源码核验通过；[Mac下载](docs/macOS独立预览包.md)已更新。Windows、Linux glibc/musl和双Mac各21核心通过，Alpine完整36协议已核验；当前四runner完整协议仍运行。Linux及Windows当前已验预览包保持31f3db3。公开skip与其余功能验收、签名公证和正式发布继续，完整交付未完成，见[构建摘要](docs/构建验证摘要.md)及[公开索引](docs/current-validation.json)。
 
 ## 文档入口
 

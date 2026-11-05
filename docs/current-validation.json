@@ -1,23 +1,25 @@
 {
-  "observedUtc": "2026-11-05T14:51:34.061841+00:00",
-  "productionCommit": "31f3db3bfb5a8bf70b6217afd50df3284e27934c",
-  "testCommit": "8c8becd7b1a08de09b5b9b07626c57269781e7e7",
+  "observedUtc": "2026-11-05T15:28:29.590122+00:00",
+  "productionCommit": "d0a8e015ab7a419e28ddd9fe12cfc8763acf2999",
+  "testCommit": "d0a8e015ab7a419e28ddd9fe12cfc8763acf2999",
   "packages": [
-    {
-      "architecture": "x86_64",
-      "archive": "DuktoNext-macos-x86_64-preview.tar.gz",
-      "sha256": "7bc1f6f8a966566db426d5377573cadc8f87f588daeb11f3fd944532d9e6ea88",
-      "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42030403502/artifacts/13417420747",
-      "applicationSourceFiles": 213,
-      "sourceCommit": "31f3db3bfb5a8bf70b6217afd50df3284e27934c"
-    },
     {
       "architecture": "arm64",
       "archive": "DuktoNext-macos-arm64-preview.tar.gz",
-      "sha256": "a566766f24d6bafe97218ed595badd6773494aef45582bac0bcb496707d4c1a5",
-      "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42030403502/artifacts/13416925250",
-      "applicationSourceFiles": 213,
-      "sourceCommit": "31f3db3bfb5a8bf70b6217afd50df3284e27934c"
+      "sha256": "6b5fd10bb108696c7020c5bfd0ce1427529aabc7be7e372d6202776720d448b6",
+      "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42049474548/artifacts/13427365702",
+      "applicationSourceFiles": 225,
+      "sourceCommit": "d0a8e015ab7a419e28ddd9fe12cfc8763acf2999",
+      "localArchive": "dist/macos-preview-20261105-r57-receive-preparation/macos-preview-ARM64/package-output/DuktoNext-macos-arm64-preview.tar.gz"
+    },
+    {
+      "architecture": "x86_64",
+      "archive": "DuktoNext-macos-x86_64-preview.tar.gz",
+      "sha256": "7654d23cb8993540784c8f0d91e469e444c06d7faae7dac74abbe5a24cbb6a84",
+      "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42049474548/artifacts/13425809966",
+      "applicationSourceFiles": 225,
+      "sourceCommit": "d0a8e015ab7a419e28ddd9fe12cfc8763acf2999",
+      "localArchive": "dist/macos-preview-20261105-r57-receive-preparation/macos-preview-X64/package-output/DuktoNext-macos-x86_64-preview.tar.gz"
     },
     {
       "architecture": "x86_64",
@@ -29,7 +31,7 @@
     }
   ],
   "packageRuntime": {
-    "macOS": "both architectures passed; ten child-report hashes verified",
+    "macOS": "d0a8e01 arm64/x86_64 passed; ten original child-report hashes and 225 source files per package verified",
     "linux": "X11 and Wayland passed; embedded overwrite/recovery verified",
     "windows": "r24 passed including same-CLI certificate lifecycle",
     "windowsZipSha256": "ad02396dbba52a80df3e21315d79aa10936ea44a1fc7a77fae97f355801826ee"
@@ -49,17 +51,63 @@
   "focusedRunUrl": "https://github.com/29583855/dukto-next/actions/runs/42036473915",
   "focusedWorkflowConclusion": "success",
   "nativeFull": {
-    "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42036392240",
+    "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42049324101",
+    "sourceCommit": "d0a8e015ab7a419e28ddd9fe12cfc8763acf2999",
     "fourCoreStepsPassed": true,
-    "fullProtocolPending": false,
-    "ubuntuAndBothMacJobsPassed": true,
-    "windowsProtocolPending": false,
-    "workflowConclusion": "success",
-    "coreTargetsEach": 19,
-    "protocolCasesTotal": 146,
-    "allProtocolReportHashesVerified": true
+    "coreTargetsEach": 21,
+    "fullProtocolPending": true,
+    "workflowConclusion": null,
+    "ubuntuFullJobPassed": true,
+    "allProtocolReportHashesVerified": false,
+    "coreArtifacts": [
+      {
+        "name": "core-validation-macos-15",
+        "artifactId": 13427592013,
+        "zipSha256": "4406f05212fdbebeaf9017bf83a3b0bfa82effc5e64738342f1000aca011df07",
+        "ctestTargets": 21,
+        "skipQtTestCasesIncludingLifecycle": 17,
+        "ctestSha256": "64b7dbe25cb22df935f1c7c97e6d611f914b391a583ed23260722535d8cc4b5a",
+        "skipLogSha256": "f4fcbe054687b9397649ee10030fc81ae8037b1bd3c49c0a2c1a6031d1e3771d",
+        "passed": true
+      },
+      {
+        "name": "core-validation-macos-15-intel",
+        "artifactId": 13425958293,
+        "zipSha256": "d96e0f3cd74a729d3b4e58dafdcc28502a4ddd817e2861a8b832ebfb698d1108",
+        "ctestTargets": 21,
+        "skipQtTestCasesIncludingLifecycle": 17,
+        "ctestSha256": "e66097bcb4459a0afc674b0fb275da6e31e28c85bde7dbb0519d9ccafe34134e",
+        "skipLogSha256": "b35c7dcdc69143a773fbd28b990ad54a4523ed927c67361b94fb350ba252a85d",
+        "passed": true
+      },
+      {
+        "name": "core-validation-windows-2022",
+        "artifactId": 13425802903,
+        "zipSha256": "f9742217bffffe6492de733018c8fa6b5ba1d324f04e7f7161bef9c248959577",
+        "ctestTargets": 21,
+        "skipQtTestCasesIncludingLifecycle": 16,
+        "ctestSha256": "8f6e83ef39766ec031a53b2b05d31a06526d563f93e007f37189a059a6620205",
+        "skipLogSha256": "196f4e1c39cdec4b5e474e16965af68b157645d025e7ad82482bbf508fb6830d",
+        "passed": true
+      },
+      {
+        "name": "core-validation-ubuntu-22.04",
+        "artifactId": 13425619686,
+        "zipSha256": "a24a59353e54ae0c7e24230b192ba7c07d7db1d98f4adc3334080d458e624dfc",
+        "ctestTargets": 21,
+        "skipQtTestCasesIncludingLifecycle": 17,
+        "ctestSha256": "4f446d412f7e13aa58b9f942fe9c234f56c37e6ed460d8b4877f28da941b8e27",
+        "skipLogSha256": "d83054158282bdf971ec976d98e31e5b40e06e26efed2c5c5c3949b89e303314",
+        "passed": true
+      }
+    ],
+    "windowsFullJobPassed": true,
+    "pendingPlatforms": [
+      "macOS arm64",
+      "macOS x86_64"
+    ]
   },
-  "nativeMuslRunUrl": "https://github.com/29583855/dukto-next/actions/runs/42036458146",
+  "nativeMuslRunUrl": "https://github.com/29583855/dukto-next/actions/runs/42049461468",
   "originalFailureRunsRetained": [
     42028894157,
     42030418070,
@@ -69,13 +117,13 @@
   ],
   "releaseQualified": false,
   "deliveryComplete": false,
-  "planVersion": "v0.56",
-  "currentSourceStage": "persistent receive preparation verified on Windows; public skip protocol pending",
+  "planVersion": "v0.57",
+  "currentSourceStage": "dual-architecture macOS previews verified; five native core environments and musl full protocol passed; current four-runner full protocol pending",
   "nativeMusl": {
-    "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42036458146",
-    "sourceCommit": "8c8becd7b1a08de09b5b9b07626c57269781e7e7",
+    "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42049461468",
+    "sourceCommit": "d0a8e015ab7a419e28ddd9fe12cfc8763acf2999",
     "workflowConclusion": "success",
-    "coreTargets": 19,
+    "coreTargets": 21,
     "protocolCases": 36,
     "allProtocolReportHashesVerified": true
   },
@@ -100,7 +148,7 @@
     ],
     "fullCoreTargetsPriorBoundPatch": 20,
     "latestJournalCasesIncludingLifecycle": 16,
-    "nativePending": true,
+    "nativePending": false,
     "publicSkipImplemented": false,
     "design": "docs/decisions/0018-持久逐项处置日志.md",
     "sourceCommit": "27b8d21c83c75a030300962dcea7d021b1430caf",
@@ -113,7 +161,12 @@
     "appleSiliconFullJobPassed": true,
     "muslWorkflowConclusion": "success",
     "muslProtocolCases": 36,
-    "muslAllReportHashesVerified": true
+    "muslAllReportHashesVerified": true,
+    "workflowConclusion": "success",
+    "nativeProtocolCasesTotal": 146,
+    "nativeAllReportHashesVerified": true,
+    "windowsFullJobPassed": true,
+    "intelMacFullJobPassed": true
   },
   "receivePreparation": {
     "windowsToolchainsPassed": [
@@ -122,7 +175,7 @@
     ],
     "ctestTargetsEach": 21,
     "skipQtTestCasesEachIncludingLifecycle": 16,
-    "nativePending": true,
+    "nativePending": false,
     "publicSkipImplemented": false,
     "lateConflictFinalDispositionImplemented": false,
     "protocolAndGuiCliIntegrated": false,
@@ -182,6 +235,79 @@
     ],
     "sourceAuditFiles": 174,
     "sourceAuditFindings": 0,
-    "design": "docs/decisions/0019-持久跳过准备决策.md"
+    "design": "docs/decisions/0019-持久跳过准备决策.md",
+    "sourceCommit": "d0a8e015ab7a419e28ddd9fe12cfc8763acf2999",
+    "nativeFullProtocolPending": true,
+    "nativeCoreEnvironmentsPassed": [
+      "Windows",
+      "Linux glibc",
+      "Linux musl",
+      "macOS arm64",
+      "macOS x86_64"
+    ],
+    "nativeCoreTargetsEach": 21,
+    "posixSkipQtTestCasesEachIncludingLifecycle": 17,
+    "windowsPostPublicGuardFullRegression": true,
+    "windowsPostGuardEvidence": "docs/validation/2026-11-05/delivery-r57-windows-summary.json"
+  },
+  "previousPackages": [
+    {
+      "architecture": "x86_64",
+      "archive": "DuktoNext-macos-x86_64-preview.tar.gz",
+      "sha256": "7bc1f6f8a966566db426d5377573cadc8f87f588daeb11f3fd944532d9e6ea88",
+      "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42030403502/artifacts/13417420747",
+      "applicationSourceFiles": 213,
+      "sourceCommit": "31f3db3bfb5a8bf70b6217afd50df3284e27934c"
+    },
+    {
+      "architecture": "arm64",
+      "archive": "DuktoNext-macos-arm64-preview.tar.gz",
+      "sha256": "a566766f24d6bafe97218ed595badd6773494aef45582bac0bcb496707d4c1a5",
+      "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42030403502/artifacts/13416925250",
+      "applicationSourceFiles": 213,
+      "sourceCommit": "31f3db3bfb5a8bf70b6217afd50df3284e27934c"
+    },
+    {
+      "architecture": "x86_64",
+      "archive": "DuktoNext-linux-glibc-x64-preview.tar.gz",
+      "sha256": "184402a446c14d99b9918c1bcbe961a28d4170a1e2dfb45654704b9a3c401dcf",
+      "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42030410632/artifacts/13415898193",
+      "applicationSourceFiles": 213,
+      "sourceCommit": "31f3db3bfb5a8bf70b6217afd50df3284e27934c"
+    }
+  ],
+  "macOSPreview": {
+    "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42049474548",
+    "sourceCommit": "d0a8e015ab7a419e28ddd9fe12cfc8763acf2999",
+    "workflowConclusion": "success",
+    "runtimeReportsEach": 5,
+    "allReportHashesVerified": true,
+    "screenshotsViewed": true,
+    "applicationSourceFilesEach": 225,
+    "sourceArchiveMatchesExactGitTree": true,
+    "adhocSigned": true,
+    "developerIdSigned": false,
+    "notarized": false,
+    "cleanSystemQualified": false,
+    "evidence": "docs/validation/2026-11-05/delivery-r57-packages-summary.json"
+  },
+  "previousNativeFull": {
+    "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42036392240",
+    "fourCoreStepsPassed": true,
+    "fullProtocolPending": false,
+    "ubuntuAndBothMacJobsPassed": true,
+    "windowsProtocolPending": false,
+    "workflowConclusion": "success",
+    "coreTargetsEach": 19,
+    "protocolCasesTotal": 146,
+    "allProtocolReportHashesVerified": true
+  },
+  "previousNativeMusl": {
+    "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42036458146",
+    "sourceCommit": "8c8becd7b1a08de09b5b9b07626c57269781e7e7",
+    "workflowConclusion": "success",
+    "coreTargets": 19,
+    "protocolCases": 36,
+    "allProtocolReportHashesVerified": true
   }
 }
