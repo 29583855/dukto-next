@@ -30,11 +30,14 @@ def exact(stream, length):
     return bytes(result)
 
 
-# 日期：2026-11-04；创建有效、已过期、尚未生效与主机名不符的证书，不更改系统信任或时间。
+# 日期：2026-11-05；证书显式声明服务器用途/密钥用法，覆盖有效期/主机名，不更改系统信任或时间。
 def certificates(root, openssl):
     cert, key, csr = root / "valid.pem", root / "key.pem", root / "request.pem"
     common = [openssl, "req", "-new", "-newkey", "rsa:2048", "-nodes", "-subj", "/CN=localhost",
-              "-addext", "subjectAltName=DNS:localhost,IP:127.0.0.1", "-keyout", str(key)]
+              "-addext", "subjectAltName=DNS:localhost,IP:127.0.0.1",
+              "-addext", "basicConstraints=critical,CA:FALSE",
+              "-addext", "keyUsage=critical,digitalSignature,keyEncipherment",
+              "-addext", "extendedKeyUsage=serverAuth", "-keyout", str(key)]
     subprocess.run(common + ["-x509", "-days", "1", "-out", str(cert)],
                    capture_output=True, check=True, timeout=30)
     subprocess.run([openssl, "req", "-new", "-key", str(key), "-subj", "/CN=localhost", "-out", str(csr)],
@@ -46,7 +49,8 @@ def certificates(root, openssl):
                       "\nserial=" + (root / "serial").as_posix() + "\nnew_certs_dir=" + root.as_posix() +
                       "\ndefault_md=sha256\npolicy=policy\nx509_extensions=extensions\nunique_subject=no\n"
                       "[policy]\ncommonName=supplied\n[extensions]\n"
-                      "subjectAltName=DNS:localhost,IP:127.0.0.1\nbasicConstraints=CA:FALSE\n",
+                      "subjectAltName=DNS:localhost,IP:127.0.0.1\nbasicConstraints=critical,CA:FALSE\n"
+                      "keyUsage=critical,digitalSignature,keyEncipherment\nextendedKeyUsage=serverAuth\n",
                       encoding="ascii")
     results = {"valid": cert}
     for name, start, end in [("expired", "20000101000000Z", "20010101000000Z"),
