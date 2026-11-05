@@ -45,10 +45,10 @@ def receiver(executable, directory, port, address="127.0.0.1"):
 
 
 # 日期：2026-11-04；收集最终退出码与 JSON 行，不以文件存在代替成功结果。
-def finish(process, expected):
+def finish(process, expected, case=None):
     output, error = process.communicate(timeout=30)
     if process.returncode != expected:
-        raise AssertionError((process.returncode, output, error))
+        raise AssertionError((case, process.returncode, output, error))
     events = [json.loads(line) for line in output.splitlines()]
     if error.strip():
         raise AssertionError(error)
@@ -126,7 +126,7 @@ def receiver_fixtures(executable, root):
         process = receiver(executable, out, port)
         with socket.create_connection(("127.0.0.1", port), timeout=10) as client:
             client.sendall(packet)
-        finish(process, expected)
+        finish(process, expected, name)
         assert not (out / "partial.bin").exists(), name
         assert not list(out.glob("*.part")), name
         assert not (root / "escaped").exists(), name

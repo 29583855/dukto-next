@@ -23,60 +23,65 @@ namespace dukto {
 namespace {
 class Wire final {
   public:
-    // 日期：2026-11-04；限制用户态接收缓冲并设置无进展超时。
+    // 日期：2026-11-05；限制用户态接收缓冲，网络期限只统计当前I/O操作。
     Wire(std::atomic_bool &cancelled, int timeout) : cancelled_(cancelled), timeout_(timeout) {
         socket.setReadBufferSize(BufferSize * 2);
-        clock_.start();
     }
-    // 日期：2026-11-04；所有阻塞等待均在工作线程，每 100ms 处理一次取消。
+    // 日期：2026-11-05；本地扫描/目录/数据库处理也可取消，但不消耗下一次网络等待期限。
     void check() {
         if (cancelled_.load())
             throw Error(ExitCode::Cancelled, QStringLiteral("传输已取消"), "transfer");
-        if (clock_.elapsed() > timeout_)
-            throw Error(ExitCode::Network, QStringLiteral("连接或传输无进展超时"), "transfer");
     }
     // 日期：2026-11-04；连接成功前不发送数据，主机名解析由 Qt 处理。
     void connect(const QString &host, quint16 port) {
+        QElapsedTimer progress;
+        progress.start();
         socket.connectToHost(host, port);
         while (socket.state() != QAbstractSocket::ConnectedState) {
-            check();
+            checkProgress(progress);
             if (!socket.waitForConnected(100) &&
                 socket.state() == QAbstractSocket::UnconnectedState)
                 throw Error(ExitCode::Network, socket.errorString(), "connect");
         }
-        clock_.restart();
     }
     // 日期：2026-11-04；每段输出等待发送缓冲排空，避免累计整个文件到 Qt 队列。
     void write(const QByteArray &data) {
         check();
+        QElapsedTimer progress;
+        progress.start();
         const auto size = socket.write(data);
         if (size != data.size())
             throw Error(ExitCode::Network, socket.errorString(), "send");
         while (socket.bytesToWrite() > 0) {
-            check();
+            checkProgress(progress);
             if (socket.waitForBytesWritten(100))
-                clock_.restart();
+                progress.restart();
             else if (socket.state() == QAbstractSocket::UnconnectedState)
                 throw Error(ExitCode::Network, socket.errorString(), "send");
         }
     }
-    // 日期：2026-11-04；精确读取有限片段，分片包头和提前断线不会误判成功。
+    // 日期：2026-11-05；先读已到达的有界数据，再判无进展；调度间隙不能遮盖协议内容错误。
     QByteArray read(qint64 count) {
         if (count < 0 || count > BufferSize)
             throw Error(ExitCode::Config, QStringLiteral("内部读取长度越界"), "receive");
+        QElapsedTimer progress;
+        progress.start();
         QByteArray result;
         result.reserve(static_cast<int>(count));
         while (result.size() < count) {
             check();
+            if (socket.bytesAvailable() == 0 && socket.state() != QAbstractSocket::UnconnectedState)
+                socket.waitForReadyRead(0);
             const auto bytes = socket.read(count - result.size());
             if (!bytes.isEmpty()) {
                 result.append(bytes);
-                clock_.restart();
+                progress.restart();
                 continue;
             }
             if (socket.state() == QAbstractSocket::UnconnectedState)
                 throw Error(ExitCode::Network, QStringLiteral("传输尚未完整，对端已断开"),
                             "receive");
+            checkProgress(progress);
             socket.waitForReadyRead(100);
         }
         return result;
@@ -105,9 +110,14 @@ class Wire final {
     QTcpSocket socket;
 
   private:
+    // 日期：2026-11-05；只有当前操作仍缺少网络数据/输出时才检查原无进展期限。
+    void checkProgress(const QElapsedTimer &progress) {
+        check();
+        if (progress.elapsed() > timeout_)
+            throw Error(ExitCode::Network, QStringLiteral("连接或传输无进展超时"), "transfer");
+    }
     std::atomic_bool &cancelled_;
     int timeout_;
-    QElapsedTimer clock_;
 };
 
 // 日期：2026-11-04；不依赖宿主机字节序序列化旧协议字段。

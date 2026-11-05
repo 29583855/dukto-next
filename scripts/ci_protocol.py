@@ -27,6 +27,8 @@ def commands(build):
 
     add("parallel-failure", "parallel_failure_integration")
     add("legacy", "legacy_integration")
+    add("legacy-timeout", "legacy_timeout_integration")
+    add("parallel-attach", "parallel_attach_integration")
     add("cli", "cli_contracts")
     add("crash", "crash_integration")
     if windows:

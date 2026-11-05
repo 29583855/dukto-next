@@ -30,6 +30,7 @@ constexpr int MaximumLanes = 16;
 
 struct ParallelState {
     struct Lane {
+        bool claimed = false;
         bool attached = false;
         bool finished = false;
         std::deque<next::Frame> incoming;
@@ -81,14 +82,22 @@ struct ParallelState {
         if (cancelled.load())
             throw Error(ExitCode::Cancelled, QStringLiteral("多通道会话已停止"), "parallel");
     }
-    // 日期：2026-11-05；加入只通知控制等待者，同一数据槽不可重复加入或重放票据。
-    void attach(int lane) {
+    // 日期：2026-11-05；唯一占槽与网络确认分开，重复票据不能停止原来的合法数据通道。
+    void reserve(int lane) {
         check();
         std::lock_guard<std::mutex> lock(mutex);
-        if (lane < 0 || lane >= count || lanes[lane].attached ||
+        if (lane < 0 || lane >= count || lanes[lane].claimed ||
             QDateTime::currentMSecsSinceEpoch() > expires)
             throw Error(ExitCode::Permission, QStringLiteral("数据通道票据失效或重复加入"),
                         "parallel");
+        lanes[lane].claimed = true;
+    }
+    // 日期：2026-11-05；加入确认完整写出后才公布就绪，避免目标冲突的组取消抢先中断确认。
+    void attach(int lane) {
+        check();
+        std::lock_guard<std::mutex> lock(mutex);
+        if (lane < 0 || lane >= count || !lanes[lane].claimed || lanes[lane].attached)
+            throw Error(ExitCode::Config, QStringLiteral("数据通道尚未占槽或重复就绪"), "parallel");
         lanes[lane].attached = true;
         changed.notify_one();
     }
@@ -502,6 +511,7 @@ void ParallelTransfer::clientLane(next::SecureChannel &channel, const QJsonObjec
                                   const std::shared_ptr<ParallelState> &state,
                                   const QPair<QString, QString> &source, quint64 correlation) {
     channel.classifyAsData();
+    state->reserve(lane);
     state->attach(lane);
     channel.observeCancellation(&state->cancelled);
     try {
@@ -554,7 +564,7 @@ void serveParallelLane(next::SecureChannel &channel, PrivateStore &store,
         throw Error(ExitCode::Permission, QStringLiteral("数据通道任务当前不在传输状态"),
                     "parallel");
     channel.classifyAsData();
-    state->attach(lane);
+    state->reserve(lane);
     QElapsedTimer authorization;
     authorization.start();
     const auto work = [&]() {
@@ -572,10 +582,12 @@ void serveParallelLane(next::SecureChannel &channel, PrivateStore &store,
             authorization.restart();
         }
     };
-    channel.observeCancellation(&state->cancelled);
     try {
+        // 日期：2026-11-05；加入握手尚未结束时不绑定组取消；其它通道失败由后续状态检查返回根因。
         channel.write(next::Type::Attached, correlation,
                       {{"sessionId", request["sessionId"]}, {"lane", request["lane"]}});
+        state->attach(lane);
+        channel.observeCancellation(&state->cancelled);
         if (state->receiver)
             receiverLane(channel, *state, lane, correlation, work);
         else
