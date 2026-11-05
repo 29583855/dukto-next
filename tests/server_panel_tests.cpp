@@ -81,6 +81,130 @@ class SlowTestProxy final : public QTcpServer {
 class ServerPanelTests final : public QObject {
     Q_OBJECT
   private slots:
+    // 日期：2026-11-05；续期和迁移的生产按钮、错误保护、监听重启及原配对身份实际核对。
+    void certificateLifecycleQml() {
+        QTemporaryDir temporary;
+        ServerPanel server(temporary.filePath("server"));
+        ServerPanel client(temporary.filePath("client"));
+        server.execute("init", {{"names", "127.0.0.1"}, {"certificateDays", "1"}});
+        QTRY_VERIFY_WITH_TIMEOUT(!server.busy(), 30000);
+        QVERIFY(server.identity()["expiringSoon"].toBool());
+        const auto oldPin = server.identity()["fingerprint"].toString();
+        const auto serverId = server.identity()["serverId"].toString();
+        const auto shared = temporary.filePath("shared");
+        QVERIFY(QDir().mkpath(shared));
+        const QVariantMap rights{{"share", "docs"},
+                                 {"path", shared},
+                                 {"browse", true},
+                                 {"download", true},
+                                 {"upload", true}};
+        server.execute("share-add", rights);
+        QTRY_VERIFY_WITH_TIMEOUT(!server.busy(), 30000);
+        server.execute("pairing", rights);
+        QTRY_VERIFY_WITH_TIMEOUT(!server.busy(), 30000);
+        const auto credentialFile = server.outcome()["credentialFile"];
+        QTcpServer reservation;
+        QVERIFY(reservation.listen(QHostAddress::LocalHost, 0));
+        const auto port = reservation.serverPort();
+        reservation.close();
+        server.setServing(true, "127.0.0.1", port);
+        QVERIFY(server.serving());
+        client.execute("pair", {{"target", QString("127.0.0.1:%1").arg(port)},
+                                {"fingerprint", oldPin},
+                                {"credentialFile", credentialFile}});
+        QTRY_VERIFY_WITH_TIMEOUT(!client.busy(), 30000);
+        const auto clientId = client.outcome()["client"].toString();
+        QVERIFY(!clientId.isEmpty());
+        QQuickWidget view;
+        view.setResizeMode(QQuickWidget::SizeRootObjectToView);
+        view.resize(430, 700);
+        QSignalSpy warnings(view.engine(), &QQmlEngine::warnings);
+        QQmlComponent component(view.engine(), QUrl("qrc:/ui/ServerPage.qml"));
+        auto root = component.createWithInitialProperties(
+            {{"panel", QVariant::fromValue<QObject *>(&server)}});
+        QVERIFY2(root, qPrintable(component.errorString()));
+        view.setContent(QUrl("qrc:/ui/ServerPage.qml"), &component, root);
+        view.show();
+        auto sections = root->findChild<QObject *>("serverSections");
+        auto local = root->findChild<QQuickItem *>("serverLocalFlick");
+        auto remote = root->findChild<QQuickItem *>("serverClientFlick");
+        QVERIFY(sections && local && remote);
+        // 日期：2026-11-05；先完成布局并滚动可视位置，然后投递真实鼠标点击到生产按钮。
+        const auto click = [&](const char *name, QQuickItem *flick) {
+            auto item = root->findChild<QQuickItem *>(name);
+            if (!item)
+                return false;
+            QTest::qWait(60);
+            const auto position = item->mapToItem(flick, QPointF()).y();
+            const auto current = flick->property("contentY").toDouble();
+            const auto maximum =
+                qMax(0.0, flick->property("contentHeight").toDouble() - flick->height());
+            flick->setProperty("contentY", qBound(0.0, current + position - 160, maximum));
+            QTest::qWait(60);
+            QTest::mouseClick(&view, Qt::LeftButton, Qt::NoModifier,
+                              item->mapToScene(item->boundingRect().center()).toPoint());
+            return true;
+        };
+        sections->setProperty("currentIndex", 2);
+        QVERIFY(click("serverRenewExpand", local));
+        QVERIFY(root->findChild<QObject *>("serverRenewExpand")->property("checked").toBool());
+        auto renew = root->findChild<QQuickItem *>("serverRenewButton");
+        QVERIFY(renew && !renew->isEnabled());
+        QVERIFY(click("serverRenewConfirmed", local));
+        QVERIFY(renew->isEnabled());
+        QVERIFY(click("serverRenewButton", local));
+        QTRY_VERIFY_WITH_TIMEOUT(!server.busy(), 30000);
+        const auto newPin = server.identity()["fingerprint"].toString();
+        QVERIFY2(newPin != oldPin, qPrintable(server.status()));
+        QCOMPARE(server.identity()["serverId"].toString(), serverId);
+        QCOMPARE(server.identity()["activeFingerprint"].toString(), oldPin);
+        QVERIFY(server.identity()["restartRequired"].toBool());
+        QVERIFY(!root->findChild<QObject *>("serverRenewConfirmed")->property("checked").toBool());
+        auto status = root->findChild<QQuickItem *>("serverCertificateStatus");
+        QVERIFY(status && status->property("text").toString().contains(QStringLiteral("重新启动")));
+        const auto y = status->mapToItem(local, QPointF()).y();
+        local->setProperty("contentY", local->property("contentY").toDouble() + y - 80);
+        QTest::qWait(100);
+        QVERIFY(view.grabFramebuffer().save("Testing/QtTest/server-certificate-renewal.png"));
+        client.execute("auth", {});
+        QTRY_VERIFY_WITH_TIMEOUT(!client.busy(), 30000);
+        QCOMPARE(client.outcome()["client"].toString(), clientId);
+        server.setServing(false, "127.0.0.1", port);
+        server.setServing(true, "127.0.0.1", port);
+        QVERIFY(server.serving());
+        QVERIFY(!server.identity()["restartRequired"].toBool());
+        client.execute("auth", {});
+        QTRY_VERIFY_WITH_TIMEOUT(!client.busy(), 30000);
+        QCOMPARE(client.outcome()["code"].toInt(), 4);
+        root->setProperty("panel", QVariant::fromValue<QObject *>(&client));
+        sections->setProperty("currentIndex", 0);
+        QVERIFY(click("serverTrustExpand", remote));
+        QVERIFY(click("serverProfileInfoButton", remote));
+        QTRY_VERIFY_WITH_TIMEOUT(!client.busy(), 30000);
+        QCOMPARE(client.outcome()["fingerprint"].toString(), oldPin);
+        root->findChild<QObject *>("serverOldFingerprint")->setProperty("text", oldPin);
+        root->findChild<QObject *>("serverNewFingerprint")->setProperty("text", newPin);
+        auto trust = root->findChild<QQuickItem *>("serverTrustButton");
+        QVERIFY(trust && !trust->isEnabled());
+        QVERIFY(click("serverTrustConfirmed", remote));
+        QVERIFY(trust->isEnabled());
+        QVERIFY(click("serverTrustButton", remote));
+        QTRY_VERIFY_WITH_TIMEOUT(!client.busy(), 30000);
+        QCOMPARE(client.outcome()["event"].toString(), QString("profile-certificate-updated"));
+        QCOMPARE(client.outcome()["serverId"].toString(), serverId);
+        QCOMPARE(client.outcome()["fingerprint"].toString(), newPin);
+        QVERIFY(view.grabFramebuffer().save("Testing/QtTest/server-certificate-migration.png"));
+        client.execute("auth", {});
+        QTRY_VERIFY_WITH_TIMEOUT(!client.busy(), 30000);
+        QCOMPARE(client.outcome()["client"].toString(), clientId);
+        QCOMPARE(client.outcome()["revision"].toString(), QString("1"));
+        view.resize(360, 560);
+        QTest::qWait(100);
+        QVERIFY(!view.grabFramebuffer().isNull());
+        QCOMPARE(warnings.count(), 0);
+        QVERIFY(!client.outcome().contains("credential"));
+        server.setServing(false, "127.0.0.1", port);
+    }
     // 日期：2026-11-05；两个真实慢下载占用活动任务名额，生产界面第三任务排队时仍可查询/暂停/继续/取消。
     void queuedProductionControls() {
         QTemporaryDir temporary;

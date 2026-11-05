@@ -31,9 +31,17 @@ ClientProfile prepareProfile(PrivateStore &store, const QString &alias, const QS
 ClientProfile loadProfile(const PrivateStore &store, const QString &alias);
 // 日期：2026-11-04；持久保存收到的服务器 ID 与配对确认，失败时保留之前可安全重试的待配对记录。
 void saveProfile(PrivateStore &store, const ClientProfile &profile);
+// 日期：2026-11-05；读取资料公开目标和指纹供人工核对，绝不公开访问秘密或待轮换秘密。
+QJsonObject profileInfo(const PrivateStore &store, const QString &alias);
 // 日期：2026-11-05；新秘密先持久保存，轮换回包丢失时先验证新秘密后重试原秘密，串行锁防重复轮换。
 QJsonObject rotateProfile(PrivateStore &store, const QString &alias, int timeoutMs,
                           const std::atomic_bool *cancel = nullptr);
+
+// 日期：2026-11-05；核对新旧公开指纹并认证同一服务/主体后原子改pin，目标/权限/秘密及任务身份不变。
+QJsonObject migrateProfileFingerprint(PrivateStore &store, const QString &alias,
+                                      const QByteArray &expectedFingerprint,
+                                      const QByteArray &replacementFingerprint, int timeoutMs,
+                                      const std::atomic_bool *cancel = nullptr);
 
 class RemoteClient final {
   public:

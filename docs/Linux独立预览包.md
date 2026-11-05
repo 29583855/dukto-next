@@ -2,6 +2,17 @@
 
 更新日期：2026-11-05。当前目标为 Ubuntu 24.04 或更新版本的 x86_64 glibc 环境，要求 glibc 2.39 或更新版本。此包不覆盖 Alpine musl、其他架构或 macOS；正式发布资格仍为 false。
 
+
+## 当前可下载包（2026-11-05）
+
+[下载 x86_64 glibc 独立预览包](https://github.com/29583855/dukto-next/actions/runs/42000487840/artifacts/13401944088)（GitHub Actions 附件下载可能需要登录）。附件 ZIP 内包含 tar、SHA 清单及迁移证据。tar SHA-256：
+
+```text
+04f4093b055cc44864040d1fc5ca74f5fde06ea4b8a95604e530ee0721f46a7e
+```
+
+源码提交44892f0，生产等价1842009；Ubuntu24.04/glibc2.39起，x86_64，GUI与独立CLI。19/19核心与实际Xvfb/Weston两种迁移、包内依赖、16通道双向、完整性和幂等断言均通过，截图已查看。完整回执[receipt.json](validation/2026-11-05/github-evidence-r46-linux-native-success/receipt.json)。仍为开发预览，干净系统、物理桌面、完整第三方对应源码/重建及正式发布尚未验收。
+
 ## 构建依赖
 
 开发助手负责安装和记录 Qt5 工具链。已准备的 Ubuntu 环境使用 Qt 5.15.13、GCC 13.3、CMake/Ninja、OpenSSL 3.0.13 及发行版安全补丁，并安装 SQLite、Qt Quick Controls 2、Qt QML/Models/WorkerScript、Qt Graphical Effects 和 Qt Wayland 模块。
@@ -68,3 +79,6 @@ v0.42当前1842009生产代码的独立原生CPU打包工作流linux-package.yml
 v0.43当前Linux包首轮终态：41998140793在Ubuntu24.04实际编译、19项核心和打包通过；tar SHA f3fd661d111dd7af1c21ee5b6d2533582fe5797e3e48a4fd311ea4ce0734376c。已实际下载，708清单文件、2同目录OpenSSL链接、132 ELF和204应用输入/精确0a38ceb树核对。Wayland完整迁移/双向16通道通过；X11在GUI映射采样得到空列表时失败，未完成整包资格，原始附件/日志/包保留于github-evidence-r43-linux-native-initial及dist/linux-preview-20261105-r43-linux-native-initial。
 
 映射采样修正只处理可确认的退出竞争：遇到空映射最多等待100ms确认进程已经退出，才转为既有NoSuchProcess退出路径；活动进程空映射仍失败。GUI最终退出码、无标准错误、真实平台插件/依赖来源、截图和原90秒16通道断言均保留，未获得模块证据仍不能通过。新增实际活进程/已退出进程四边界自检，同时确认外部Qt和CLI图形模块仍拒绝；Windows本机自检及163文件0标记/C++14/格式通过。首次自检开发时的Windows模拟映射路径改为POSIX规范路径后通过，不涉及应用代码。独立新原生包复验继续；原VM、Mac和Windows冻结输入均不改。
+
+
+2026-11-05 v0.46版本范围补记：上方已验收的实际包早于证书续期/指纹迁移功能，不含serve renew、profile-info及trust；新源码和新包的资格分别记录，新包实际下载校验结束后再更换入口。

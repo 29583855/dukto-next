@@ -28,4 +28,9 @@ ServiceIdentity initializeIdentity(PrivateStore &store, const QStringList &names
                                    int validDays = 365);
 // 日期：2026-11-04；核对受保护记录、证书私钥匹配与期限，损坏/过期/缺失均拒绝普通启动。
 ServiceIdentity loadIdentity(const PrivateStore &store);
+// 日期：2026-11-05；允许查看过期/尚未生效身份的公开材料，仍拒绝损坏或私钥不匹配的记录。
+QJsonObject inspectIdentity(const PrivateStore &store);
+// 日期：2026-11-05；旧指纹显式绑定并串行原子续期，保留UUID、授权与任务；监听器须重新创建才采用新证书。
+QJsonObject renewIdentity(PrivateStore &store, const QByteArray &expectedFingerprint,
+                          const QStringList &names = {}, int validDays = 365);
 } // namespace dukto

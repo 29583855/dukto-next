@@ -30,6 +30,14 @@ QUuid id(const QVariant &value) {
         throw dukto::Error(dukto::ExitCode::Config, QStringLiteral("请提供规范 UUID"), "arguments");
     return result;
 }
+// 日期：2026-11-05；续期和迁移只接受用户核对的完整公开指纹，非法文本不能被fromHex宽松接受。
+QByteArray checkedFingerprint(const QVariant &value) {
+    const auto text = value.toString();
+    if (!QRegularExpression("\\A[0-9a-fA-F]{64}\\z").match(text).hasMatch())
+        throw dukto::Error(dukto::ExitCode::Config, QStringLiteral("请核对完整64位证书指纹"),
+                           "arguments");
+    return QByteArray::fromHex(text.toLatin1());
+}
 } // namespace
 
 // 日期：2026-11-04；参数只保存公开目标与本机路径，凭据在工作线程从 PrivateStore 读取。
@@ -80,18 +88,27 @@ void ServerAction::run() {
         if (!QDir().mkpath(directory_))
             throw dukto::Error(dukto::ExitCode::Disk, QStringLiteral("无法准备服务器状态目录"));
         const auto service = QDir(directory_).filePath("service");
-        if (QStringList{"init", "info", "shares", "share-add", "share-remove", "pairing", "grant",
-                        "revoke", "clients", "session-show", "session-set"}
+        if (QStringList{"init", "info", "renew", "shares", "share-add", "share-remove", "pairing",
+                        "grant", "revoke", "clients", "session-show", "session-set"}
                 .contains(operation_)) {
             dukto::PrivateStore store(service, operation_ == "init");
-            if (operation_ == "init" || operation_ == "info") {
-                const auto identity =
-                    operation_ == "init"
-                        ? dukto::initializeIdentity(
-                              store, options_["names"].toString().split(
-                                         QRegularExpression("[,;\\s]+"), Qt::SkipEmptyParts))
-                        : dukto::loadIdentity(store);
-                result_ = identity.publicInfo();
+            if (operation_ == "init" || operation_ == "info" || operation_ == "renew") {
+                if (operation_ == "init" || operation_ == "renew") {
+                    const auto names = options_["names"].toString().split(
+                        QRegularExpression("[,;\\s]+"), Qt::SkipEmptyParts);
+                    const auto daysText = options_.value("certificateDays", "365").toString();
+                    bool validDays = false;
+                    const auto days = daysText.toInt(&validDays);
+                    if (!validDays || QString::number(days) != daysText || days < 1 || days > 825)
+                        throw dukto::Error(dukto::ExitCode::Config,
+                                           QStringLiteral("证书有效期须为1..825天"), "arguments");
+                    if (operation_ == "init")
+                        result_ = dukto::initializeIdentity(store, names, days).publicInfo();
+                    else
+                        result_ = dukto::renewIdentity(
+                            store, checkedFingerprint(options_["fingerprint"]), names, days);
+                } else
+                    result_ = dukto::inspectIdentity(store);
                 result_["sessionSeconds"] = QString::number(dukto::loadSessionSeconds(store));
                 result_["event"] = "identity";
                 return;
@@ -156,6 +173,16 @@ void ServerAction::run() {
         }
         dukto::PrivateStore clients(QDir(directory_).filePath("clients"), true);
         const auto alias = options_.value("profile", "default").toString();
+        if (operation_ == "profile-info") {
+            result_ = dukto::profileInfo(clients, alias);
+            return;
+        }
+        if (operation_ == "trust") {
+            result_ = dukto::migrateProfileFingerprint(
+                clients, alias, checkedFingerprint(options_["oldFingerprint"]),
+                checkedFingerprint(options_["fingerprint"]), 30000, &cancelled_);
+            return;
+        }
         dukto::ClientProfile profile;
         QByteArray pairing;
         if (operation_ == "pair") {
@@ -464,6 +491,16 @@ void ServerPanel::accept(const QJsonObject &event, int code) {
     }
     if (event["event"] == "identity") {
         identity_ = event;
+        if (listener_) {
+            try {
+                const auto active = listener_->publicInfo();
+                identity_["activeFingerprint"] = active["fingerprint"];
+                identity_["restartRequired"] = identity_["fingerprint"] != active["fingerprint"];
+            } catch (const dukto::Error &error) {
+                identity_["activeCertificateError"] = error.message;
+                identity_["restartRequired"] = true;
+            }
+        }
         sessionSeconds_ = event["sessionSeconds"].toString().toInt();
     }
     if (event["event"] == "session-policy")
@@ -530,7 +567,7 @@ void ServerPanel::execute(const QString &operation, const QVariantMap &options) 
     emit changed();
 }
 
-// 日期：2026-11-04；仅显式启动本机服务；身份不存在/端口无效/占用时显示实际错误。
+// 日期：2026-11-05；公开身份读取成功后才发布监听器，失败由局部RAII关闭端口并显示实际错误。
 void ServerPanel::setServing(bool enabled, const QString &address, int port) {
     try {
         if (!enabled) {
@@ -546,8 +583,9 @@ void ServerPanel::setServing(bool enabled, const QString &address, int port) {
             if (!listener->listen(bind, static_cast<quint16>(port)))
                 throw dukto::Error(dukto::ExitCode::Network,
                                    QStringLiteral("本机服务端口无法监听"));
+            const auto info = listener->publicInfo();
             listener_ = listener.release();
-            identity_ = listener_->publicInfo();
+            identity_ = info;
             connect(listener_, &dukto::ServiceListener::event, this,
                     [this](const QJsonObject &event) {
                         // 日期：2026-11-04；服务事件不累计，远端文件数据仍由核心工作线程流式处理。

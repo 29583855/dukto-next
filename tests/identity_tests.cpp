@@ -7,12 +7,80 @@
 
 #include <QDir>
 #include <QJsonDocument>
+#include <QLockFile>
 #include <QTemporaryDir>
 #include <QtTest>
 
 class IdentityTests final : public QObject {
     Q_OBJECT
   private slots:
+    // 日期：2026-11-05；错误确认/非法期限/锁占用/损坏材料不得覆盖身份，成功续期保留UUID和名称。
+    void certificateRenewal() {
+        QTemporaryDir root;
+        dukto::PrivateStore store(root.filePath("service"), true);
+        const auto identity =
+            dukto::initializeIdentity(store, {"localhost", "127.0.0.1", "::1"}, 1);
+        const auto fingerprint = identity.certificate.digest(QCryptographicHash::Sha256);
+        const auto original = store.read("identity.json");
+        const auto info = dukto::inspectIdentity(store);
+        QCOMPARE(info["certificateStatus"].toString(), QString("valid"));
+        QVERIFY(info["expiringSoon"].toBool());
+        QCOMPARE(info["certificateSource"].toString(), QString("stored"));
+        QVERIFY_EXCEPTION_THROWN(dukto::renewIdentity(store, dukto::randomCredential()),
+                                 dukto::Error);
+        QVERIFY_EXCEPTION_THROWN(dukto::renewIdentity(store, fingerprint.left(31)), dukto::Error);
+        QVERIFY_EXCEPTION_THROWN(dukto::renewIdentity(store, fingerprint, {}, 0), dukto::Error);
+        QVERIFY_EXCEPTION_THROWN(dukto::renewIdentity(store, fingerprint, {}, 826), dukto::Error);
+        QVERIFY_EXCEPTION_THROWN(dukto::renewIdentity(store, fingerprint, {"*.example.com"}),
+                                 dukto::Error);
+        QCOMPARE(store.read("identity.json"), original);
+        {
+            QLockFile lock(store.directory() + "/identity.lock");
+            QVERIFY(lock.tryLock());
+            QVERIFY_EXCEPTION_THROWN(dukto::renewIdentity(store, fingerprint), dukto::Error);
+            QCOMPARE(store.read("identity.json"), original);
+        }
+        dukto::ServiceListener listener(store.directory(), 1000);
+        const auto renewed = dukto::renewIdentity(store, fingerprint, {}, 825);
+        const auto loaded = dukto::loadIdentity(store);
+        QCOMPARE(loaded.id, identity.id);
+        QVERIFY(loaded.key != identity.key);
+        QVERIFY(loaded.certificate != identity.certificate);
+        QCOMPARE(loaded.key.length(), 3072);
+        for (const auto kind : {QSsl::DnsEntry, QSsl::IpAddressEntry}) {
+            auto actual = loaded.certificate.subjectAlternativeNames().values(kind);
+            auto expected = identity.certificate.subjectAlternativeNames().values(kind);
+            actual.sort();
+            expected.sort();
+            QCOMPARE(actual, expected);
+        }
+        QCOMPARE(renewed["previousFingerprint"], info["fingerprint"]);
+        QCOMPARE(renewed["certificateStatus"].toString(), QString("valid"));
+        QVERIFY(!renewed["expiringSoon"].toBool());
+        QVERIFY(renewed["restartRequired"].toBool());
+        QCOMPARE(listener.publicInfo()["fingerprint"], info["fingerprint"]);
+        QCOMPARE(listener.publicInfo()["storedFingerprint"], renewed["fingerprint"]);
+        QVERIFY(listener.publicInfo()["restartRequired"].toBool());
+        dukto::ServiceListener restarted(store.directory(), 1000);
+        QCOMPARE(restarted.publicInfo()["fingerprint"], renewed["fingerprint"]);
+        QVERIFY(!restarted.publicInfo()["restartRequired"].toBool());
+        const auto saved = store.read("identity.json");
+        QVERIFY_EXCEPTION_THROWN(dukto::renewIdentity(store, fingerprint), dukto::Error);
+        QCOMPARE(store.read("identity.json"), saved);
+        const auto publicBytes = dukto::next::encodeControl(renewed);
+        QVERIFY(!publicBytes.contains("privateKey"));
+        QVERIFY(!publicBytes.contains("PRIVATE KEY"));
+        QVERIFY(!publicBytes.contains(loaded.key.toPem().mid(60, 60)));
+        auto corrupted = dukto::next::parseControl(saved);
+        corrupted["privateKey"] = "damaged";
+        store.write("identity.json", dukto::next::encodeControl(corrupted));
+        const auto damaged = store.read("identity.json");
+        QVERIFY_EXCEPTION_THROWN(dukto::inspectIdentity(store), dukto::Error);
+        QVERIFY_EXCEPTION_THROWN(
+            dukto::renewIdentity(store, loaded.certificate.digest(QCryptographicHash::Sha256)),
+            dukto::Error);
+        QCOMPARE(store.read("identity.json"), damaged);
+    }
     // 日期：2026-11-05；真实私有存储持久读取、严格字段和数值边界，非法写入不得覆盖已保存策略。
     void sessionPolicy() {
         QTemporaryDir root;

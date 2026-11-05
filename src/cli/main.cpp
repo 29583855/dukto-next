@@ -177,10 +177,11 @@ int main(int argc, char **argv) {
     parser.setApplicationDescription(QStringLiteral("Dukto Next 独立命令行传输工具（C++14/Qt5）"));
     parser.addHelpOption();
     parser.addVersionOption();
-    parser.addPositionalArgument(
-        "command", "discover / send / send-text / receive / receipts / "
-                   "serve / pair / auth / rotate / list / upload / download / tasks / task "
-                   "/ task-items / pause / cancel / resume / doctor / config / help");
+    parser.addPositionalArgument("command",
+                                 "discover / send / send-text / receive / receipts / "
+                                 "serve / pair / auth / rotate / profile-info / trust / list / "
+                                 "upload / download / tasks / task "
+                                 "/ task-items / pause / cancel / resume / doctor / config / help");
     parser.addPositionalArgument("arguments", "config show / config set <key> <value>",
                                  "[arguments...]");
     parser.addOptions(
@@ -204,7 +205,12 @@ int main(int argc, char **argv) {
          {"duration", QStringLiteral("设备发现持续秒数（1–3600）"), "seconds", "3"},
          {"config-file", QStringLiteral("使用独立 INI 配置文件"), "path"},
          {"state-directory", QStringLiteral("任务明细保存目录"), "directory"},
-         {"server-name", QStringLiteral("服务证书 SAN 的 IP/主机名，可重复（serve init）"), "name"},
+         {"server-name",
+          QStringLiteral("服务证书 SAN 的 IP/主机名，可重复（serve init/renew；配对时为一个名称）"),
+          "name"},
+         {"certificate-days", QStringLiteral("证书有效期1..825天（serve init/renew），默认365天"),
+          "days", "365"},
+         {"old-fingerprint", QStringLiteral("客户端证书迁移时已核对的旧指纹（trust）"), "hex"},
          {"profile", QStringLiteral("本地服务器资料别名"), "alias", "default"},
          {"request-id", QStringLiteral("稳定传输请求 UUID；中断后使用相同值重试"), "uuid"},
          {"remote-path", QStringLiteral("上传目标目录或下载源的共享内相对路径"), "path"},
@@ -245,6 +251,13 @@ int main(int argc, char **argv) {
             printText(parser.helpText());
             return 0;
         }
+        if ((parser.isSet("certificate-days") &&
+             (command != "serve" || (args.value(1) != "init" && args.value(1) != "renew"))) ||
+            (parser.isSet("old-fingerprint") && command != "trust") ||
+            parser.values("certificate-days").size() > 1 ||
+            parser.values("old-fingerprint").size() > 1 || parser.values("fingerprint").size() > 1)
+            throw dukto::Error(dukto::ExitCode::Config,
+                               QStringLiteral("证书选项重复或不适用于当前命令"), "arguments");
         if (parser.isSet("on-conflict")) {
             if ((command != "upload" && command != "download") ||
                 parser.values("on-conflict").size() != 1)
@@ -280,9 +293,10 @@ int main(int argc, char **argv) {
                 ? parser.value("state-directory")
                 : QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
         if (command == "serve" || command == "pair" || command == "auth" || command == "rotate" ||
-            command == "list" || command == "upload" || command == "download" ||
-            command == "tasks" || command == "task" || command == "task-items" ||
-            command == "pause" || command == "cancel" || command == "resume")
+            command == "profile-info" || command == "trust" || command == "list" ||
+            command == "upload" || command == "download" || command == "tasks" ||
+            command == "task" || command == "task-items" || command == "pause" ||
+            command == "cancel" || command == "resume")
             return runServiceCommand(
                 parser, args, stateDirectory,
                 [json](const QJsonObject &event) { output(event, json); },

@@ -52,6 +52,16 @@ int timeout(const QCommandLineParser &parser) {
                            "arguments");
     return seconds * 1000;
 }
+// 日期：2026-11-05；期限只接受规范十进制，避免负数、溢出和无效文本回退到默认值。
+int certificateDays(const QCommandLineParser &parser) {
+    const auto text = parser.value("certificate-days");
+    bool ok = false;
+    const int days = text.toInt(&ok);
+    if (!ok || QString::number(days) != text || days < 1 || days > 825)
+        throw dukto::Error(dukto::ExitCode::Config, QStringLiteral("证书有效期须为1..825天"),
+                           "arguments");
+    return days;
+}
 } // namespace
 
 // 日期：2026-11-05；GUI/CLI 共用核心；新版冲突策略绑定原请求，恢复从任务读取而不允许覆盖。
@@ -61,26 +71,52 @@ int runServiceCommand(const QCommandLineParser &parser, const QStringList &argum
                       const std::function<bool()> &interrupted) {
     auto command = arguments.value(0);
     const bool resuming = command == "resume";
+    if (command == "trust" || command == "profile-info") {
+        for (const auto &option :
+             QStringList{"to", "port", "server-name", "credential-file", "share", "remote-path",
+                         "request-id", "path", "output", "client"})
+            if (parser.isSet(option))
+                throw dukto::Error(
+                    dukto::ExitCode::Config,
+                    QStringLiteral("资料证书命令沿用原目标，不接受目标/任务/配对覆盖参数"),
+                    "arguments");
+        if (command == "profile-info" && parser.isSet("fingerprint"))
+            throw dukto::Error(dukto::ExitCode::Config,
+                               QStringLiteral("profile-info为只读操作，不接受证书变更参数"),
+                               "arguments");
+    }
     if (command == "serve") {
         const auto action = arguments.value(1);
         const auto servicePath = QDir(stateDirectory).filePath("service");
-        if (action == "init" || action == "info") {
+        if (action == "init" || action == "info" || action == "renew") {
             if (arguments.size() != 2)
                 throw dukto::Error(dukto::ExitCode::Config,
                                    QStringLiteral("身份命令不接受额外位置参数"), "arguments");
             if (action == "init")
                 prepareParent(stateDirectory);
             dukto::PrivateStore store(servicePath, action == "init");
-            const auto identity =
-                action == "init" ? dukto::initializeIdentity(store, parser.values("server-name"))
-                                 : dukto::loadIdentity(store);
-            auto info = identity.publicInfo();
+            QJsonObject info;
+            if (action == "init")
+                info = dukto::initializeIdentity(store, parser.values("server-name"),
+                                                 certificateDays(parser))
+                           .publicInfo();
+            else if (action == "renew")
+                info = dukto::renewIdentity(store, fingerprint(parser.value("fingerprint")),
+                                            parser.values("server-name"), certificateDays(parser));
+            else
+                info = dukto::inspectIdentity(store);
             info["sessionSeconds"] = QString::number(dukto::loadSessionSeconds(store));
             info["eventVersion"] = 1;
             info["event"] = "server-identity";
             info["stage"] = action;
-            info["message"] = QStringLiteral("服务器 ID：%1；SHA-256 指纹：%2")
-                                  .arg(info["serverId"].toString(), info["fingerprint"].toString());
+            if (action != "renew")
+                info["message"] =
+                    QStringLiteral("服务器 ID：%1；证书状态：%2；有效期至：%3；SHA-256 指纹：%4")
+                        .arg(info["serverId"].toString(), info["certificateStatus"].toString(),
+                             info["expiresUtc"].toString(), info["fingerprint"].toString());
+            else
+                info["message"] = info["message"].toString() + QStringLiteral("；新指纹：") +
+                                  info["fingerprint"].toString();
             output(info);
             return 0;
         }
@@ -234,12 +270,13 @@ int runServiceCommand(const QCommandLineParser &parser, const QStringList &argum
         throw dukto::Error(
             dukto::ExitCode::Config,
             QStringLiteral(
-                "用法：serve init/info/start/session/share/pairing/clients/grant/revoke"),
+                "用法：serve init/info/renew/start/session/share/pairing/clients/grant/revoke"),
             "arguments");
     }
     if (command != "pair" && command != "auth" && command != "rotate" && command != "list" &&
-        command != "upload" && command != "download" && command != "tasks" && command != "task" &&
-        command != "pause" && command != "cancel" && command != "task-items" && !resuming)
+        command != "trust" && command != "profile-info" && command != "upload" &&
+        command != "download" && command != "tasks" && command != "task" && command != "pause" &&
+        command != "cancel" && command != "task-items" && !resuming)
         throw dukto::Error(dukto::ExitCode::Config, QStringLiteral("远程命令无效"), "arguments");
     if (arguments.size() != 1)
         throw dukto::Error(dukto::ExitCode::Config, QStringLiteral("远程命令不接受额外位置参数"),
@@ -247,6 +284,10 @@ int runServiceCommand(const QCommandLineParser &parser, const QStringList &argum
     prepareParent(stateDirectory);
     dukto::PrivateStore clients(QDir(stateDirectory).filePath("clients"), true);
     const auto alias = parser.value("profile");
+    if (command == "profile-info") {
+        output(dukto::profileInfo(clients, alias));
+        return 0;
+    }
     dukto::ClientProfile profile;
     QByteArray pairing;
     if (command == "pair") {
@@ -269,7 +310,7 @@ int runServiceCommand(const QCommandLineParser &parser, const QStringList &argum
         if (!profile.paired)
             throw dukto::Error(dukto::ExitCode::Permission,
                                QStringLiteral("客户端资料尚未确认配对"), "auth");
-        if (command != "rotate" && !profile.pendingCredential.isEmpty())
+        if (command != "rotate" && command != "trust" && !profile.pendingCredential.isEmpty())
             throw dukto::Error(dukto::ExitCode::Permission,
                                QStringLiteral("凭据轮换尚待确认，请用相同资料执行 rotate 后继续"),
                                "profile");
@@ -289,6 +330,12 @@ int runServiceCommand(const QCommandLineParser &parser, const QStringList &argum
             dukto::checkedTransferPolicy(parser.value("retries"), parser.value("deadline-seconds")),
             &cancelled, output));
     const auto stop = operation ? operation->cancellation() : &cancelled;
+    if (command == "trust") {
+        output(dukto::migrateProfileFingerprint(
+            clients, alias, fingerprint(parser.value("old-fingerprint")),
+            fingerprint(parser.value("fingerprint")), timeout(parser), &cancelled));
+        return 0;
+    }
     if (command == "rotate") {
         output(dukto::rotateProfile(clients, alias, timeout(parser), &cancelled));
         return 0;

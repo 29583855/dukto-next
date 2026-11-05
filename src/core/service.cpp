@@ -131,6 +131,25 @@ void saveProfile(PrivateStore &store, const ClientProfile &profile) {
     writeProfile(store, profile);
 }
 
+// 日期：2026-11-05；公开资料不会发起连接或更改信任，未配对状态也明确展示。
+QJsonObject profileInfo(const PrivateStore &store, const QString &alias) {
+    const auto profile = loadProfile(store, alias);
+    return {{"eventVersion", 1},
+            {"event", "profile-info"},
+            {"profile", alias},
+            {"host", profile.host},
+            {"port", QString::number(profile.port)},
+            {"peerName", profile.peerName},
+            {"serverId", profile.server.toString(QUuid::WithoutBraces)},
+            {"client", profile.client.toString(QUuid::WithoutBraces)},
+            {"fingerprint", QString::fromLatin1(profile.fingerprint.toHex())},
+            {"paired", profile.paired},
+            {"rotationPending", !profile.pendingCredential.isEmpty()},
+            {"message", QStringLiteral("资料 %1；目标 %2:%3；SHA-256 指纹：%4")
+                            .arg(alias, profile.host, QString::number(profile.port),
+                                 QString::fromLatin1(profile.fingerprint.toHex()))}};
+}
+
 // 日期：2026-11-05；恢复仅在新秘密明确认证拒绝后使用原秘密，网络或证书错误保留待确认状态。
 QJsonObject rotateProfile(PrivateStore &store, const QString &alias, int timeoutMs,
                           const std::atomic_bool *cancel) {
@@ -179,6 +198,63 @@ QJsonObject rotateProfile(PrivateStore &store, const QString &alias, int timeout
     result["recovered"] = recovering;
     result["message"] = QStringLiteral("访问凭据已轮换；旧凭据已失效，任务身份和授权保留");
     return result;
+}
+
+// 日期：2026-11-05；整个迁移持有资料锁；新pin的TLS、服务UUID和凭据认证全部通过后才写磁盘。
+QJsonObject migrateProfileFingerprint(PrivateStore &store, const QString &alias,
+                                      const QByteArray &expectedFingerprint,
+                                      const QByteArray &replacementFingerprint, int timeoutMs,
+                                      const std::atomic_bool *cancel) {
+    if (expectedFingerprint.size() != 32 || replacementFingerprint.size() != 32 ||
+        expectedFingerprint == replacementFingerprint)
+        throw Error(ExitCode::Config, QStringLiteral("请明确提供不同的完整新旧证书指纹"),
+                    "profile");
+    QLockFile lock(store.directory() + "/" + profileName(alias) + ".lock");
+    lock.setStaleLockTime(0);
+    if (!lock.tryLock(0))
+        throw Error(ExitCode::Permission, QStringLiteral("客户端资料正在修改，请重试"), "profile");
+    auto profile = loadProfile(store, alias);
+    if (!profile.paired || (profile.fingerprint != expectedFingerprint &&
+                            profile.fingerprint != replacementFingerprint))
+        throw Error(ExitCode::Permission, QStringLiteral("当前资料未配对或旧指纹与确认值不同"),
+                    "profile");
+    const bool alreadyUpdated = profile.fingerprint == replacementFingerprint;
+    profile.fingerprint = replacementFingerprint;
+    // 日期：2026-11-05；保留轮换检查点；仅认证明确拒绝才可试另一已保存秘密，TLS/网络错误不降级。
+    bool authenticated = false;
+    if (!profile.pendingCredential.isEmpty()) {
+        auto candidate = profile;
+        candidate.credential = profile.pendingCredential;
+        candidate.pendingCredential.clear();
+        try {
+            RemoteClient remote(candidate, timeoutMs, cancel);
+            remote.authenticate();
+            authenticated = true;
+            remote.close();
+        } catch (const Error &error) {
+            if (authenticated || error.code != ExitCode::Permission || error.stage != "auth")
+                throw;
+        }
+    }
+    if (!authenticated) {
+        RemoteClient remote(profile, timeoutMs, cancel);
+        remote.authenticate();
+        remote.close();
+    }
+    if (cancel && cancel->load())
+        throw Error(ExitCode::Cancelled, QStringLiteral("证书迁移已取消"), "profile");
+    if (!alreadyUpdated)
+        writeProfile(store, profile);
+    return {{"eventVersion", 1},
+            {"event", "profile-certificate-updated"},
+            {"profile", alias},
+            {"serverId", profile.server.toString(QUuid::WithoutBraces)},
+            {"previousFingerprint", QString::fromLatin1(expectedFingerprint.toHex())},
+            {"fingerprint", QString::fromLatin1(replacementFingerprint.toHex())},
+            {"alreadyUpdated", alreadyUpdated},
+            {"rotationPending", !profile.pendingCredential.isEmpty()},
+            {"message",
+             QStringLiteral("新证书与原服务身份认证通过，资料指纹已保存；原授权、凭据和任务保留")}};
 }
 
 // 日期：2026-11-04；恢复配对沿用已持久化秘密，不能每次重试生成新凭据导致服务器绑定冲突。
@@ -562,10 +638,14 @@ void ServiceListener::stop() {
     workers_.clear();
 }
 
-// 日期：2026-11-05；公开身份和之后新连接将采用的时长，不包含秘密或已有连接的私有状态。
+// 日期：2026-11-05；分别公开运行快照和磁盘指纹，续期后不得将旧监听器误报为已采用新证书。
 QJsonObject ServiceListener::publicInfo() const {
     auto result = identity_.publicInfo();
-    result["sessionSeconds"] = QString::number(loadSessionSeconds(PrivateStore(state_)));
+    PrivateStore store(state_);
+    result["sessionSeconds"] = QString::number(loadSessionSeconds(store));
+    result["certificateSource"] = "listener-snapshot";
+    result["storedFingerprint"] = inspectIdentity(store)["fingerprint"];
+    result["restartRequired"] = result["storedFingerprint"] != result["fingerprint"];
     return result;
 }
 

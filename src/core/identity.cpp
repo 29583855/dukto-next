@@ -69,8 +69,8 @@ QByteArray bytes(BIO *bio) {
     return QByteArray(data, static_cast<int>(size));
 }
 
-// 日期：2026-11-04；Qt 加载与 OpenSSL 匹配验证均须通过，公钥/私钥不匹配不能等待握手才发现。
-ServiceIdentity decodeIdentity(const QJsonObject &object) {
+// 日期：2026-11-05；查看/续期仅放宽时间检查，结构、材料与私钥匹配检查始终保留。
+ServiceIdentity decodeIdentity(const QJsonObject &object, bool requireCurrent = true) {
     if (object["version"] != 1 || !object["id"].isString() || !object["certificate"].isString() ||
         !object["privateKey"].isString() || object.size() != 4)
         throw Error(ExitCode::Config, QStringLiteral("服务身份记录格式无效"), "identity");
@@ -80,7 +80,10 @@ ServiceIdentity decodeIdentity(const QJsonObject &object) {
                              QSslKey(keyBytes, QSsl::Rsa)};
     const auto now = QDateTime::currentDateTimeUtc();
     if (identity.id.isNull() || identity.certificate.isNull() || identity.key.isNull() ||
-        identity.certificate.effectiveDate() > now || identity.certificate.expiryDate() <= now)
+        !identity.certificate.effectiveDate().isValid() ||
+        !identity.certificate.expiryDate().isValid() ||
+        (requireCurrent &&
+         (identity.certificate.effectiveDate() > now || identity.certificate.expiryDate() <= now)))
         throw Error(ExitCode::Permission, QStringLiteral("服务身份缺失、损坏或证书不在有效期内"),
                     "identity");
     Bio certBio(BIO_new_mem_buf(certificateBytes.constData(), certificateBytes.size()), BIO_free);
@@ -92,30 +95,8 @@ ServiceIdentity decodeIdentity(const QJsonObject &object) {
         throw Error(ExitCode::Permission, QStringLiteral("服务证书与私钥不匹配"), "identity");
     return identity;
 }
-} // namespace
-
-// 日期：2026-11-04；凭据与配对票据使用独立随机值，不由服务器 ID、时间戳或普通伪随机派生。
-QByteArray randomCredential() {
-    QByteArray result(32, '\0');
-    ensure(RAND_bytes(reinterpret_cast<unsigned char *>(result.data()), result.size()) == 1);
-    return result;
-}
-
-// 日期：2026-11-04；公开的长度不匹配可以直接拒绝，等长秘密使用 OpenSSL 常量时间比较。
-bool secureEqual(const QByteArray &first, const QByteArray &second) {
-    return first.size() == second.size() && CRYPTO_memcmp(first.constData(), second.constData(),
-                                                          static_cast<size_t>(first.size())) == 0;
-}
-
-// 日期：2026-11-04；初始化锁保护跨进程的存在检查/发布，不能并发覆盖一个刚建立的服务身份。
-ServiceIdentity initializeIdentity(PrivateStore &store, const QStringList &names, int validDays) {
-    QLockFile lock(store.directory() + "/identity.lock");
-    lock.setStaleLockTime(0);
-    if (!lock.tryLock(0))
-        throw Error(ExitCode::Permission, QStringLiteral("服务身份初始化已被另一个进程占用"),
-                    "identity");
-    if (store.exists("identity.json"))
-        throw Error(ExitCode::Config, QStringLiteral("服务身份已存在，拒绝覆盖"), "identity");
+// 日期：2026-11-05；先在内存生成并核对完整RSA3072身份，调用方决定是否原子发布。
+QJsonObject generateIdentity(const QUuid &id, const QStringList &names, int validDays) {
     if (names.isEmpty() || names.size() > 16 || validDays < 1 || validDays > 825)
         throw Error(ExitCode::Config, QStringLiteral("服务器名数量或证书有效期无效"), "identity");
     QStringList canonical;
@@ -143,7 +124,6 @@ ServiceIdentity initializeIdentity(PrivateStore &store, const QStringList &names
     ensure(X509_gmtime_adj(X509_getm_notBefore(certificate.get()), -300));
     ensure(X509_gmtime_adj(X509_getm_notAfter(certificate.get()),
                            static_cast<long>(validDays) * 86400));
-    const auto id = QUuid::createUuid();
     const auto commonName = "Dukto " + id.toString(QUuid::WithoutBraces).toUtf8();
     auto subject = X509_get_subject_name(certificate.get());
     ensure(
@@ -168,6 +148,34 @@ ServiceIdentity initializeIdentity(PrivateStore &store, const QStringList &names
                              {"id", id.toString(QUuid::WithoutBraces)},
                              {"certificate", QString::fromLatin1(bytes(certBio.get()))},
                              {"privateKey", QString::fromLatin1(bytes(keyBio.get()))}};
+    decodeIdentity(object);
+    return object;
+}
+} // namespace
+
+// 日期：2026-11-04；凭据与配对票据使用独立随机值，不由服务器 ID、时间戳或普通伪随机派生。
+QByteArray randomCredential() {
+    QByteArray result(32, '\0');
+    ensure(RAND_bytes(reinterpret_cast<unsigned char *>(result.data()), result.size()) == 1);
+    return result;
+}
+
+// 日期：2026-11-04；公开的长度不匹配可以直接拒绝，等长秘密使用 OpenSSL 常量时间比较。
+bool secureEqual(const QByteArray &first, const QByteArray &second) {
+    return first.size() == second.size() && CRYPTO_memcmp(first.constData(), second.constData(),
+                                                          static_cast<size_t>(first.size())) == 0;
+}
+
+// 日期：2026-11-05；初始化锁保护跨进程的存在检查/发布，不能并发覆盖一个刚建立的服务身份。
+ServiceIdentity initializeIdentity(PrivateStore &store, const QStringList &names, int validDays) {
+    QLockFile lock(store.directory() + "/identity.lock");
+    lock.setStaleLockTime(0);
+    if (!lock.tryLock(0))
+        throw Error(ExitCode::Permission, QStringLiteral("服务身份初始化已被另一个进程占用"),
+                    "identity");
+    if (store.exists("identity.json"))
+        throw Error(ExitCode::Config, QStringLiteral("服务身份已存在，拒绝覆盖"), "identity");
+    const auto object = generateIdentity(QUuid::createUuid(), names, validDays);
     const auto identity = decodeIdentity(object);
     store.write("identity.json", next::encodeControl(object));
     return identity;
@@ -176,6 +184,42 @@ ServiceIdentity initializeIdentity(PrivateStore &store, const QStringList &names
 // 日期：2026-11-04；读取失败不重新初始化，避免丢失身份后让既有客户端静默信任另一台服务器。
 ServiceIdentity loadIdentity(const PrivateStore &store) {
     return decodeIdentity(next::parseControl(store.read("identity.json")));
+}
+
+// 日期：2026-11-05；公开检查不改变磁盘材料，过期证书仍可核对指纹并进行显式续期。
+QJsonObject inspectIdentity(const PrivateStore &store) {
+    auto result =
+        decodeIdentity(next::parseControl(store.read("identity.json")), false).publicInfo();
+    result["certificateSource"] = "stored";
+    return result;
+}
+
+// 日期：2026-11-05；与初始化共用跨进程锁和原子私有写入，过期可续期但损坏身份不可替换。
+QJsonObject renewIdentity(PrivateStore &store, const QByteArray &expectedFingerprint,
+                          const QStringList &names, int validDays) {
+    QLockFile lock(store.directory() + "/identity.lock");
+    lock.setStaleLockTime(0);
+    if (!lock.tryLock(0))
+        throw Error(ExitCode::Permission, QStringLiteral("服务身份正在修改，请重试"), "identity");
+    const auto current = decodeIdentity(next::parseControl(store.read("identity.json")), false);
+    const auto previous = current.certificate.digest(QCryptographicHash::Sha256);
+    if (expectedFingerprint.size() != 32 || !secureEqual(previous, expectedFingerprint))
+        throw Error(ExitCode::Permission, QStringLiteral("当前服务指纹与确认值不同，拒绝续期"),
+                    "identity");
+    QStringList alternatives = names;
+    if (alternatives.isEmpty())
+        for (const auto &value : current.publicInfo()["names"].toArray())
+            alternatives.append(value.toString());
+    const auto object = generateIdentity(current.id, alternatives, validDays);
+    const auto identity = decodeIdentity(object);
+    store.write("identity.json", next::encodeControl(object));
+    auto result = identity.publicInfo();
+    result["previousFingerprint"] = QString::fromLatin1(previous.toHex());
+    result["certificateSource"] = "stored";
+    result["restartRequired"] = true;
+    result["message"] = QStringLiteral(
+        "证书已续期；请重新启动所有使用此状态目录的服务，再核对新旧指纹并迁移客户端资料");
+    return result;
 }
 
 // 日期：2026-11-04；服务端 TLS 协商只使用持久化证书，应用层认证在后续控制状态机执行。
@@ -187,7 +231,7 @@ QSslConfiguration ServiceIdentity::configuration() const {
     return result;
 }
 
-// 日期：2026-11-04；完整 SHA256 指纹可供人工核对，私钥不出现在 GUI、JSON 事件或日志中。
+// 日期：2026-11-05；公开期限与30天预警；不自动信任、续期或输出私钥，运行身份按快照计算。
 QJsonObject ServiceIdentity::publicInfo() const {
     QJsonArray names;
     const auto alternatives = certificate.subjectAlternativeNames();
@@ -195,10 +239,19 @@ QJsonObject ServiceIdentity::publicInfo() const {
         names.append(value);
     for (const auto &value : alternatives.values(QSsl::IpAddressEntry))
         names.append(value);
+    const auto now = QDateTime::currentDateTimeUtc();
+    const auto remaining = now.secsTo(certificate.expiryDate());
+    const QString status = certificate.effectiveDate() > now ? "not-yet-valid"
+                           : certificate.expiryDate() <= now ? "expired"
+                                                             : "valid";
     return {{"serverId", id.toString(QUuid::WithoutBraces)},
             {"fingerprint",
              QString::fromLatin1(certificate.digest(QCryptographicHash::Sha256).toHex())},
             {"expiresUtc", certificate.expiryDate().toUTC().toString(Qt::ISODate)},
+            {"effectiveUtc", certificate.effectiveDate().toUTC().toString(Qt::ISODate)},
+            {"certificateStatus", status},
+            {"secondsRemaining", QString::number(remaining)},
+            {"expiringSoon", status == "valid" && remaining <= 30 * 86400},
             {"names", names}};
 }
 } // namespace dukto

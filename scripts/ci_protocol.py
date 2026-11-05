@@ -39,6 +39,7 @@ def commands(build):
     add("service", "service_integration")
     add("client-list", "client_list_integration")
     add("credential-rotation", "credential_rotation_integration")
+    add("certificate-lifecycle", "certificate_lifecycle_integration")
     add("session-expiry", "session_expiry_integration")
     add("task-admission-upload", "task_admission_integration")
     add("task-admission-download", "task_admission_integration", "--mode", "download")

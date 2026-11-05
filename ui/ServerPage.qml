@@ -10,6 +10,20 @@ Rectangle {
 
     signal closeRequested()
 
+    // 日期：2026-11-05；区分磁盘与运行证书并显示核对错误，文案可在窄窗口自动换行。
+    function certificateText() {
+        const identity = panel.identity;
+        if (!identity.certificateStatus)
+            return "读取身份后查看证书期限";
+        const status = identity.certificateStatus === "expired" ? "已过期" : identity.certificateStatus === "not-yet-valid" ? "尚未生效" : identity.expiringSoon ? "30天内到期" : "有效";
+        let message = "证书：" + status + " · 到期 " + identity.expiresUtc;
+        if (identity.restartRequired)
+            message += "\n磁盘证书已更新，请重新启动所有使用此状态目录的服务。";
+        if (identity.activeCertificateError)
+            message += "\n无法核对运行身份：" + identity.activeCertificateError;
+        return message;
+    }
+
     // 日期：2026-11-05；公开状态映射为中文，原协议值保持用于控制与恢复。
     function stateText(state) {
         const names = {
@@ -289,6 +303,71 @@ Rectangle {
 
                         }
 
+                    }
+
+                    CheckBox {
+                        id: showCertificateMigration
+                        objectName: "serverTrustExpand"
+                        text: "服务器证书变更 / 资料指纹迁移"
+                    }
+
+                    GroupBox {
+                        visible: showCertificateMigration.checked
+                        Layout.fillWidth: true
+                        title: "核对证书后更新当前资料"
+                        ColumnLayout {
+                            width: parent.width
+                            Label {
+                                text: "先从服务器管理员处核对新旧指纹。此操作保留原目标、配对身份和任务，连接验证成功后才保存。"
+                                textFormat: Text.PlainText
+                                wrapMode: Text.Wrap
+                                Layout.fillWidth: true
+                            }
+                            Button {
+                                objectName: "serverProfileInfoButton"
+                                text: "读取当前资料指纹"
+                                enabled: !panel.busy
+                                onClicked: panel.execute("profile-info", {"profile": profile.text})
+                            }
+                            TextArea {
+                                text: panel.outcome.event === "profile-info" && panel.outcome.profile === profile.text ? panel.outcome.fingerprint : ""
+                                readOnly: true
+                                selectByMouse: true
+                                textFormat: TextEdit.PlainText
+                                wrapMode: TextEdit.WrapAnywhere
+                                Layout.fillWidth: true
+                            }
+                            TextField {
+                                id: previousFingerprint
+                                objectName: "serverOldFingerprint"
+                                placeholderText: "已核对的旧指纹（64位）"
+                                maximumLength: 64
+                                Layout.fillWidth: true
+                            }
+                            TextField {
+                                id: replacementFingerprint
+                                objectName: "serverNewFingerprint"
+                                placeholderText: "已核对的新指纹（64位）"
+                                maximumLength: 64
+                                Layout.fillWidth: true
+                            }
+                            CheckBox {
+                                id: trustConfirmed
+                                objectName: "serverTrustConfirmed"
+                                text: "已通过可信渠道核对新旧指纹"
+                            }
+                            Button {
+                                objectName: "serverTrustButton"
+                                text: "验证并更新资料指纹"
+                                Layout.fillWidth: true
+                                enabled: !panel.busy && trustConfirmed.checked && previousFingerprint.text.length === 64 && replacementFingerprint.text.length === 64
+                                onClicked: panel.execute("trust", {
+                                    "profile": profile.text,
+                                    "oldFingerprint": previousFingerprint.text,
+                                    "fingerprint": replacementFingerprint.text
+                                })
+                            }
+                        }
                     }
 
                     TextField {
@@ -863,6 +942,70 @@ Rectangle {
                         wrapMode: TextEdit.WrapAnywhere
                         Layout.fillWidth: true
                         color: accent
+                    }
+
+                    Label {
+                        objectName: "serverCertificateStatus"
+                        text: page.certificateText()
+                        textFormat: Text.PlainText
+                        wrapMode: Text.WrapAnywhere
+                        color: (panel.identity.certificateStatus && panel.identity.certificateStatus !== "valid") || panel.identity.expiringSoon || panel.identity.restartRequired ? "#b33a1c" : accent
+                        Layout.fillWidth: true
+                    }
+
+                    CheckBox {
+                        id: showCertificateRenewal
+                        objectName: "serverRenewExpand"
+                        text: "证书续期"
+                    }
+
+                    GroupBox {
+                        visible: showCertificateRenewal.checked
+                        title: "保留服务器身份并续期"
+                        Layout.fillWidth: true
+                        ColumnLayout {
+                            width: parent.width
+                            Label {
+                                text: "续期会更换证书和私钥，保留服务器UUID、授权和任务。现有服务继续使用旧证书，重启后采用新证书；随后在各客户端迁移资料指纹。"
+                                textFormat: Text.PlainText
+                                wrapMode: Text.Wrap
+                                Layout.fillWidth: true
+                            }
+                            TextField {
+                                id: renewalNames
+                                objectName: "serverRenewNames"
+                                placeholderText: "新IP/主机名，留空保留原名称"
+                                maximumLength: 4096
+                                Layout.fillWidth: true
+                            }
+                            TextField {
+                                id: certificateDays
+                                objectName: "serverCertificateDays"
+                                text: "365"
+                                placeholderText: "有效期1..825天"
+                                maximumLength: 3
+                                Layout.fillWidth: true
+                            }
+                            CheckBox {
+                                id: renewalConfirmed
+                                objectName: "serverRenewConfirmed"
+                                text: "已核对指纹并了解后续步骤"
+                            }
+                            Button {
+                                objectName: "serverRenewButton"
+                                text: "续期并保存新证书"
+                                Layout.fillWidth: true
+                                enabled: !panel.busy && renewalConfirmed.checked && !!panel.identity.fingerprint
+                                onClicked: {
+                                    panel.execute("renew", {
+                                        "fingerprint": panel.identity.fingerprint,
+                                        "names": renewalNames.text,
+                                        "certificateDays": certificateDays.text
+                                    });
+                                    renewalConfirmed.checked = false;
+                                }
+                            }
+                        }
                     }
 
                     RowLayout {
