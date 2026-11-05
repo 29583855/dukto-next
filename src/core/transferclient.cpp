@@ -179,8 +179,9 @@ QJsonObject RemoteClient::upload(const QUuid &requestId, const QString &share,
                                  int channels, ConflictPolicy conflict) {
     checkedChannels(QString::number(channels));
     conflictPolicyName(conflict);
-    if (conflict != ConflictPolicy::Rename && !capabilities_.contains("conflict-fail-v1"))
-        throw Error(ExitCode::Config, QStringLiteral("服务器未协商遇冲突失败能力"), "conflict");
+    if ((conflict == ConflictPolicy::Fail && !capabilities_.contains("conflict-fail-v1")) ||
+        (conflict == ConflictPolicy::Overwrite && !capabilities_.contains("conflict-overwrite-v1")))
+        throw Error(ExitCode::Config, QStringLiteral("服务器未协商所选冲突策略能力"), "conflict");
     QJsonObject create{{"requestId", requestId.toString(QUuid::WithoutBraces)},
                        {"share", share},
                        {"path", relative},
@@ -359,8 +360,9 @@ QJsonObject RemoteClient::download(const QUuid &requestId, const QString &share,
                                    int channels, ConflictPolicy conflict) {
     checkedChannels(QString::number(channels));
     conflictPolicyName(conflict);
-    if (conflict != ConflictPolicy::Rename && !capabilities_.contains("conflict-fail-v1"))
-        throw Error(ExitCode::Config, QStringLiteral("服务器未协商遇冲突失败能力"), "conflict");
+    if ((conflict == ConflictPolicy::Fail && !capabilities_.contains("conflict-fail-v1")) ||
+        (conflict == ConflictPolicy::Overwrite && !capabilities_.contains("conflict-overwrite-v1")))
+        throw Error(ExitCode::Config, QStringLiteral("服务器未协商所选冲突策略能力"), "conflict");
     if (!QFileInfo(destination).isDir())
         throw Error(ExitCode::Config, QStringLiteral("下载目标目录必须已存在"), "transfer");
     const auto requestKey = requestId.toString(QUuid::WithoutBraces);

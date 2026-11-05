@@ -25,8 +25,16 @@ QJsonObject summary(const QByteArray &sha) {
 class TaskStoreTests final : public QObject {
     Q_OBJECT
   private slots:
+    // 日期：2026-11-05；两种非默认策略均绑定请求摘要，覆盖不能借 fail 能力或旧摘要绕过。
+    void conflictRequestBinding_data() {
+        QTest::addColumn<QString>("policy");
+        QTest::newRow("fail") << QString("fail");
+        QTest::newRow("overwrite") << QString("overwrite");
+    }
     // 日期：2026-11-05；冲突策略绑定幂等键、公开查询和重开，默认旧规范格式仍不增加字段。
     void conflictRequestBinding() {
+        QFETCH(QString, policy);
+        const auto conflict = dukto::checkedConflictPolicy(policy);
         QTemporaryDir root;
         dukto::PrivateStore store(root.filePath("private"), true);
         const auto owner = QUuid::createUuid();
@@ -34,15 +42,14 @@ class TaskStoreTests final : public QObject {
         QUuid id;
         {
             dukto::TaskStore tasks(store);
-            const auto task = tasks.create(owner, request, "download", "docs", "file", root.path(),
-                                           {}, dukto::ConflictPolicy::Fail);
+            const auto task =
+                tasks.create(owner, request, "download", "docs", "file", root.path(), {}, conflict);
             id = task.id;
-            QCOMPARE(task.publicInfo()["conflict"].toString(), QString("fail"));
-            QCOMPARE(tasks
-                         .create(owner, request, "download", "docs", "file", root.path(), {},
-                                 dukto::ConflictPolicy::Fail)
-                         .id,
-                     id);
+            QCOMPARE(task.publicInfo()["conflict"].toString(), policy);
+            QCOMPARE(
+                tasks.create(owner, request, "download", "docs", "file", root.path(), {}, conflict)
+                    .id,
+                id);
             QVERIFY_EXCEPTION_THROWN(
                 tasks.create(owner, request, "download", "docs", "file", root.path()),
                 dukto::Error);
@@ -52,8 +59,8 @@ class TaskStoreTests final : public QObject {
         }
         dukto::TaskStore tasks(store);
         const auto task = tasks.task(owner, id);
-        QVERIFY(task.conflict == dukto::ConflictPolicy::Fail);
-        QCOMPARE(task.publicInfo()["conflict"].toString(), QString("fail"));
+        QVERIFY(task.conflict == conflict);
+        QCOMPARE(task.publicInfo()["conflict"].toString(), policy);
     }
     // 日期：2026-11-05；尚未扫描的等待任务可暂停/恢复，正文扫描只能在获得调度许可后重新进入。
     void unboundQueuePauseAndResume() {

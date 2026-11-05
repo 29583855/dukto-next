@@ -67,7 +67,27 @@ void transmitBlock(dukto::DurableReceive &receiver, quint64 block, qint64 limit 
 int crashWorker(const QString &root, const QString &mode) {
     dukto::PrivateStore store(root + "/private");
     dukto::StrongManifest manifest(store, "source.sqlite", false);
-    dukto::DurableReceive receiver(store, "receive.sqlite", Task, manifest, root + "/output");
+    dukto::DurableReceive receiver(store, "receive.sqlite", Task, manifest, root + "/output",
+                                   mode.startsWith("overwrite-") ? dukto::ConflictPolicy::Overwrite
+                                                                 : dukto::ConflictPolicy::Rename);
+    if (mode.startsWith("overwrite-")) {
+        receiver.open(1, "sample.bin");
+        if (mode == "overwrite-partial") {
+            transmit(receiver, 0, dukto::StrongBlockBytes);
+            std::_Exit(29);
+        }
+        transmit(receiver, 0);
+        receiver.finish([&]() {
+            // 日期：2026-11-05；覆盖前目标也存在，用冻结内容摘要区分原子发布两侧。
+            if (receiver.state() != "committing")
+                return;
+            const auto published =
+                dukto::hashFile(root + "/output/sample.bin") == manifest.entry(1).sha256;
+            if (published == (mode == "overwrite-after"))
+                std::_Exit(29);
+        });
+        return 30;
+    }
     if (mode.startsWith("directory-")) {
         receiver.prepare(1, [&]() {
             // 日期：2026-11-04；目录临时项已存在且意图已保存后，在目录发布前后直接退出。
@@ -333,14 +353,275 @@ class DurableReceiveTests final : public QObject {
             dukto::Error);
     }
 
-    // 日期：2026-11-05；未知值不能隐式保留双方，仍未开放的跳过/覆盖也明确报参数错误。
+    // 日期：2026-11-05；未知值不能隐式保留双方，未开放的跳过仍明确报参数错误。
     void conflictPolicyStrictDecode() {
         QVERIFY(dukto::checkedConflictPolicy("rename") == dukto::ConflictPolicy::Rename);
         QVERIFY(dukto::checkedConflictPolicy("fail") == dukto::ConflictPolicy::Fail);
-        for (const auto &text : QStringList{"", "Fail", "skip", "overwrite", "keep-both"})
+        QVERIFY(dukto::checkedConflictPolicy("overwrite") == dukto::ConflictPolicy::Overwrite);
+        QCOMPARE(dukto::conflictPolicyName(dukto::ConflictPolicy::Overwrite), QString("overwrite"));
+        for (const auto &text : QStringList{"", "Fail", "skip", "Overwrite", "keep-both"})
             QVERIFY_EXCEPTION_THROWN(dukto::checkedConflictPolicy(text), dukto::Error);
         QVERIFY_EXCEPTION_THROWN(dukto::conflictPolicyName(static_cast<dukto::ConflictPolicy>(99)),
                                  dukto::Error);
+    }
+
+    // 日期：2026-11-05；真实进程退出保留原文件或发布结果，恢复必须幂等；发布后外部改动不能再覆盖。
+    void overwriteCrash_data() {
+        QTest::addColumn<QString>("mode");
+        QTest::addColumn<bool>("externalChange");
+        for (const auto &mode :
+             QStringList{"overwrite-partial", "overwrite-before", "overwrite-after"})
+            QTest::newRow(mode.toLatin1().constData()) << mode << false;
+        QTest::newRow("changed-after-publication") << QString("overwrite-after") << true;
+    }
+
+    // 日期：2026-11-05；在独立进程中跳过析构，真实重新取得过期预约并重读持久块和原生身份。
+    void overwriteCrash() {
+        QFETCH(QString, mode);
+        QFETCH(bool, externalChange);
+        QTemporaryDir root;
+        fixture(root.path());
+        const auto target = root.filePath("output/sample.bin");
+        {
+            QFile original(target);
+            QVERIFY(original.open(QIODevice::WriteOnly));
+            dukto::writeAll(original, "original");
+        }
+        QProcess process;
+        process.start(QCoreApplication::applicationFilePath(),
+                      {"--crash-worker", root.path(), mode});
+        QVERIFY(process.waitForFinished(30000));
+        QCOMPARE(process.exitCode(), 29);
+        dukto::PrivateStore store(root.filePath("private"));
+        dukto::StrongManifest manifest(store, "source.sqlite", false);
+        const auto expected = manifest.entry(1).sha256;
+        QCOMPARE(dukto::hashFile(target),
+                 mode == "overwrite-after"
+                     ? expected
+                     : QCryptographicHash::hash("original", QCryptographicHash::Sha256));
+        if (externalChange) {
+            QVERIFY(QFile::remove(target));
+            QFile replacement(target);
+            QVERIFY(replacement.open(QIODevice::WriteOnly));
+            dukto::writeAll(replacement, "later-user-file");
+        }
+        {
+            dukto::DurableReceive receiver(store, "receive.sqlite", Task, manifest,
+                                           root.filePath("output"),
+                                           dukto::ConflictPolicy::Overwrite);
+            if (externalChange) {
+                try {
+                    receiver.open(1, "sample.bin");
+                    QFAIL("must not overwrite later file on recovery");
+                } catch (const dukto::Error &error) {
+                    QVERIFY(error.code == dukto::ExitCode::Integrity);
+                }
+                QCOMPARE(dukto::hashFile(target),
+                         QCryptographicHash::hash("later-user-file", QCryptographicHash::Sha256));
+                return;
+            }
+            const auto first = receiver.open(1, "sample.bin");
+            if (mode == "overwrite-partial")
+                QCOMPARE(first, quint64(1));
+            transmit(receiver, first);
+            QCOMPARE(receiver.finish(), QString("sample.bin"));
+        }
+        QCOMPARE(dukto::hashFile(target), expected);
+        {
+            dukto::DurableReceive repeated(store, "receive.sqlite", Task, manifest,
+                                           root.filePath("output"),
+                                           dukto::ConflictPolicy::Overwrite);
+            repeated.open(1, "sample.bin");
+            QCOMPARE(repeated.finish(), QString("sample.bin"));
+        }
+        QCOMPARE(QDir(root.filePath("output")).entryList(QDir::Files | QDir::Hidden),
+                 QStringList{"sample.bin"});
+        QVERIFY_EXCEPTION_THROWN(dukto::DurableReceive(store, "receive.sqlite", Task, manifest,
+                                                       root.filePath("output"),
+                                                       dukto::ConflictPolicy::Fail),
+                                 dukto::Error);
+    }
+
+    // 日期：2026-11-05；提交前取消、目标变为只读或目录均不能覆盖原件，最后一次检查同样执行类型规则。
+    void overwritePublicationFailure_data() {
+        QTest::addColumn<QString>("mode");
+        QTest::newRow("cancel") << QString("cancel");
+        QTest::newRow("readonly") << QString("readonly");
+        QTest::newRow("directory") << QString("directory");
+    }
+
+    // 日期：2026-11-05；完整正文已落临时文件后才注入故障，离线确认原内容和新出现目录均未被删除。
+    void overwritePublicationFailure() {
+        QFETCH(QString, mode);
+        QTemporaryDir root;
+        fixture(root.path());
+        const auto target = root.filePath("output/sample.bin");
+        {
+            QFile original(target);
+            QVERIFY(original.open(QIODevice::WriteOnly));
+            dukto::writeAll(original, "original");
+        }
+        dukto::PrivateStore store(root.filePath("private"));
+        dukto::StrongManifest manifest(store, "source.sqlite", false);
+        dukto::DurableReceive receiver(store, "receive.sqlite", Task, manifest,
+                                       root.filePath("output"), dukto::ConflictPolicy::Overwrite);
+        receiver.open(1, "sample.bin");
+        transmit(receiver, 0);
+        bool injected = false;
+        try {
+            receiver.finish([&]() {
+                // 日期：2026-11-05；只在已持久记下提交意图且原子发布尚未发生时注入一次。
+                if (receiver.state() != "committing" || injected)
+                    return;
+                injected = true;
+                if (mode == "cancel")
+                    throw dukto::Error(dukto::ExitCode::Cancelled, "cancel before publication",
+                                       "task");
+                if (mode == "readonly") {
+                    if (!QFile::setPermissions(target, QFile::ReadOwner | QFile::ReadUser))
+                        throw dukto::Error(dukto::ExitCode::Disk, "cannot make readonly", "test");
+                } else {
+                    if (!QFile::rename(target, root.filePath("original-held")) ||
+                        !QDir().mkdir(target))
+                        throw dukto::Error(dukto::ExitCode::Disk, "cannot create type race",
+                                           "test");
+                }
+            });
+            QFAIL("unsafe overwrite publication succeeded");
+        } catch (const dukto::Error &error) {
+            QVERIFY(injected);
+            QVERIFY(error.code ==
+                    (mode == "cancel" ? dukto::ExitCode::Cancelled : dukto::ExitCode::Permission));
+        }
+        if (mode == "readonly")
+            QVERIFY(QFile::setPermissions(target, QFile::ReadOwner | QFile::WriteOwner |
+                                                      QFile::ReadUser | QFile::WriteUser));
+        if (mode == "directory")
+            QVERIFY(QFileInfo(target).isDir());
+        QCOMPARE(dukto::hashFile(mode == "directory" ? root.filePath("original-held") : target),
+                 QCryptographicHash::hash("original", QCryptographicHash::Sha256));
+    }
+
+    // 日期：2026-11-05；预约在两个真实进程间生效，旧接收与默认重命名也必须避开活动覆盖目标。
+    void targetReservationAcrossProcesses() {
+        QTemporaryDir root;
+        fixture(root.path());
+        const auto target = root.filePath("output/sample.bin");
+        QProcess holder;
+        holder.start(QCoreApplication::applicationFilePath(), {"--reservation-worker", target});
+        QVERIFY(holder.waitForReadyRead(10000));
+        QCOMPARE(holder.readLine().trimmed(), QByteArray("locked"));
+        dukto::PrivateStore store(root.filePath("private"));
+        dukto::StrongManifest manifest(store, "source.sqlite", false);
+        {
+            dukto::DurableReceive overwrite(store, "blocked.sqlite", Task, manifest,
+                                            root.filePath("output"),
+                                            dukto::ConflictPolicy::Overwrite);
+            QVERIFY_EXCEPTION_THROWN(overwrite.open(1, "sample.bin"), dukto::Error);
+        }
+        {
+            dukto::DurableReceive fail(store, "fail.sqlite", Task, manifest,
+                                       root.filePath("output"), dukto::ConflictPolicy::Fail);
+            fail.open(1, "sample.bin");
+            transmit(fail, 0);
+            QVERIFY_EXCEPTION_THROWN(fail.finish(), dukto::Error);
+        }
+        {
+            dukto::DurableReceive rename(store, "rename.sqlite", Task, manifest,
+                                         root.filePath("output"));
+            rename.open(1, "sample.bin");
+            transmit(rename, 0);
+            QCOMPARE(rename.finish(), QString("sample (2).bin"));
+        }
+        {
+            dukto::IncomingFile legacy(target);
+            dukto::writeAll(legacy.device(), "legacy");
+            QCOMPARE(QFileInfo(legacy.commit()).fileName(), QString("sample (3).bin"));
+        }
+        QVERIFY(!QFileInfo::exists(target));
+        holder.kill();
+        QVERIFY(holder.waitForFinished(10000));
+        {
+            dukto::TargetReservation takeover(target);
+            QVERIFY(takeover.acquired());
+            dukto::TargetReservation alias(root.filePath("output/SAMPLE.BIN"));
+            QVERIFY(!alias.acquired());
+        }
+        QCOMPARE(
+            QDir(root.filePath("output")).entryList({"*.lock"}, QDir::Files | QDir::Hidden).size(),
+            0);
+        const auto key = QCryptographicHash::hash("sample.bin", QCryptographicHash::Sha256).toHex();
+        const auto collision =
+            root.filePath("output/.dukto-target-" + QString::fromLatin1(key) + ".lock");
+        {
+            QFile unrelated(collision);
+            QVERIFY(unrelated.open(QIODevice::WriteOnly));
+            dukto::writeAll(unrelated, "unrelated user file");
+        }
+        {
+            dukto::TargetReservation blocked(target);
+            QVERIFY(!blocked.acquired());
+        }
+        QCOMPARE(dukto::hashFile(collision),
+                 QCryptographicHash::hash("unrelated user file", QCryptographicHash::Sha256));
+    }
+
+    // 日期：2026-11-05；目录复用保留无关项；空文件覆盖后重开保持同一结果，类型不同明确拒绝。
+    void overwriteDirectoryAndTypes() {
+        QTemporaryDir root;
+        QVERIFY(QDir().mkpath(root.filePath("output/bundle/unrelated")));
+        dukto::PrivateStore store(root.filePath("private"), true);
+        dukto::StrongManifest manifest(store, "source.sqlite", true);
+        manifest.append({1, "bundle", "", true, 0, {}});
+        manifest.append({2, "bundle/empty", "", true, 0, {}});
+        manifest.append({3, "bundle/zero", "", false, 0,
+                         QCryptographicHash::hash("", QCryptographicHash::Sha256)});
+        manifest.seal();
+        const auto target = root.filePath("output/bundle/zero");
+        {
+            QFile original(target);
+            QVERIFY(original.open(QIODevice::WriteOnly));
+            dukto::writeAll(original, "original");
+        }
+        {
+            dukto::DurableReceive receiver(store, "receive.sqlite", Task, manifest,
+                                           root.filePath("output"),
+                                           dukto::ConflictPolicy::Overwrite);
+            QCOMPARE(receiver.prepare(1), QString("bundle"));
+            QCOMPARE(receiver.prepare(2), QString("bundle/empty"));
+            receiver.open(3, receiver.prepare(3));
+            QCOMPARE(QFileInfo(target).size(), qint64(8));
+            QCOMPARE(receiver.finish(), QString("bundle/zero"));
+            QCOMPARE(QFileInfo(target).size(), qint64(0));
+        }
+        {
+            dukto::DurableReceive repeated(store, "receive.sqlite", Task, manifest,
+                                           root.filePath("output"),
+                                           dukto::ConflictPolicy::Overwrite);
+            QCOMPARE(repeated.prepare(1), QString("bundle"));
+            QCOMPARE(repeated.prepare(2), QString("bundle/empty"));
+            repeated.open(3, "bundle/zero");
+            QCOMPARE(repeated.finish(), QString("bundle/zero"));
+        }
+        QVERIFY(QDir(root.filePath("output/bundle/unrelated")).exists());
+        QVERIFY(QFile::remove(target));
+        QVERIFY(QDir().mkdir(target));
+        {
+            dukto::DurableReceive receiver(store, "different.sqlite", QUuid::createUuid(), manifest,
+                                           root.filePath("output"),
+                                           dukto::ConflictPolicy::Overwrite);
+            receiver.prepare(1);
+            QVERIFY_EXCEPTION_THROWN(receiver.open(3, "bundle/zero"), dukto::Error);
+        }
+        QVERIFY(QDir().rename(root.filePath("output/bundle"), root.filePath("output/held")));
+        {
+            QFile original(root.filePath("output/bundle"));
+            QVERIFY(original.open(QIODevice::WriteOnly));
+            dukto::writeAll(original, "original");
+        }
+        dukto::DurableReceive receiver(store, "types.sqlite", QUuid::createUuid(), manifest,
+                                       root.filePath("output"), dukto::ConflictPolicy::Overwrite);
+        QVERIFY_EXCEPTION_THROWN(receiver.prepare(1), dukto::Error);
     }
 
     // 日期：2026-11-05；同名普通文件和目录均在创建临时数据前失败，原内容及名称完整保留。
@@ -900,6 +1181,19 @@ class DurableReceiveTests final : public QObject {
 int main(int argc, char **argv) {
     QCoreApplication application(argc, argv);
     const auto arguments = application.arguments();
+    if (arguments.size() == 3 && arguments[1] == "--reservation-worker") {
+        try {
+            dukto::TargetReservation reservation(arguments[2]);
+            if (!reservation.acquired())
+                return 33;
+            std::printf("locked\n");
+            std::fflush(stdout);
+            std::getchar();
+            return 0;
+        } catch (...) {
+            return 34;
+        }
+    }
     if (arguments.size() == 4 && arguments[1] == "--crash-worker") {
         try {
             return crashWorker(arguments[2], arguments[3]);

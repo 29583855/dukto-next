@@ -156,6 +156,9 @@ QString mapDestination(QSqlDatabase &database, const QString &output, const QStr
 #endif
     for (int index = 0; index < 100000; ++index) {
         const auto candidate = renamedPath(destination, index);
+        TargetReservation reservation(candidate);
+        if (!reservation.acquired())
+            continue;
 #ifdef Q_OS_WIN
         if (QDir().mkdir(candidate)) {
 #else

@@ -115,7 +115,7 @@ def main():
             error = process.stderr.read()
             assert not error
         invalid = 0
-        for command in (["upload", "--on-conflict", "skip"], ["download", "--on-conflict", "overwrite"],
+        for command in (["upload", "--on-conflict", "skip"], ["download", "--on-conflict", "Overwrite"],
                         ["upload", "--on-conflict", "Fail"], ["send", "--on-conflict", "fail"],
                         ["resume", "--on-conflict", "fail"],
                         ["upload", "--on-conflict", "fail", "--on-conflict", "rename"]):

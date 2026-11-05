@@ -119,13 +119,14 @@ bool permitted(const QString &before, const QString &after) {
     return false;
 }
 
-// 日期：2026-11-05；严格区分旧保留双方与版本二失败策略，损坏或未知策略一律拒绝。
+// 日期：2026-11-05；严格区分旧保留双方与版本二失败/覆盖策略，损坏或未知策略一律拒绝。
 TransferTask row(const QSqlQuery &query) {
     const auto encoded = query.value(3).toByteArray();
     const auto spec = next::parseControl(encoded);
     const bool keepBoth = spec["version"] == 1 && spec["conflict"] == "keep-both";
     const bool failConflict = spec["version"] == 2 && spec["conflict"] == "fail";
-    if ((!keepBoth && !failConflict) ||
+    const bool overwriteConflict = spec["version"] == 2 && spec["conflict"] == "overwrite";
+    if ((!keepBoth && !failConflict && !overwriteConflict) ||
         query.value(13).toByteArray() !=
             QCryptographicHash::hash(encoded, QCryptographicHash::Sha256))
         throw Error(ExitCode::Integrity, QStringLiteral("任务创建参数摘要已损坏"), "task");
@@ -137,7 +138,8 @@ TransferTask row(const QSqlQuery &query) {
                         query.value(7).toByteArray(),     query.value(8).toLongLong(),
                         query.value(9).toLongLong(),      query.value(10).toLongLong(),
                         query.value(11).toInt(),          query.value(12).toString()};
-    result.conflict = keepBoth ? ConflictPolicy::Rename : ConflictPolicy::Fail;
+    result.conflict =
+        keepBoth ? ConflictPolicy::Rename : checkedConflictPolicy(spec["conflict"].toString());
     const QStringList states{"scanning",  "queued",    "transferring", "pausing",   "paused",
                              "checking",  "verifying", "committing",   "completed", "cancelling",
                              "cancelled", "failed",    "interrupted"};

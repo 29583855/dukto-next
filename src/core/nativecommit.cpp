@@ -1,6 +1,7 @@
 #include "nativecommit.h"
 #include "error.h"
 
+#include <QCryptographicHash>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
@@ -361,6 +362,34 @@ bool PosixDirectory::commitTemporary(const QString &name, const QString &destina
     return true;
 }
 
+// 日期：2026-11-05；相对固定父描述符发布普通文件，拒绝不安全目标；同用户外部写入不提供 CAS。
+void PosixDirectory::replaceReceived(const QString &name, const QString &destination) const {
+    verify();
+    if (name == destination)
+        throw Error(ExitCode::Config, QStringLiteral("覆盖源和目标不能相同"), "commit");
+    for (const auto &component : {name, destination})
+        if (component.isEmpty() || component == "." || component == ".." ||
+            component.contains('/') || component.contains(QChar::Null))
+            throw Error(ExitCode::Permission, QStringLiteral("覆盖文件名无效"), "commit");
+    const auto from = QFile::encodeName(name);
+    const auto to = QFile::encodeName(destination);
+    struct stat information;
+    if (::fstatat(descriptor_, from.constData(), &information, AT_SYMLINK_NOFOLLOW) != 0 ||
+        !S_ISREG(information.st_mode))
+        throw Error(ExitCode::Integrity, QStringLiteral("覆盖临时项不是普通文件"), "commit");
+    if (::fstatat(descriptor_, to.constData(), &information, AT_SYMLINK_NOFOLLOW) == 0) {
+        if (!S_ISREG(information.st_mode))
+            throw Error(ExitCode::Permission, QStringLiteral("覆盖目标不是普通文件"), "conflict");
+        if (!(information.st_mode & (S_IWUSR | S_IWGRP | S_IWOTH)))
+            throw Error(ExitCode::Permission, QStringLiteral("覆盖目标为只读文件"), "conflict");
+    } else if (errno != ENOENT) {
+        throw Error(ExitCode::Disk, QStringLiteral("无法核对覆盖目标"), "commit");
+    }
+    if (::renameat(descriptor_, from.constData(), descriptor_, to.constData()) != 0)
+        throw Error(ExitCode::Disk, QString::fromLocal8Bit(std::strerror(errno)), "commit");
+    synchronize();
+}
+
 // 日期：2026-11-04；不使用原绝对路径，父目录改名后仍能正确清理本任务的临时文件。
 void PosixDirectory::removeTemporary(const QString &name) const {
     if (!name.isEmpty()) {
@@ -416,4 +445,66 @@ bool renameNoReplace(const QString &source, const QString &destination, bool dur
                 "commit");
 }
 #endif
+
+#ifdef Q_OS_WIN
+// 日期：2026-11-05；只替换同目录普通文件，MoveFileEx 不启用跨卷复制；失败不会先删除原文件。
+void replaceReceivedFile(const QString &source, const QString &destination) {
+    const QFileInfo fromInfo(source), toInfo(destination);
+    if (fromInfo.absolutePath() != toInfo.absolutePath() ||
+        fromInfo.fileName().compare(toInfo.fileName(), Qt::CaseInsensitive) == 0)
+        throw Error(ExitCode::Config, QStringLiteral("覆盖必须使用同目录的不同名称"), "commit");
+    NativeDirectoryLock parent(toInfo.absolutePath(), false);
+    const auto from = nativeLongPath(source);
+    const auto to = nativeLongPath(destination);
+    for (const auto &path : {from, to}) {
+        const auto attributes = GetFileAttributesW(reinterpret_cast<LPCWSTR>(path.utf16()));
+        if (attributes == INVALID_FILE_ATTRIBUTES) {
+            if (path == to && GetLastError() == ERROR_FILE_NOT_FOUND)
+                continue;
+            throw Error(ExitCode::Disk, QStringLiteral("无法核对覆盖文件属性"), "commit");
+        }
+        if (attributes &
+            (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_REPARSE_POINT | FILE_ATTRIBUTE_DEVICE))
+            throw Error(ExitCode::Permission, QStringLiteral("覆盖只允许普通文件"), "conflict");
+        if (path == to && (attributes & FILE_ATTRIBUTE_READONLY))
+            throw Error(ExitCode::Permission, QStringLiteral("覆盖目标为只读文件"), "conflict");
+    }
+    if (!MoveFileExW(reinterpret_cast<LPCWSTR>(from.utf16()), reinterpret_cast<LPCWSTR>(to.utf16()),
+                     MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH))
+        throw Error(ExitCode::Disk,
+                    QStringLiteral("原子覆盖失败，系统错误码 %1").arg(GetLastError()), "commit");
+}
+#endif
+
+// 日期：2026-11-05；同名的 NFC/大小写别名使用同一预约，Linux 额外串行不影响安全性。
+TargetReservation::TargetReservation(const QString &destination) {
+    const QFileInfo information(destination);
+    if (!QDir::isAbsolutePath(destination) || information.fileName().isEmpty())
+        throw Error(ExitCode::Config, QStringLiteral("目标预约需要绝对文件路径"), "conflict");
+#ifdef Q_OS_WIN
+    parent_.reset(new NativeDirectoryLock(information.absolutePath(), false));
+#else
+    parent_.reset(new PosixDirectory(information.absolutePath(), false));
+#endif
+    const auto key =
+        QCryptographicHash::hash(
+            information.fileName().normalized(QString::NormalizationForm_C).toCaseFolded().toUtf8(),
+            QCryptographicHash::Sha256)
+            .toHex();
+    lock_.reset(
+        new QLockFile(QDir(information.absolutePath())
+                          .filePath(".dukto-target-" + QString::fromLatin1(key) + ".lock")));
+    lock_->setStaleLockTime(0);
+    acquired_ = lock_->tryLock(0);
+    if (!acquired_ && lock_->error() != QLockFile::LockFailedError)
+        throw Error(ExitCode::Disk, QStringLiteral("无法创建目标预约"), "conflict");
+}
+
+// 日期：2026-11-05；成员逆序析构，QLockFile 在固定父目录释放前清理自己持有的锁。
+TargetReservation::~TargetReservation() = default;
+
+// 日期：2026-11-05；活动预约不自动等待或抢占，不按任意时间判定活动进程已失效。
+bool TargetReservation::acquired() const {
+    return acquired_;
+}
 } // namespace dukto

@@ -18,13 +18,16 @@
 #endif
 
 namespace dukto {
-// 日期：2026-11-05；默认保留双方与明确冲突失败共用严格解码，尚未支持的策略返回参数错误。
+// 日期：2026-11-05；已开放的保留双方、失败与覆盖共用严格解码，其他策略返回参数错误。
 ConflictPolicy checkedConflictPolicy(const QString &value) {
     if (value == "rename")
         return ConflictPolicy::Rename;
     if (value == "fail")
         return ConflictPolicy::Fail;
-    throw Error(ExitCode::Config, QStringLiteral("冲突策略当前支持 rename 或 fail"), "arguments");
+    if (value == "overwrite")
+        return ConflictPolicy::Overwrite;
+    throw Error(ExitCode::Config, QStringLiteral("冲突策略当前支持 rename、fail 或 overwrite"),
+                "arguments");
 }
 
 // 日期：2026-11-05；任务摘要、接收日志和 CLI 使用同一规范名称，非法枚举不能进入持久状态。
@@ -34,6 +37,8 @@ QString conflictPolicyName(ConflictPolicy policy) {
         return "rename";
     case ConflictPolicy::Fail:
         return "fail";
+    case ConflictPolicy::Overwrite:
+        return "overwrite";
     }
     throw Error(ExitCode::Config, QStringLiteral("冲突策略枚举无效"), "arguments");
 }
@@ -301,6 +306,9 @@ QString IncomingFile::commit() {
 #endif
     for (int index = 0; index < 100000; ++index) {
         const QString target = renamedPath(destination_, index);
+        TargetReservation reservation(target);
+        if (!reservation.acquired())
+            continue;
 #ifdef Q_OS_WIN
         if (renameNoReplace(guard.path, target)) {
             guard.path.clear();

@@ -201,7 +201,7 @@ def main():
     parser.add_argument("executable")
     parser.add_argument("--report", required=True)
     parser.add_argument("--threads", type=int, default=1)
-    parser.add_argument("--on-conflict", choices=("rename", "fail"), default="rename")
+    parser.add_argument("--on-conflict", choices=("rename", "fail", "overwrite"), default="rename")
     # 日期：2026-11-05；实际部署包运行原 EXE 保持 DLL 相邻，开发验证默认仍使用独立副本。
     parser.add_argument("--in-place", action="store_true")
     parser.add_argument("--resume-threads", type=int)
@@ -300,6 +300,19 @@ def main():
                     resume_arguments = ["--output", str(output)]
                     receive_state = client_state / "transfers"
                     final = output / remote_name
+                # 日期：2026-11-05；覆盖恢复专项预置真实原文件，不能把覆盖新文件的测试当作保护原件。
+                originals = {}
+                if args.on_conflict == "overwrite":
+                    if args.files == 1:
+                        final.write_bytes(b"original-before-overwrite")
+                        originals[final] = digest(final)
+                    else:
+                        (final / "空目录").mkdir(parents=True)
+                        (final / "unrelated").write_bytes(b"keep-unrelated")
+                        for name in expected_files:
+                            original = final / name
+                            original.write_bytes(b"original-before-overwrite:" + name.encode())
+                            originals[original] = digest(original)
                 # 日期：2026-11-05；显式非默认策略只用于首次创建，恢复不能靠测试重复传参补救策略丢失。
                 arguments += ["--threads", str(args.threads)]
                 if args.on_conflict != "rename":
@@ -332,7 +345,15 @@ def main():
                 assert not status["executionActive"], status
                 assert status.get("conflict", "rename") == args.on_conflict, status
                 if args.files == 1:
-                    assert not final.exists(), status
+                    if args.on_conflict == "overwrite":
+                        assert digest(final) == originals[final], status
+                    else:
+                        assert not final.exists(), status
+                if args.on_conflict == "overwrite" and args.files > 1:
+                    # 日期：2026-11-05；较早项目可已提交，每项只能为完整旧内容或完整新内容，不能出现截断。
+                    for original, old_sha in originals.items():
+                        assert digest(original) in (old_sha, expected_files[original.name])
+                    assert (final / "unrelated").read_bytes() == b"keep-unrelated"
                 resume_seconds = None
                 if fault == "cancel":
                     transfer(executable, client_state, ["resume", "--task", task, *resume_arguments], 2)
@@ -349,7 +370,10 @@ def main():
                     else:
                         assert all(digest(final / name) == sha for name, sha in expected_files.items())
                         assert (final / "空目录").is_dir() and (final / "empty").stat().st_size == 0
-                        assert {path.name for path in final.iterdir()} == set(expected_files) | {"empty", "空目录"}
+                        extra = {"unrelated"} if args.on_conflict == "overwrite" else set()
+                        assert {path.name for path in final.iterdir()} == set(expected_files) | {"empty", "空目录"} | extra
+                        if extra:
+                            assert (final / "unrelated").read_bytes() == b"keep-unrelated"
                     assert len(list(final.parent.iterdir())) == 1
                     status, _ = run(executable, client_state, ["task", "--task", task])
                     assert status["state"] == "completed" and not status["executionActive"]

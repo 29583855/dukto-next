@@ -10,7 +10,7 @@
 #include <memory>
 
 namespace dukto {
-enum class ConflictPolicy { Rename, Fail };
+enum class ConflictPolicy { Rename, Fail, Overwrite };
 // 日期：2026-11-05；仅接受已实现的策略，未知值和未完成策略不能静默回退。
 ConflictPolicy checkedConflictPolicy(const QString &value);
 // 日期：2026-11-05；内部枚举转公开名称，非法枚举同样拒绝。

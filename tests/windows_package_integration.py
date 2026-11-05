@@ -192,12 +192,26 @@ def main():
         assert conflict_recovery["passed"] and conflict_recovery["conflictPolicy"] == "fail"
         assert conflict_recovery["inPlaceExecution"]
         assert conflict_recovery["binarySha256"] == digest(executable)
+        overwrite_report = working / "conflict-overwrite.json"
+        checked([sys.executable, "-X", "utf8", root / "tests/conflict_overwrite_integration.py", executable,
+                 "--report", overwrite_report], environment, working, timeout=300)
+        overwrite = json.loads(overwrite_report.read_text(encoding="utf-8"))
+        assert overwrite["passed"] and overwrite["executableSha256"] == digest(executable)
+        overwrite_recovery_report = working / "conflict-overwrite-recovery.json"
+        checked([sys.executable, "-X", "utf8", root / "tests/transfer_recovery_integration.py", executable,
+                 "--in-place", "--on-conflict", "overwrite", "--threads", "4", "--resume-threads", "8", "--files", "4",
+                 "--payload-mib", "8", "--checkpoint-percent", "50", "--report", overwrite_recovery_report],
+                environment, working, timeout=600)
+        overwrite_recovery = json.loads(overwrite_recovery_report.read_text(encoding="utf-8"))
+        assert overwrite_recovery["passed"] and overwrite_recovery["conflictPolicy"] == "overwrite"
+        assert overwrite_recovery["inPlaceExecution"] and overwrite_recovery["binarySha256"] == digest(executable)
     report.write_text(json.dumps({"date": "2026-11-05", "passed": True, "archiveSha256": digest(archive),
         "manifestFilesVerified": len(expected), "workingPathUnicodeAndSpaces": True, "developerPathsRemoved": True,
         "doctor": doctor, "cliModules": cli_modules, "guiModules": sorted(gui_modules), "transfer": transfers,
         "clients": clients, "sessions": sessions, "taskAdmission": admission,
         "transferRetry": retries, "automaticFinalAck": acknowledgements, "additionalLicenseFiles": extra_licenses,
         "conflictFail": conflicts, "conflictFailRecovery": conflict_recovery,
+        "conflictOverwrite": overwrite, "conflictOverwriteRecovery": overwrite_recovery,
         "scope": "relocated archive with system-only PATH on development Windows host; clean OS validation remains open",
         "cleanSystemQualified": False}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print("Windows relocated GUI/CLI/16-channel TLS package validation passed")

@@ -723,6 +723,27 @@ class ServerPanelTests final : public QObject {
             QVERIFY(QFileInfo::exists(QDir(emptyOutput).filePath("empty-file.txt")));
             QCOMPARE(QFileInfo(QDir(emptyOutput).filePath("empty-file.txt")).size(), qint64(0));
             QVERIFY(QFileInfo(QDir(emptyOutput).filePath("empty-tree/nested")).isDir());
+            // 日期：2026-11-05；真实下拉框选择覆盖并点击下载，先写已有文件，再验证零字节原子替换与策略显示。
+            {
+                QFile existing(QDir(emptyOutput).filePath("empty-file.txt"));
+                QVERIFY(existing.open(QIODevice::WriteOnly));
+                dukto::writeAll(existing, "original");
+            }
+            sections->setProperty("currentIndex", 0);
+            remotePath->setProperty("text", "empty-file.txt");
+            savePath->setProperty("text", emptyOutput);
+            conflict->setProperty("currentIndex", 2);
+            QVERIFY(visibleClick("serverDownloadButton", clientFlick));
+            QTRY_VERIFY_WITH_TIMEOUT(!restarted.busy(), 30000);
+            QCOMPARE(restarted.task()["state"].toString(), QString("completed"));
+            QCOMPARE(restarted.task()["conflict"].toString(), QString("overwrite"));
+            QCOMPARE(QFileInfo(QDir(emptyOutput).filePath("empty-file.txt")).size(), qint64(0));
+            QVERIFY(root->findChild<QObject *>("serverTaskConflictPolicy")
+                        ->property("text")
+                        .toString()
+                        .contains(QStringLiteral("覆盖")));
+            QTest::qWait(50);
+            QVERIFY(view.grabFramebuffer().save("Testing/QtTest/server-overwrite.png"));
             root->setProperty("panel", QVariant::fromValue<QObject *>(&client));
         }
         QCOMPARE(qmlWarnings.count(), 0);

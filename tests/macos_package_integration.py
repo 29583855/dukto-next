@@ -126,6 +126,10 @@ def main():
         cases = []
         for name, script, extra in (("cli", "cli_contracts", []),
                                     ("transfer16", "transfer_integration", ["--threads", "16"]),
+                                    ("overwrite", "conflict_overwrite_integration", []),
+                                    ("overwrite-recovery", "transfer_recovery_integration",
+                                     ["--on-conflict", "overwrite", "--threads", "4", "--resume-threads", "8",
+                                      "--files", "4", "--payload-mib", "8", "--checkpoint-percent", "50"]),
                                     ("recovery4to8", "transfer_recovery_integration",
                                      ["--threads", "4", "--resume-threads", "8", "--files", "4",
                                       "--payload-mib", "8", "--checkpoint-percent", "50"])):

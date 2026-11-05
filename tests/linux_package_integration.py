@@ -175,7 +175,20 @@ def main():
             report.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
             raise
         transfers = json.loads(transfer_report.read_text(encoding="utf-8"))
-    result.update(passed=True, phase="completed", transferChecksPassed=True, transfer=transfers)
+        overwrite_report = working / "overwrite.json"
+        checked([sys.executable, "-X", "utf8", root / "tests/conflict_overwrite_integration.py", executable,
+                 "--report", overwrite_report], environment, working, timeout=300)
+        overwrite = json.loads(overwrite_report.read_text(encoding="utf-8"))
+        assert overwrite["passed"]
+        recovery_report = working / "overwrite-recovery.json"
+        checked([sys.executable, "-X", "utf8", root / "tests/transfer_recovery_integration.py", executable,
+                 "--on-conflict", "overwrite", "--threads", "4", "--resume-threads", "8", "--files", "4",
+                 "--payload-mib", "8", "--checkpoint-percent", "50", "--report", recovery_report],
+                environment, working, timeout=600)
+        recovery = json.loads(recovery_report.read_text(encoding="utf-8"))
+        assert recovery["passed"] and recovery["conflictPolicy"] == "overwrite"
+    result.update(passed=True, phase="completed", transferChecksPassed=True, transfer=transfers,
+                  conflictOverwrite=overwrite, conflictOverwriteRecovery=recovery)
     report.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print("Linux relocated " + args.platform + " GUI/CLI/16-channel TLS package validation passed")
 

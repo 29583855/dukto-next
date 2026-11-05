@@ -145,6 +145,7 @@ class ReceiveFile final {
 // 日期：2026-11-04；文件上下文只保留固定句柄、增量摘要与标量，16 文件共用一份受保护日志。
 struct DurableReceive::Cursor {
     std::unique_ptr<ReceiveFile> file;
+    std::unique_ptr<TargetReservation> reservation;
     StrongEntry entry;
     QString original;
     QString temporary;
@@ -432,7 +433,13 @@ quint64 DurableReceive::openFile(quint64 file, const QString &destination,
     if (current_->entry.directory)
         throw Error(ExitCode::Config, QStringLiteral("持久接收只接受清单普通文件"), "receive");
     current_->original = validateRelativePath(destination);
-    resolveInside(root_, current_->original);
+    const auto originalPath = resolveInside(root_, current_->original);
+    if (conflict_ == ConflictPolicy::Overwrite) {
+        current_->reservation.reset(new TargetReservation(originalPath));
+        if (!current_->reservation->acquired())
+            throw Error(ExitCode::Permission, QStringLiteral("覆盖目标已有活动接收任务"),
+                        "conflict");
+    }
     const auto spec = next::encodeControl(
         {{"entry", current_->entry.publicInfo()}, {"path", current_->original}});
     QSqlQuery query(database_);
@@ -440,6 +447,14 @@ quint64 DurableReceive::openFile(quint64 file, const QString &destination,
     query.addBindValue(static_cast<qlonglong>(file));
     execute(query);
     bool newlyCreated = !query.next();
+    if (conflict_ == ConflictPolicy::Overwrite &&
+        (newlyCreated || query.value(4).toString() == "planned" ||
+         query.value(4).toString() == "receiving")) {
+        const QFileInfo existing(originalPath);
+        if (existing.exists() && (!existing.isFile() || !existing.isWritable()))
+            throw Error(ExitCode::Permission, QStringLiteral("覆盖目标不是可写普通文件"),
+                        "conflict");
+    }
     if (newlyCreated) {
         if (conflict_ == ConflictPolicy::Fail &&
             QFileInfo::exists(resolveInside(root_, current_->original)))
@@ -659,6 +674,13 @@ void DurableReceive::write(quint64 block, quint32 offset, const QByteArray &byte
 // 日期：2026-11-04；提交意图保留了唯一目标名与原生 ID；重命名后崩溃只确认同一文件，不分配副本。
 void DurableReceive::recoverCommit(const std::function<void()> &check) {
     const auto destination = resolveInside(root_, current_->target);
+    std::unique_ptr<TargetReservation> reservation;
+    if (conflict_ != ConflictPolicy::Overwrite) {
+        reservation.reset(new TargetReservation(destination));
+        if (!reservation->acquired())
+            throw Error(ExitCode::Permission, QStringLiteral("提交恢复目标已有活动接收任务"),
+                        "conflict");
+    }
     if (QFileInfo(destination).isFile()) {
         bool same = false;
         {
@@ -691,11 +713,16 @@ void DurableReceive::recoverCommit(const std::function<void()> &check) {
     }
     if (current_->state == "completed")
         throw Error(ExitCode::Integrity, QStringLiteral("已完成文件缺失或被替换"), "commit");
-    current_->file.reset(new ReceiveFile(resolveInside(root_, current_->temporary), false));
+    const auto temporary = resolveInside(root_, current_->temporary);
+    if (conflict_ == ConflictPolicy::Overwrite && !QFileInfo::exists(temporary))
+        throw Error(ExitCode::Integrity,
+                    QStringLiteral("覆盖发布后结果已变化或临时证据缺失，拒绝再次覆盖"), "commit");
+    current_->file.reset(new ReceiveFile(temporary, false));
     if (current_->file->identity() != current_->native ||
         current_->file->device().size() != current_->entry.bytes ||
         digest(0, current_->entry.bytes, check) != current_->entry.sha256)
         throw Error(ExitCode::Integrity, QStringLiteral("提交中临时文件证据不匹配"), "commit");
+    reservation.reset();
     finish(check);
 }
 
@@ -717,6 +744,18 @@ QString DurableReceive::finish(const std::function<void()> &check) try {
         const auto candidate = QDir::cleanPath(
             suffix == 0 ? current_->original : renamedPath(current_->original, suffix));
         const auto target = resolveInside(root_, candidate);
+        std::unique_ptr<TargetReservation> reservation;
+        if (conflict_ != ConflictPolicy::Overwrite) {
+            reservation.reset(new TargetReservation(target));
+            if (!reservation->acquired()) {
+                if (conflict_ == ConflictPolicy::Fail)
+                    throw Error(ExitCode::Permission, QStringLiteral("提交目标已有活动接收任务"),
+                                "conflict");
+                continue;
+            }
+        } else if (!current_->reservation || !current_->reservation->acquired()) {
+            throw Error(ExitCode::Integrity, QStringLiteral("覆盖目标预约丢失"), "commit");
+        }
         save("committing", candidate, current_->entry.bytes);
         if (check)
             check();
@@ -726,11 +765,22 @@ QString DurableReceive::finish(const std::function<void()> &check) try {
         // 日期：2026-11-04；Windows 文件句柄不共享删除；关闭文件后父目录仍由原生锁固定。
         current_->file.reset();
         NativeDirectoryLock parent(QFileInfo(target).absolutePath(), false);
-        published = renameNoReplace(resolveInside(root_, current_->temporary), target, true);
+        if (conflict_ == ConflictPolicy::Overwrite) {
+            replaceReceivedFile(resolveInside(root_, current_->temporary), target);
+            published = true;
+        } else {
+            published = renameNoReplace(resolveInside(root_, current_->temporary), target, true);
+        }
 #else
         PosixDirectory parent(QFileInfo(target).absolutePath(), false);
-        published = parent.commitTemporary(QFileInfo(current_->temporary).fileName(),
-                                           QFileInfo(target).fileName());
+        if (conflict_ == ConflictPolicy::Overwrite) {
+            parent.replaceReceived(QFileInfo(current_->temporary).fileName(),
+                                   QFileInfo(target).fileName());
+            published = true;
+        } else {
+            published = parent.commitTemporary(QFileInfo(current_->temporary).fileName(),
+                                               QFileInfo(target).fileName());
+        }
         if (published)
             parent.synchronize();
         current_->file.reset();

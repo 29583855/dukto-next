@@ -128,9 +128,11 @@ void serveTransfer(next::SecureChannel &channel, PrivateStore &store, const Prin
     const bool byteProgress = request.contains("byteProgress");
     const bool queuedProtocol = request.contains("queue");
     const bool explicitConflict = request.contains("conflict");
-    if (explicitConflict && request["conflict"] != QJsonValue("fail"))
+    if (explicitConflict && request["conflict"] != QJsonValue("fail") &&
+        request["conflict"] != QJsonValue("overwrite"))
         throw Error(ExitCode::Config, QStringLiteral("未协商或未知的冲突策略"), "conflict");
-    const auto conflict = explicitConflict ? ConflictPolicy::Fail : ConflictPolicy::Rename;
+    const auto conflict = explicitConflict ? checkedConflictPolicy(request["conflict"].toString())
+                                           : ConflictPolicy::Rename;
     const int channels = parallel ? checkedChannels(request["channels"]) : 1;
     if ((!upload && type != next::Type::CreateDownload) ||
         request.size() != (upload ? 4 : 3) + (parallel ? 1 : 0) + (byteProgress ? 1 : 0) +

@@ -49,7 +49,7 @@ Rectangle {
     function remoteOptions() {
         return {
             "channels": channelCount.currentText,
-            "conflict": conflictPolicy.currentIndex === 1 ? "fail" : "rename",
+            "conflict": conflictPolicy.currentIndex === 1 ? "fail" : (conflictPolicy.currentIndex === 2 ? "overwrite" : "rename"),
             "retries": retryCount.currentText,
             "deadlineSeconds": deadlineSeconds.text,
             "profile": profile.text,
@@ -522,13 +522,13 @@ Rectangle {
                                 id: conflictPolicy
 
                                 objectName: "serverConflictPolicy"
-                                model: ["保留双方（自动重命名）", "遇到冲突停止"]
+                                model: ["保留双方（自动重命名）", "遇到冲突停止", "覆盖同名普通文件"]
                                 enabled: !panel.busy
                                 Layout.fillWidth: true
                             }
 
                             Label {
-                                text: "恢复始终沿用原任务策略；先前已完成的文件会保留。"
+                                text: conflictPolicy.currentIndex === 2 ? "完整校验后替换同名普通文件；目录合并并保留无关文件。恢复沿用原策略。" : "恢复始终沿用原任务策略；先前已完成的文件会保留。"
                                 textFormat: Text.PlainText
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
@@ -602,7 +602,7 @@ Rectangle {
                     }
 
                     Label {
-                        text: "上传目标为当前相对目录；下载当前路径。同名时保留双方。"
+                        text: "上传目标为当前相对目录；下载当前路径。同名处理遵循所选策略。"
                         textFormat: Text.PlainText
                         wrapMode: Text.WordWrap
                         Layout.fillWidth: true
@@ -719,7 +719,7 @@ Rectangle {
 
                     Label {
                         objectName: "serverTaskConflictPolicy"
-                        text: "任务冲突策略：" + (panel.task.conflict === "fail" ? "遇到冲突停止" : "保留双方（自动重命名）")
+                        text: "任务冲突策略：" + (panel.task.conflict === "fail" ? "遇到冲突停止" : (panel.task.conflict === "overwrite" ? "覆盖同名普通文件" : "保留双方（自动重命名）"))
                         visible: !!panel.task.taskId
                         textFormat: Text.PlainText
                         wrapMode: Text.WordWrap

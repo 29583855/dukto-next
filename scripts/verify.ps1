@@ -43,7 +43,7 @@ if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 # 日期：2026-11-05；短命进程资源采样必须保留活动进程错误和内存上限。
 & $pythonExe -X utf8 "$projectRoot/tests/process_sampling_integration.py" --report "$reportDirectory/process-sampling.json"
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-foreach ($test in @('parallel_failure_integration', 'conflict_fail_integration', 'task_items_integration', 'item_failures_integration', 'legacy_integration', 'legacy_timeout_integration', 'parallel_attach_integration', 'cli_contracts', 'crash_integration', 'windows_path_integration', 'windows_signal_integration', 'service_integration', 'client_list_integration', 'credential_rotation_integration', 'certificate_lifecycle_integration', 'session_expiry_integration', 'task_admission_integration', 'transfer_retry_integration', 'transfer_integration', 'transfer_recovery_integration', 'parallel_transfer_integration', 'parallel_isolation_integration', 'byte_progress_integration', 'transfer_faults_integration', 'final_ack_integration')) {
+foreach ($test in @('parallel_failure_integration', 'conflict_fail_integration', 'conflict_overwrite_integration', 'task_items_integration', 'item_failures_integration', 'legacy_integration', 'legacy_timeout_integration', 'parallel_attach_integration', 'cli_contracts', 'crash_integration', 'windows_path_integration', 'windows_signal_integration', 'service_integration', 'client_list_integration', 'credential_rotation_integration', 'certificate_lifecycle_integration', 'session_expiry_integration', 'task_admission_integration', 'transfer_retry_integration', 'transfer_integration', 'transfer_recovery_integration', 'parallel_transfer_integration', 'parallel_isolation_integration', 'byte_progress_integration', 'transfer_faults_integration', 'final_ack_integration')) {
     & $pythonExe -X utf8 "$projectRoot/tests/$test.py" "$binaryDirectory/dukto-cli.exe" --report "$reportDirectory/$test.json"
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
@@ -59,6 +59,9 @@ foreach ($admissionMode in @('download', 'mixed')) {
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 # 日期：2026-11-05；多文件中途暂停后改变并发数，防止只测顺序传输而漏掉关闭阶段心跳回归。
 & $pythonExe -X utf8 "$projectRoot/tests/transfer_recovery_integration.py" "$binaryDirectory/dukto-cli.exe" --threads 4 --resume-threads 8 --files 4 --payload-mib 8 --checkpoint-percent 50 --report "$reportDirectory/parallel-files-recovery.json"
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+# 日期：2026-11-05；覆盖已有多文件后跨暂停/进程退出/服务重启恢复，必须保留无关项并绑定原策略。
+& $pythonExe -X utf8 "$projectRoot/tests/transfer_recovery_integration.py" "$binaryDirectory/dukto-cli.exe" --on-conflict overwrite --threads 4 --resume-threads 8 --files 4 --payload-mib 8 --checkpoint-percent 50 --report "$reportDirectory/conflict-overwrite-recovery.json"
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 # 日期：2026-11-05；显式失败策略跨暂停/进程退出/服务重启恢复时不得退回默认重命名。
 & $pythonExe -X utf8 "$projectRoot/tests/transfer_recovery_integration.py" "$binaryDirectory/dukto-cli.exe" --on-conflict fail --threads 4 --resume-threads 8 --files 4 --payload-mib 8 --checkpoint-percent 50 --report "$reportDirectory/conflict-fail-recovery.json"

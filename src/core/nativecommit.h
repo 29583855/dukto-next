@@ -1,8 +1,10 @@
 #pragma once
 
 #include <QByteArray>
+#include <QLockFile>
 #include <QString>
 #include <QtGlobal>
+#include <memory>
 #ifdef Q_OS_WIN
 #include <vector>
 #endif
@@ -56,6 +58,8 @@ class PosixDirectory final {
     int createTemporary(QString &name) const;
     // 日期：2026-11-04；在同一固定目录内不覆盖提交，目标存在返回 false，不允许复制回退。
     bool commitTemporary(const QString &name, const QString &destination) const;
+    // 日期：2026-11-05；普通接收的同目录原子替换，拒绝目录/链接/特殊项，不允许复制回退。
+    void replaceReceived(const QString &name, const QString &destination) const;
     // 日期：2026-11-04；异常或取消只删除固定目录中的本任务临时项，不通过被替换的路径清理。
     void removeTemporary(const QString &name) const;
     // 日期：2026-11-04；显式状态清理检查 unlinkat 结果，除不存在外的错误必须报告。
@@ -74,4 +78,31 @@ bool isNativeReparsePoint(const QString &path);
 // 日期：2026-11-04；Windows 同文件系统独占提交；目标已存在返回 false，其余失败抛错。
 bool renameNoReplace(const QString &source, const QString &destination, bool durable = false);
 #endif
+
+#ifdef Q_OS_WIN
+// 日期：2026-11-05；固定父目录后原子替换同名普通文件；原文件在发布之前保持完整。
+void replaceReceivedFile(const QString &source, const QString &destination);
+#endif
+
+// 预约文件位于目标父目录；仅协调本程序的新执行者，不宣称文件系统具有路径 CAS。
+class TargetReservation final {
+  public:
+    // 日期：2026-11-05；固定父目录，按规范文件名预约一个目标；不等待活动执行者。
+    explicit TargetReservation(const QString &destination);
+    // 日期：2026-11-05；先移除本任务锁文件，再释放父目录；死进程由 QLockFile 身份检测接管。
+    ~TargetReservation();
+    // 日期：2026-11-05；返回是否成功预约，调用者按 rename/fail/overwrite 分别裁决。
+    bool acquired() const;
+    TargetReservation(const TargetReservation &) = delete;
+    TargetReservation &operator=(const TargetReservation &) = delete;
+
+  private:
+#ifdef Q_OS_WIN
+    std::unique_ptr<NativeDirectoryLock> parent_;
+#else
+    std::unique_ptr<PosixDirectory> parent_;
+#endif
+    std::unique_ptr<QLockFile> lock_;
+    bool acquired_ = false;
+};
 } // namespace dukto

@@ -113,7 +113,33 @@ QString DurableReceive::prepare(quint64 file, const std::function<void()> &check
         }
     };
     const auto path = resolveInside(root_, target);
+    if (conflict_ == ConflictPolicy::Overwrite && state == "planned") {
+        TargetReservation reservation(path);
+        if (!reservation.acquired())
+            throw Error(ExitCode::Permission, QStringLiteral("接收目录已有活动预约"), "conflict");
+        if (!newlyCreated && QFileInfo::exists(resolveInside(root_, temporary)))
+            throw Error(ExitCode::Integrity, QStringLiteral("目录创建中断且临时身份未知"),
+                        "receive");
+        if (QFileInfo::exists(path)) {
+            if (!QFileInfo(path).isDir())
+                throw Error(ExitCode::Permission, QStringLiteral("覆盖目录不能替换普通文件"),
+                            "conflict");
+            native = directoryIdentity(path);
+            if (check)
+                check();
+            if (directoryIdentity(path) != native)
+                throw Error(ExitCode::Integrity, QStringLiteral("复用目录身份已变化"), "receive");
+            saveDirectory("completed", target);
+            return target;
+        }
+    }
     if (state != "planned" && QFileInfo(path).isDir() && directoryIdentity(path) == native) {
+        TargetReservation reservation(path);
+        if (!reservation.acquired())
+            throw Error(ExitCode::Permission, QStringLiteral("目录恢复目标已有活动预约"),
+                        "conflict");
+        if (directoryIdentity(path) != native)
+            throw Error(ExitCode::Integrity, QStringLiteral("已预约目录身份变化"), "receive");
 #ifndef Q_OS_WIN
         PosixDirectory held(QFileInfo(path).absolutePath(), false);
         held.synchronize();
@@ -151,6 +177,13 @@ QString DurableReceive::prepare(quint64 file, const std::function<void()> &check
         verifyRoot();
         const auto candidate =
             QDir::cleanPath(suffix == 0 ? destination : renamedPath(destination, suffix));
+        TargetReservation reservation(resolveInside(root_, candidate));
+        if (!reservation.acquired()) {
+            if (conflict_ != ConflictPolicy::Rename)
+                throw Error(ExitCode::Permission, QStringLiteral("目录目标已有活动预约"),
+                            "conflict");
+            continue;
+        }
         saveDirectory("committing", candidate);
         if (check)
             check();
@@ -167,6 +200,11 @@ QString DurableReceive::prepare(quint64 file, const std::function<void()> &check
             held.synchronize();
 #endif
         if (!published) {
+            if (conflict_ == ConflictPolicy::Overwrite) {
+                throw Error(ExitCode::Permission,
+                            QStringLiteral("目录发布期间出现同名目标，保留原目录与临时证据"),
+                            "conflict");
+            }
             if (conflict_ == ConflictPolicy::Fail)
                 throw Error(ExitCode::Permission, QStringLiteral("目录提交时出现同名目标"),
                             "conflict");

@@ -44,6 +44,7 @@ QJsonArray capabilities() {
             "parallel-transfer-v1",
             "byte-progress-v1",
             "conflict-fail-v1",
+            "conflict-overwrite-v1",
             "task-items-v1",
             "task-item-failures-v1"};
 }

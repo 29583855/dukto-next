@@ -23,7 +23,7 @@ class DurableReceive final {
     ~DurableReceive();
     DurableReceive(const DurableReceive &) = delete;
     DurableReceive &operator=(const DurableReceive &) = delete;
-    // 日期：2026-11-04；持久预约目录并返回按父目录映射的目标；同名目录保留双方，禁止合并。
+    // 日期：2026-11-05；持久预约并核对目录映射；默认保留双方，显式覆盖仅复用安全普通目录。
     QString prepare(quint64 file, const std::function<void()> &check = {});
     // 日期：2026-11-04；选择清单中的普通文件及目标相对名称；逐块重读检查点后返回首个缺失块。
     quint64 open(quint64 file, const QString &destination, const std::function<void()> &check = {});
@@ -43,7 +43,7 @@ class DurableReceive final {
     // 日期：2026-11-04；块内连续接收至多 256 KiB 片段；稀疏模式允许不同块交错，摘要同步后才确认。
     void write(quint64 block, quint32 offset, const QByteArray &bytes,
                const std::function<void()> &check = {});
-    // 日期：2026-11-04；重读全文件摘要，先记提交意图再独占命名；确认重试返回同一最终名称。
+    // 日期：2026-11-05；全摘要与同步后按策略原子发布；提交意图绑定新文件身份，重试确认同一结果。
     QString finish(const std::function<void()> &check = {});
     // 日期：2026-11-04；当前已验证字节总量；顺序模式为前缀，稀疏模式可包含非连续已确认块。
     qint64 confirmed() const;
