@@ -34,6 +34,8 @@ def commands(build):
     if windows:
         add("windows-path", "windows_path_integration")
         add("windows-signal", "windows_signal_integration")
+        # 日期：2026-11-06；真实共享句柄占用后同任务恢复，不能只验证接收核心。
+        add("windows-overwrite-busy", "windows_overwrite_busy_integration")
     else:
         add("posix-path", "posix_path_integration")
     add("service", "service_integration")

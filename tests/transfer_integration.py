@@ -5,6 +5,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import signal
 import subprocess
 import tempfile
@@ -131,7 +132,11 @@ def main():
             transfer(executable, client, ["download", "--share", "data", "--output", str(other)], 4)
             page, _ = run(executable, client, ["tasks"])
             assert page["tasks"] == []
-            assert not list((client / "transfers").glob("upload-*.sqlite*")), "source scan libraries accumulated"
+            # 日期：2026-11-06；只匹配TemporaryManifest的UUID名称及SQLite附属文件，持久处置日志必须保留。
+            temporary_name = re.compile(r"upload-[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}\.sqlite(?:-wal|-shm|-journal)?")
+            assert not [path for path in (client / "transfers").glob("upload-*.sqlite*")
+                        if temporary_name.fullmatch(path.name)], "source scan libraries accumulated"
+            assert (client / "transfers" / f"upload-disposition-{sent['taskId']}.sqlite").is_file()
             assert process.poll() is None
         finally:
             if process.poll() is None:

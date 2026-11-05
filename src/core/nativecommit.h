@@ -4,6 +4,7 @@
 #include <QLockFile>
 #include <QString>
 #include <QtGlobal>
+#include <functional>
 #include <memory>
 #ifdef Q_OS_WIN
 #include <vector>
@@ -83,8 +84,10 @@ bool renameNoReplace(const QString &source, const QString &destination, bool dur
 #endif
 
 #ifdef Q_OS_WIN
-// 日期：2026-11-05；固定父目录后原子替换同名普通文件；原文件在发布之前保持完整。
-void replaceReceivedFile(const QString &source, const QString &destination);
+// 日期：2026-11-06；固定源身份与父目录；共享占用最多重试500ms，持续检查取消及目标类型。
+void replaceReceivedFile(const QString &source, const QString &destination,
+                         const QByteArray &expectedIdentity,
+                         const std::function<void()> &check = {});
 #endif
 
 // 日期：2026-11-05；清理已持久最终跳过的自有临时项；Windows按原生句柄删除，POSIX固定父目录。

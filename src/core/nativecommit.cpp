@@ -3,8 +3,10 @@
 
 #include <QCryptographicHash>
 #include <QDir>
+#include <QElapsedTimer>
 #include <QFile>
 #include <QFileInfo>
+#include <QThread>
 #include <QUuid>
 
 #ifdef Q_OS_WIN
@@ -35,6 +37,17 @@ QString nativeLongPath(const QString &path) {
     if (native.startsWith("\\\\?\\"))
         return native;
     return native.startsWith("\\\\") ? "\\\\?\\UNC\\" + native.mid(2) : "\\\\?\\" + native;
+}
+// 日期：2026-11-06；从固定的普通文件句柄提取与持久接收日志同格式的卷/文件ID。
+QByteArray replacementIdentity(HANDLE handle) {
+    BY_HANDLE_FILE_INFORMATION info;
+    if (GetFileType(handle) != FILE_TYPE_DISK || !GetFileInformationByHandle(handle, &info) ||
+        (info.dwFileAttributes &
+         (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_REPARSE_POINT | FILE_ATTRIBUTE_DEVICE)))
+        throw Error(ExitCode::Integrity, QStringLiteral("覆盖源不再是已验证的普通文件"), "commit");
+    return QByteArray::number(static_cast<qulonglong>(info.dwVolumeSerialNumber)) + ':' +
+           QByteArray::number(static_cast<qulonglong>(info.nFileIndexHigh)) + ':' +
+           QByteArray::number(static_cast<qulonglong>(info.nFileIndexLow));
 }
 } // namespace
 
@@ -473,32 +486,90 @@ bool renameNoReplace(const QString &source, const QString &destination, bool dur
 #endif
 
 #ifdef Q_OS_WIN
-// 日期：2026-11-05；只替换同目录普通文件，MoveFileEx 不启用跨卷复制；失败不会先删除原文件。
-void replaceReceivedFile(const QString &source, const QString &destination) {
+// 日期：2026-11-06；共享占用可短暂等待；固定已验源禁止写入，所有尝试仍仅用同目录原子替换。
+void replaceReceivedFile(const QString &source, const QString &destination,
+                         const QByteArray &expectedIdentity, const std::function<void()> &check) {
     const QFileInfo fromInfo(source), toInfo(destination);
     if (fromInfo.absolutePath() != toInfo.absolutePath() ||
-        fromInfo.fileName().compare(toInfo.fileName(), Qt::CaseInsensitive) == 0)
-        throw Error(ExitCode::Config, QStringLiteral("覆盖必须使用同目录的不同名称"), "commit");
+        fromInfo.fileName().compare(toInfo.fileName(), Qt::CaseInsensitive) == 0 ||
+        expectedIdentity.isEmpty())
+        throw Error(ExitCode::Config, QStringLiteral("覆盖必须绑定同目录的不同名称及已验身份"),
+                    "commit");
     NativeDirectoryLock parent(toInfo.absolutePath(), false);
     const auto from = nativeLongPath(source);
     const auto to = nativeLongPath(destination);
-    for (const auto &path : {from, to}) {
-        const auto attributes = GetFileAttributesW(reinterpret_cast<LPCWSTR>(path.utf16()));
-        if (attributes == INVALID_FILE_ATTRIBUTES) {
-            if (path == to && GetLastError() == ERROR_FILE_NOT_FOUND)
-                continue;
-            throw Error(ExitCode::Disk, QStringLiteral("无法核对覆盖文件属性"), "commit");
+    const auto release = [](void *handle) {
+        // 日期：2026-11-06；正常返回、取消和异常均释放源句柄，不能让下一个文件继承占用。
+        CloseHandle(handle);
+    };
+    std::unique_ptr<void, decltype(release)> pinned(nullptr, release);
+    QElapsedTimer elapsed;
+    elapsed.start();
+    DWORD error = ERROR_SUCCESS;
+    for (int attempt = 1;; ++attempt) {
+        if (check)
+            check();
+        for (const auto &path : {from, to}) {
+            const auto attributes = GetFileAttributesW(reinterpret_cast<LPCWSTR>(path.utf16()));
+            if (attributes == INVALID_FILE_ATTRIBUTES) {
+                if (path == to && GetLastError() == ERROR_FILE_NOT_FOUND)
+                    continue;
+                throw Error(ExitCode::Disk, QStringLiteral("无法核对覆盖文件属性"), "commit");
+            }
+            if (attributes &
+                (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_REPARSE_POINT | FILE_ATTRIBUTE_DEVICE))
+                throw Error(ExitCode::Permission, QStringLiteral("覆盖只允许普通文件"), "conflict");
+            if (path == to && (attributes & FILE_ATTRIBUTE_READONLY))
+                throw Error(ExitCode::Permission, QStringLiteral("覆盖目标为只读文件"), "conflict");
         }
-        if (attributes &
-            (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_REPARSE_POINT | FILE_ATTRIBUTE_DEVICE))
-            throw Error(ExitCode::Permission, QStringLiteral("覆盖只允许普通文件"), "conflict");
-        if (path == to && (attributes & FILE_ATTRIBUTE_READONLY))
-            throw Error(ExitCode::Permission, QStringLiteral("覆盖目标为只读文件"), "conflict");
+        if (!pinned) {
+            // 日期：2026-11-06；共享删除允许本次原子改名，拒绝共享写入保证等待期间正文不能被改写。
+            const auto handle = CreateFileW(reinterpret_cast<LPCWSTR>(from.utf16()), GENERIC_READ,
+                                            FILE_SHARE_READ | FILE_SHARE_DELETE, nullptr,
+                                            OPEN_EXISTING, FILE_FLAG_OPEN_REPARSE_POINT, nullptr);
+            if (handle == INVALID_HANDLE_VALUE)
+                error = GetLastError();
+            else {
+                pinned.reset(handle);
+                if (replacementIdentity(handle) != expectedIdentity)
+                    throw Error(ExitCode::Integrity, QStringLiteral("覆盖源原生身份与持久记录不同"),
+                                "commit");
+            }
+        }
+        if (pinned) {
+            // 日期：2026-11-06；外部仍可改源名称，每次尝试均重开路径核对固定对象，不能发布同名替身。
+            const auto observed =
+                CreateFileW(reinterpret_cast<LPCWSTR>(from.utf16()), FILE_READ_ATTRIBUTES,
+                            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
+                            OPEN_EXISTING, FILE_FLAG_OPEN_REPARSE_POINT, nullptr);
+            if (observed == INVALID_HANDLE_VALUE)
+                error = GetLastError();
+            else {
+                std::unique_ptr<void, decltype(release)> current(observed, release);
+                if (replacementIdentity(observed) != expectedIdentity)
+                    throw Error(ExitCode::Integrity, QStringLiteral("覆盖等待期间源路径已被替换"),
+                                "commit");
+                if (MoveFileExW(reinterpret_cast<LPCWSTR>(from.utf16()),
+                                reinterpret_cast<LPCWSTR>(to.utf16()),
+                                MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH))
+                    return;
+                error = GetLastError();
+            }
+        }
+        const bool retryable = error == ERROR_ACCESS_DENIED || error == ERROR_SHARING_VIOLATION ||
+                               error == ERROR_LOCK_VIOLATION;
+        if (!retryable || attempt >= 21 || elapsed.elapsed() >= 500)
+            throw Error(
+                ExitCode::Disk,
+                QStringLiteral("原子覆盖失败，系统错误码 %1，已尝试 %2 次").arg(error).arg(attempt),
+                retryable ? "commit-busy" : "commit");
+        const auto until = qMin<qint64>(500, elapsed.elapsed() + 25);
+        while (elapsed.elapsed() < until) {
+            if (check)
+                check();
+            QThread::msleep(5);
+        }
     }
-    if (!MoveFileExW(reinterpret_cast<LPCWSTR>(from.utf16()), reinterpret_cast<LPCWSTR>(to.utf16()),
-                     MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH))
-        throw Error(ExitCode::Disk,
-                    QStringLiteral("原子覆盖失败，系统错误码 %1").arg(GetLastError()), "commit");
 }
 #endif
 

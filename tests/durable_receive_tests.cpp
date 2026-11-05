@@ -14,10 +14,35 @@
 #include <QtTest>
 #include <cstdio>
 #include <cstdlib>
+#ifdef Q_OS_WIN
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+#endif
 
 namespace {
 const QUuid Task("8bab691a-7f4c-430c-b43b-102614cd8fae");
 constexpr qint64 SampleBytes = 2 * dukto::StrongBlockBytes + 37;
+#ifdef Q_OS_WIN
+// 日期：2026-11-06；测试从独立原生句柄取得预期ID，不从被测覆盖函数读取身份。
+QByteArray overwriteIdentity(const QString &path) {
+    const auto native = QDir::toNativeSeparators(path);
+    const auto handle = CreateFileW(reinterpret_cast<LPCWSTR>(native.utf16()), FILE_READ_ATTRIBUTES,
+                                    FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
+                                    OPEN_EXISTING, FILE_FLAG_OPEN_REPARSE_POINT, nullptr);
+    if (handle == INVALID_HANDLE_VALUE)
+        throw dukto::Error(dukto::ExitCode::Disk, "fixture identity open", "test");
+    BY_HANDLE_FILE_INFORMATION info;
+    const bool read = GetFileInformationByHandle(handle, &info);
+    CloseHandle(handle);
+    if (!read)
+        throw dukto::Error(dukto::ExitCode::Disk, "fixture identity read", "test");
+    return QByteArray::number(static_cast<qulonglong>(info.dwVolumeSerialNumber)) + ':' +
+           QByteArray::number(static_cast<qulonglong>(info.nFileIndexHigh)) + ':' +
+           QByteArray::number(static_cast<qulonglong>(info.nFileIndexLow));
+}
+#endif
 
 // 日期：2026-11-04；样本按绝对偏移生成，不使用接收端算法生成期望文件摘要。
 QByteArray sample(qint64 offset, qint64 bytes) {
@@ -441,6 +466,178 @@ class DurableReceiveTests final : public QObject {
                                                        dukto::ConflictPolicy::Fail),
                                  dukto::Error);
     }
+
+#ifdef Q_OS_WIN
+    // 日期：2026-11-06；每行真实子进程保持一个读句柄，覆盖临时占用、永久占用及等待中的安全边界。
+    void overwriteContention_data() {
+        QTest::addColumn<QString>("mode");
+        for (const auto &mode :
+             {"release-target", "release-source", "persistent", "cancel", "readonly", "directory",
+              "source-replaced", "source-write-protected", "target-removed"})
+            QTest::newRow(mode) << QString(mode);
+    }
+
+    // 日期：2026-11-06；不改系统权限和外部进程，只操纵测试自有文件与读句柄；失败时原文件和临时证据均保留。
+    void overwriteContention() {
+        QFETCH(QString, mode);
+        QTemporaryDir root;
+        const auto source = root.filePath("incoming.tmp");
+        const auto target = root.filePath("original.bin");
+        const auto originalHeld = root.filePath("original-held.bin");
+        const QByteArray data("new-synchronized-content");
+        for (const auto &path : {source, target}) {
+            QFile file(path);
+            QVERIFY(file.open(QIODevice::WriteOnly));
+            dukto::writeAll(file, path == source ? data : QByteArray("original-user-data"));
+        }
+        const auto identity = overwriteIdentity(source);
+        QProcess holder;
+        holder.start(QCoreApplication::applicationFilePath(),
+                     {"--overwrite-read-lock", mode == "release-source" ? source : target});
+        QVERIFY(holder.waitForStarted(3000));
+        QVERIFY(holder.waitForReadyRead(3000));
+        QCOMPARE(holder.readLine().trimmed(), QByteArray("locked"));
+        QElapsedTimer elapsed;
+        elapsed.start();
+        bool injected = false, writeRefused = false;
+        int callbacks = 0;
+        dukto::ExitCode code = dukto::ExitCode::Success;
+        try {
+            dukto::replaceReceivedFile(source, target, identity, [&]() {
+                // 日期：2026-11-06；前两次回调只观察；随后原子操作已经因子进程占用失败，才注入等待中的变化。
+                ++callbacks;
+                if (injected || mode == "persistent" || callbacks < 3 || elapsed.elapsed() < 80)
+                    return;
+                injected = true;
+                if (mode == "cancel")
+                    throw dukto::Error(dukto::ExitCode::Cancelled, "cancel while waiting", "test");
+                if (mode == "readonly") {
+                    if (!QFile::setPermissions(target, QFile::ReadOwner | QFile::ReadUser))
+                        throw dukto::Error(dukto::ExitCode::Disk, "readonly injection", "test");
+                } else if (mode == "source-replaced") {
+                    if (!QFile::rename(source, root.filePath("verified-source-held.tmp")))
+                        throw dukto::Error(dukto::ExitCode::Disk, "source replacement injection",
+                                           "test");
+                    QFile replacement(source);
+                    if (!replacement.open(QIODevice::WriteOnly))
+                        throw dukto::Error(dukto::ExitCode::Disk, "replacement create", "test");
+                    dukto::writeAll(replacement, "unverified-substitute");
+                } else if (mode == "source-write-protected") {
+                    const auto native = QDir::toNativeSeparators(source);
+                    const auto writer =
+                        CreateFileW(reinterpret_cast<LPCWSTR>(native.utf16()), GENERIC_WRITE,
+                                    FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
+                                    OPEN_EXISTING, 0, nullptr);
+                    writeRefused = writer == INVALID_HANDLE_VALUE;
+                    if (!writeRefused)
+                        CloseHandle(writer);
+                }
+                holder.write("release\n");
+                holder.closeWriteChannel();
+                if (!holder.waitForFinished(3000))
+                    throw dukto::Error(dukto::ExitCode::Disk, "holder release", "test");
+                if (mode == "directory" || mode == "target-removed") {
+                    if (!QFile::rename(target, originalHeld) ||
+                        (mode == "directory" && !QDir().mkdir(target)))
+                        throw dukto::Error(dukto::ExitCode::Disk, "target type injection", "test");
+                }
+            });
+        } catch (const dukto::Error &error) {
+            code = error.code;
+        }
+        const auto duration = elapsed.elapsed();
+        if (holder.state() != QProcess::NotRunning) {
+            holder.write("release\n");
+            holder.closeWriteChannel();
+            QVERIFY(holder.waitForFinished(3000));
+        }
+        QCOMPARE(holder.exitCode(), 0);
+        if (mode == "readonly")
+            QVERIFY(QFile::setPermissions(target, QFile::ReadOwner | QFile::WriteOwner |
+                                                      QFile::ReadUser | QFile::WriteUser));
+        QVERIFY2(callbacks > 2, qPrintable(mode));
+        QVERIFY2(duration < 2000, qPrintable(QString("%1 took %2ms").arg(mode).arg(duration)));
+        const bool success = mode.startsWith("release-") || mode == "source-write-protected" ||
+                             mode == "target-removed";
+        const auto expected = success                     ? dukto::ExitCode::Success
+                              : mode == "cancel"          ? dukto::ExitCode::Cancelled
+                              : mode == "source-replaced" ? dukto::ExitCode::Integrity
+                              : (mode == "readonly" || mode == "directory")
+                                  ? dukto::ExitCode::Permission
+                                  : dukto::ExitCode::Disk;
+        QCOMPARE(static_cast<int>(code), static_cast<int>(expected));
+        if (success) {
+            QVERIFY(!QFileInfo::exists(source));
+            QCOMPARE(dukto::hashFile(target),
+                     QCryptographicHash::hash(data, QCryptographicHash::Sha256));
+            if (mode == "source-write-protected")
+                QVERIFY(writeRefused);
+        } else {
+            QCOMPARE(dukto::hashFile(mode == "directory" ? originalHeld : target),
+                     QCryptographicHash::hash("original-user-data", QCryptographicHash::Sha256));
+            QCOMPARE(dukto::hashFile(mode == "source-replaced"
+                                         ? root.filePath("verified-source-held.tmp")
+                                         : source),
+                     QCryptographicHash::hash(data, QCryptographicHash::Sha256));
+            if (mode == "persistent") {
+                QVERIFY(duration >= 450);
+                // 日期：2026-11-06；永久占用超时仍保留源；释放后同一身份可以再次安全发布。
+                dukto::replaceReceivedFile(source, target, identity);
+                QCOMPARE(dukto::hashFile(target),
+                         QCryptographicHash::hash(data, QCryptographicHash::Sha256));
+            }
+        }
+    }
+
+    // 日期：2026-11-06；集成接收日志验证永久占用返回磁盘错误、释放后重验同一临时文件恢复，不重新传正文。
+    void overwriteBusyCommitRecovery() {
+        QTemporaryDir root;
+        fixture(root.path());
+        const auto target = root.filePath("output/sample.bin");
+        {
+            QFile original(target);
+            QVERIFY(original.open(QIODevice::WriteOnly));
+            dukto::writeAll(original, "original");
+        }
+        dukto::PrivateStore store(root.filePath("private"));
+        dukto::StrongManifest manifest(store, "source.sqlite", false);
+        QProcess holder;
+        holder.start(QCoreApplication::applicationFilePath(), {"--overwrite-read-lock", target});
+        QVERIFY(holder.waitForStarted(3000));
+        QVERIFY(holder.waitForReadyRead(3000));
+        QCOMPARE(holder.readLine().trimmed(), QByteArray("locked"));
+        {
+            dukto::DurableReceive receiver(store, "receive.sqlite", Task, manifest,
+                                           root.filePath("output"),
+                                           dukto::ConflictPolicy::Overwrite);
+            receiver.open(1, "sample.bin");
+            transmit(receiver, 0);
+            try {
+                receiver.finish();
+                QFAIL("persistent read lock must fail within its budget");
+            } catch (const dukto::Error &error) {
+                QCOMPARE(static_cast<int>(error.code), static_cast<int>(dukto::ExitCode::Disk));
+                QCOMPARE(error.stage, QString("commit-busy"));
+            }
+            QCOMPARE(receiver.state(), QString("committing"));
+        }
+        QCOMPARE(dukto::hashFile(target),
+                 QCryptographicHash::hash("original", QCryptographicHash::Sha256));
+        holder.write("release\n");
+        holder.closeWriteChannel();
+        QVERIFY(holder.waitForFinished(3000));
+        QCOMPARE(holder.exitCode(), 0);
+        {
+            dukto::DurableReceive receiver(store, "receive.sqlite", Task, manifest,
+                                           root.filePath("output"),
+                                           dukto::ConflictPolicy::Overwrite);
+            receiver.open(1, "sample.bin");
+            QCOMPARE(receiver.state(), QString("completed"));
+            QCOMPARE(receiver.finish(), QString("sample.bin"));
+        }
+        QCOMPARE(dukto::hashFile(target), manifest.entry(1).sha256);
+    }
+#endif
 
     // 日期：2026-11-05；提交前取消、目标变为只读或目录均不能覆盖原件，最后一次检查同样执行类型规则。
     void overwritePublicationFailure_data() {
@@ -1181,6 +1378,21 @@ class DurableReceiveTests final : public QObject {
 int main(int argc, char **argv) {
     QCoreApplication application(argc, argv);
     const auto arguments = application.arguments();
+#ifdef Q_OS_WIN
+    if (arguments.size() == 3 && arguments[1] == "--overwrite-read-lock") {
+        // 日期：2026-11-06；子进程真实持有普通文件读句柄，收到测试父进程的输入后才释放。
+        const auto native = QDir::toNativeSeparators(arguments[2]);
+        const auto handle =
+            CreateFileW(reinterpret_cast<LPCWSTR>(native.utf16()), GENERIC_READ, FILE_SHARE_READ,
+                        nullptr, OPEN_EXISTING, FILE_FLAG_OPEN_REPARSE_POINT, nullptr);
+        if (handle == INVALID_HANDLE_VALUE)
+            return 35;
+        std::printf("locked\n");
+        std::fflush(stdout);
+        std::getchar();
+        return CloseHandle(handle) ? 0 : 36;
+    }
+#endif
     if (arguments.size() == 3 && arguments[1] == "--reservation-worker") {
         try {
             dukto::TargetReservation reservation(arguments[2]);

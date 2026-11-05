@@ -352,7 +352,7 @@ void serveTransfer(next::SecureChannel &channel, PrivateStore &store, const Prin
         task = tasks.advance(*lease, task.revision, "completed", processed);
         channel.write(next::Type::TaskState, correlation, task.publicInfo());
     } catch (const Error &error) {
-        // 日期：2026-11-05；网络或认证失效保留检查点；轮换后的原主体可恢复，撤销主体仍不能访问。
+        // 日期：2026-11-06；共享占用耗尽短等待仍保留检查点；显式恢复重验同一临时文件，完整性失败仍终止。
         const auto current = tasks.task(principal.client, task.id);
         if (current.state != "completed" && current.state != "committing" &&
             current.state != "failed" && current.state != "cancelled") {
@@ -367,6 +367,7 @@ void serveTransfer(next::SecureChannel &channel, PrivateStore &store, const Prin
                 }
             } else if (error.code == ExitCode::Network || error.code == ExitCode::Cancelled ||
                        error.code == ExitCode::Config ||
+                       (error.code == ExitCode::Disk && error.stage == "commit-busy") ||
                        (error.code == ExitCode::Permission &&
                         (error.stage == "auth" || error.stage == "session" ||
                          error.stage == "scheduler"))) {

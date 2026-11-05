@@ -923,7 +923,8 @@ DurableReceive::finishDisposition(const std::function<void()> &check) try {
         current_->file.reset();
         NativeDirectoryLock parent(QFileInfo(target).absolutePath(), false);
         if (conflict_ == ConflictPolicy::Overwrite) {
-            replaceReceivedFile(resolveInside(root_, current_->temporary), target);
+            replaceReceivedFile(resolveInside(root_, current_->temporary), target, current_->native,
+                                check);
             published = true;
         } else {
             published = renameNoReplace(resolveInside(root_, current_->temporary), target, true);
