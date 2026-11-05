@@ -132,3 +132,6 @@ CI 通过后继续实际桌面交互、三平台互通、macOS 独立 GUI/CLI �
 ## v0.37 完整原生CI追加证据
 
 2026-11-05，固定1bc2774完整运行41971957335的Mac ARM64与Intel均成功：每架构18CTest和26/26协议专项通过，包括新的rename/fail检查点协调、会话、4→8恢复及字节进度。该运行整体仍因Windows旧协议异常帧超时为failure。双Mac旧预览包的SHA和源码身份不变；新增加的逐项分页属于下一源码修订，另行原生编译验证，不能借用旧包结果。
+
+
+v0.37 实际上传补记：源码已推送为 `ecb0387f135e89d6eea7b1c41bcc215c31f2bdad`；[新四平台原生CI](https://github.com/29583855/dukto-next/actions/runs/41977378181)已启动，尚未以其在途状态标记通过。157份维护文件审计0标记，C++14配置及格式检查通过。旧预览包不含新增分页。冻结1bc2774的glibc资格已结束：18CTest（490.30秒）、12检查组中10组通过，session-expiry和conflict-fail失败；二进制前后SHA不变，`results.tar.gz`和driver-result已归档。musl由原3978驱动继续；失败继续计入总计划。
