@@ -13,7 +13,7 @@ jobs:
       - name: Prepare isolated nonroot native musl environment
         shell: bash
         run: |
-          DUKTO_MUSL_WORK="$RUNNER_TEMP/dukto-musl-validation"
+          export DUKTO_MUSL_WORK="$RUNNER_TEMP/dukto-musl-validation"
           echo "DUKTO_MUSL_WORK=$DUKTO_MUSL_WORK" >> "$GITHUB_ENV"
           mkdir -p "$DUKTO_MUSL_WORK/build"
           docker pull alpine:3.24.1
