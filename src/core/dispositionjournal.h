@@ -9,7 +9,7 @@ class DispositionJournal final {
     // 日期：2026-11-05；绑定任务、强清单和策略；逐条同步保存，不把跳过计入复制字节。
     DispositionJournal(PrivateStore &store, const QString &name, const QUuid &task,
                        StrongManifest &manifest, const QString &conflict,
-                       const std::function<void()> &check = {});
+                       const std::function<void()> &check = {}, bool readOnly = false);
     // 日期：2026-11-05；先关闭数据库再移除当前线程连接，保留原结果供重启核对。
     ~DispositionJournal();
     DispositionJournal(const DispositionJournal &) = delete;
@@ -35,6 +35,7 @@ class DispositionJournal final {
     void sql(const QString &statement) const;
     // 日期：2026-11-05；构造失败和正常析构共用连接回收，避免重试累积Qt数据库连接。
     void close();
+    bool readOnly_ = false;
     StrongManifest &manifest_;
     QString conflict_;
     QByteArray binding_;

@@ -5,11 +5,13 @@
 #include "files.h"
 #include "paralleltransfer.h"
 #include "shares.h"
+#include "sourcefile.h"
 #include "taskstore.h"
 #include "transferitems.h"
 #include "transferprogress.h"
 #include "transferscheduler.h"
 #include <QCoreApplication>
+#include <QCryptographicHash>
 #include <QDir>
 #include <QElapsedTimer>
 #include <QFileInfo>
@@ -120,7 +122,7 @@ QJsonObject manageTransfer(PrivateStore &store, const Principal &principal,
     return result;
 }
 
-// 日期：2026-11-05；任务绑定显式冲突策略；全局授信先于扫描，接收端准备和提交均执行策略。
+// 日期：2026-11-06；历史完成也受全局授信和授权约束，原任务保持终态，只读核验当前文件。
 void serveTransfer(next::SecureChannel &channel, PrivateStore &store, const Principal &principal,
                    const std::function<Principal()> &reauthenticate, const QJsonObject &request,
                    next::Type type, quint64 correlation) {
@@ -164,14 +166,7 @@ void serveTransfer(next::SecureChannel &channel, PrivateStore &store, const Prin
     auto lease = tasks.acquire(principal.client, task.id);
     const auto key = task.id.toString(QUuid::WithoutBraces);
     const auto manifestName = "manifest-" + key + ".sqlite";
-    if (task.state == "committing")
-        task = tasks.advance(*lease, task.revision, "completed", task.total);
-    if (task.state == "completed") {
-        auto initial = task.publicInfo();
-        initial["needManifest"] = false;
-        channel.write(next::Type::Task, correlation, initial);
-        return;
-    }
+    const bool historical = task.state == "completed" || task.state == "committing";
     QElapsedTimer authorization;
     QElapsedTimer heartbeat;
     authorization.start();
@@ -202,6 +197,113 @@ void serveTransfer(next::SecureChannel &channel, PrivateStore &store, const Prin
     std::unique_ptr<StrongManifest> manifest;
     std::shared_ptr<TransferAdmission> admission;
     try {
+        if (historical) {
+            // 日期：2026-11-06；核验占用一个全局任务/通道额度，排队不改变原completed/committing记录。
+            admission =
+                std::make_shared<TransferAdmission>(TransferScheduler::global(), store.directory(),
+                                                    principal.client, task.id, 1, queuedProtocol);
+            auto initial = task.publicInfo();
+            initial["state"] = queuedProtocol ? "queued" : "scanning";
+            initial["needManifest"] = false;
+            channel.write(next::Type::Task, correlation, initial);
+            waiting = queuedProtocol;
+            while (!admission->tryStart()) {
+                work();
+                QCoreApplication::processEvents(QEventLoop::AllEvents, 1);
+                QThread::msleep(25);
+            }
+            waiting = false;
+            scanning = true;
+            if (queuedProtocol)
+                channel.write(next::Type::TaskAdmitted, correlation,
+                              {{"taskId", key}, {"needManifest", false}, {"channels", "1"}});
+            const auto authorize = [&]() {
+                // 日期：2026-11-06；获准及结束均强制重查会话、共享根和停止意图，不依赖定时巡检。
+                channel.checkpoint("completion");
+                const auto currentRoot = Shares(store).open(reauthenticate(), share, access);
+                root->verify();
+                if (currentRoot->share().root != task.root ||
+                    !tasks.task(principal.client, task.id).desired.isEmpty())
+                    throw Error(ExitCode::Permission, QStringLiteral("历史任务核验授权已变化"),
+                                "completion");
+            };
+            authorize();
+            manifest.reset(new StrongManifest(store, manifestName, false, work));
+            const auto summary = manifest->summary();
+            if (summary["sha256"] != QString::fromLatin1(task.manifest.toHex()) ||
+                summary["entries"] != QString::number(task.entries) ||
+                summary["bytes"] != QString::number(task.total) ||
+                (upload && summary != request["manifest"].toObject()))
+                throw Error(ExitCode::Integrity, QStringLiteral("历史任务清单与原任务不同"),
+                            "completion");
+            const auto outcomeName = "disposition-" + key + ".sqlite";
+            if (!store.exists(outcomeName))
+                throw Error(ExitCode::Integrity, QStringLiteral("历史任务缺少逐项处置证据"),
+                            "completion");
+            DispositionJournal outcomes(store, outcomeName, task.id, *manifest,
+                                        conflictPolicyName(task.conflict), work, true);
+            outcomes.summary(true, work);
+            if (upload) {
+                DurableReceive::verifyCompleted(
+                    store, "receive-" + key + ".sqlite", task.id, *manifest, selected,
+                    task.conflict, work, [&](quint64 id, const QString &target) {
+                        // 日期：2026-11-06；接收实际路径必须等于原处置名称，重命名结果不能退回原名。
+                        const auto item = outcomes.item(id);
+                        if (item["disposition"] != "copied" || item["path"] != target)
+                            throw Error(ExitCode::Integrity, QStringLiteral("历史接收与处置不符"),
+                                        "completion");
+                    });
+            } else {
+                const auto count = next::decimal(summary["entries"], 10000000);
+                const auto baseName = QFileInfo(selected).fileName();
+                for (quint64 id = 1; id <= count; ++id) {
+                    work();
+                    const auto entry = manifest->entry(id);
+                    if (entry.relative != baseName && !entry.relative.startsWith(baseName + '/'))
+                        throw Error(ExitCode::Integrity, QStringLiteral("历史下载源映射不同"),
+                                    "completion");
+                    const auto suffix = entry.relative.mid(baseName.size());
+                    const auto mapped = relative.isEmpty() ? suffix.mid(1) : relative + suffix;
+                    const auto source = root->resolve(mapped, false);
+                    if (QDir::cleanPath(entry.source) != QDir::cleanPath(source) ||
+                        outcomes.item(id)["disposition"] != "copied")
+                        throw Error(ExitCode::Integrity, QStringLiteral("历史下载路径或处置不同"),
+                                    "completion");
+                    if (entry.directory) {
+                        if (!QFileInfo(source).isDir())
+                            throw Error(ExitCode::Integrity, QStringLiteral("历史下载目录已变化"),
+                                        "completion");
+                        continue;
+                    }
+                    SourceFile input(source);
+                    if (input.device().size() != entry.bytes)
+                        throw Error(ExitCode::Integrity, QStringLiteral("历史下载源大小已变化"),
+                                    "completion");
+                    QCryptographicHash hash(QCryptographicHash::Sha256);
+                    qint64 remaining = entry.bytes;
+                    while (remaining > 0) {
+                        work();
+                        input.verify();
+                        const auto bytes = input.device().read(qMin(remaining, BufferSize));
+                        if (bytes.isEmpty())
+                            throw Error(ExitCode::Disk, QStringLiteral("历史下载源重读失败"),
+                                        "completion");
+                        hash.addData(bytes);
+                        remaining -= bytes.size();
+                    }
+                    input.verify();
+                    if (hash.result() != entry.sha256)
+                        throw Error(ExitCode::Integrity, QStringLiteral("历史下载源正文已变化"),
+                                    "completion");
+                }
+            }
+            authorize();
+            task = tasks.task(principal.client, task.id);
+            if (task.state == "committing")
+                task = tasks.advance(*lease, task.revision, "completed", task.total);
+            channel.write(next::Type::TaskState, correlation, task.publicInfo());
+            return;
+        }
         // 日期：2026-11-05；旧执行者退出后的状态先恢复到
         // checking，再登记等待；暂停请求仍由原执行者确认。
         // 日期：2026-11-05；已暂停任务只能显式 Resume，重复创建不能在检查/重连竞态中清除停止意图。
@@ -283,12 +385,6 @@ void serveTransfer(next::SecureChannel &channel, PrivateStore &store, const Prin
             if (task.state == "transferring" || task.state == "verifying")
                 task = tasks.advance(*lease, task.revision, "interrupted", task.processed);
             task = tasks.advance(*lease, task.revision, "checking", 0);
-        }
-        if (task.state == "committing") {
-            // 日期：2026-11-04；任务提交只发生在全部文件确认后，崩溃重试继续持久确认同一任务。
-            task = tasks.advance(*lease, task.revision, "completed", task.total);
-            channel.write(next::Type::TaskState, correlation, task.publicInfo());
-            return;
         }
         task = tasks.advance(*lease, task.revision, "transferring", 0);
         auto ready = task.publicInfo();

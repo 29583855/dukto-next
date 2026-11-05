@@ -27,12 +27,12 @@ void addRecord(QCryptographicHash &hash, const QByteArray &bytes) {
 }
 } // namespace
 
-// 日期：2026-11-05；已有日志只验证不补建架构；新日志在FULL同步事务中建立版本与不可变绑定。
+// 日期：2026-11-06；历史核验可显式只读；缺库不创建，已有日志不补建架构或改写历史。
 DispositionJournal::DispositionJournal(PrivateStore &store, const QString &name, const QUuid &task,
                                        StrongManifest &manifest, const QString &conflict,
-                                       const std::function<void()> &check)
-    : manifest_(manifest), conflict_(conflict), manifestInfo_(manifest.summary()),
-      connection_(QUuid::createUuid().toString()) {
+                                       const std::function<void()> &check, bool readOnly)
+    : readOnly_(readOnly), manifest_(manifest), conflict_(conflict),
+      manifestInfo_(manifest.summary()), connection_(QUuid::createUuid().toString()) {
     if (task.isNull() || !QStringList{"rename", "fail", "overwrite", "skip"}.contains(conflict))
         throw Error(ExitCode::Config, QStringLiteral("逐项处置的任务或策略无效"), "disposition");
     expectedEntries_ = next::decimal(manifestInfo_["entries"], 10000000);
@@ -48,18 +48,27 @@ DispositionJournal::DispositionJournal(PrivateStore &store, const QString &name,
     if (!ownership_->tryLock(0))
         throw Error(ExitCode::Permission, QStringLiteral("逐项处置已有活动执行者"), "disposition");
     const bool exists = store.exists(name);
+    if (!exists && readOnly_)
+        throw Error(ExitCode::Integrity, QStringLiteral("历史任务缺少原逐项处置日志"),
+                    "disposition");
     if (!exists)
         store.write(name, {});
     if (store.validateFile(name) > MaxMetadataBytes)
         throw Error(ExitCode::Disk, QStringLiteral("逐项处置日志超出磁盘预算"), "disposition");
     database_ = QSqlDatabase::addDatabase("QSQLITE", connection_);
     try {
+        if (readOnly_)
+            database_.setConnectOptions("QSQLITE_OPEN_READONLY");
         database_.setDatabaseName(QDir(store.directory()).filePath(name));
         if (!database_.open())
             throw Error(ExitCode::Disk, QStringLiteral("无法打开逐项处置日志"), "disposition");
         sql("PRAGMA busy_timeout=2000");
         cacheCredit_.configure(database_);
         sql("PRAGMA temp_store=FILE");
+        if (readOnly_) {
+            sql("PRAGMA query_only=ON");
+            sql("BEGIN");
+        }
         if (!exists) {
             sql("PRAGMA page_size=4096");
             sql("PRAGMA max_page_count=65536");
@@ -97,9 +106,11 @@ DispositionJournal::DispositionJournal(PrivateStore &store, const QString &name,
         // 日期：2026-11-05；现有日志的所有记录同样重验，不能仅相信MAX(id)或历史总计。
         const auto state = summary(false, check);
         next_ = next::decimal(state["processedEntries"], expectedEntries_) + 1;
-        sql("PRAGMA max_page_count=65536");
-        sql("PRAGMA journal_mode=DELETE");
-        sql("PRAGMA synchronous=FULL");
+        if (!readOnly_) {
+            sql("PRAGMA max_page_count=65536");
+            sql("PRAGMA journal_mode=DELETE");
+            sql("PRAGMA synchronous=FULL");
+        }
     } catch (...) {
         close();
         throw;
@@ -204,6 +215,8 @@ QJsonObject DispositionJournal::decode(quint64 file, const QByteArray &bytes) co
 // 日期：2026-11-05；重复行只读核对；新决定在FULL同步事务提交成功后才更新内存中的固定游标。
 void DispositionJournal::append(quint64 file, const QString &path, const QString &disposition,
                                 quint64 skippedRoot) {
+    if (readOnly_)
+        throw Error(ExitCode::Config, QStringLiteral("只读处置核验不允许写入"), "disposition");
     const auto value = next::encodeControl(checkedItem(file, path, disposition, skippedRoot));
     if (file < next_) {
         QSqlQuery query(database_);

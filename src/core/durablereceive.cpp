@@ -7,6 +7,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QRegularExpression>
+#include <QSqlError>
 #include <QSqlQuery>
 #ifdef Q_OS_WIN
 #ifndef NOMINMAX
@@ -40,6 +41,60 @@ QByteArray nativeIdentity(int descriptor) {
     return QByteArray::number(static_cast<qulonglong>(info.st_dev)) + ':' +
            QByteArray::number(static_cast<qulonglong>(info.st_ino));
 #endif
+}
+// 日期：2026-11-06；历史核验只读打开已有库，任何异常均归还连接和缓存授信，不创建架构。
+class CompletedSnapshot final {
+  public:
+    // 日期：2026-11-06；受保护普通文件和单库预算验证后建立只读事务，缺库不能变成新日志。
+    CompletedSnapshot(PrivateStore &store, const QString &name)
+        : connection_(QUuid::createUuid().toString()) {
+        if (!store.exists(name))
+            throw Error(ExitCode::Integrity, QStringLiteral("已完成接收缺少原接收日志"),
+                        "completion");
+        if (store.validateFile(name) > MaxMetadataBytes)
+            throw Error(ExitCode::Disk, QStringLiteral("接收日志超出磁盘预算"), "completion");
+        database_ = QSqlDatabase::addDatabase("QSQLITE", connection_);
+        try {
+            database_.setConnectOptions("QSQLITE_OPEN_READONLY");
+            database_.setDatabaseName(QDir(store.directory()).filePath(name));
+            if (!database_.open())
+                throw Error(ExitCode::Disk, QStringLiteral("无法只读打开接收日志"), "completion");
+            credit_.configure(database_);
+            QSqlQuery query(database_);
+            if (!query.exec("PRAGMA busy_timeout=1000") || !query.exec("PRAGMA query_only=ON") ||
+                !query.exec("BEGIN"))
+                throw Error(ExitCode::Disk, QStringLiteral("无法建立完成记录快照"), "completion");
+        } catch (...) {
+            close();
+            throw;
+        }
+    }
+    // 日期：2026-11-06；只读事务结束不改写任何任务或接收记录。
+    ~CompletedSnapshot() {
+        close();
+    }
+    // 日期：2026-11-06；连接仅供当前线程的有界查询使用。
+    QSqlDatabase database() const {
+        return database_;
+    }
+
+  private:
+    // 日期：2026-11-06；局部查询析构后关闭连接，构造失败同样清理。
+    void close() {
+        database_.close();
+        database_ = QSqlDatabase();
+        QSqlDatabase::removeDatabase(connection_);
+    }
+    QString connection_;
+    SqliteCacheCredit credit_{1024};
+    QSqlDatabase database_;
+};
+
+// 日期：2026-11-06；读取失败与缺失证据分别报告，不把坏库解释为空文件集。
+void readCompleted(QSqlQuery &query) {
+    if (!query.exec())
+        throw Error(ExitCode::Integrity, QStringLiteral("已完成接收记录架构或查询无效"),
+                    "completion");
 }
 } // namespace
 
@@ -315,6 +370,140 @@ DurableReceive::DurableReceive(PrivateStore &store, const QString &name, const Q
         QSqlDatabase::removeDatabase(connection_);
         throw;
     }
+}
+
+// 日期：2026-11-06；历史成功不代表当前文件仍完整；核验全程只读且每个片段均响应外部检查。
+void DurableReceive::verifyCompleted(
+    PrivateStore &store, const QString &name, const QUuid &task, StrongManifest &manifest,
+    const QString &root, ConflictPolicy conflict, const std::function<void()> &check,
+    const std::function<void(quint64, const QString &)> &verified) {
+    if (task.isNull() || !QDir::isAbsolutePath(root) || conflict == ConflictPolicy::Skip)
+        throw Error(ExitCode::Config, QStringLiteral("完成核验任务、目录或策略无效"), "completion");
+#ifdef Q_OS_WIN
+    NativeDirectoryLock held(root, false);
+#else
+    PosixDirectory held(root, false);
+#endif
+    const auto rootIdentity = held.identity();
+    const auto checkpoint = [&]() {
+        // 日期：2026-11-06；回调可能改配授权或取消；返回后重新固定路径身份，不能沿用旧根。
+        if (check)
+            check();
+#ifdef Q_OS_WIN
+        NativeDirectoryLock current(root, false);
+#else
+        held.verify();
+        PosixDirectory current(root, false);
+#endif
+        if (current.identity() != rootIdentity)
+            throw Error(ExitCode::Integrity, QStringLiteral("完成核验根已被替换"), "completion");
+    };
+    checkpoint();
+    CompletedSnapshot snapshot(store, name);
+    QJsonObject expectedBinding{{"version", conflict == ConflictPolicy::Rename ? 1 : 2},
+                                {"task", task.toString(QUuid::WithoutBraces)},
+                                {"manifest", manifest.summary()["sha256"]},
+                                {"root", QDir::cleanPath(root)},
+                                {"rootIdentity", QString::fromLatin1(rootIdentity)}};
+    if (conflict != ConflictPolicy::Rename)
+        expectedBinding["conflict"] = conflictPolicyName(conflict);
+    QSqlQuery binding(snapshot.database());
+    binding.prepare("SELECT substr(spec,1,65537) FROM binding");
+    readCompleted(binding);
+    if (!binding.next() || binding.value(0).toByteArray() != next::encodeControl(expectedBinding) ||
+        binding.next() || binding.lastError().isValid())
+        throw Error(ExitCode::Integrity, QStringLiteral("完成接收绑定不同"), "completion");
+    binding.finish();
+    const auto count = next::decimal(manifest.summary()["entries"], 10000000);
+    quint64 directories = 0;
+    for (quint64 id = 1; id <= count; ++id) {
+        checkpoint();
+        const auto entry = manifest.entry(id);
+        QSqlQuery query(snapshot.database());
+        query.prepare(
+            entry.directory
+                ? "SELECT substr(spec,1,65537),substr(target,1,4097),substr(native,1,257),"
+                  "substr(state,1,33),0,substr(source,1,4097) FROM directories WHERE id=?"
+                : "SELECT substr(spec,1,65537),substr(target,1,4097),substr(native,1,257),"
+                  "substr(state,1,33),confirmed,'' FROM files WHERE id=?");
+        query.addBindValue(static_cast<qlonglong>(id));
+        readCompleted(query);
+        if (!query.next())
+            throw Error(ExitCode::Integrity, QStringLiteral("已完成接收缺少逐项记录"),
+                        "completion");
+        const auto spec = query.value(0).toByteArray();
+        const auto target = validateRelativePath(query.value(1).toString());
+        const auto native = query.value(2).toByteArray();
+        if (query.value(3).toString() != "completed" || native.isEmpty() || native.size() > 256 ||
+            query.value(4).toString() != QString::number(entry.directory ? 0 : entry.bytes) ||
+            (entry.directory && query.value(5).toString() != entry.relative))
+            throw Error(ExitCode::Integrity, QStringLiteral("接收项没有完整完成证据"),
+                        "completion");
+        query.finish();
+        QString parent;
+        const auto slash = entry.relative.lastIndexOf('/');
+        if (slash >= 0) {
+            query.prepare(
+                "SELECT substr(target,1,4097),substr(state,1,33) FROM directories WHERE source=?");
+            query.addBindValue(entry.relative.left(slash));
+            readCompleted(query);
+            if (!query.next() || query.value(1).toString() != "completed")
+                throw Error(ExitCode::Integrity, QStringLiteral("完成项缺少原父目录映射"),
+                            "completion");
+            parent = validateRelativePath(query.value(0).toString());
+            if (query.next() || query.lastError().isValid())
+                throw Error(ExitCode::Integrity, QStringLiteral("完成项父映射不唯一"),
+                            "completion");
+            query.finish();
+        }
+        const auto original =
+            (parent.isEmpty() ? QString() : parent + '/') + QFileInfo(entry.relative).fileName();
+        if (spec != next::encodeControl({{"entry", entry.publicInfo()}, {"path", original}}) ||
+            QFileInfo(target).path() != QFileInfo(original).path())
+            throw Error(ExitCode::Integrity, QStringLiteral("完成项清单或目标映射不同"),
+                        "completion");
+        const auto path = resolveInside(root, target, false);
+        if (entry.directory) {
+#ifdef Q_OS_WIN
+            NativeDirectoryLock directory(path, false);
+#else
+            PosixDirectory directory(path, false);
+#endif
+            if (directory.identity() != native)
+                throw Error(ExitCode::Integrity, QStringLiteral("已完成目录被替换"), "completion");
+            ++directories;
+        } else {
+            SourceFile source(path);
+            if (nativeIdentity(source.device().handle()) != native ||
+                source.device().size() != entry.bytes)
+                throw Error(ExitCode::Integrity, QStringLiteral("已完成文件缺失或被替换"),
+                            "completion");
+            QCryptographicHash digest(QCryptographicHash::Sha256);
+            qint64 remaining = entry.bytes;
+            while (remaining > 0) {
+                checkpoint();
+                source.verify();
+                const auto bytes = source.device().read(qMin(remaining, BufferSize));
+                if (bytes.isEmpty())
+                    throw Error(ExitCode::Disk, QStringLiteral("完成文件重读失败"), "completion");
+                digest.addData(bytes);
+                remaining -= bytes.size();
+            }
+            source.verify();
+            if (digest.result() != entry.sha256)
+                throw Error(ExitCode::Integrity, QStringLiteral("已完成文件正文已变化"),
+                            "completion");
+        }
+        if (verified)
+            verified(id, target);
+    }
+    QSqlQuery totals(snapshot.database());
+    totals.prepare("SELECT (SELECT COUNT(*) FROM files),(SELECT COUNT(*) FROM directories)");
+    readCompleted(totals);
+    if (!totals.next() || totals.value(0).toULongLong() != count - directories ||
+        totals.value(1).toULongLong() != directories)
+        throw Error(ExitCode::Integrity, QStringLiteral("完成接收存在额外或缺失项"), "completion");
+    checkpoint();
 }
 
 // 日期：2026-11-04；析构先关原生文件再关日志；所有未提交文件保留供同任务恢复。

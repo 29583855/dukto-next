@@ -111,7 +111,7 @@ def recovery_case(executable, root, server, client, shared, channels, conflict):
                             database.execute("UPDATE files SET spec=? WHERE id=?", (json.dumps(spec).encode(), last))
                         database.commit()
                 error = transfer(executable, client, operation, 6)
-                assert error["stage"] in ("items", "disposition"), error
+                assert error["stage"] in ("items", "disposition", "manifest", "completion"), error
                 assert count_rows(ledger) < last
                 attacks.append({"attack": attack, "refused": True, "recordedEntries": count_rows(ledger)})
             finally:

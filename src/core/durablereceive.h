@@ -22,6 +22,11 @@ class DurableReceive final {
                    const std::function<void()> &check = {});
     // 日期：2026-11-04；关闭接收句柄与 SQLite 连接，保留临时数据和已同步检查点用于恢复。
     ~DurableReceive();
+    // 日期：2026-11-06；只读重验完整接收日志、原生身份和当前正文；证据缺失绝不补建。
+    static void verifyCompleted(PrivateStore &store, const QString &name, const QUuid &task,
+                                StrongManifest &manifest, const QString &root,
+                                ConflictPolicy conflict, const std::function<void()> &check = {},
+                                const std::function<void(quint64, const QString &)> &verified = {});
     DurableReceive(const DurableReceive &) = delete;
     DurableReceive &operator=(const DurableReceive &) = delete;
     struct Preparation {

@@ -151,6 +151,92 @@ int crashWorker(const QString &root, const QString &mode) {
 class DurableReceiveTests final : public QObject {
     Q_OBJECT
   private slots:
+    // 日期：2026-11-06；核验以原接收日志和原生对象为准，不接受同名、同长度或同内容的外部替换。
+    void completedReadOnlyVerification() {
+        QTemporaryDir root;
+        fixture(root.path());
+        dukto::PrivateStore store(root.filePath("private"));
+        dukto::StrongManifest manifest(store, "source.sqlite", false);
+        {
+            dukto::DurableReceive receiver(store, "receive.sqlite", Task, manifest,
+                                           root.filePath("output"));
+            receiver.open(1, "sample.bin");
+            transmit(receiver, 0);
+            QCOMPARE(receiver.finish(), QString("sample.bin"));
+        }
+        const auto journal = root.filePath("private/receive.sqlite");
+        const auto output = root.filePath("output/sample.bin");
+        const auto before = dukto::hashFile(journal);
+        int checks = 0;
+        QString verified;
+        dukto::DurableReceive::verifyCompleted(
+            store, "receive.sqlite", Task, manifest, root.filePath("output"),
+            dukto::ConflictPolicy::Rename,
+            [&]() {
+                // 日期：2026-11-06；正文重读必须每个固定缓冲调用检查，不能只检查每个文件。
+                ++checks;
+            },
+            [&](quint64 id, const QString &target) {
+                // 日期：2026-11-06；观察者只收到已经核对的实际发布路径。
+                QCOMPARE(id, quint64(1));
+                verified = target;
+            });
+        QVERIFY(checks > SampleBytes / dukto::BufferSize);
+        QCOMPARE(verified, QString("sample.bin"));
+        QCOMPARE(dukto::hashFile(journal), before);
+        {
+            QFile damaged(output);
+            QVERIFY(damaged.open(QIODevice::ReadWrite));
+            QCOMPARE(damaged.write("!", 1), qint64(1));
+        }
+        QVERIFY_EXCEPTION_THROWN(dukto::DurableReceive::verifyCompleted(
+                                     store, "receive.sqlite", Task, manifest,
+                                     root.filePath("output"), dukto::ConflictPolicy::Rename),
+                                 dukto::Error);
+        {
+            QFile restored(output);
+            QVERIFY(restored.open(QIODevice::ReadWrite));
+            QCOMPARE(restored.write(sample(0, 1)), qint64(1));
+        }
+        dukto::DurableReceive::verifyCompleted(store, "receive.sqlite", Task, manifest,
+                                               root.filePath("output"),
+                                               dukto::ConflictPolicy::Rename);
+        const auto saved = root.filePath("output/original.bin");
+        QVERIFY(QFile::rename(output, saved));
+        QVERIFY(QFile::copy(saved, output));
+        QCOMPARE(dukto::hashFile(output), manifest.entry(1).sha256);
+        QVERIFY_EXCEPTION_THROWN(dukto::DurableReceive::verifyCompleted(
+                                     store, "receive.sqlite", Task, manifest,
+                                     root.filePath("output"), dukto::ConflictPolicy::Rename),
+                                 dukto::Error);
+        QVERIFY(QFile::remove(output));
+        QVERIFY(QFile::rename(saved, output));
+        QVERIFY(QFile::rename(journal, journal + ".hidden"));
+        QVERIFY_EXCEPTION_THROWN(dukto::DurableReceive::verifyCompleted(
+                                     store, "receive.sqlite", Task, manifest,
+                                     root.filePath("output"), dukto::ConflictPolicy::Rename),
+                                 dukto::Error);
+        QVERIFY(!QFile::exists(journal));
+        QVERIFY(QFile::rename(journal + ".hidden", journal));
+        QCOMPARE(dukto::hashFile(journal), before);
+        const auto connections = QSqlDatabase::connectionNames().size();
+        for (int iteration = 0; iteration < 8; ++iteration) {
+            int checkpoints = 0;
+            QVERIFY_EXCEPTION_THROWN(dukto::DurableReceive::verifyCompleted(
+                                         store, "receive.sqlite", Task, manifest,
+                                         root.filePath("output"), dukto::ConflictPolicy::Rename,
+                                         [&]() {
+                                             // 日期：2026-11-06；实际进入正文读取后取消，验证异常退栈不遗留数据库连接。
+                                             if (++checkpoints >= 5)
+                                                 throw dukto::Error(dukto::ExitCode::Cancelled,
+                                                                    "cancelled", "test");
+                                         }),
+                                     dukto::Error);
+        }
+        QCOMPARE(QSqlDatabase::connectionNames().size(), connections);
+        QCOMPARE(dukto::hashFile(journal), before);
+    }
+
     // 日期：2026-11-05；取消、网络与批次授权不归因到文件；冲突及恢复后再次校验失败均保留。
     void itemFailureRecoveryAndScopes() {
         QTemporaryDir root;

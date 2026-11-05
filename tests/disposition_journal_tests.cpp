@@ -48,6 +48,34 @@ bool alter(const QString &path, const QString &statement) {
 class DispositionJournalTests final : public QObject {
     Q_OBJECT
   private slots:
+    // 日期：2026-11-06；核验只读重开原日志，拒绝追加和缺库，正文与持久头字节保持不变。
+    void explicitReadOnlyHistory() {
+        QTemporaryDir temporary;
+        dukto::PrivateStore store(temporary.filePath("private"), true);
+        dukto::StrongManifest manifest(store, "manifest.sqlite", true);
+        sample(manifest);
+        const auto task = QUuid::createUuid();
+        QJsonObject expected;
+        {
+            dukto::DispositionJournal journal(store, "result.sqlite", task, manifest, "rename");
+            for (quint64 id = 1; id <= 5; ++id)
+                journal.append(id, manifest.entry(id).relative, "copied");
+            expected = journal.summary();
+        }
+        const auto before = dukto::hashFile(temporary.filePath("private/result.sqlite"));
+        {
+            dukto::DispositionJournal journal(store, "result.sqlite", task, manifest, "rename", {},
+                                              true);
+            QCOMPARE(journal.summary(), expected);
+            QVERIFY_EXCEPTION_THROWN(journal.append(1, "bundle", "copied"), dukto::Error);
+        }
+        QCOMPARE(dukto::hashFile(temporary.filePath("private/result.sqlite")), before);
+        QVERIFY_EXCEPTION_THROWN(
+            dukto::DispositionJournal(store, "missing.sqlite", task, manifest, "rename", {}, true),
+            dukto::Error);
+        QVERIFY(!store.exists("missing.sqlite"));
+    }
+
     // 日期：2026-11-05；历史结果重启后完全相同，跳过字节与复制字节分开，未完成不能生成最终汇总。
     void restartAndIndependentSummary() {
         QTemporaryDir temporary;

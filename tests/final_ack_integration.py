@@ -214,17 +214,15 @@ def main():
                                                      proxy.task, destination, args.on_conflict, sender=True)
                             assert rebuilt["records"] == journal["records"]
                         if args.on_conflict == "overwrite":
-                            # 日期：2026-11-05；完成后用户独立替换inode，再次重试必须保留后来文件；下载按原日志明确拒绝。
+                            # 日期：2026-11-06；上传和下载均拒绝被后来替换的目标，保留用户文件和原历史终态。
                             replacement = destination / "later-user-edit.tmp"
                             replacement.write_bytes(b"later independent user replacement")
                             later_sha = digest(replacement)
                             os.replace(replacement, final)
-                            later = transfer(executable, client, arguments, 6 if direction == "download" else 0)
-                            assert digest(final) == later_sha
-                            if direction == "upload":
-                                assert later["taskId"] == proxy.task and later["state"] == "completed"
-                            else:
-                                assert later["code"] == 6, later
+                            later = transfer(executable, client, arguments, 6)
+                            assert digest(final) == later_sha and later["code"] == 6, later
+                            unchanged, _ = run(executable, client, ["task", "--task", proxy.task])
+                            assert unchanged == status, (unchanged, status)
                             assert [path.name for path in destination.iterdir() if not path.name.startswith(".")] == ["source.bin"]
                         cases.append({"direction": direction, "channels": channels, "taskId": proxy.task, "requestId": request,
                                       "droppedEncryptedBytes": proxy.dropped_bytes,
