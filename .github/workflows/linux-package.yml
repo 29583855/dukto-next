@@ -1,0 +1,79 @@
+name: Native Linux glibc deployed preview
+on:
+  workflow_dispatch:
+
+jobs:
+  package:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      # 日期：2026-11-05；独立安装发行版签名依赖及两种虚拟显示服务，实际桌面/干净系统仍另验。
+      - name: Install Qt5 native build and display dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake ninja-build libssl-dev qtbase5-dev qtdeclarative5-dev qtquickcontrols2-5-dev libqt5sql5-sqlite qml-module-qtquick-controls2 qml-module-qtquick-layouts qml-module-qtquick-window2 qml-module-qtquick2 qml-module-qtqml qml-module-qtqml-models2 qml-module-qtqml-workerscript2 qml-module-qtgraphicaleffects qtwayland5 fonts-wqy-zenhei xvfb xauth weston libegl1 libegl-mesa0 libgl1-mesa-dri libglx-mesa0
+          python -m pip install psutil
+          mkdir -p build
+          { uname -a; lscpu; c++ --version; cmake --version; qmake -query; openssl version -a; weston --version; } > build/linux-environment.log 2>&1
+          dpkg-query -W > build/distribution-packages.txt
+          git rev-parse HEAD > build/source-commit.txt
+          git ls-files -z | xargs -0 sha256sum > build/source-before.sha256
+      - name: Configure C++14 GUI CLI and validation
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+      - name: Compile native application and validation targets
+        run: cmake --build build --parallel 2
+      - name: Core and GUI controller tests
+        env:
+          QT_QPA_PLATFORM: offscreen
+          QT_QUICK_BACKEND: software
+        run: ctest --test-dir build --output-on-failure --output-log build/ctest.log
+      - name: Deploy native glibc preview
+        id: deploy
+        run: |
+          sha256sum build/dukto-cli build/dukto-gui > build/input-binaries.sha256
+          python -X utf8 scripts/package_linux.py --output package-output
+          sha256sum --check build/input-binaries.sha256 > build/input-binaries-after-check.log
+      # 日期：2026-11-05；实际 tar 分别迁移到中文空格路径，保留原90秒门槛和严格模块/标准错误检查。
+      - name: Validate relocated X11 preview
+        if: ${{ !cancelled() && steps.deploy.outcome == 'success' }}
+        run: xvfb-run -a python -X utf8 tests/linux_package_integration.py package-output/DuktoNext-linux-glibc-x64-preview.tar.gz --platform xcb --report build/package-x11.json
+      - name: Validate relocated Wayland preview
+        if: ${{ !cancelled() && steps.deploy.outcome == 'success' }}
+        shell: bash
+        run: |
+          export XDG_RUNTIME_DIR="$RUNNER_TEMP/dukto-package-wayland"
+          mkdir -p "$XDG_RUNTIME_DIR"
+          chmod 700 "$XDG_RUNTIME_DIR"
+          weston --backend=headless-backend.so --use-pixman --socket=dukto-package --idle-time=0 --width=1280 --height=900 > build/weston.log 2>&1 &
+          weston_pid=$!
+          trap 'kill "$weston_pid" 2>/dev/null || :' EXIT
+          for attempt in $(seq 1 100); do
+            test -S "$XDG_RUNTIME_DIR/dukto-package" && break
+            kill -0 "$weston_pid"
+            sleep 0.1
+          done
+          test -S "$XDG_RUNTIME_DIR/dukto-package"
+          WAYLAND_DISPLAY=dukto-package python -X utf8 tests/linux_package_integration.py package-output/DuktoNext-linux-glibc-x64-preview.tar.gz --platform wayland --report build/package-wayland.json
+      - name: Verify original source input identity
+        if: always()
+        run: |
+          sha256sum --check build/source-before.sha256 > build/source-after-check.log
+          git diff --exit-code
+      - name: Preserve actual package and all deployment evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-glibc-preview-X64
+          path: |
+            package-output/*.tar.gz
+            package-output/SHA256SUMS
+            build/*.log
+            build/*.txt
+            build/*.json
+            build/*.sha256
+            build/*.png
+            build/Testing/Temporary/*
+            build/Testing/QtTest/*

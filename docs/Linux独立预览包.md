@@ -60,3 +60,6 @@ r7归档已生成，SHA c4212ec28875737815d64c2b0ed0ac20ebf7ed37eca500dd7b5d7284
 ## v0.28 同包独立复验（2026-11-05）
 
 同一 r7 tar（SHA c4212ec28875737815d64c2b0ed0ac20ebf7ed37eca500dd7b5d7284a11e6ab3）在前置驱动退出归档后[实际独立复验](validation/2026-11-05/linux-glibc-package-runtime-recheck-r4/driver-result.json)通过。[X11](validation/2026-11-05/linux-glibc-package-runtime-recheck-r4/results/x11.json)与 [Wayland](validation/2026-11-05/linux-glibc-package-runtime-recheck-r4/results/wayland.json)各核对 705 清单文件、真实 GUI/装饰/依赖来源/空标准错误和原 90 秒 16 通道业务，截图已检查，runtimeChecksPassed/transferChecksPassed/passed 均 true。原负载下超时保留，此结果不证明超时原因已修复。包仍含旧 160 生产二进制，早于新重试和 fail；干净系统/正式发布及最新源码包仍未验收。
+
+
+v0.42当前1842009生产代码的独立原生CPU打包工作流linux-package.yml已接入，使用Ubuntu24.04/C++14/Qt5，先执行19项核心测试，再生成真实tar并分别在Xvfb和Weston会话迁移验证。包清单增加精确Git提交和原始GUI/CLI摘要；仅记录元数据，不改变应用代码。实际结果、摘要和下载地址待运行完成后填写。旧r7包及原失败不替换、不冒充新构建。

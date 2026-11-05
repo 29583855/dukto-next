@@ -156,7 +156,9 @@ def main():
     files = [{"path": path.relative_to(stage).as_posix(), "bytes": path.stat().st_size, "sha256": sha256(path)}
              for path in sorted(stage.rglob("*")) if path.is_file()]
     report = {"date": datetime.now(timezone.utc).isoformat(), "kind": "development-preview", "releaseQualified": False,
-              "platform": "linux-x86_64-glibc", "buildGlibc": checked(["getconf", "GNU_LIBC_VERSION"]).strip(),
+              "platform": "linux-x86_64-glibc", "sourceCommit": os.environ.get("GITHUB_SHA"),
+              "inputCliSha256": sha256(build / "dukto-cli"), "inputGuiSha256": sha256(build / "dukto-gui"),
+              "buildGlibc": checked(["getconf", "GNU_LIBC_VERSION"]).strip(),
               "distribution": Path("/etc/os-release").read_text(encoding="utf-8"), "files": files,
               "dependencyFiles": provenance, "elfDependencies": dependencies, "hostSystemLibraries": sorted(system),
               "qmlImports": imports, "sourceFiles": sources, "libraryAliases": aliases,
