@@ -8,6 +8,8 @@
 
 公开仓库为[29583855/dukto-next](https://github.com/29583855/dukto-next)。74dd5ce共用源码已上传，[双架构Mac实际包](https://github.com/29583855/dukto-next/actions/runs/42066089117)编译/部署/迁移全部成功，当前[下载与SHA](docs/macOS独立预览包.md)已更新，GUI与独立CLI含Qt5/OpenSSL依赖。五种原生环境各21核心、[四runner150协议](https://github.com/29583855/dukto-next/actions/runs/42065923177)及[Alpine37协议](https://github.com/29583855/dukto-next/actions/runs/42066082958)原报告摘要全部核验，各229份内附应用源码匹配精确Git树。Linux/Windows当前已验部署包仍为31f3db3。Mac仍为adhoc开发预览，公开skip、完整主计划和正式签名/公证继续，见[公开核验回执](docs/ci-verification-20261106-r60.json)、[构建摘要](docs/构建验证摘要.md)和[验证索引](docs/current-validation.json)。
 
+新增[b9d9b78上传发送端确认](docs/decisions/0022-上传发送端持久处置与证据恢复.md)已通过Windows双工具链各21核心及真实缺项/确认丢失/故障恢复专项；本轮原生CI与双Mac部署仍运行，尚未替换上述已验包。首轮Windows覆盖错误5保留为未确认根因，详见主计划v0.61。
+
 ## 文档入口
 
 | 文档 | 用途 |

@@ -1,7 +1,7 @@
 {
-  "observedUtc": "2026-11-05T17:24:19.961485+00:00",
-  "productionCommit": "74dd5cec71fde472b940e869661d6e8533042a65",
-  "testCommit": "74dd5cec71fde472b940e869661d6e8533042a65",
+  "observedUtc": "2026-11-05T17:50:39.721365+00:00",
+  "productionCommit": "b9d9b78cf48a866e9b3449bd722578a94af005dc",
+  "testCommit": "b9d9b78cf48a866e9b3449bd722578a94af005dc",
   "packages": [
     {
       "architecture": "arm64",
@@ -51,20 +51,16 @@
   "focusedRunUrl": "https://github.com/29583855/dukto-next/actions/runs/42036473915",
   "focusedWorkflowConclusion": "success",
   "nativeFull": {
-    "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42065923177",
-    "sourceCommit": "74dd5cec71fde472b940e869661d6e8533042a65",
-    "workflowConclusion": "success",
-    "fourCoreStepsPassed": true,
-    "fullProtocolPending": false,
-    "expectedProtocolCasesTotal": 150,
-    "allProtocolReportHashesVerified": true,
-    "coreTargetsEach": 21,
-    "protocolCasesTotal": 150,
-    "allFourFullJobsPassed": true,
-    "pendingPlatforms": [],
-    "evidence": "docs/ci-verification-20261106-r60.json"
+    "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42078226601",
+    "sourceCommit": "b9d9b78cf48a866e9b3449bd722578a94af005dc",
+    "workflowConclusion": null,
+    "status": "in_progress",
+    "fullProtocolPending": true,
+    "expectedProtocolCasesTotal": 154,
+    "expectedCoreTargetsEach": 21,
+    "allProtocolReportHashesVerified": false
   },
-  "nativeMuslRunUrl": "https://github.com/29583855/dukto-next/actions/runs/42066082958",
+  "nativeMuslRunUrl": "https://github.com/29583855/dukto-next/actions/runs/42078314092",
   "originalFailureRunsRetained": [
     42028894157,
     42030418070,
@@ -74,18 +70,16 @@
   ],
   "releaseQualified": false,
   "deliveryComplete": false,
-  "planVersion": "v0.60",
-  "currentSourceStage": "dual macOS packages delivered; five native core suites and full 150 plus musl 37 protocols verified; product-wide qualification remains open",
+  "planVersion": "v0.61",
+  "currentSourceStage": "upload sender historical receipts persisted and recovered from paged receiver evidence; Windows local checks complete, current native and Mac package CI in progress",
   "nativeMusl": {
-    "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42066082958",
-    "sourceCommit": "74dd5cec71fde472b940e869661d6e8533042a65",
-    "workflowConclusion": "success",
+    "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42078314092",
+    "sourceCommit": "b9d9b78cf48a866e9b3449bd722578a94af005dc",
+    "workflowConclusion": null,
+    "status": "in_progress",
+    "expectedProtocolCases": 38,
     "expectedCoreTargets": 21,
-    "expectedProtocolCases": 37,
-    "allProtocolReportHashesVerified": true,
-    "coreTargets": 21,
-    "protocolCases": 37,
-    "evidence": "docs/ci-verification-20261106-r60.json"
+    "allProtocolReportHashesVerified": false
   },
   "apfsCleanupR54": {
     "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42039126426",
@@ -394,11 +388,11 @@
     "evidence": "docs/validation/2026-11-06/late-skip-r58-musl-terminal-summary.json"
   },
   "macOSPreviewPending": {
-    "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42066089117",
-    "sourceCommit": "74dd5cec71fde472b940e869661d6e8533042a65",
-    "workflowConclusion": "success",
-    "bothArchitecturesVerified": true,
-    "pending": false
+    "sourceCommit": "b9d9b78cf48a866e9b3449bd722578a94af005dc",
+    "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42078319293",
+    "status": "in_progress",
+    "workflowConclusion": null,
+    "packagesVerified": false
   },
   "copiedDispositionIntegration": {
     "sourceCommit": "74dd5cec71fde472b940e869661d6e8533042a65",
@@ -458,5 +452,51 @@
       "sourceCommit": "31f3db3bfb5a8bf70b6217afd50df3284e27934c"
     }
   ],
-  "publicVerificationReceipt": "docs/ci-verification-20261106-r60.json"
+  "publicVerificationReceipt": "docs/ci-verification-20261106-r60.json",
+  "lastVerifiedCopiedFull": {
+    "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42065923177",
+    "sourceCommit": "74dd5cec71fde472b940e869661d6e8533042a65",
+    "workflowConclusion": "success",
+    "fourCoreStepsPassed": true,
+    "fullProtocolPending": false,
+    "expectedProtocolCasesTotal": 150,
+    "allProtocolReportHashesVerified": true,
+    "coreTargetsEach": 21,
+    "protocolCasesTotal": 150,
+    "allFourFullJobsPassed": true,
+    "pendingPlatforms": [],
+    "evidence": "docs/ci-verification-20261106-r60.json"
+  },
+  "lastVerifiedCopiedMusl": {
+    "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42066082958",
+    "sourceCommit": "74dd5cec71fde472b940e869661d6e8533042a65",
+    "workflowConclusion": "success",
+    "expectedCoreTargets": 21,
+    "expectedProtocolCases": 37,
+    "allProtocolReportHashesVerified": true,
+    "coreTargets": 21,
+    "protocolCases": 37,
+    "evidence": "docs/ci-verification-20261106-r60.json"
+  },
+  "uploadSenderDisposition": {
+    "sourceCommit": "b9d9b78cf48a866e9b3449bd722578a94af005dc",
+    "localFeatureChecksPassed": true,
+    "allObservedRunsPassed": false,
+    "toolchains": [
+      "UCRT",
+      "MSVC"
+    ],
+    "coreTargetsEach": 21,
+    "effectiveProtocolReportsEach": 6,
+    "pagedRecoveryCasesEach": 3,
+    "entriesPerRecoveryCase": 206,
+    "malformedEvidenceCasesEach": 5,
+    "localClientUpload": true,
+    "wireSummaryExchange": false,
+    "publicSkipImplemented": false,
+    "historicalAcknowledgementsOnly": true,
+    "currentRemoteContentReverified": false,
+    "firstUcrtOverwriteError5RootCauseConfirmed": false,
+    "evidence": "docs/validation/2026-11-06/upload-r61-windows/summary.json"
+  }
 }
