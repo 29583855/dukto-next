@@ -1,6 +1,6 @@
 # macOS 构建与验收
 
-更新日期：2026-11-06。精确74dd5ce已上传，[双Mac包](https://github.com/29583855/dukto-next/actions/runs/42066089117)和[四runner完整CI](https://github.com/29583855/dukto-next/actions/runs/42065923177)全部success。Intel/Apple Silicon各21核心及37协议原报告SHA核验；GUI与独立CLI实际部署/迁移、各五份业务报告和229份应用源码全集核验通过。[当前下载与SHA](macOS独立预览包.md)和[公开核验回执](ci-verification-20261106-r60.json)已更新。Qt5/OpenSSL由CI自行安装，adhoc预览不代表Developer ID签名、公证或完整交付完成。
+更新日期：2026-11-06。精确3fbec42已上传，[双Mac包42083741936](https://github.com/29583855/dukto-next/actions/runs/42083741936)整体success；Intel/Apple Silicon GUI及独立CLI实际编译、依赖部署、迁移运行通过。每包234份应用源码、全部载荷/链接、五份业务原报告SHA及原生截图已核验。[下载与SHA](macOS独立预览包.md)已切换，Qt5/OpenSSL由CI自行安装；完整原生协议矩阵继续核验，adhoc包不代表正式发布完成。
 
 ## 运行环境
 
@@ -254,3 +254,12 @@ v0.48字形终态补记：732b58d四runner各19核心通过；双Mac Cocoa/150%/
 - [x] d2a5359的四runner最终原报告补齐，按旧提交Windows38/POSIX36合计146项核验，不能误用新增专项后的150项门槛。历史失败、原日志、Qt头像既有警告及首轮尚未证实根因的两项观察保留。
 - [x] 新包和GitHub原ZIP持久归档于dist/macos-preview-20261106-r59-dispositions；[公开核验回执](ci-verification-20261106-r60.json)、验证索引、README和Mac说明已同步更新。文档保持原UTF-8/BOM/换行，本轮未修改生产代码；r59的176文件无TODO/占位标记结论仍仅限原审计范围。
 - [ ] Mac仍为adhoc开发预览；Developer ID签名/公证、干净系统、完整对应依赖源码及独立重建继续。公开skip、客户机上传发送处置、对等摘要、R6完整策略、预算/GC、原版全交互/原生选择器、物理LAN提速/3×3及当前全平台24h仍未全部完成。冻结旧长测输入保持不变，deliveryComplete=false。
+
+
+### v0.63 精确3fbec42双Mac包交付（2026-11-06）
+
+- [x] 授权公开仓库29583855/dukto-next已上传共用C++14/Qt5源码；[双架构打包42083741936](https://github.com/29583855/dukto-next/actions/runs/42083741936)整体与两job均success。CI自行安装Qt5/OpenSSL，Intel与Apple Silicon实际编译GUI/独立CLI、部署依赖并迁移运行。[下载与SHA](macOS独立预览包.md)现指向精确3fbec42。
+- [x] 每包234份应用源码与精确Git树全集逐字节一致；arm64的1547份、Intel的1705份载荷和各71框架链接、Mach-O架构、执行位及adhoc签名核验。各五份业务原报告按父SHA逐份核验：独立CLI、16通道双向、1/4/16覆盖、覆盖恢复及4→8恢复。两种架构的真实首次说明主窗口与Cocoa服务器页共四张截图已查看，中文和控件可见。
+- [x] 原ZIP、tar.gz及BUILD-RECEIPT已保存在dist/macos-preview-20261106-r62-overwrite；[公开回执](ci-verification-20261106-r63.json)、当前索引和下载文档同步。旧包、历史失败及原文件编码/BOM/换行保留。
+- [ ] 同源码四runner42083656124和Alpine42083735291的终态及全部协议原报告继续核验；门槛为各21核心、Windows41/POSIX38、四runner155和Alpine38。独立包通过不代替完整矩阵通过。
+- [ ] adhoc开发预览不代表正式发布；完整部署GUI/原生选择器、公开skip/对等摘要、服务器历史文件重验、R6完整策略、预算/GC、物理LAN提速/3×3、当前全平台24h、依赖源码重建、干净系统和签名/公证按主计划继续，deliveryComplete=false、releaseQualified=false。
