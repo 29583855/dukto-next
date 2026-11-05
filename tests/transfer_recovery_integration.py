@@ -17,6 +17,7 @@ import time
 import uuid
 
 from service_integration import free_port, run
+from disposition_transfer_integration import verify_journal
 from checkpoint_gate import CheckpointGate
 from proxy_pacing import ProxyPacer
 from process_output import JsonOutputDrain
@@ -374,12 +375,19 @@ def main():
                         assert {path.name for path in final.iterdir()} == set(expected_files) | {"empty", "空目录"} | extra
                         if extra:
                             assert (final / "unrelated").read_bytes() == b"keep-unrelated"
+                    # 日期：2026-11-06；暂停或进程故障恢复后仍按冻结顺序完成，双端日志与实际目标逐项一致。
+                    outcomes = verify_journal(server_state / "service", f"manifest-{task}.sqlite", task,
+                                              final.parent, args.on_conflict)
+                    if direction == "download":
+                        local_outcomes = verify_journal(client_state / "transfers", f"download-{task}.sqlite", task,
+                                                        final.parent, args.on_conflict)
+                        assert local_outcomes["records"] == outcomes["records"]
                     assert len(list(final.parent.iterdir())) == 1
                     status, _ = run(executable, client_state, ["task", "--task", task])
                     assert status["state"] == "completed" and not status["executionActive"]
                 cases.append({"direction": direction, "fault": fault, "confirmedBeforeFault": prefix,
                               "checkpointBarrier": barrier, "finalState": status["state"],
-                              "resumeSeconds": resume_seconds, "passed": True})
+                              "resumeSeconds": resume_seconds, "dispositionJournalVerified": fault != "cancel", "passed": True})
                 print(f"{direction}/{fault}: passed", flush=True)
             # 日期：2026-11-04；另一个真实配对主体不能查询已知的任务 UUID，撤权也阻止原主体查询。
             other_offer, _ = run(executable, server_state, ["serve", "pairing", "--share", "data", "--allow-download"])

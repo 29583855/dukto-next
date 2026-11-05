@@ -1,4 +1,5 @@
 #include "transferservice.h"
+#include "dispositionjournal.h"
 #include "error.h"
 #include "fileexchange.h"
 #include "files.h"
@@ -302,6 +303,9 @@ void serveTransfer(next::SecureChannel &channel, PrivateStore &store, const Prin
                                                   *manifest, upload, admission->lanes(), admission);
             channel.write(next::Type::ChannelTicket, correlation, data->ticket());
         }
+        // 日期：2026-11-06；单/多通道实际完成按清单顺序持久化，未完成或失败项不能补成copied。
+        DispositionJournal outcomes(store, "disposition-" + key + ".sqlite", task.id, *manifest,
+                                    conflictPolicyName(task.conflict), work);
         qint64 processed = 0;
         qint64 completedBytes = 0;
         const auto record = [&](qint64 confirmed) {
@@ -317,7 +321,9 @@ void serveTransfer(next::SecureChannel &channel, PrivateStore &store, const Prin
                                    // 日期：2026-11-05；单线程限频快照同步任务查询，不增加逐片段数据库事务。
                                    record(value["bytes"].toString().toLongLong());
                                });
-        const auto completed = [&](const StrongEntry &entry, const QString &) {
+        const auto completed = [&](const StrongEntry &entry, const QString &path) {
+            // 日期：2026-11-06；当前公开三种策略均为copied；skip仍拒绝，后续须协商显式处置。
+            outcomes.append(entry.id, path, "copied");
             // 日期：2026-11-05；文件完成与跨文件已确认块取较大值，避免多文件窗口完成时进度回退。
             completedBytes += entry.bytes;
             record(completedBytes);
@@ -337,6 +343,8 @@ void serveTransfer(next::SecureChannel &channel, PrivateStore &store, const Prin
             else
                 sendStrongTree(channel, task.id, *manifest, correlation, work, completed);
         }
+        // 日期：2026-11-06；最终任务状态之前完整重验，不能用字节进度相等代替逐项完成。
+        outcomes.summary(true, work);
         work();
         const auto latest = tasks.task(principal.client, task.id);
         task = tasks.advance(*lease, latest.revision, "verifying", processed);

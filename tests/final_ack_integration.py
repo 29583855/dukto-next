@@ -15,6 +15,7 @@ import time
 import uuid
 
 from service_integration import free_port, run
+from disposition_transfer_integration import verify_journal
 from transfer_integration import digest, transfer
 from transfer_recovery_integration import SlowProxy, TransferProcess
 from transfer_faults_integration import failure
@@ -173,6 +174,18 @@ def main():
                             assert "conflict" not in status, status
                         assert digest(final) == expected
                         assert digest(original) == (expected if args.on_conflict == "overwrite" else original_sha)
+                        # 日期：2026-11-06；最终确认丢失时实际接收已完成，双端处置必须与目标和清单相符。
+                        journal = verify_journal(state / "service", f"manifest-{proxy.task}.sqlite", proxy.task,
+                                                 destination, args.on_conflict)
+                        legacy_rebuilt = direction == "download" and channels == 4 and args.auto_retries == 0
+                        if direction == "download":
+                            local = verify_journal(client / "transfers", f"download-{proxy.task}.sqlite", proxy.task,
+                                                   destination, args.on_conflict)
+                            assert local["records"] == journal["records"]
+                            if legacy_rebuilt:
+                                # 日期：2026-11-06；移动本测试私有日志模拟旧版已完成任务，重试须按实际接收证据补齐。
+                                receipt = client / "transfers" / f"disposition-{proxy.task}.sqlite"
+                                receipt.rename(root / f"saved-disposition-{proxy.task}.sqlite")
                         result = transfer(executable, client, arguments)
                         assert result["taskId"] == proxy.task and result["requestId"] == request
                         assert result["state"] == "completed"
@@ -184,6 +197,13 @@ def main():
                         assert sorted(path.name for path in destination.iterdir() if not path.name.startswith(".")) == expected_names
                         assert digest(final) == expected
                         assert digest(original) == (expected if args.on_conflict == "overwrite" else original_sha)
+                        after = verify_journal(state / "service", f"manifest-{proxy.task}.sqlite", proxy.task,
+                                               destination, args.on_conflict)
+                        assert after == journal
+                        if direction == "download":
+                            rebuilt = verify_journal(client / "transfers", f"download-{proxy.task}.sqlite", proxy.task,
+                                                     destination, args.on_conflict)
+                            assert rebuilt["records"] == journal["records"]
                         if args.on_conflict == "overwrite":
                             # 日期：2026-11-05；完成后用户独立替换inode，再次重试必须保留后来文件；下载按原日志明确拒绝。
                             replacement = destination / "later-user-edit.tmp"
@@ -200,6 +220,7 @@ def main():
                         cases.append({"direction": direction, "channels": channels, "taskId": proxy.task, "requestId": request,
                                       "droppedEncryptedBytes": proxy.dropped_bytes,
                                       "serverCompletedBeforeDrop": proxy.completed_snapshot, "clientFirstError": error,
+                                      "dispositionJournalVerified": True, "legacyDownloadJournalRebuilt": legacy_rebuilt,
                                       "automaticRetries": args.auto_retries, "retrySameTask": True, "sha256": expected, "originalPreserved": args.on_conflict == "rename", "originalReplaced": args.on_conflict == "overwrite", "noDuplicateCopy": True, "laterUserReplacementProtected": args.on_conflict == "overwrite"})
                         print(key + ": final confirmation lost; same task retry verified", flush=True)
             finally:

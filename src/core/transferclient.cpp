@@ -1,3 +1,4 @@
+#include "dispositionjournal.h"
 #include "error.h"
 #include "fileexchange.h"
 #include "files.h"
@@ -157,18 +158,24 @@ void verifyLocalDownload(PrivateStore &local, const QUuid &id, const QString &de
         if (cancel && cancel->load())
             throw Error(ExitCode::Cancelled, QStringLiteral("本地下载校验已取消"), "transfer");
     };
+    // 日期：2026-11-06；确认丢失恢复逐项重验后补齐历史处置；已有不一致日志不能改写。
+    DispositionJournal outcomes(local, "disposition-" + key + ".sqlite", id, manifest,
+                                conflictPolicyName(conflict), check);
     const auto count = next::decimal(manifest.summary()["entries"], 10000000);
     for (quint64 file = 1; file <= count; ++file) {
         const auto entry = manifest.entry(file);
-        const auto target = receiver.prepare(file, check);
+        auto target = receiver.prepare(file, check);
         if (!entry.directory) {
             receiver.open(file, target, check);
             if (receiver.state() != "completed")
                 throw Error(ExitCode::Integrity, QStringLiteral("本地下载尚未持久完成"),
                             "transfer");
-            receiver.finish(check);
+            // 日期：2026-11-06；完成日志保存的是实际发布名称，重命名文件不能退回原始预约名称。
+            target = receiver.finish(check);
         }
+        outcomes.append(file, target, "copied");
     }
+    outcomes.summary(true, check);
 }
 } // namespace
 
@@ -455,7 +462,18 @@ QJsonObject RemoteClient::download(const QUuid &requestId, const QString &share,
         progress(ready);
     DurableReceive receiver(local, "receive-" + key + ".sqlite", id, manifest, destination,
                             conflict);
+    // 日期：2026-11-06；本地接收结果先持久化再发布事件；缓存授信及分页不随文件数增长。
+    const auto dispositionCheck = [&]() {
+        // 日期：2026-11-06；本地日志工作仍响应取消；最终帧可已缓存在断开的连接中，连接状态交给协议读取验证。
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 1);
+        if (cancel_ && cancel_->load())
+            throw Error(ExitCode::Cancelled, QStringLiteral("本地处置校验已取消"), "disposition");
+    };
+    DispositionJournal outcomes(local, "disposition-" + key + ".sqlite", id, manifest,
+                                conflictPolicyName(conflict), dispositionCheck);
     const auto completed = [&](const StrongEntry &entry, const QString &path) {
+        // 日期：2026-11-06；当前公开策略均为copied；最终skip须先完成协议协商。
+        outcomes.append(entry.id, path, "copied");
         // 日期：2026-11-04；事件逐条输出，十万文件不会累积成内存中的结果数组。
         if (progress)
             progress({{"taskId", key},
@@ -482,6 +500,8 @@ QJsonObject RemoteClient::download(const QUuid &requestId, const QString &share,
     } else {
         receiveStrongTree(channel_, id, manifest, receiver, correlation_, {}, completed, &meter);
     }
+    // 日期：2026-11-06；本地全部处置完整且匹配冻结清单，才接受远端任务完成为本次成功。
+    outcomes.summary(true, dispositionCheck);
     auto result = completedTask(channel_, correlation_, id, requestId, "download", share, relative,
                                 manifest.summary(), conflict);
     result["channels"] = QString::number(actual);

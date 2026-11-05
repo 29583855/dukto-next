@@ -48,6 +48,8 @@ def commands(build):
     add("conflict-fail", "conflict_fail_integration")
     add("conflict-overwrite", "conflict_overwrite_integration")
     add("task-items", "task_items_integration")
+    # 日期：2026-11-06；真实双向/多通道和失败前缀核验自动处置，不能以独立日志单测代替接线。
+    add("disposition-transfer", "disposition_transfer_integration")
     add("item-failures", "item_failures_integration")
     recovery = ("--threads", "4", "--resume-threads", "8", "--files", "4", "--payload-mib", "8",
                 "--checkpoint-percent", "50")
