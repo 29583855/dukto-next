@@ -187,7 +187,13 @@ def main():
             value = hashlib.sha256(ssl.PEM_cert_to_DER_cert(certificate_text)).hexdigest()
             cases.append((label + "Pinned", label, "localhost", "none", value, "ok", 4, None))
         for name, cert, hostname, ca, value, mode, expected, payload in cases:
-            results[name] = run_client(executable, certs[cert], key, hostname, ca, value, mode, expected, payload)
+            try:
+                results[name] = run_client(executable, certs[cert], key, hostname, ca, value, mode, expected, payload)
+            except BaseException as error:
+                Path(args.report).write_text(json.dumps({"date": "2026-11-05", "passed": False,
+                    "failedCase": name, "failureType": type(error).__name__, "cases": results},
+                    ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+                raise AssertionError("independent TLS case failed: " + name) from error
         results["productionServer"] = server_case(executable, certs["valid"], key)
         identity_dir = root / "generated-identity"
         generated = subprocess.run([executable, "identity", str(identity_dir)], capture_output=True,
