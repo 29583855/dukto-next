@@ -41,6 +41,8 @@ jobs:
           echo "CMAKE_PREFIX_PATH=$(brew --prefix qt@5)" >> "$GITHUB_ENV"
           echo "OPENSSL_ROOT_DIR=$(brew --prefix openssl@3)" >> "$GITHUB_ENV"
           echo "$(brew --prefix qt@5)/bin" >> "$GITHUB_PATH"
+          echo "$(brew --prefix openssl@3)/bin" >> "$GITHUB_PATH"
+          echo "DUKTO_TEST_OPENSSL=$(brew --prefix openssl@3)/bin/openssl" >> "$GITHUB_ENV"
           sudo ifconfig lo0 alias 127.0.0.2
       # 日期：2026-11-05；实际运行时核对 Intel/Apple Silicon 架构，保留 Qt5/TLS/SDK 来源及版本，不以配置代替验收。
       - name: Record native macOS toolchain
@@ -61,6 +63,8 @@ jobs:
             clang++ --version
             cmake --version
             qmake -query
+            command -v openssl
+            openssl version -a
             "$(brew --prefix openssl@3)/bin/openssl" version -a
           } > build/macos-environment.log 2>&1
           brew info --json=v2 qt@5 openssl@3 > build/macos-dependencies.json
@@ -79,6 +83,7 @@ jobs:
       - name: Configure
         run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
       - name: Compile
+        id: compile
         run: cmake --build build --config Release --parallel 4
       # 日期：2026-11-05；原生编译成功即保存实际 GUI/CLI，tar 保留应用链接与可执行权限；运行依赖部署另验。
       - name: Archive macOS compilation outputs
@@ -107,20 +112,22 @@ jobs:
       # 日期：2026-11-05；证书固定适配必须先验证错误指纹/主机名/未信任证书，不能只验证正常服务握手。
       - name: Independent TLS certificate and protocol boundaries
         if: runner.os != 'Windows'
-        run: python3 tests/secure_channel_integration.py build/secure-channel-probe --report build/secure-channel.json
+        run: python3 tests/secure_channel_integration.py build/secure-channel-probe --openssl "${DUKTO_TEST_OPENSSL:-openssl}" --report build/secure-channel.json
+      # 日期：2026-11-05；独立验收互不阻断，任一步失败仍使整个 job 失败；不吞掉 TLS 或界面错误。
       - name: Core and GUI controller tests
+        if: ${{ !cancelled() && steps.compile.outcome == 'success' }}
         env:
           QT_QPA_PLATFORM: offscreen
         run: ctest --test-dir build -C Release --output-on-failure --output-log build/ctest.log
       - name: Native Cocoa GUI render and process recovery
-        if: runner.os == 'macOS'
+        if: ${{ !cancelled() && steps.compile.outcome == 'success' && runner.os == 'macOS' }}
         env:
           QT_QPA_PLATFORM: cocoa
         run: |
           python3 tests/gui_native_render_integration.py build/dukto-gui.app/Contents/MacOS/dukto-gui --platform cocoa --report build/macos-native-render.json
           python3 tests/gui_process_recovery_integration.py build/dukto-cli build/server-panel-process-probe --report build/macos-native-process-recovery.json
       - name: Protocol integration Windows
-        if: runner.os == 'Windows'
+        if: ${{ !cancelled() && steps.compile.outcome == 'success' && runner.os == 'Windows' }}
         run: |
           python -X utf8 tests/legacy_integration.py build/Release/dukto-cli.exe --report build/legacy.json
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
@@ -177,7 +184,7 @@ jobs:
           python -X utf8 tests/secure_channel_integration.py build/Release/secure-channel-probe.exe --openssl .tools/openssl/Library/bin/openssl.exe --report build/secure-channel.json
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Protocol integration Unix
-        if: runner.os != 'Windows'
+        if: ${{ !cancelled() && steps.compile.outcome == 'success' && runner.os != 'Windows' }}
         run: |
           python3 tests/legacy_integration.py build/dukto-cli --report build/legacy.json
           python3 tests/cli_contracts.py build/dukto-cli --report build/cli.json
