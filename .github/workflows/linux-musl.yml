@@ -1,0 +1,85 @@
+name: Native CPU Alpine musl validation
+on:
+  workflow_dispatch:
+
+jobs:
+  musl:
+    runs-on: ubuntu-22.04
+    env:
+      DUKTO_MUSL_IMAGE: dukto-musl-validation
+      DUKTO_MUSL_WORK: ${{ runner.temp }}/dukto-musl-validation
+    steps:
+      - uses: actions/checkout@v4
+      # 日期：2026-11-05；先固定实际拉取镜像的 digest，再构建依赖环境；不使用 QEMU/TCG。
+      - name: Prepare isolated nonroot native musl environment
+        shell: bash
+        run: |
+          mkdir -p "$DUKTO_MUSL_WORK/build"
+          docker pull alpine:3.24.1
+          docker image inspect alpine:3.24.1 > "$DUKTO_MUSL_WORK/build/base-image.json"
+          base_image=$(docker image inspect --format '{{index .RepoDigests 0}}' alpine:3.24.1)
+          docker build --build-arg "ALPINE_IMAGE=$base_image" \
+            --build-arg "RUNNER_UID=$(id -u)" --build-arg "RUNNER_GID=$(id -g)" \
+            --iidfile "$DUKTO_MUSL_WORK/build/validation-image-id.txt" \
+            --tag "$DUKTO_MUSL_IMAGE" .github/docker/musl
+          docker image inspect "$DUKTO_MUSL_IMAGE" > "$DUKTO_MUSL_WORK/build/validation-image.json"
+          { uname -a; lscpu; docker version; } > "$DUKTO_MUSL_WORK/build/host-environment.log" 2>&1
+          git rev-parse HEAD > "$DUKTO_MUSL_WORK/build/source-commit.txt"
+          git ls-files -z | xargs -0 sha256sum > "$DUKTO_MUSL_WORK/build/source-before.sha256"
+          bash scripts/ci_musl_container.sh sh -ec '
+            test "$(id -u)" -ne 0
+            { id; cat /etc/alpine-release; ldd /usr/bin/c++; c++ --version; cmake --version; qmake -query; openssl version -a; python3 --version; } > /work/build/musl-environment.log 2>&1
+            apk info -v > /work/build/apk-versions.txt
+          '
+      - name: Validate frozen snapshot and bounded sampling
+        run: |
+          bash scripts/ci_musl_container.sh python3 -X utf8 tests/source_snapshot_integration.py --report /work/build/source-snapshot.json
+          bash scripts/ci_musl_container.sh python3 -X utf8 tests/process_sampling_integration.py --report /work/build/process-sampling.json
+          bash scripts/ci_musl_container.sh python3 -X utf8 tests/proxy_pacing_integration.py --report /work/build/proxy-pacing.json
+      - name: Configure C++14 GUI and CLI
+        run: bash scripts/ci_musl_container.sh cmake -S /source -B /work/build -DCMAKE_BUILD_TYPE=Release
+      - name: Compile GUI CLI and all validation targets
+        id: compile
+        run: bash scripts/ci_musl_container.sh cmake --build /work/build --parallel 2
+      # 日期：2026-11-05；独立验收继续原参数，核心或 TLS 失败不会阻断后续协议，也不会被后续成功覆盖。
+      - name: Independent TLS certificate and protocol boundaries
+        if: ${{ !cancelled() && steps.compile.outcome == 'success' }}
+        run: bash scripts/ci_musl_container.sh python3 -X utf8 tests/secure_channel_integration.py /work/build/secure-channel-probe --openssl /usr/bin/openssl --report /work/build/secure-channel.json
+      - name: Core and GUI controller tests
+        if: ${{ !cancelled() && steps.compile.outcome == 'success' }}
+        run: bash scripts/ci_musl_container.sh ctest --test-dir /work/build --output-on-failure --output-log /work/build/ctest.log
+      - name: Preserve core diagnostics before protocol suite
+        if: ${{ !cancelled() && steps.compile.outcome == 'success' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: musl-native-core-validation
+          path: |
+            ${{ env.DUKTO_MUSL_WORK }}/build/*.log
+            ${{ env.DUKTO_MUSL_WORK }}/build/*.json
+            ${{ env.DUKTO_MUSL_WORK }}/build/*.txt
+            ${{ env.DUKTO_MUSL_WORK }}/build/*.sha256
+            ${{ env.DUKTO_MUSL_WORK }}/build/Testing/Temporary/*
+            ${{ env.DUKTO_MUSL_WORK }}/build/Testing/QtTest/*
+      - name: All original independent protocol cases
+        if: ${{ !cancelled() && steps.compile.outcome == 'success' }}
+        run: bash scripts/ci_musl_container.sh python3 -X utf8 scripts/ci_protocol.py --build-directory /work/build
+      # 日期：2026-11-05；挂载只读保护源文件，结束时仍逐字节复核原输入。
+      - name: Verify source input identity
+        if: always()
+        shell: bash
+        run: |
+          sha256sum --check "$DUKTO_MUSL_WORK/build/source-before.sha256" > "$DUKTO_MUSL_WORK/build/source-after-check.log"
+          git diff --exit-code
+      - name: Preserve complete native musl evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: musl-native-validation
+          path: |
+            ${{ env.DUKTO_MUSL_WORK }}/build/*.log
+            ${{ env.DUKTO_MUSL_WORK }}/build/*.json
+            ${{ env.DUKTO_MUSL_WORK }}/build/*.txt
+            ${{ env.DUKTO_MUSL_WORK }}/build/*.sha256
+            ${{ env.DUKTO_MUSL_WORK }}/build/*.png
+            ${{ env.DUKTO_MUSL_WORK }}/build/Testing/Temporary/*
+            ${{ env.DUKTO_MUSL_WORK }}/build/Testing/QtTest/*
