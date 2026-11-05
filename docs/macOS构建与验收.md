@@ -1,6 +1,6 @@
 # macOS 构建与验收
 
-更新日期：2026-11-05。状态：Intel/Apple Silicon原生C++14 GUI/CLI、各18项CTest、20项独立TLS、Cocoa渲染及面板恢复已通过；修正测试代理累计超睡后，四组默认单通道双向会话通过。1bc2774两架构独立预览包迁移和56组恢复专项已通过；完整最新CI与正式发布资格仍分开验收。
+更新日期：2026-11-05。状态：ecb0387的Intel/Apple Silicon各18CTest与27协议完整通过；当前fa6d96b共用C++14 GUI/CLI已原生编译成功，完整原生CI和新独立包继续验收。已提供的1bc2774双架构独立包与新源码分开记录；正式发布资格尚未完成。
 
 ## 运行环境
 
@@ -10,7 +10,7 @@
 
 已只读核对 [Homebrew Qt5 元数据](validation/2026-11-05/macos-qt5-brew-formula-r28.json)：版本 5.15.19，当前 `disabled=false`。这仅证明公式元数据状态，实际两种架构已安装 Qt5.15.19 并完成编译，下载、安装和工具链版本保留在每次原生 CI 的日志与依赖 JSON 中。
 
-## 已接入的检查
+## 早期检查记录（按表中源码）
 
 | 检查 | 执行与证据 | 当前状态 |
 | --- | --- | --- |
@@ -26,7 +26,7 @@
 
 ## 结果与下一步
 
-初次提供的 airen3339/dukto-next 对本机账号仅有读取权限。用户随后明确授权使用当前 29583855 账号创建公开仓库并操作上传、编译，已创建 [29583855/dukto-next](https://github.com/29583855/dukto-next)。现已上传跨平台共用源码与工作流并实际执行多轮原生编译，初始提交 a51a5ec；当前已编译源码62f49c1e0a0f66f08f80928bae3ca14414f5637b，其生产C++与da2799b一致。
+初次提供的 airen3339/dukto-next 对本机账号仅有读取权限。用户随后明确授权使用当前 29583855 账号创建公开仓库并操作上传、编译，已创建 [29583855/dukto-next](https://github.com/29583855/dukto-next)。现已上传跨平台共用源码与工作流并实际执行多轮原生编译，初始提交a51a5ec；ecb0387完整原生矩阵已成功，当前fa6d96b两种Mac架构也已编译成功，部署包和新完整测试按精确提交分别验收。
 
 macOS 编译成功后即保存实际 GUI/独立 CLI，artifact 为 `macos-compiled-X64` 和 `macos-compiled-ARM64`；内部 tar 保留应用链接和可执行权限，附源码提交 SHA、许可证及摘要。这是仍需匹配 Qt5/OpenSSL 的编译输出，自包含发布包、签名和公证继续单独验收。每个原生 runner 无论成功或失败均保存日志与 JSON，截图也加入归档；对应 artifact 为 `validation-macos-15-intel` 和 `validation-macos-15`。[原工作流静态记录](validation/2026-11-05/ci-structure-r28.json)仅反映运行前历史状态。现在 remoteActionsExecuted=true，实际编译与测试记录见下表，不能用整体 CI 失败掩盖已通过子项，也不能用编译通过冒称整体 CI 成功。
 
@@ -145,3 +145,12 @@ v0.37 实际上传补记：源码已推送为 `ecb0387f135e89d6eea7b1c41bcc215c3
 - [ ] 新固定194文件源码快照SHA `e18cc41ce84da2340ae2097ba2b65b45b6e62845c93770fb8e3266d58dbca9f4`在独立`/home/dukto/timeout-attach-r38`构建/验证；不得改用或覆盖旧冻结输入。旧3978驱动继续musl；旧glibc10/12资格失败、90秒恢复超时继续保留，当前修复不宣称解决该性能失败。
 - [ ] 新修复上传后继续Intel/ARM Mac和Ubuntu/Windows完整原生验证，独立预览包按其精确源码另验。目前可用Mac独立包仍为1bc2774，旧Windows包仍不含新分页及本轮修复。含分页的ecb0387已编译双Mac，其41977378181运行结果按各runner归档，未结束者不勾选通过。
 - [ ] skip/overwrite、逐项处置及完成摘要、完整预算/安全GC、证书生命周期、原版全基线/原生交互、物理LAN/3×3/当前24小时、完整盘满矩阵、干净系统及签名公证/对应源码继续按主计划推进。deliveryComplete=false。
+
+
+v0.38 原生与部署补记（2026-11-05）：
+
+- [x] 含逐项查询的固定`ecb0387`完整运行[41977378181](https://github.com/29583855/dukto-next/actions/runs/41977378181)已全部success：Mac ARM64、Intel、Ubuntu各18CTest和27/27协议；Windows18CTest和29/29协议。完整附件/步骤日志位于`github-evidence-r38-items-full-terminal/receipt.json`；两Mac逐项查询截图已查看。旧1bc运行中的Windows超时失败仍保留，不回写成功。
+- [x] 本轮修复已上传为`fa6d96ba725670f51ceb3e938078af5c815b392d`；80份生产输入、共162份应用/测试输入与精确提交树逐字节相同。两种Mac架构实际C++14 GUI/CLI已再次编译成功，当前编译附件已归档并核对CPU、源码SHA、执行位和摘要；其独立运行依赖资格仍另验。
+- [x] Windows当前r18独立ZIP SHA `76328048c393ea824d2939a83e4ec818ef553052c0e2c2777c9bb02d521b74a9`迁移到中文空格目录、仅系统PATH后通过：原生GUI/截图、独立CLI实际库来源、16通道双向、4→8恢复、客户端分页、默认会话、混合排队、自动重试、最终确认丢失及fail/恢复。193份包内应用源码与fa6d96b精确树相同；364部署依赖字节来自24个已验签包，53许可文件对应。仍为开发预览，干净系统及完整第三方对应源码/独立重建等未完成。
+- [x] 新glibc已链接CLI另复制到独立诊断目录，固定SHA `9e9d49bcb2e540848dfb60e6ac07f6a49192d3669f5bac9dd2b755664c3b5962`：16次4/16通道即时冲突全部正确、R6已缓冲/非法文本/两类5秒停滞共4项通过；复制前核对原CLI，诊断前后SHA相同。完整GUI/CTest构建仍继续，不能将这一并行诊断当作整套Linux资格。
+- [ ] 新修复的[完整原生CI41980707523](https://github.com/29583855/dukto-next/actions/runs/41980707523)和[双Mac部署41980793643](https://github.com/29583855/dukto-next/actions/runs/41980793643)继续观察同次运行；旧冻结musl3978、新glibc33671和长测保留。新Mac独立包、当前Linux完整资格及原glibc90秒恢复瓶颈尚须实际终态。完整交付仍为false。
