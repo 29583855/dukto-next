@@ -74,17 +74,22 @@ def exercise(executable, mount, capacity, channels, direction, policy):
                     raise AssertionError("Service startup deadline")
                 run(executable, client, ["pair", "--to", f"127.0.0.1:{proxy.port}", "--fingerprint", identity["fingerprint"],
                                          "--credential-file", offer["credentialFile"]])
+                # 日期：2026-11-05；检查点后冻结有限在途密文，确保填盘早于正文完成；仍由真实内核返回ENOSPC。
+                gate = proxy.arm_checkpoint(direction)
                 arguments = [direction, "--share", "data", "--threads", str(channels), "--on-conflict", policy]
                 arguments += (["--path", str(source)] if direction == "upload" else
                               ["--remote-path", source.name, "--output", str(target)])
                 active = TransferProcess(executable, client, arguments)
                 task = active.task(120)
                 receive_state = state / "service" if direction == "upload" else client / "transfers"
-                confirmed = wait_checkpoint(receive_state, task)
+                confirmed = wait_checkpoint(receive_state, task, gate=gate)
                 assert active.process.poll() is None and 0 < confirmed < size
                 filler = target / "filler"
                 print(f"{direction}: durable {confirmed}, exhausting dedicated filesystem", flush=True)
                 filled = exhaust(filler, capacity)
+                assert active.process.poll() is None, "Transfer finished before the disk fault was injected"
+                barrier = gate.evidence()
+                gate.release()
                 failed = failure(active)
                 assert failed["code"] == 5, failed
                 print(f"{direction}: actual ENOSPC refused publication; releasing filler", flush=True)
@@ -116,6 +121,7 @@ def exercise(executable, mount, capacity, channels, direction, policy):
                 print(f"{direction}: content, original protection and recovery passed", flush=True)
                 return {"direction": direction, "channels": channels, "passed": True, "bytes": str(size),
                         "confirmedBeforeFull": confirmed, "fillerBytes": filled, "kernelError": "ENOSPC", "failure": failed,
+                        "checkpointGateBeforeRelease": barrier,
                         "retainedPartCountAfterFailure": len(retained), "recovery": recovery, "sha256": expected,
                         "originalPreservedBeforePublication": True, "sameNameOriginalPreserved": policy == "rename",
                         "originalReplacedAfterRecovery": policy == "overwrite", "conflictPolicy": policy}
