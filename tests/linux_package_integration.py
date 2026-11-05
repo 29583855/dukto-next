@@ -23,7 +23,13 @@ from transfer_integration import digest
 def modules(process, stage, libraries, cli=False):
     paths = sorted(set(item.path for item in psutil.Process(process.pid).memory_maps()
                        if item.path.startswith("/") and ".so" in Path(item.path).name))
-    assert paths
+    if not paths:
+        # 日期：2026-11-05；退出时 procfs 可能先清空映射；只允许100ms内确认退出，活动空映射仍失败。
+        try:
+            process.wait(timeout=0.1)
+        except subprocess.TimeoutExpired as error:
+            raise AssertionError("Active process has no shared-library mappings") from error
+        raise psutil.NoSuchProcess(process.pid, msg="Process exited during module sampling")
     for value in paths:
         path = Path(value).resolve()
         if path.name in libraries or path.name.startswith(("libQt5", "libssl.so", "libcrypto.so")):

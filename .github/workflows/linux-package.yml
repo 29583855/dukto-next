@@ -21,6 +21,8 @@ jobs:
           dpkg-query -W > build/distribution-packages.txt
           git rev-parse HEAD > build/source-commit.txt
           git ls-files -z | xargs -0 sha256sum > build/source-before.sha256
+      - name: Validate module sampling exit and live-process boundaries
+        run: python -X utf8 tests/linux_package_sampling_integration.py --report build/module-sampling.json
       - name: Configure C++14 GUI CLI and validation
         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
       - name: Compile native application and validation targets
