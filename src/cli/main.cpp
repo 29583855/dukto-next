@@ -76,7 +76,12 @@ void output(const QJsonObject &event, bool json) {
                                    .toJson(QJsonDocument::Compact);
             stream << item["id"].toString() << ' ' << item["disposition"].toString() << ' '
                    << QString::fromUtf8(names) << ' ' << item["confirmedBytes"].toString() << '/'
-                   << item["bytes"].toString() << " B\n";
+                   << item["bytes"].toString() << " B";
+            if (item["lastFailure"].isObject())
+                stream << " lastFailure="
+                       << QString::fromUtf8(QJsonDocument(item["lastFailure"].toObject())
+                                                .toJson(QJsonDocument::Compact));
+            stream << '\n';
         }
         if (event.value("more").toBool())
             stream << "after=" << event.value("after").toString() << '\n';

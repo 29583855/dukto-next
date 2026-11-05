@@ -10,6 +10,7 @@
 
 namespace dukto {
 class ReceiveFile;
+class Error;
 
 // 持久接收日志由任务执行者持有；本类不自行授予网络主体访问目标目录的权限。
 class DurableReceive final {
@@ -53,6 +54,10 @@ class DurableReceive final {
     // 日期：2026-11-04；两种传输模式共用任务绑定、原生身份与提交恢复，不能绕过强清单。
     quint64 openFile(quint64 file, const QString &destination, const std::function<void()> &check,
                      bool sparse);
+    // 日期：2026-11-05；每项只保留最近一次确定的接收错误；写证据失败不能掩盖原异常。
+    void recordFailure(quint64 file, const QString &phase, const Error &error) noexcept;
+    // 日期：2026-11-05；与完成状态在同一事务解决旧错误，随后新的失败仍可重新记录。
+    void resolveFailure(quint64 file);
     struct Partial {
         quint32 offset = 0;
         QCryptographicHash hash{QCryptographicHash::Sha256};

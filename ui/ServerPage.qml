@@ -48,6 +48,16 @@ Rectangle {
         };
     }
 
+    // 日期：2026-11-05；最近失败与复制历史分别显示，恢复成功后明确标记该失败已解决。
+    function failureText(item) {
+        if (!item.lastFailure)
+            return "";
+        const failure = item.lastFailure;
+        const phases = {"prepare": "准备目标", "open": "打开或恢复", "write": "接收与校验", "finish": "最终提交"};
+        const causes = {"receive": "接收失败", "write": "写入失败", "read": "读取失败", "path": "路径不安全或不可用", "commit": "提交或结果校验失败", "conflict": "目标名称冲突", "storage": "存储不足或不可用"};
+        return "\n" + (failure.resolved ? "先前失败已恢复" : "本项最近失败") + " · " + phases[failure.phase] + " · " + causes[failure.stage] + "（" + failure.code + "）";
+    }
+
     // 日期：2026-11-05；用户可读的逐项处置；历史检查点不等于此刻重新校验文件。
     function dispositionText(value) {
         const names = {
@@ -728,7 +738,7 @@ Rectangle {
 
                             delegate: Label {
                                 width: ListView.view.width
-                                text: modelData.path + " → " + (modelData.target || "尚无目标") + "\n" + page.dispositionText(modelData.disposition) + " · 检查点 " + modelData.confirmedBytes + " / " + modelData.bytes + " B"
+                                text: modelData.path + " → " + (modelData.target || "尚无目标") + "\n" + page.dispositionText(modelData.disposition) + " · 检查点 " + modelData.confirmedBytes + " / " + modelData.bytes + " B" + page.failureText(modelData)
                                 textFormat: Text.PlainText
                                 wrapMode: Text.WrapAnywhere
                                 padding: 5

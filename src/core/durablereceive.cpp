@@ -227,6 +227,17 @@ DurableReceive::DurableReceive(PrivateStore &store, const QString &name, const Q
             query.addBindValue(binding);
             execute(query);
         }
+        // 日期：2026-11-05；绑定验证通过后事务增加旁表，旧文件/目录/块架构保持原样。
+        sql("BEGIN IMMEDIATE");
+        try {
+            sql("CREATE TABLE IF NOT EXISTS item_failures(id INTEGER PRIMARY KEY,spec BLOB NOT "
+                "NULL,phase TEXT NOT NULL,code INTEGER NOT NULL,stage TEXT NOT NULL,"
+                "resolved INTEGER NOT NULL)");
+            sql("COMMIT");
+        } catch (...) {
+            database_.rollback();
+            throw;
+        }
     } catch (...) {
         database_.close();
         database_ = QSqlDatabase();
@@ -264,18 +275,63 @@ void DurableReceive::sql(const QString &statement) const {
         throw Error(ExitCode::Disk, QStringLiteral("接收日志事务失败"), "receive");
 }
 
+// 日期：2026-11-05；不记录消息正文或绝对路径；网络、取消、授权检查及无效调用不归咎到项目。
+void DurableReceive::recordFailure(quint64 file, const QString &phase,
+                                   const Error &error) noexcept {
+    try {
+        if (!file ||
+            (error.code != ExitCode::Permission && error.code != ExitCode::Disk &&
+             error.code != ExitCode::Integrity) ||
+            !QStringList{"receive", "write", "read", "path", "commit", "conflict", "storage"}
+                 .contains(error.stage))
+            return;
+        const auto entry = manifest_.entry(file);
+        QSqlQuery query(database_);
+        query.prepare("INSERT OR REPLACE INTO item_failures VALUES(?,?,?,?,?,0)");
+        query.addBindValue(static_cast<qlonglong>(file));
+        query.addBindValue(next::encodeControl(entry.publicInfo()));
+        query.addBindValue(phase);
+        query.addBindValue(static_cast<int>(error.code));
+        query.addBindValue(error.stage);
+        execute(query);
+    } catch (...) {
+        // 日期：2026-11-05；磁盘满等情形可能连证据也无法持久化，缺少记录从不表示没有失败。
+    }
+}
+
+// 日期：2026-11-05；调用者已开始同步事务，不能独立提交或抹掉历史原因。
+void DurableReceive::resolveFailure(quint64 file) {
+    QSqlQuery query(database_);
+    query.prepare("UPDATE item_failures SET resolved=1 WHERE id=?");
+    query.addBindValue(static_cast<qlonglong>(file));
+    execute(query);
+}
+
 // 日期：2026-11-04；状态写入成功后更新内存副本；持久提交意图先于最终文件名发布。
 void DurableReceive::save(const QString &state, const QString &target, qint64 confirmed) {
-    QSqlQuery query(database_);
-    query.prepare("UPDATE files SET native=?,state=?,target=?,confirmed=? WHERE id=?");
-    query.addBindValue(current_->native.isNull() ? QByteArray("") : current_->native);
-    query.addBindValue(state);
-    query.addBindValue(target);
-    query.addBindValue(confirmed);
-    query.addBindValue(static_cast<qlonglong>(current_->entry.id));
-    execute(query);
-    if (query.numRowsAffected() != 1)
-        throw Error(ExitCode::Integrity, QStringLiteral("接收日志文件记录丢失"), "receive");
+    const bool completed = state == "completed";
+    if (completed)
+        sql("BEGIN IMMEDIATE");
+    try {
+        QSqlQuery query(database_);
+        query.prepare("UPDATE files SET native=?,state=?,target=?,confirmed=? WHERE id=?");
+        query.addBindValue(current_->native.isNull() ? QByteArray("") : current_->native);
+        query.addBindValue(state);
+        query.addBindValue(target);
+        query.addBindValue(confirmed);
+        query.addBindValue(static_cast<qlonglong>(current_->entry.id));
+        execute(query);
+        if (query.numRowsAffected() != 1)
+            throw Error(ExitCode::Integrity, QStringLiteral("接收日志文件记录丢失"), "receive");
+        if (completed) {
+            resolveFailure(current_->entry.id);
+            sql("COMMIT");
+        }
+    } catch (...) {
+        if (completed)
+            database_.rollback();
+        throw;
+    }
     current_->state = state;
     current_->target = target;
     current_->confirmed = confirmed;
@@ -368,7 +424,7 @@ void DurableReceive::closeCurrent() {
 
 // 日期：2026-11-05；新文件先拒绝明确冲突；既有本任务日志按原生身份恢复，每页最多 100 条。
 quint64 DurableReceive::openFile(quint64 file, const QString &destination,
-                                 const std::function<void()> &check, bool sparse) {
+                                 const std::function<void()> &check, bool sparse) try {
     verifyRoot();
     current_.reset(new Cursor);
     current_->sparse = sparse;
@@ -513,6 +569,9 @@ quint64 DurableReceive::openFile(quint64 file, const QString &destination,
     if (!current_->file->device().resize(retained) || !current_->file->device().seek(0))
         throw Error(ExitCode::Disk, QStringLiteral("无法丢弃未确认接收片段"), "receive");
     return current_->nextBlock;
+} catch (const Error &error) {
+    recordFailure(file, "open", error);
+    throw;
 }
 
 // 日期：2026-11-04；持久块表是稀疏索引；查询不建立随文件大小增长的内存位图。
@@ -535,7 +594,7 @@ bool DurableReceive::hasBlock(quint64 block) const {
 
 // 日期：2026-11-04；每块数据先核对强摘要并同步，再以一个小事务记录进度与块检查点。
 void DurableReceive::write(quint64 block, quint32 offset, const QByteArray &bytes,
-                           const std::function<void()> &check) {
+                           const std::function<void()> &check) try {
     verifyRoot();
     if (!current_->file || current_->state != "receiving" ||
         (!current_->sparse && block != current_->nextBlock) || bytes.isEmpty() ||
@@ -592,6 +651,9 @@ void DurableReceive::write(quint64 block, quint32 offset, const QByteArray &byte
                                             (current_->entry.bytes % StrongBlockBytes != 0));
     while (current_->nextBlock < count && hasBlock(current_->nextBlock))
         ++current_->nextBlock;
+} catch (const Error &error) {
+    recordFailure(current_ ? current_->entry.id : 0, "write", error);
+    throw;
 }
 
 // 日期：2026-11-04；提交意图保留了唯一目标名与原生 ID；重命名后崩溃只确认同一文件，不分配副本。
@@ -638,7 +700,7 @@ void DurableReceive::recoverCommit(const std::function<void()> &check) {
 }
 
 // 日期：2026-11-05；全摘要通过后记录提交意图，失败策略在原子发布竞争时停止且保护已有目标。
-QString DurableReceive::finish(const std::function<void()> &check) {
+QString DurableReceive::finish(const std::function<void()> &check) try {
     verifyRoot();
     if (!current_->file || current_->confirmed != current_->entry.bytes ||
         !current_->partials.empty() ||
@@ -693,6 +755,9 @@ QString DurableReceive::finish(const std::function<void()> &check) {
         return candidate;
     }
     throw Error(ExitCode::Disk, QStringLiteral("同名文件过多，无法独占提交"), "commit");
+} catch (const Error &error) {
+    recordFailure(current_ ? current_->entry.id : 0, "finish", error);
+    throw;
 }
 
 // 日期：2026-11-04；只统计重读通过或已经同步发布的块，未确认片段不参与可恢复字节数。

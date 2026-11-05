@@ -46,6 +46,7 @@ def commands(build):
     add("transfer-retry", "transfer_retry_integration")
     add("conflict-fail", "conflict_fail_integration")
     add("task-items", "task_items_integration")
+    add("item-failures", "item_failures_integration")
     recovery = ("--threads", "4", "--resume-threads", "8", "--files", "4", "--payload-mib", "8",
                 "--checkpoint-percent", "50")
     add("conflict-fail-recovery", "transfer_recovery_integration", "--on-conflict", "fail", *recovery)

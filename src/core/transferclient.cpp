@@ -314,6 +314,12 @@ QJsonObject RemoteClient::items(const QUuid &id, PrivateStore &local, quint64 af
         !result["entries"].isArray() || result["entries"].toArray().size() > 100 ||
         following < after || (result["more"].toBool() && following == after))
         throw Error(ExitCode::Integrity, QStringLiteral("逐项查询分页响应无效"), "items");
+    const bool failureFields =
+        task.direction == "download" || capabilities_.contains("task-item-failures-v1") ||
+        result.contains("failureEvidenceAvailable") || result.contains("failureScope");
+    if (failureFields && (!result["failureEvidenceAvailable"].isBool() ||
+                          result["failureScope"] != "receiver-local"))
+        throw Error(ExitCode::Integrity, QStringLiteral("逐项失败证据范围无效"), "items");
     quint64 previous = after;
     for (const auto &value : result["entries"].toArray()) {
         const auto entry = value.toObject();
@@ -334,6 +340,8 @@ QJsonObject RemoteClient::items(const QUuid &id, PrivateStore &local, quint64 af
         validateRelativePath(entry["path"].toString());
         if (!entry["target"].toString().isEmpty())
             validateRelativePath(entry["target"].toString());
+        if (failureFields || entry.contains("lastFailure"))
+            validateItemFailure(entry, result["failureEvidenceAvailable"].toBool());
         previous = sequence;
     }
     if (previous != following ||

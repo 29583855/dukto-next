@@ -77,6 +77,8 @@ QJsonObject pageInfo(const TransferTask &task, quint64 after) {
             {"conflict", conflictPolicyName(task.conflict)},
             {"manifest", QString::fromLatin1(task.manifest.toHex())},
             {"available", false},
+            {"failureScope", "receiver-local"},
+            {"failureEvidenceAvailable", false},
             {"currentContentVerified", false},
             {"entries", QJsonArray{}},
             {"after", QString::number(after)},
@@ -84,11 +86,12 @@ QJsonObject pageInfo(const TransferTask &task, quint64 after) {
 }
 
 // 日期：2026-11-05；读取接收日志单行并核对冻结清单；不输出临时名称、原生身份或绝对路径。
-QJsonObject itemInfo(QSqlDatabase database, const StrongEntry &entry) {
+QJsonObject itemInfo(QSqlDatabase database, const StrongEntry &entry, bool failures) {
     auto item = entry.publicInfo();
     item["target"] = "";
     item["disposition"] = "not-executed";
     item["confirmedBytes"] = "0";
+    item["lastFailure"] = QJsonValue(QJsonValue::Null);
     if (!database.isValid())
         return item;
     QSqlQuery query(database);
@@ -116,9 +119,49 @@ QJsonObject itemInfo(QSqlDatabase database, const StrongEntry &entry) {
     }
     if (query.lastError().isValid())
         throw Error(ExitCode::Disk, QStringLiteral("接收明细读取失败"), "items");
+    query.finish();
+    if (failures) {
+        query.prepare("SELECT spec,phase,code,stage,resolved,typeof(code),typeof(resolved) "
+                      "FROM item_failures WHERE id=?");
+        query.addBindValue(static_cast<qlonglong>(entry.id));
+        execute(query);
+        if (query.next()) {
+            const auto code = query.value(2).toLongLong();
+            const auto resolved = query.value(4).toLongLong();
+            if (next::parseControl(query.value(0).toByteArray()) != entry.publicInfo() ||
+                (code != 4 && code != 5 && code != 6) || (resolved != 0 && resolved != 1) ||
+                query.value(5).toString() != "integer" || query.value(6).toString() != "integer")
+                throw Error(ExitCode::Integrity, QStringLiteral("逐项失败证据与清单不同"), "items");
+            item["lastFailure"] = QJsonObject{{"version", 1},
+                                              {"phase", query.value(1).toString()},
+                                              {"code", static_cast<int>(code)},
+                                              {"stage", query.value(3).toString()},
+                                              {"resolved", resolved == 1}};
+        }
+        if (query.lastError().isValid())
+            throw Error(ExitCode::Disk, QStringLiteral("逐项失败证据读取失败"), "items");
+    }
+    validateItemFailure(item, failures);
     return item;
 }
 } // namespace
+
+// 日期：2026-11-05；只接收固定结构和枚举；证据缺失不推断成功或把批次错误归到全部文件。
+void validateItemFailure(const QJsonObject &item, bool available) {
+    const auto failure = item["lastFailure"];
+    if (failure.isNull())
+        return;
+    const auto value = failure.toObject();
+    const auto code = value["code"].toInt(-1);
+    if (!available || !failure.isObject() || value.size() != 5 || value["version"] != 1 ||
+        !value["resolved"].isBool() || !value["code"].isDouble() ||
+        value["code"].toDouble() != code || (code != 4 && code != 5 && code != 6) ||
+        !QStringList{"prepare", "open", "write", "finish"}.contains(value["phase"].toString()) ||
+        !QStringList{"receive", "write", "read", "path", "commit", "conflict", "storage"}.contains(
+            value["stage"].toString()) ||
+        (value["resolved"] == QJsonValue(true) && item["disposition"] != "copied"))
+        throw Error(ExitCode::Integrity, QStringLiteral("逐项失败证据字段无效"), "items");
+}
 
 // 日期：2026-11-05；主键范围翻页最多100项且小于控制帧；只查本页，不重复扫描完整清单或正文。
 QJsonObject transferItems(PrivateStore &store, const TransferTask &task,
@@ -167,6 +210,14 @@ QJsonObject transferItems(PrivateStore &store, const TransferTask &task,
             info["rootIdentity"].toString().isEmpty() || binding.next())
             throw Error(ExitCode::Integrity, QStringLiteral("接收明细身份或策略不同"), "items");
     }
+    bool failures = false;
+    if (receiver) {
+        QSqlQuery schema(receiver->database());
+        schema.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='item_failures'");
+        execute(schema);
+        failures = schema.next();
+    }
+    result["failureEvidenceAvailable"] = failures;
     QSqlQuery query(source.database());
     query.setForwardOnly(true);
     query.prepare(
@@ -185,7 +236,7 @@ QJsonObject transferItems(PrivateStore &store, const TransferTask &task,
             (!entry.directory && entry.sha256.size() != 32))
             throw Error(ExitCode::Integrity, QStringLiteral("明细清单条目损坏"), "items");
         validateRelativePath(entry.relative);
-        entries.append(itemInfo(receiver ? receiver->database() : QSqlDatabase(), entry));
+        entries.append(itemInfo(receiver ? receiver->database() : QSqlDatabase(), entry, failures));
         if (QJsonDocument(entries).toJson(QJsonDocument::Compact).size() >
             next::ControlLimit - 2048) {
             entries.removeLast();

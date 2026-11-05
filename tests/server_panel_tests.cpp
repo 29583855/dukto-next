@@ -485,6 +485,46 @@ class ServerPanelTests final : public QObject {
                 expected);
             QCOMPARE(QDir(interactiveOutput).entryList(QDir::Files).size(), 1);
             const auto failedConflictTask = restarted.task()["taskId"].toString();
+            // 日期：2026-11-05；真实按钮查询原下载日志，界面必须显示具体失败原因和未解决状态。
+            sections->setProperty("currentIndex", 1);
+            taskField->setProperty("text", failedConflictTask);
+            QVERIFY(visibleClick("serverItemsFirstButton", taskFlick));
+            QTRY_VERIFY_WITH_TIMEOUT(!restarted.controlBusy(), 30000);
+            QCOMPARE(restarted.itemPage()["taskId"].toString(), failedConflictTask);
+            QVERIFY(restarted.itemPage()["failureEvidenceAvailable"].toBool());
+            const auto itemFailure =
+                restarted.itemPage()["entries"].toList()[0].toMap()["lastFailure"].toMap();
+            QCOMPARE(itemFailure["code"].toInt(), 4);
+            QCOMPARE(itemFailure["stage"].toString(), QString("conflict"));
+            QVERIFY(!itemFailure["resolved"].toBool());
+            auto itemList = root->findChild<QQuickItem *>("serverItemsList");
+            QVERIFY(itemList);
+            QTest::qWait(100);
+            const auto content = itemList->property("contentItem").value<QObject *>();
+            QVERIFY(content);
+            QStringList displayed;
+            std::function<void(QQuickItem *)> collectText = [&](QQuickItem *item) {
+                // 日期：2026-11-05；仅遍历测试窗口的视觉树，QtQuick委托不一定是其视觉父项的QObject子对象。
+                const auto text = item->property("text").toString();
+                if (!text.isEmpty())
+                    displayed.append(text);
+                for (auto child : item->childItems())
+                    collectText(child);
+            };
+            collectText(itemList);
+            const auto visibleText = displayed.join('\n');
+            QVERIFY2(visibleText.contains(QStringLiteral("本项最近失败")) &&
+                         visibleText.contains(QStringLiteral("目标名称冲突")),
+                     qPrintable(visibleText));
+            const auto currentY = taskFlick->property("contentY").toDouble();
+            const auto listY = itemList->mapToItem(taskFlick, QPointF()).y();
+            taskFlick->setProperty(
+                "contentY", qBound(0.0, currentY + listY - 150,
+                                   qMax(0.0, taskFlick->property("contentHeight").toDouble() -
+                                                 taskFlick->height())));
+            QTest::qWait(100);
+            QVERIFY(view.grabFramebuffer().save("Testing/QtTest/server-item-failure.png"));
+            sections->setProperty("currentIndex", 0);
             conflict->setProperty("currentIndex", 0);
             const auto cancelledOutput = temporary.filePath("cancelled-output");
             QVERIFY(QDir().mkpath(cancelledOutput));

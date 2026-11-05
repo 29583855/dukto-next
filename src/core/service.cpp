@@ -44,7 +44,8 @@ QJsonArray capabilities() {
             "parallel-transfer-v1",
             "byte-progress-v1",
             "conflict-fail-v1",
-            "task-items-v1"};
+            "task-items-v1",
+            "task-item-failures-v1"};
 }
 
 // 日期：2026-11-04；服务端只接受精确 1.0 能力协商，认证消息不能跳过协议入口。

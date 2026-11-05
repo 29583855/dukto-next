@@ -9,6 +9,7 @@
 #include <QDir>
 #include <QFile>
 #include <QProcess>
+#include <QSqlQuery>
 #include <QTemporaryDir>
 #include <QtTest>
 #include <cstdio>
@@ -105,6 +106,145 @@ int crashWorker(const QString &root, const QString &mode) {
 class DurableReceiveTests final : public QObject {
     Q_OBJECT
   private slots:
+    // 日期：2026-11-05；取消、网络与批次授权不归因到文件；冲突及恢复后再次校验失败均保留。
+    void itemFailureRecoveryAndScopes() {
+        QTemporaryDir root;
+        fixture(root.path());
+        dukto::PrivateStore store(root.filePath("private"));
+        dukto::StrongManifest manifest(store, "source.sqlite", false);
+        dukto::TransferTask task;
+        task.id = Task;
+        task.direction = "upload";
+        task.state = "receiving";
+        task.entries = 1;
+        task.total = SampleBytes;
+        task.conflict = dukto::ConflictPolicy::Fail;
+        task.manifest = QByteArray::fromHex(manifest.summary()["sha256"].toString().toLatin1());
+        const auto journal = "receive-" + Task.toString(QUuid::WithoutBraces) + ".sqlite";
+        const auto page = [&]() {
+            // 日期：2026-11-05；每次重新建立只读快照，不借用接收器内存状态。
+            return dukto::transferItems(store, task, "source.sqlite", root.filePath("output"));
+        };
+        {
+            dukto::DurableReceive receiver(store, journal, Task, manifest, root.filePath("output"),
+                                           task.conflict);
+            for (const auto code : {dukto::ExitCode::Network, dukto::ExitCode::Cancelled,
+                                    dukto::ExitCode::Permission}) {
+                QVERIFY_EXCEPTION_THROWN(receiver.prepare(1,
+                                                          [&]() {
+                                                              // 日期：2026-11-05；模拟外部连接/取消/批次权限检查，不能误标成该文件损坏。
+                                                              throw dukto::Error(
+                                                                  code, "external check", "task");
+                                                          }),
+                                         dukto::Error);
+                QVERIFY(page()["entries"].toArray().first().toObject()["lastFailure"].isNull());
+            }
+            {
+                QFile original(root.filePath("output/sample.bin"));
+                QVERIFY(original.open(QIODevice::WriteOnly));
+                dukto::writeAll(original, "original");
+            }
+            QVERIFY_EXCEPTION_THROWN(receiver.open(1, "sample.bin"), dukto::Error);
+            auto evidence = page();
+            QVERIFY(evidence["failureEvidenceAvailable"].toBool());
+            auto failure =
+                evidence["entries"].toArray().first().toObject()["lastFailure"].toObject();
+            QCOMPARE(failure["code"].toInt(), 4);
+            QCOMPARE(failure["phase"].toString(), QString("open"));
+            QCOMPARE(failure["stage"].toString(), QString("conflict"));
+            QVERIFY(!failure["resolved"].toBool());
+            QVERIFY(QFile::remove(root.filePath("output/sample.bin")));
+            receiver.open(1, "sample.bin");
+            transmit(receiver, 0);
+            receiver.finish();
+            auto item = page()["entries"].toArray().first().toObject();
+            QCOMPARE(item["disposition"].toString(), QString("copied"));
+            failure = item["lastFailure"].toObject();
+            QVERIFY(failure["resolved"].toBool());
+            QCOMPARE(failure["code"].toInt(), 4);
+        }
+        {
+            QFile modified(root.filePath("output/sample.bin"));
+            QVERIFY(modified.open(QIODevice::WriteOnly));
+            dukto::writeAll(modified, "external change");
+        }
+        dukto::DurableReceive receiver(store, journal, Task, manifest, root.filePath("output"),
+                                       task.conflict);
+        QVERIFY_EXCEPTION_THROWN(receiver.open(1, "sample.bin"), dukto::Error);
+        const auto failure =
+            page()["entries"].toArray().first().toObject()["lastFailure"].toObject();
+        QCOMPARE(failure["code"].toInt(), 6);
+        QCOMPARE(failure["stage"].toString(), QString("commit"));
+        QVERIFY(!failure["resolved"].toBool());
+    }
+
+    // 日期：2026-11-05；块摘要失败不确认字节，重开后恢复解决；旧日志只在执行者打开时迁移。
+    void itemFailureWriteAndLegacy() {
+        QTemporaryDir root;
+        fixture(root.path());
+        dukto::PrivateStore store(root.filePath("private"));
+        dukto::StrongManifest manifest(store, "source.sqlite", false);
+        dukto::TransferTask task;
+        task.id = Task;
+        task.direction = "upload";
+        task.state = "receiving";
+        task.entries = 1;
+        task.total = SampleBytes;
+        task.manifest = QByteArray::fromHex(manifest.summary()["sha256"].toString().toLatin1());
+        const auto journal = "receive-" + Task.toString(QUuid::WithoutBraces) + ".sqlite";
+        {
+            dukto::DurableReceive receiver(store, journal, Task, manifest, root.filePath("output"));
+            receiver.open(1, "sample.bin");
+            bool rejected = false;
+            try {
+                for (qint64 offset = 0; offset < dukto::StrongBlockBytes;
+                     offset += dukto::BufferSize)
+                    receiver.write(0, static_cast<quint32>(offset),
+                                   QByteArray(dukto::BufferSize, 'x'));
+            } catch (const dukto::Error &error) {
+                rejected = error.code == dukto::ExitCode::Integrity;
+            }
+            QVERIFY(rejected);
+            const auto page =
+                dukto::transferItems(store, task, "source.sqlite", root.filePath("output"));
+            const auto item = page["entries"].toArray().first().toObject();
+            QCOMPARE(item["confirmedBytes"].toString(), QString("0"));
+            QCOMPARE(item["lastFailure"].toObject()["phase"].toString(), QString("write"));
+        }
+        {
+            dukto::DurableReceive receiver(store, journal, Task, manifest, root.filePath("output"));
+            receiver.open(1, "sample.bin");
+            transmit(receiver, 0);
+            receiver.finish();
+            const auto page =
+                dukto::transferItems(store, task, "source.sqlite", root.filePath("output"));
+            QVERIFY(page["entries"]
+                        .toArray()
+                        .first()
+                        .toObject()["lastFailure"]
+                        .toObject()["resolved"]
+                        .toBool());
+        }
+        const auto connection = QUuid::createUuid().toString();
+        {
+            auto database = QSqlDatabase::addDatabase("QSQLITE", connection);
+            database.setDatabaseName(QDir(store.directory()).filePath(journal));
+            QVERIFY(database.open());
+            QSqlQuery query(database);
+            QVERIFY(query.exec("DROP TABLE item_failures"));
+            database.close();
+        }
+        QSqlDatabase::removeDatabase(connection);
+        auto page = dukto::transferItems(store, task, "source.sqlite", root.filePath("output"));
+        QVERIFY(!page["failureEvidenceAvailable"].toBool());
+        dukto::DurableReceive receiver(store, journal, Task, manifest, root.filePath("output"));
+        receiver.open(1, "sample.bin");
+        page = dukto::transferItems(store, task, "source.sqlite", root.filePath("output"));
+        QVERIFY(page["failureEvidenceAvailable"].toBool());
+        QCOMPARE(page["entries"].toArray().first().toObject()["disposition"].toString(),
+                 QString("copied"));
+    }
+
     // 日期：2026-11-05；长名称使报文字节预算先于100项触发；查询只读且包含尚无接收记录的项目。
     void itemPageByteBudgetAndBinding() {
         QTemporaryDir root;

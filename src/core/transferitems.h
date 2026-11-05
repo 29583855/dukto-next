@@ -4,6 +4,8 @@
 #include "taskstore.h"
 
 namespace dukto {
+// 日期：2026-11-05；严格验证公开失败证据；旧端缺少能力时不要求新增可选字段。
+void validateItemFailure(const QJsonObject &item, bool available);
 // 日期：2026-11-05；只读分页显示持久接收证据；不重验正文、不改变任务或接收日志。
 QJsonObject transferItems(PrivateStore &store, const TransferTask &task,
                           const QString &manifestName, const QString &root, quint64 after = 0);

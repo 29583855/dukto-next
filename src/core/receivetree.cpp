@@ -21,7 +21,7 @@ QByteArray directoryIdentity(const QString &path) {
 } // namespace
 
 // 日期：2026-11-05；目录同样执行冲突策略与原子不覆盖提交；恢复只认可原日志的目录身份。
-QString DurableReceive::prepare(quint64 file, const std::function<void()> &check) {
+QString DurableReceive::prepare(quint64 file, const std::function<void()> &check) try {
     verifyRoot();
     if (check)
         check();
@@ -89,15 +89,28 @@ QString DurableReceive::prepare(quint64 file, const std::function<void()> &check
     }
     const auto saveDirectory = [&](const QString &next, const QString &candidate) {
         // 日期：2026-11-04；同一目录意图在每次命名前持久保存，恢复不重新分配已发布目录。
-        QSqlQuery update(database_);
-        update.prepare("UPDATE directories SET target=?,native=?,state=? WHERE id=?");
-        update.addBindValue(candidate);
-        update.addBindValue(native);
-        update.addBindValue(next);
-        update.addBindValue(static_cast<qlonglong>(file));
-        execute(update);
-        if (update.numRowsAffected() != 1)
-            throw Error(ExitCode::Integrity, QStringLiteral("目录预约记录丢失"), "receive");
+        const bool completed = next == "completed";
+        if (completed)
+            sql("BEGIN IMMEDIATE");
+        try {
+            QSqlQuery update(database_);
+            update.prepare("UPDATE directories SET target=?,native=?,state=? WHERE id=?");
+            update.addBindValue(candidate);
+            update.addBindValue(native);
+            update.addBindValue(next);
+            update.addBindValue(static_cast<qlonglong>(file));
+            execute(update);
+            if (update.numRowsAffected() != 1)
+                throw Error(ExitCode::Integrity, QStringLiteral("目录预约记录丢失"), "receive");
+            if (completed) {
+                resolveFailure(file);
+                sql("COMMIT");
+            }
+        } catch (...) {
+            if (completed)
+                database_.rollback();
+            throw;
+        }
     };
     const auto path = resolveInside(root_, target);
     if (state != "planned" && QFileInfo(path).isDir() && directoryIdentity(path) == native) {
@@ -167,5 +180,8 @@ QString DurableReceive::prepare(quint64 file, const std::function<void()> &check
         return candidate;
     }
     throw Error(ExitCode::Disk, QStringLiteral("同名目录过多，无法预约目标"), "receive");
+} catch (const Error &error) {
+    recordFailure(file, "prepare", error);
+    throw;
 }
 } // namespace dukto
