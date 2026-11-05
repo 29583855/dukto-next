@@ -1,0 +1,114 @@
+{
+  "recordedDate": "2026-11-06",
+  "observedUtc": "2026-11-05T23:13:05.240830+00:00",
+  "planVersion": "v0.70",
+  "repository": "29583855/dukto-next",
+  "sourceCommit": "d973da14956a76147d2db5cd4a0a5761e802ab4f",
+  "localWindows": {
+    "sourceCommit": "d973da14956a76147d2db5cd4a0a5761e802ab4f",
+    "toolchains": [
+      "UCRT",
+      "MSVC"
+    ],
+    "coreTargetsEach": 21,
+    "exchangeQtCasesIncludingLifecycleEach": 182,
+    "effectiveProtocolReportsEach": 9,
+    "dispositionFieldRowsEach": 24,
+    "singleTlsDispositionWireRowsEach": 28,
+    "parallelTlsRejectionRowsEach": 32,
+    "singleTlsBusinessCasesEach": 8,
+    "separateProcessParallelBusinessCasesEach": 16,
+    "parallelLanes": [
+      4,
+      16
+    ],
+    "sourceAuditFiles": 182,
+    "sourceAuditFindings": 0,
+    "cxx14Passed": true,
+    "formattingPassed": true,
+    "encodingPreserved": true,
+    "publicSkipEnabled": false,
+    "evidence": {
+      "path": "docs/validation/2026-11-06/skip-wire-r70-windows/summary.json",
+      "sha256": "d5677ab734e2a60dfc0481139aad9c3e022558e53c59f8d5f4a2ee3cd0eb9ece"
+    }
+  },
+  "nativePending": {
+    "build": {
+      "sourceCommit": "d973da14956a76147d2db5cd4a0a5761e802ab4f",
+      "runId": 42127220471,
+      "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42127220471",
+      "status": "in_progress",
+      "workflowConclusion": null,
+      "originalEvidenceVerified": false
+    },
+    "musl": {
+      "sourceCommit": "d973da14956a76147d2db5cd4a0a5761e802ab4f",
+      "runId": 42127247402,
+      "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42127247402",
+      "status": "in_progress",
+      "workflowConclusion": null,
+      "originalEvidenceVerified": false
+    },
+    "mac": {
+      "sourceCommit": "d973da14956a76147d2db5cd4a0a5761e802ab4f",
+      "runId": 42127252726,
+      "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42127252726",
+      "status": "in_progress",
+      "workflowConclusion": null,
+      "originalEvidenceVerified": false
+    }
+  },
+  "expectedProtocolCases": {
+    "windows": 43,
+    "posix": 40,
+    "nativeTotal": 163,
+    "musl": 40
+  },
+  "previousNative": {
+    "sourceCommit": "4da0b12f9e33f8e1006672eeea7983957c5dcc65",
+    "runId": 42117164681,
+    "workflowConclusion": "success",
+    "coreTargetsEach": 21,
+    "originalProtocolReportsVerified": 163,
+    "evidence": {
+      "path": "docs/validation/2026-11-06/peer-summary-r69-native-observation-summary.json",
+      "sha256": "179610bdcc4774b8f13b441752dcbaee8d53348aad494d51b6a93cac4fcda191"
+    }
+  },
+  "previousMusl": {
+    "sourceCommit": "4da0b12f9e33f8e1006672eeea7983957c5dcc65",
+    "runId": 42117268178,
+    "workflowConclusion": "failure",
+    "coreTargets": 21,
+    "protocolsPassed": 39,
+    "protocolsExpected": 40,
+    "failedCase": "disposition-summary",
+    "originalFailureRetained": true,
+    "allAvailableOriginalReportHashesVerified": true
+  },
+  "currentMacPackages": {
+    "sourceCommit": "4da0b12f9e33f8e1006672eeea7983957c5dcc65",
+    "runId": 42117272869,
+    "applicationSourceFilesEach": 245,
+    "runtimeReportsEach": 5,
+    "screenshotsViewed": 4,
+    "evidence": {
+      "path": "docs/validation/2026-11-06/peer-summary-r69-macos-package-terminal/receipt.json",
+      "sha256": "7a3e41439f56b483e44ecca70e7eb03f4a584a55a7e2a921f5909e510c438a37"
+    }
+  },
+  "firstProductionFailuresRetained": [
+    "docs/validation/2026-11-06/skip-wire-r70-first",
+    ".cache/skip-wire-r70-crash-debugger.log",
+    "docs/validation/2026-11-06/skip-wire-r70-cursor-fix",
+    "docs/validation/2026-11-06/skip-parallel-rejection-r70-first"
+  ],
+  "productionFixes": [
+    "valid cursor throughout concurrent receive open callbacks",
+    "preserve data-lane disposition rejection when control read times out"
+  ],
+  "publicSkipEnabled": false,
+  "releaseQualified": false,
+  "deliveryComplete": false
+}
