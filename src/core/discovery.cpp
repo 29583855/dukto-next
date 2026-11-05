@@ -60,8 +60,8 @@ QString Discovery::errorString() const {
     return socket_.errorString();
 }
 
-// 日期：2026-11-04；用户和主机信息按 R6 的文本签名发送。
-QByteArray Discovery::signature() const {
+// 日期：2026-11-05；本机名可能涉及平台系统服务；只在公告时刷新，用户名改动立即公告。
+void Discovery::refreshSignature() {
 #ifdef Q_OS_WIN
     const QString platform = "Windows";
 #elif defined(Q_OS_MACOS)
@@ -69,7 +69,7 @@ QByteArray Discovery::signature() const {
 #else
     const QString platform = "Linux";
 #endif
-    return (username_ + " at " + QHostInfo::localHostName() + " (" + platform + ')').toUtf8();
+    signature_ = (username_ + " at " + QHostInfo::localHostName() + " (" + platform + ')').toUtf8();
 }
 
 // 日期：2026-11-04；自定义端口显式编码为小端 16 位，不假设宿主字节序。
@@ -81,7 +81,7 @@ QByteArray Discovery::hello(bool broadcastFlag) const {
         qToLittleEndian(port_, reinterpret_cast<uchar *>(bytes.data()));
         data.append(bytes);
     }
-    return data + signature();
+    return data + signature_;
 }
 
 // 日期：2026-11-04；仅向实际启用且支持广播的 IPv4 接口发送，不依赖跨网段广播。
@@ -103,6 +103,7 @@ void Discovery::broadcast(const QByteArray &data) {
 
 // 日期：2026-11-04；发现请求是有限的小数据报，不包含任何文件正文。
 void Discovery::announce() {
+    refreshSignature();
     broadcast(hello(true));
 }
 
@@ -165,7 +166,7 @@ void Discovery::read() {
         } else if (type != 1 && type != 2)
             continue;
         if (port == 0 || data.isEmpty() || data.size() > 512 ||
-            (data == signature() && port == port_) || QString::fromUtf8(data).toUtf8() != data)
+            (data == signature_ && port == port_) || QString::fromUtf8(data).toUtf8() != data)
             continue;
         // 日期：2026-11-04；R6 无设备 UUID，以完整签名和端口聚合同一设备的有限地址集。
         const auto key = QString::fromUtf8(data) + ':' + QString::number(port);

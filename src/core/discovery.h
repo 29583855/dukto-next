@@ -34,8 +34,8 @@ class Discovery final : public QObject {
     void read();
     // 日期：2026-11-04；使用单调时间，系统时间调整不影响在线租约。
     void expire();
-    // 日期：2026-11-04；生成与原版可互识别的身份签名。
-    QByteArray signature() const;
+    // 日期：2026-11-05；每次公告刷新有界本机签名，收包循环不再同步查询系统主机名。
+    void refreshSignature();
     // 日期：2026-11-04；构建标准/自定义端口的 Hello 数据报。
     QByteArray hello(bool broadcast) const;
     // 日期：2026-11-04；枚举广播地址并发送固定大小数据报。
@@ -51,5 +51,6 @@ class Discovery final : public QObject {
     QHash<QString, Peer> peers_;
     quint16 port_ = 4644;
     QString username_;
+    QByteArray signature_;
 };
 } // namespace dukto
