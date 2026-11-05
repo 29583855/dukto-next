@@ -81,3 +81,7 @@ CI 通过后继续实际桌面交互、三平台互通、macOS 独立 GUI/CLI �
 ## v0.31 原生诊断补充（2026-11-05）
 
 两架构单独UDP复验已通过；原完整Intel超时仍保留。短会话接收临时文件不足首个4MiB块，继续使用原20秒会话和512KiB/s代理，新增实际收包/限速/发包耗时，两个方向独立执行。这只是诊断，当前完整业务及自包含部署资格尚未通过。共享SQLite并发校验已在Windows复现并修复，新源码的原生Mac构建/测试结果仍待上传后的实际CI。
+
+## 原生部署预览流程（2026-11-05，待实际执行）
+
+[macos-package.yml](../.github/workflows/macos-package.yml)手动运行两架构本机编译与Qt5部署，[打包脚本](../scripts/package_macos.py)保留原编译件，部署框架/QML及独立CLI，逐个检查Mach-O依赖并使用本地adhoc签名。[迁移专项](../tests/macos_package_integration.py)在中文空格目录解开真实tar，以系统PATH运行并核对dyld实际加载来源、CLI不加载GUI框架、Cocoa入口、16通道双向与4→8恢复。当前只完成脚本及语法审计，尚未实际运行通过。Developer ID、公证、Gatekeeper、干净系统、完整对应源码及正式发布资格仍须单独完成。
