@@ -74,6 +74,85 @@ class CoreTests final : public QObject {
         QVERIFY_EXCEPTION_THROWN(reopened.write("identity.json", "must not replace unsafe file"),
                                  dukto::Error);
     }
+#ifdef Q_OS_WIN
+    // 日期：2026-11-06；真实原生读句柄覆盖短暂释放、持续占用及重复替换后的资源回收。
+    void privateAtomicWriteContention_data() {
+        QTest::addColumn<bool>("persistent");
+        QTest::addColumn<int>("rounds");
+        QTest::newRow("reader-release") << false << 1;
+        QTest::newRow("persistent-reader") << true << 1;
+        QTest::newRow("repeated-reader-release") << false << 16;
+    }
+
+    // 日期：2026-11-06；原读者不共享删除，写方须有界等待；失败保持旧内容且清理临时文件。
+    void privateAtomicWriteContention() {
+        QFETCH(bool, persistent);
+        QFETCH(int, rounds);
+        QTemporaryDir temporary;
+        dukto::PrivateStore store(temporary.filePath("private"), true);
+        const auto path = temporary.filePath("private/policy.json");
+        const auto native = QDir::toNativeSeparators(path);
+        store.write("policy.json", "original-state");
+        DWORD before = 0;
+        QVERIFY(GetProcessHandleCount(GetCurrentProcess(), &before));
+        QByteArray previous("original-state");
+        for (int index = 0; index < rounds; ++index) {
+            const auto handle = CreateFileW(reinterpret_cast<LPCWSTR>(native.utf16()), GENERIC_READ,
+                                            FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
+                                            OPEN_EXISTING, FILE_FLAG_OPEN_REPARSE_POINT, nullptr);
+            QVERIFY(handle != INVALID_HANDLE_VALUE);
+            std::atomic_bool closed{false};
+            std::thread release;
+            if (!persistent)
+                release = std::thread([&]() {
+                    // 日期：2026-11-06；只释放本测试的读句柄，不用事件循环或修改生产超时门槛。
+                    QThread::msleep(80);
+                    closed.store(CloseHandle(handle));
+                });
+            dukto::ExitCode code = dukto::ExitCode::Success;
+            QString stage;
+            std::exception_ptr unexpected;
+            QElapsedTimer elapsed;
+            elapsed.start();
+            const auto replacement = QByteArray("replacement-") + QByteArray::number(index);
+            try {
+                store.write("policy.json", replacement);
+            } catch (const dukto::Error &error) {
+                code = error.code;
+                stage = error.stage;
+            } catch (...) {
+                unexpected = std::current_exception();
+            }
+            const auto milliseconds = elapsed.elapsed();
+            if (release.joinable())
+                release.join();
+            else
+                closed.store(CloseHandle(handle));
+            QVERIFY(closed.load());
+            QVERIFY(!unexpected);
+            QVERIFY2(milliseconds < 3000, qPrintable(QString::number(milliseconds)));
+            if (persistent) {
+                QCOMPARE(code, dukto::ExitCode::Disk);
+                QCOMPARE(stage, QString("identity-busy"));
+                QVERIFY(milliseconds >= 450);
+                QCOMPARE(store.read("policy.json"), previous);
+                store.write("policy.json", replacement);
+            } else {
+                QCOMPARE(code, dukto::ExitCode::Success);
+                QVERIFY(milliseconds >= 50);
+            }
+            QCOMPARE(store.read("policy.json"), replacement);
+            QCOMPARE(
+                QDir(store.directory()).entryList({"*.part"}, QDir::Files | QDir::Hidden).size(),
+                0);
+            previous = replacement;
+        }
+        DWORD after = 0;
+        QVERIFY(GetProcessHandleCount(GetCurrentProcess(), &after));
+        QVERIFY2(after <= before + 2,
+                 qPrintable(QString("handles %1 -> %2").arg(before).arg(after)));
+    }
+#endif
     // 日期：2026-11-05；共享SQLite文件可并发原地写入，原生对象/权限核验不得把内容更新误报为替换。
     void privateMutableFileValidation() {
         QTemporaryDir temporary;

@@ -4,8 +4,10 @@
 #include "sourcefile.h"
 
 #include <QDir>
+#include <QElapsedTimer>
 #include <QFileInfo>
 #include <QRegularExpression>
+#include <QThread>
 #include <QUuid>
 #ifdef Q_OS_WIN
 #ifndef NOMINMAX
@@ -258,11 +260,43 @@ void PrivateStore::write(const QString &name, const QByteArray &bytes) const {
         throw;
     }
     CloseHandle(handle);
-    if (!MoveFileExW(reinterpret_cast<LPCWSTR>(nativeTemporary.utf16()),
-                     reinterpret_cast<LPCWSTR>(nativeTarget.utf16()),
-                     MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH)) {
+    QElapsedTimer elapsed;
+    elapsed.start();
+    try {
+        for (int attempt = 1;; ++attempt) {
+            // 日期：2026-11-06；等待期间重验根ACL及当前目标，不将只读、链接或不安全权限当作共享占用。
+            verify();
+            if (QFileInfo::exists(target) || isLinkedPath(target)) {
+                const auto targetAttributes =
+                    GetFileAttributesW(reinterpret_cast<LPCWSTR>(nativeTarget.utf16()));
+                if (targetAttributes == INVALID_FILE_ATTRIBUTES ||
+                    (targetAttributes & (FILE_ATTRIBUTE_READONLY | FILE_ATTRIBUTE_DIRECTORY |
+                                         FILE_ATTRIBUTE_REPARSE_POINT | FILE_ATTRIBUTE_DEVICE)))
+                    throw Error(ExitCode::Permission, QStringLiteral("私有状态替换目标属性不安全"),
+                                "identity");
+                read(name, 1024 * 1024);
+            }
+            if (MoveFileExW(reinterpret_cast<LPCWSTR>(nativeTemporary.utf16()),
+                            reinterpret_cast<LPCWSTR>(nativeTarget.utf16()),
+                            MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH))
+                break;
+            const auto error = GetLastError();
+            const bool busy = error == ERROR_ACCESS_DENIED || error == ERROR_SHARING_VIOLATION ||
+                              error == ERROR_LOCK_VIOLATION;
+            if (!busy || attempt >= 21 || elapsed.elapsed() >= 500)
+                throw Error(ExitCode::Disk,
+                            QStringLiteral("私有状态原子替换失败，系统错误码 %1，已尝试 %2 次")
+                                .arg(error)
+                                .arg(attempt),
+                            busy ? "identity-busy" : "identity");
+            // 日期：2026-11-06；只等待瞬时共享冲突，新增等待预算500ms/最多21次，不删除原配置或复制回退。
+            const auto until = qMin<qint64>(500, elapsed.elapsed() + 25);
+            while (elapsed.elapsed() < until)
+                QThread::msleep(5);
+        }
+    } catch (...) {
         DeleteFileW(reinterpret_cast<LPCWSTR>(nativeTemporary.utf16()));
-        throw Error(ExitCode::Disk, QStringLiteral("私有状态原子替换失败"), "identity");
+        throw;
     }
 #else
     QString temporary;
