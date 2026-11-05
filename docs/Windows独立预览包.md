@@ -49,10 +49,10 @@ Qt 桌面端由应用明确使用软件渲染，部署参数相应关闭 ANGLE �
 2026-11-05 第十一版包包含有限公平任务排队、实际授信档位和中文等待控制，位置为 dist/windows-preview-20261105-r11/DuktoNext-windows-x64-preview.zip，ZIP SHA-256 40ed3d77b0935b4a98c1ea90ce96d60cbe78a7f79e124d693a996ea6b0c36a14。[迁移运行](validation/2026-11-05/package-windows-runtime-r11.json)通过，新增包内混合上传/下载等待、排队控制、到期/撤权/断开/服务重启及原任务恢复，CLI SHA f9605c326de6741f2c2717eff894bc903f56e3eae9ad10f73d4d463b41bae38e。485 个清单文件和外层 ZIP 完整性核验，包总计 486 文件/24 依赖包；实际 qwindows 模块和原生渲染已捕获，CLI 保持独立无桌面模块。源码归档为生成时快照，之后本机进度/契约文档对齐不在其中，生产输入见[身份核对](validation/2026-11-05/admission-production-identity.json)。当前为开发预览，完整主窗口交互、干净系统、准确第三方对应源码与正式发布继续。
 
 
-2026-11-05 第十二版[实际 ZIP](../dist/windows-preview-20261105-r12/DuktoNext-windows-x64-preview.zip)包含有限网络重试、总时限及远程暂停/取消保护，ZIP SHA-256 为 4362134a681285627553f4031a18deab4ab0e272bbfb7910a230abaee7b3779a，CLI SHA 为 1701673bff7fe7c8cf7586922edcf8b7ae5323a2c2951719bdfdf2e52f95dbf5。[迁移报告](validation/2026-11-05/package-windows-runtime-r12-recheck.json)通过：原有 GUI/CLI/16 通道/客户端/会话恢复/混合排队之外，实际执行同一包内 CLI 的十四组重试/总时限与六组自动最终确认恢复。只保留系统 PATH；没有借开发 DLL 目录补足依赖。
+2026-11-05 第十二版[归档状态（r12 ZIP当前缺失）](产物存放与可用性.md)包含有限网络重试、总时限及远程暂停/取消保护，ZIP SHA-256 为 4362134a681285627553f4031a18deab4ab0e272bbfb7910a230abaee7b3779a，CLI SHA 为 1701673bff7fe7c8cf7586922edcf8b7ae5323a2c2951719bdfdf2e52f95dbf5。[迁移报告](validation/2026-11-05/package-windows-runtime-r12-recheck.json)通过：原有 GUI/CLI/16 通道/客户端/会话恢复/混合排队之外，实际执行同一包内 CLI 的十四组重试/总时限与六组自动最终确认恢复。只保留系统 PATH；没有借开发 DLL 目录补足依赖。
 
 本轮[首次失败](validation/2026-11-05/package-windows-runtime-r12.log)来自测试复制裸 EXE 后失去相邻 DLL；专项新增 --in-place，直接运行已部署程序后，同一 ZIP 完整重跑通过。包内对应源码为生成时内容，之后外部测试的原地运行选项、诊断及进度修改未写回该包。预览身份和发行资格保持独立，cleanSystemQualified/releaseQualified=false。
 
 ## r13 许可修正包（2026-11-05）
 
-当前[实际 r13 ZIP](../dist/windows-preview-20261105-r13/DuktoNext-windows-x64-preview.zip)，SHA 937d3c67f6f7c4c348aa4322c4e8fedf21c75d7952dd204dab03b5977cd3d9e9，[仅系统 PATH 迁移](validation/2026-11-05/package-windows-runtime-r13.json)通过，新增 ICU 许可完整部署，24 包/364 依赖文件/53 许可已与受信签名原包核对。r12 许可遗漏发现保留；新包不覆盖旧归档。r13 仍早于 fail 冲突策略，工程源码使用其自带 ZIP，旧源码输入附件只复用相同依赖输入，详见[源码身份关联](validation/2026-11-05/windows-r13-source-input-linkage.json)。独立重建、干净系统及正式发行仍未完成。
+当前[r13归档状态（ZIP当前缺失）](产物存放与可用性.md)，SHA 937d3c67f6f7c4c348aa4322c4e8fedf21c75d7952dd204dab03b5977cd3d9e9，[仅系统 PATH 迁移](validation/2026-11-05/package-windows-runtime-r13.json)通过，新增 ICU 许可完整部署，24 包/364 依赖文件/53 许可已与受信签名原包核对。r12 许可遗漏发现保留；新包不覆盖旧归档。r13 仍早于 fail 冲突策略，工程源码使用其自带 ZIP，旧源码输入附件只复用相同依赖输入，详见[源码身份关联](validation/2026-11-05/windows-r13-source-input-linkage.json)。独立重建、干净系统及正式发行仍未完成。

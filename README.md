@@ -30,7 +30,7 @@
 
 语言为 C++14，框架方案为 Qt 5.15，使用 CMake；具体工具链与依赖版本需先通过三平台可行性验证。新增或修改函数写中文注释并加日期，统一格式化，修改已有文件时保持编码、BOM 和换行格式。三平台 GUI 与 CLI 共用传输核心，CLI 不依赖 GUI 正在运行。
 
-如开发环境缺少 Qt5 或已有版本不兼容，由开发助手自行下载、安装、配置并完成 C++14 构建验证，同时补齐所需配套工具链，记录来源、版本、校验值和安装路径；不要求用户预先安装 Qt5。该工作纳入 P1 / T03，具体步骤见主计划 5.7 节；Windows x64 已完成安装和核心构建，其他平台及剩余探针待验证。
+如开发环境缺少 Qt5 或已有版本不兼容，由开发助手自行下载、安装、配置并完成 C++14 构建验证，同时补齐所需配套工具链，记录来源、版本、校验值和安装路径；不要求用户预先安装 Qt5。该工作纳入 P1 / T03，具体步骤见主计划5.7节；Windows、两种Linux以及macOS两架构已完成实际安装/构建，完整平台验收见当前记录。
 
 实施顺序为原版基线核实与工具链验证 → 全功能复现 → 服务器访问 → 多线程提速 → 持久恢复 → 稳定性和发布。基础资源限制、文件保护和必要测试随各阶段实现，不能全部留到发布前。
 
@@ -71,7 +71,7 @@ dukto-cli receipts show --task <接收任务ID> --state-directory <明细目录>
 
 2026-11-05 增量：Windows UCRT 已通过 15/15 CTest、TLS/CLI 输入和双主体隔离，Windows↔Alpine 新版公共 TLS 两种客户端/服务器组合、五档共 20 次上传下载及摘要/重试/同名保护通过，见 [矩阵](docs/validation/2026-11-04/windows-linux-tls-matrix-ucrt.json)。Alpine 多通道前一快照 15/15 CTest 通过；最新授信/GUI 快照继续验证。上述互通使用 QEMU NAT，不能据此判断物理 LAN 提速。
 
-服务管理、配对和分页浏览已在 Windows/Alpine Linux 真实验证，macOS 待验。新版服务独立使用 TLS 4646，不会同时开启 R6 无认证接收。构建现在需要与运行库匹配的 OpenSSL Crypto 开发包（Windows 独立目录、Linux openssl-dev/libssl-dev、macOS openssl@3）。例如：
+服务管理、配对和分页浏览已在Windows/Linux及macOS两架构真实验证；完整业务与发布验收仍在继续。新版服务独立使用 TLS 4646，不会同时开启 R6 无认证接收。构建现在需要与运行库匹配的 OpenSSL Crypto 开发包（Windows 独立目录、Linux openssl-dev/libssl-dev、macOS openssl@3）。例如：
 
 ```text
 dukto-cli serve init --state-directory <服务状态目录> --server-name <服务器IP> --server-name <主机名> --json
@@ -161,7 +161,7 @@ Linux 160 文件固定业务驱动均已结束并保留失败；会话 90 秒超
 
 2026-11-05 v0.27 状态：Windows r12 已通过实际迁移及重试；两 Linux 最新 166 源码验证运行中。旧 160 二进制隔离已通过，较长会话诊断仍与默认门槛区分。Linux r6 X11 包通过、Wayland 部署探针通过，r7 实际包待验；宿主图形驱动为运行前提。第三方来源见上述进度入口。旧 Alpine R6 长测已因权限错误结束，Windows 三项长测继续；完整交付尚未完成。
 
-Windows r12现另有[对应源码输入预览附件](dist/windows-source-preview-20261105-r1/DuktoNext-windows-r12-source-inputs-preview.zip)，23份精确配方覆盖24部署包，621个条目流式重读通过；[源码进度](docs/第三方对应源码进度.md)区分输入验证与尚未完成的独立重建/最终发布。Alpine最新166源码18/18 CTest、16通道、最终确认及四文件恢复通过，重试120秒/会话90秒仍失败。Linux r7实际界面与装饰检查通过后正文超时，整包尚未通过，原失败保留。
+Windows r12现另有[对应源码输入预览附件](docs/产物存放与可用性.md)，23份精确配方覆盖24部署包，621个条目流式重读通过；[源码进度](docs/第三方对应源码进度.md)区分输入验证与尚未完成的独立重建/最终发布。Alpine最新166源码18/18 CTest、16通道、最终确认及四文件恢复通过，重试120秒/会话90秒仍失败。Linux r7实际界面与装饰检查通过后正文超时，整包尚未通过，原失败保留。
 
 ## v0.28 当前状态（2026-11-05）
 
@@ -174,3 +174,16 @@ Windows r13 预览包实际迁移及第三方文件/许可映射通过，但包�
 用户授权的新公开仓库为 [29583855/dukto-next](https://github.com/29583855/dukto-next)，共用源码保持 C++14/Qt5。macOS Intel/Apple Silicon 原生编译、Cocoa 主窗口渲染与进程恢复见[构建与验收](docs/macOS构建与验收.md)，实际状态以对应提交的 GitHub Actions 为准。
 
 文档中的 docs/validation 链接为本机累积的验收记录，未随公开源码上传；原版参考二进制、大型依赖附件、凭据和工具缓存也不进入源码仓库。远端产生的新日志/截图/编译输出由 Actions artifacts 保存。现有本机预览包与全部历史记录保持原件，完整功能与正式发布仍按计划验收。
+
+## 当前 macOS 编译结果（2026-11-05，源码 9198cb5）
+
+已使用用户授权的 [29583855/dukto-next](https://github.com/29583855/dukto-next) 上传源码，并在 [GitHub Actions](https://github.com/29583855/dukto-next/actions/runs/41954110035) 完成原生 Apple Silicon 与 Intel 编译。Qt5/OpenSSL 由工作流自动安装，保持 C++14；两架构均生成实际 GUI .app 和独立 CLI。
+
+| 架构 | 编译产物 | 已通过的原生子项 |
+| --- | --- | --- |
+| Apple Silicon / arm64 | [macos-compiled-ARM64](https://github.com/29583855/dukto-next/actions/runs/41954110035/artifacts/13381379149) | 18/18 CTest、20项TLS、Cocoa主入口及面板进程恢复 |
+| Intel / x86_64 | [macos-compiled-X64](https://github.com/29583855/dukto-next/actions/runs/41954110035/artifacts/13381359525) | 18/18 CTest、20项TLS、Cocoa主入口及面板进程恢复 |
+
+完整业务仍失败：两Mac短会话到期未取得已持久检查点，Ubuntu16通道fail冲突错误传播不符；保留原时限及失败日志。上述附件是依赖匹配Qt5/OpenSSL的开发编译输出，自包含部署、签名公证、干净系统和完整产品验收仍开放。源码提交、SHA、已通过项及剩余工作见[macOS构建与验收](docs/macOS构建与验收.md)和[计划](开发计划与进度.md)。
+
+当前附件可用性补充（2026-11-05）：历史Windows/Linux预览包及源码输入ZIP目前缺失，旧验证记录继续保留；本轮Mac输出已校验并保存到持久目录。详见[产物存放与可用性](docs/产物存放与可用性.md)，历史SHA不代表当前还能取得文件；重新建立其他平台候选包仍未完成。
