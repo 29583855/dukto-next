@@ -69,7 +69,7 @@ void Updates::consume() {
         fail(QStringLiteral("更新响应超过 32 KiB 限制"));
 }
 
-// 日期：2026-11-04；网络、状态码或描述格式错误均不会显示“已是最新”。
+// 日期：2026-11-05；网络/状态/描述错误均不显示最新；分别反馈 JSON、协议、版本和页面问题。
 void Updates::finish() {
     consume();
     if (!reply_)
@@ -85,10 +85,21 @@ void Updates::finish() {
     const auto text = object["version"].toString();
     const auto remote = version(text);
     const QUrl page(object["url"].toString());
-    if (error.error != QJsonParseError::NoError || object["schema"].toInt() != 1 ||
-        remote.isNull() || !page.isValid() || page.scheme() != "https" || page.host().isEmpty() ||
+    if (error.error != QJsonParseError::NoError || !document.isObject()) {
+        fail(QStringLiteral("更新描述 JSON 格式无效"));
+        return;
+    }
+    if (object["schema"].toInt() != 1) {
+        fail(QStringLiteral("更新描述协议版本无效"));
+        return;
+    }
+    if (remote.isNull()) {
+        fail(QStringLiteral("更新描述版本号无效"));
+        return;
+    }
+    if (!page.isValid() || page.scheme() != "https" || page.host().isEmpty() ||
         !page.userInfo().isEmpty()) {
-        fail(QStringLiteral("更新描述格式、版本或下载页面无效"));
+        fail(QStringLiteral("更新描述下载页面无效"));
         return;
     }
     timeout_.stop();

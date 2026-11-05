@@ -360,7 +360,8 @@ Rectangle {
                     Label {
                         textFormat: Text.PlainText
                         text: "CLI：dukto-cli --help"
-                        font.family: "monospace"
+                        // 日期：2026-11-05；macOS 使用随系统提供的 Menlo，避免不存在的字体别名警告。
+                        font.family: Qt.platform.os === "osx" ? "Menlo" : "monospace"
                         color: "#777"
                     }
 
