@@ -5,13 +5,13 @@
 
 ## 当前可下载包（2026-11-05）
 
-[下载 x86_64 glibc 独立预览包](https://github.com/29583855/dukto-next/actions/runs/42000487840/artifacts/13401944088)（GitHub Actions 附件下载可能需要登录）。附件 ZIP 内包含 tar、SHA 清单及迁移证据。tar SHA-256：
+[下载x86_64 glibc证书版独立预览包](https://github.com/29583855/dukto-next/actions/runs/42007092492/artifacts/13405122545)（GitHub Actions附件下载可能需要登录）。附件ZIP内含tar、SHA清单及迁移证据。tar SHA-256：
 
 ```text
-04f4093b055cc44864040d1fc5ca74f5fde06ea4b8a95604e530ee0721f46a7e
+45289312b01d4534e5bfebdc302239828bfe3f91ee80532237f2739a0019f729
 ```
 
-源码提交44892f0，生产等价1842009；Ubuntu24.04/glibc2.39起，x86_64，GUI与独立CLI。19/19核心与实际Xvfb/Weston两种迁移、包内依赖、16通道双向、完整性和幂等断言均通过，截图已查看。完整回执[receipt.json](validation/2026-11-05/github-evidence-r46-linux-native-success/receipt.json)。仍为开发预览，干净系统、物理桌面、完整第三方对应源码/重建及正式发布尚未验收。
+源码提交d4626d0，Ubuntu24.04/glibc2.39起，x86_64，GUI与独立CLI；包含证书续期、资料查询和显式指纹迁移。19/19核心与实际Xvfb/Weston两种迁移、包内依赖、16通道双向、完整性及幂等断言均通过，两截图已查看。708文件、2链接、132 ELF和207应用输入与精确Git树匹配。[完整回执](validation/2026-11-05/github-evidence-r47-certificate-linux-terminal/receipt.json)。完整协议回归仍在同次运行；干净系统、物理桌面、完整第三方对应源码/重建和正式发布尚未验收。旧44892f0包保持原目录和摘要。
 
 ## 构建依赖
 
@@ -82,3 +82,6 @@ v0.43当前Linux包首轮终态：41998140793在Ubuntu24.04实际编译、19项�
 
 
 2026-11-05 v0.46版本范围补记：上方已验收的实际包早于证书续期/指纹迁移功能，不含serve renew、profile-info及trust；新源码和新包的资格分别记录，新包实际下载校验结束后再更换入口。
+
+
+v0.47：当前下载入口已更新为d4626d0证书版。此前v0.46范围补记指当时旧包，旧记录保留。

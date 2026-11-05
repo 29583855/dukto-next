@@ -2,6 +2,12 @@
 
 更新日期：2026-11-05。当前为开发预览，完整功能和发布验收仍按主计划执行。
 
+## 当前r21证书版预览包（2026-11-05）
+
+当前包：`dist/windows-preview-20261105-r21-certificate/DuktoNext-windows-x64-preview.zip`，SHA-256：`cceb3232a1b3488bda9c20c249fd116540a99397e5a8cfd65c19da277fa3c1d8`。源码d4626d0，207份应用输入与精确Git树相同，含证书续期、公开资料查询及显式指纹迁移。[实际迁移报告](validation/2026-11-05/windows-r21-runtime-r46.json)、[证书专项](validation/2026-11-05/windows-r21-certificate-r46.json)、[源码关联](validation/2026-11-05/windows-r21-source-linkage-r46.json)及[依赖许可核对](validation/2026-11-05/windows-r21-signed-payload-map-r46.json)均通过，原生截图已查看。
+
+实际ZIP解压后在中文空格路径/仅系统PATH中验证GUI、独立CLI、16通道双向、客户端管理、会话恢复、排队、重试、最终确认、fail及恢复。证书专项将CLI复制至隔离测试目录，运行依赖仅来自实际包及系统；独立OpenSSL仅生成夹具。完整第三方对应源码/独立重建、干净系统及正式发布资格继续未完成。下文旧包按各自版本理解，当前入口以本节为准。
+
 ## 生成
 
 先运行 `scripts/build-ucrt.ps1`。Qt 部署工具缺少时，由开发助手在同一 MSYS2 UCRT 环境中安装 `mingw-w64-ucrt-x86_64-qt5-tools`，保持 pacman 签名校验。已安装版本为 5.15.19-1，安装日志保存在 `.tools/downloads/msys2-install-qt5-tools.log`。

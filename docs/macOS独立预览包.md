@@ -1,15 +1,15 @@
 # macOS独立开发预览包
 
-更新日期：2026-11-05。源码提交：`18420093572a369b94a41aba2ea9102a3af0d45d`。采用C++14和Qt5，Intel及Apple Silicon分别提供GUI和独立CLI。
+更新日期：2026-11-05。源码提交：`d4626d019d8af38289819a30953fe315fbaff360`。采用C++14和Qt5，Intel及Apple Silicon分别提供GUI和独立CLI。
 
 ## 下载与校验
 
-[原生双架构打包与迁移工作流](https://github.com/29583855/dukto-next/actions/runs/41993878362)已整体通过。根据“关于本机”中的芯片选择架构；`uname -m`也可查看。GitHub附件ZIP中包含实际tar.gz、校验值和验收日志。
+[d4626d0双架构打包与迁移工作流](https://github.com/29583855/dukto-next/actions/runs/42007080163)已整体通过。根据芯片选择架构；GitHub附件下载可能需要登录，附件ZIP内含tar.gz、校验值和日志。
 
 | 架构 | GitHub附件 | 内部tar.gz的SHA-256 |
 | --- | --- | --- |
-| Apple Silicon / arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/41993878362/artifacts/13399777739) | `8d34381a18be8cc348f4903035142df113b14e445e61ba074c3b02dac1f48637` |
-| Intel / x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/41993878362/artifacts/13400192550) | `faf374ce5f966dd57ef6d90a5ccf5d483243b2bd355e15ee9f694b1b1163383b` |
+| Apple Silicon / arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42007080163/artifacts/13405556953) | `42fd340e832396ac9fde8ee4b0f0c857063ac6b30d7cbe45bba368bcd1f818d0` |
+| Intel / x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42007080163/artifacts/13406121322) | `a5da95b4a90b223dcf10b0dca093b581184de725690094e05d21d36c77ab5bfe` |
 
 先解压下载的ZIP，进入包含tar.gz及.sha256的目录。Apple Silicon示例：
 
@@ -31,12 +31,16 @@ CLI不需要GUI运行，支持发现、R6发送/接收、服务器管理、配�
 
 ## 实际验证范围
 
-两种架构均在中文空格新目录、仅系统PATH下运行实际tar：核对所有文件/链接、adhoc签名、Cocoa真实渲染、Qt/OpenSSL实际从包内加载、独立CLI无GUI框架，以及16通道双向、4→8八组恢复和SHA。两种原生截图已查看。两包各199份应用源码另与精确Git树逐字节核对。
+两种架构均在中文空格新目录、仅系统PATH下运行实际tar：核对所有文件/链接、adhoc签名、Cocoa真实渲染、Qt/OpenSSL实际从包内加载、独立CLI无GUI框架，以及16通道双向、4→8八组恢复和SHA。两种原生截图已查看。两包各207份应用输入另与精确d4626d0 Git树逐字节核对。
 
-1842009双包部署/迁移和完整四平台CI41993762798均已通过：双Mac各19/19核心、30/30协议，Windows19/19核心/32协议，Ubuntu19/19核心/30协议。原始日志与包分别归档；旧759的Intel UDP和Windows并行失败应答偶发问题继续保留，不能由本轮成功断言根因已修复。具体边界见[进度文档](执行进度.md)。
+本次d4626d0双包部署/迁移通过，两种Mac原生核心各19/19；完整协议回归42006921571仍在运行，终态单独记录。包含证书续期、资料查询和显式指纹迁移。完整下载回执保存在dist/macos-preview-20261105-r47-certificate-macos-terminal/BUILD-RECEIPT.json。
 
 这是使用adhoc签名的开发预览包。Developer ID、公证、Gatekeeper、独立干净Mac、完整第三方对应源码及正式发布验收仍未完成；系统可能要求确认来源。历史失败和后续修正分别记录，完整主窗口交互及原生选择器仍继续验收。
 
+
+## 历史版本记录
+
+以下记录按当时提交理解，当前下载入口以上表为准。
 
 2026-11-05 v0.39补记：此页当前双包已更新到3b8bf4a，包含逐项接收失败原因。旧fa6d96b双包保留于dist/macos-preview-20261105-r38-timeout-attach。新双包部署/迁移通过；同源码完整CI41986605449中Apple Silicon的Core and GUI controller tests步骤失败，尚待该job终态日志定位，其他专项继续原运行。不能将独立包通过写成完整回归通过。
 
@@ -51,3 +55,6 @@ v0.42当前包补记：下载入口已切换到1842009有界重查双包，原�
 
 
 2026-11-05 v0.46版本范围补记：上方已验收的实际包早于证书续期/指纹迁移功能，不含serve renew、profile-info及trust；新源码和新包的资格分别记录，新包实际下载校验结束后再更换入口。
+
+
+v0.47当前入口已切换到d4626d0证书版，旧184双包原目录和摘要保留。207应用输入、两份实际迁移和截图核验通过；完整协议和正式发布资格继续按本轮进度记录。
