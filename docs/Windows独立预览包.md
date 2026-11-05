@@ -77,4 +77,9 @@ Qt 桌面端由应用明确使用软件渲染，部署参数相应关闭 ANGLE �
 当前包为`dist/windows-preview-20261105-r18/DuktoNext-windows-x64-preview.zip`，SHA-256：`76328048c393ea824d2939a83e4ec818ef553052c0e2c2777c9bb02d521b74a9`。源码fa6d96b；193份包内应用源码与精确Git树相同。新增逐项查询及R6 I/O期限/多通道加入确认修复。实际包的[系统PATH迁移](validation/2026-11-05/windows-package-r18-runtime-r38.json)、[源码核验](validation/2026-11-05/windows-r18-source-linkage-r38.json)及[依赖许可映射](validation/2026-11-05/windows-r18-signed-payload-map-r38.json)均通过，原生GUI截图已查看。旧包保留；干净系统、完整对应源码/独立重建及正式发布仍待验收。
 
 
-2026-11-05 v0.39源码补记：新源码增加逐项接收失败原因；此页已验收的预览包仍明确对应fa6d96b，尚不含该新增功能。新包须按新的精确源码和部署运行另行验证，不能沿用旧包SHA声称更新完成。
+2026-11-05 v0.39补记：当前r19包已包含逐项接收失败原因，下面按精确源码与实际迁移单独记录；r18保留为历史版本。
+
+
+## r19逐项失败原因预览（2026-11-05）
+
+当前可用包为`dist/windows-preview-20261105-r19/DuktoNext-windows-x64-preview.zip`，SHA-256：`f04057d0e9f3d2cec9fa86e83af37993ab777484790c6ec07d7ea100a1a28a12`。源码3b8bf4a；195份应用输入与精确Git树相同。[实际ZIP系统PATH迁移](validation/2026-11-05/windows-package-r19-runtime-r39.json)、[新增原因专项](validation/2026-11-05/windows-r19-item-failures-r39.json)、[源码核验](validation/2026-11-05/windows-r19-source-linkage-r39.json)与[依赖许可映射](validation/2026-11-05/windows-r19-signed-payload-map-r39.json)均通过。原生GUI截图已查看，旧版本保留。完整第三方对应源码、独立重建、干净系统及正式发布资格仍未完成。
