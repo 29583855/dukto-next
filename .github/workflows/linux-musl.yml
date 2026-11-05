@@ -7,13 +7,14 @@ jobs:
     runs-on: ubuntu-22.04
     env:
       DUKTO_MUSL_IMAGE: dukto-musl-validation
-      DUKTO_MUSL_WORK: ${{ runner.temp }}/dukto-musl-validation
     steps:
       - uses: actions/checkout@v4
       # 日期：2026-11-05；先固定实际拉取镜像的 digest，再构建依赖环境；不使用 QEMU/TCG。
       - name: Prepare isolated nonroot native musl environment
         shell: bash
         run: |
+          DUKTO_MUSL_WORK="$RUNNER_TEMP/dukto-musl-validation"
+          echo "DUKTO_MUSL_WORK=$DUKTO_MUSL_WORK" >> "$GITHUB_ENV"
           mkdir -p "$DUKTO_MUSL_WORK/build"
           docker pull alpine:3.24.1
           docker image inspect alpine:3.24.1 > "$DUKTO_MUSL_WORK/build/base-image.json"
