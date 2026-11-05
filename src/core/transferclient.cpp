@@ -178,7 +178,7 @@ QJsonObject RemoteClient::upload(const QUuid &requestId, const QString &share,
                                  const std::function<void(const QJsonObject &)> &progress,
                                  int channels, ConflictPolicy conflict) {
     checkedChannels(QString::number(channels));
-    conflictPolicyName(conflict);
+    checkedConflictPolicy(conflictPolicyName(conflict));
     if ((conflict == ConflictPolicy::Fail && !capabilities_.contains("conflict-fail-v1")) ||
         (conflict == ConflictPolicy::Overwrite && !capabilities_.contains("conflict-overwrite-v1")))
         throw Error(ExitCode::Config, QStringLiteral("服务器未协商所选冲突策略能力"), "conflict");
@@ -359,7 +359,7 @@ QJsonObject RemoteClient::download(const QUuid &requestId, const QString &share,
                                    const std::function<void(const QJsonObject &)> &progress,
                                    int channels, ConflictPolicy conflict) {
     checkedChannels(QString::number(channels));
-    conflictPolicyName(conflict);
+    checkedConflictPolicy(conflictPolicyName(conflict));
     if ((conflict == ConflictPolicy::Fail && !capabilities_.contains("conflict-fail-v1")) ||
         (conflict == ConflictPolicy::Overwrite && !capabilities_.contains("conflict-overwrite-v1")))
         throw Error(ExitCode::Config, QStringLiteral("服务器未协商所选冲突策略能力"), "conflict");

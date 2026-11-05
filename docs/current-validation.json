@@ -1,5 +1,5 @@
 {
-  "observedUtc": "2026-11-05T14:22:27.952937+00:00",
+  "observedUtc": "2026-11-05T14:51:34.061841+00:00",
   "productionCommit": "31f3db3bfb5a8bf70b6217afd50df3284e27934c",
   "testCommit": "8c8becd7b1a08de09b5b9b07626c57269781e7e7",
   "packages": [
@@ -35,14 +35,16 @@
     "windowsZipSha256": "ad02396dbba52a80df3e21315d79aa10936ea44a1fc7a77fae97f355801826ee"
   },
   "apfsPhysical": {
-    "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42036465929",
-    "workflowConclusion": "failure",
+    "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42043472400",
+    "sourceCommit": "27b8d21c83c75a030300962dcea7d021b1430caf",
+    "workflowConclusion": "success",
     "businessReportsPassed": 14,
     "faultDirectionsPassed": 26,
     "errorCode": 5,
-    "fillerMethod": "Darwin F_PREALLOCATE physical reservation, not plaintext writes",
-    "failure": "Intel TLS4 business passed; owned image detach returned16 Resource busy",
-    "cleanupNativeRetryPending": true
+    "fillerMethod": "Darwin F_PREALLOCATE physical reservation",
+    "cleanupReportsPassed": 14,
+    "forcedCleanup": false,
+    "allOriginalReportsRead": true
   },
   "focusedRunUrl": "https://github.com/29583855/dukto-next/actions/runs/42036473915",
   "focusedWorkflowConclusion": "success",
@@ -67,8 +69,8 @@
   ],
   "releaseQualified": false,
   "deliveryComplete": false,
-  "planVersion": "v0.55",
-  "currentSourceStage": "persistent disposition foundation; protocol integration pending",
+  "planVersion": "v0.56",
+  "currentSourceStage": "persistent receive preparation verified on Windows; public skip protocol pending",
   "nativeMusl": {
     "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42036458146",
     "sourceCommit": "8c8becd7b1a08de09b5b9b07626c57269781e7e7",
@@ -86,8 +88,10 @@
     "cleanupFailed": 1,
     "failure": "Intel TLS1 path detach16 then missing path1; business passed",
     "deviceStateFixUnitCasesPassed": 7,
-    "nativeRecheckPending": true,
-    "deviceNativeRecheckRunUrl": "https://github.com/29583855/dukto-next/actions/runs/42043472400"
+    "nativeRecheckPending": false,
+    "deviceNativeRecheckRunUrl": "https://github.com/29583855/dukto-next/actions/runs/42043472400",
+    "deviceNativeWorkflowConclusion": "success",
+    "deviceNativeCleanupPassed": 14
   },
   "dispositionFoundation": {
     "windowsToolchainsPassed": [
@@ -102,6 +106,82 @@
     "sourceCommit": "27b8d21c83c75a030300962dcea7d021b1430caf",
     "fullRunUrl": "https://github.com/29583855/dukto-next/actions/runs/42043328634",
     "muslRunUrl": "https://github.com/29583855/dukto-next/actions/runs/42043463523",
-    "ubuntuCoreStepPassed": true
+    "ubuntuCoreStepPassed": true,
+    "fourNativeCoreStepsPassed": true,
+    "nativeCoreTargetsEach": 20,
+    "ubuntuFullJobPassed": true,
+    "appleSiliconFullJobPassed": true,
+    "muslWorkflowConclusion": "success",
+    "muslProtocolCases": 36,
+    "muslAllReportHashesVerified": true
+  },
+  "receivePreparation": {
+    "windowsToolchainsPassed": [
+      "UCRT",
+      "MSVC"
+    ],
+    "ctestTargetsEach": 21,
+    "skipQtTestCasesEachIncludingLifecycle": 16,
+    "nativePending": true,
+    "publicSkipImplemented": false,
+    "lateConflictFinalDispositionImplemented": false,
+    "protocolAndGuiCliIntegrated": false,
+    "source": [
+      {
+        "path": "CMakeLists.txt",
+        "sha256": "27e75707bc8d0881331cd7033a0a293831835355101d316b0a52ad63677affe9"
+      },
+      {
+        "path": "src/core/files.h",
+        "sha256": "caa2a62eb8b79ea87deaa7c79f08e88eb6ae92e6608d157df83968957695a4c1"
+      },
+      {
+        "path": "src/core/files.cpp",
+        "sha256": "5b4404a95a1527aa7c82a9ab249e3d473a32613c6a5cf6b9c845c2c94686fe51"
+      },
+      {
+        "path": "src/core/sourcefile.h",
+        "sha256": "5d9e67ecbe37354cc63dd706a43b39044a0e2a5ad5367ff7cf3df27fdc683943"
+      },
+      {
+        "path": "src/core/sourcefile.cpp",
+        "sha256": "7957e4658d70677c491d47451bb26bc7de52a640e20d667433680972bc7deb74"
+      },
+      {
+        "path": "src/core/durablereceive.h",
+        "sha256": "e74efd6efde662358fa8fe60d59d25739cfa34699d1a7fc0c8d8b2dfd4395e6f"
+      },
+      {
+        "path": "src/core/durablereceive.cpp",
+        "sha256": "30eec2cd6c3688a8fbbc9a811cbfb21a32680bcb4f783623337a9b19ae633321"
+      },
+      {
+        "path": "src/core/receivetree.cpp",
+        "sha256": "6f3a3218a82cd31c2c6fa34daaa50d8ee59f47e1e57b6956466f1db349d484cf"
+      },
+      {
+        "path": "src/core/receiveskip.cpp",
+        "sha256": "c04313dd32dfcf936f68ad32afa11a5fb4900b312e00a00fa557f99c07a51021"
+      },
+      {
+        "path": "src/core/taskstore.cpp",
+        "sha256": "4ccc3af7c9b3f017abaec0a7e660f0d009da0788896ef5d667993172fed8cefd"
+      },
+      {
+        "path": "src/core/transferclient.cpp",
+        "sha256": "d14fd3ddcc329c73b489df6bae1ab636e29fb1581062f5acfca521b45e0c3ec9"
+      },
+      {
+        "path": "tests/receive_skip_tests.cpp",
+        "sha256": "678c3574f09660c6bada39e013350ecafd4edae23611a644529f146e23d4144b"
+      },
+      {
+        "path": "tests/task_store_tests.cpp",
+        "sha256": "aa853191bb170f8ac42c50105ad077a89cc9ebefe6e21021ca73fc4826a0d84a"
+      }
+    ],
+    "sourceAuditFiles": 174,
+    "sourceAuditFindings": 0,
+    "design": "docs/decisions/0019-持久跳过准备决策.md"
   }
 }

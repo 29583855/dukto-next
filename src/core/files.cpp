@@ -39,6 +39,8 @@ QString conflictPolicyName(ConflictPolicy policy) {
         return "fail";
     case ConflictPolicy::Overwrite:
         return "overwrite";
+    case ConflictPolicy::Skip:
+        return "skip";
     }
     throw Error(ExitCode::Config, QStringLiteral("冲突策略枚举无效"), "arguments");
 }

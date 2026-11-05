@@ -20,8 +20,16 @@ QByteArray directoryIdentity(const QString &path) {
 }
 } // namespace
 
+// 日期：2026-11-05；旧字符串入口不能丢弃跳过标记，尚未迁移的协议调用明确拒绝。
+QString DurableReceive::prepare(quint64 file, const std::function<void()> &check) {
+    if (conflict_ == ConflictPolicy::Skip)
+        throw Error(ExitCode::Config, QStringLiteral("跳过策略必须使用显式处置准备接口"),
+                    "receive");
+    return prepareCopy(file, check);
+}
+
 // 日期：2026-11-05；目录同样执行冲突策略与原子不覆盖提交；恢复只认可原日志的目录身份。
-QString DurableReceive::prepare(quint64 file, const std::function<void()> &check) try {
+QString DurableReceive::prepareCopy(quint64 file, const std::function<void()> &check) try {
     verifyRoot();
     if (check)
         check();
@@ -53,7 +61,7 @@ QString DurableReceive::prepare(quint64 file, const std::function<void()> &check
     QByteArray native;
     const bool newlyCreated = !query.next();
     if (newlyCreated) {
-        if (conflict_ == ConflictPolicy::Fail &&
+        if ((conflict_ == ConflictPolicy::Fail || conflict_ == ConflictPolicy::Skip) &&
             QFileInfo::exists(resolveInside(root_, destination)))
             throw Error(ExitCode::Permission, QStringLiteral("接收目录已存在，冲突策略要求停止"),
                         "conflict");
@@ -205,7 +213,7 @@ QString DurableReceive::prepare(quint64 file, const std::function<void()> &check
                             QStringLiteral("目录发布期间出现同名目标，保留原目录与临时证据"),
                             "conflict");
             }
-            if (conflict_ == ConflictPolicy::Fail)
+            if ((conflict_ == ConflictPolicy::Fail || conflict_ == ConflictPolicy::Skip))
                 throw Error(ExitCode::Permission, QStringLiteral("目录提交时出现同名目标"),
                             "conflict");
             continue;

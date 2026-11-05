@@ -250,7 +250,7 @@ TaskStore::~TaskStore() {
     QSqlDatabase::removeDatabase(connection_);
 }
 
-// 日期：2026-11-05；非默认策略采用版本二请求摘要，旧版默认摘要不变，并发数仍可恢复调整。
+// 日期：2026-11-05；仅已开放策略可创建任务；非默认使用版本二，默认旧摘要保持，并发数可调整。
 TransferTask TaskStore::create(const QUuid &owner, const QUuid &request, const QString &direction,
                                const QString &share, const QString &relative, const QString &root,
                                const QByteArray &uploadManifest, ConflictPolicy conflict) {
@@ -263,7 +263,7 @@ TransferTask TaskStore::create(const QUuid &owner, const QUuid &request, const Q
         (direction == "upload" && uploadManifest.size() != 32) ||
         (direction == "download" && !uploadManifest.isEmpty()))
         throw Error(ExitCode::Config, QStringLiteral("任务创建参数或上传内容身份无效"), "task");
-    conflictPolicyName(conflict);
+    checkedConflictPolicy(conflictPolicyName(conflict));
     const auto spec = next::encodeControl(
         {{"version", conflict == ConflictPolicy::Rename ? 1 : 2},
          {"direction", direction},

@@ -115,6 +115,12 @@ void SourceFile::verifyObject() const {
     verifyIdentity(false);
 }
 
+// 日期：2026-11-05；身份仅证明已打开普通对象，不表示正文与某份源清单相同。
+QByteArray SourceFile::objectIdentity() const {
+    verifyObject();
+    return objectIdentity_;
+}
+
 // 日期：2026-11-05；两种模式共用普通文件类型、原生对象和固定路径检查，严格模式再比较内容元数据。
 void SourceFile::verifyIdentity(bool contents) const {
     const auto &expected = contents ? identity_ : objectIdentity_;

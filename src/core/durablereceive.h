@@ -15,14 +15,22 @@ class Error;
 // 持久接收日志由任务执行者持有；本类不自行授予网络主体访问目标目录的权限。
 class DurableReceive final {
   public:
-    // 日期：2026-11-05；日志绑定任务、冻结清单、固定根和冲突策略；默认旧日志字节保持兼容。
+    // 日期：2026-11-05；绑定任务/清单/根/策略，跳过恢复逐项调用检查；默认旧日志字节兼容。
     DurableReceive(PrivateStore &store, const QString &name, const QUuid &task,
                    StrongManifest &manifest, const QString &root,
-                   ConflictPolicy conflict = ConflictPolicy::Rename);
+                   ConflictPolicy conflict = ConflictPolicy::Rename,
+                   const std::function<void()> &check = {});
     // 日期：2026-11-04；关闭接收句柄与 SQLite 连接，保留临时数据和已同步检查点用于恢复。
     ~DurableReceive();
     DurableReceive(const DurableReceive &) = delete;
     DurableReceive &operator=(const DurableReceive &) = delete;
+    struct Preparation {
+        QString path;
+        bool skipped = false;
+        quint64 skippedRoot = 0;
+    };
+    // 日期：2026-11-05；跳过先持久化再返回；普通接收仍需实际同步/提交才能成为copied。
+    Preparation prepareDisposition(quint64 file, const std::function<void()> &check = {});
     // 日期：2026-11-05；持久预约并核对目录映射；默认保留双方，显式覆盖仅复用安全普通目录。
     QString prepare(quint64 file, const std::function<void()> &check = {});
     // 日期：2026-11-04；选择清单中的普通文件及目标相对名称；逐块重读检查点后返回首个缺失块。
@@ -51,6 +59,12 @@ class DurableReceive final {
     QString state() const;
 
   private:
+    // 日期：2026-11-05；保留原目录提交实现；skip只允许显式处置入口决定后调用。
+    QString prepareCopy(quint64 file, const std::function<void()> &check);
+    // 日期：2026-11-05；单条准备记录严格绑定冻结条目，不从当前目标重新猜测历史决定。
+    QJsonObject skipDecision(quint64 file) const;
+    // 日期：2026-11-05；逐页逐项重验且允许取消/授权检查，拒绝缺失架构、损坏字段与子树关系。
+    void verifySkipDecisions(const std::function<void()> &check);
     // 日期：2026-11-04；两种传输模式共用任务绑定、原生身份与提交恢复，不能绕过强清单。
     quint64 openFile(quint64 file, const QString &destination, const std::function<void()> &check,
                      bool sparse);
@@ -81,6 +95,7 @@ class DurableReceive final {
     StrongManifest &manifest_;
     QString root_;
     ConflictPolicy conflict_;
+    quint64 nextDecision_ = 1;
 #ifdef Q_OS_WIN
     std::unique_ptr<NativeDirectoryLock> rootLock_;
 #else

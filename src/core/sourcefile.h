@@ -19,6 +19,8 @@ class SourceFile final {
     void verify() const;
     // 日期：2026-11-05；仅供共享可变状态库核验原生对象；传输源应使用严格verify。
     void verifyObject() const;
+    // 日期：2026-11-05；先核对普通对象和固定路径，再返回不含内容时间的原生身份供持久决策。
+    QByteArray objectIdentity() const;
 
   private:
     // 日期：2026-11-05；普通文件和路径身份始终验证，内容元数据只在严格源读取时要求稳定。

@@ -25,6 +25,20 @@ QJsonObject summary(const QByteArray &sha) {
 class TaskStoreTests final : public QObject {
     Q_OBJECT
   private slots:
+    // 日期：2026-11-05；内部跳过准备尚未接入公开协议，拒绝创建且不能占用请求ID或留下不可读任务。
+    void internalSkipNotPublished() {
+        QTemporaryDir root;
+        dukto::PrivateStore store(root.filePath("private"), true);
+        dukto::TaskStore tasks(store);
+        const auto owner = QUuid::createUuid();
+        const auto request = QUuid::createUuid();
+        QVERIFY_EXCEPTION_THROWN(tasks.create(owner, request, "download", "docs", "file",
+                                              root.path(), {}, dukto::ConflictPolicy::Skip),
+                                 dukto::Error);
+        const auto accepted = tasks.create(owner, request, "download", "docs", "file", root.path());
+        QCOMPARE(tasks.task(owner, accepted.id).id, accepted.id);
+        QVERIFY(!accepted.publicInfo().contains("conflict"));
+    }
     // 日期：2026-11-05；两种非默认策略均绑定请求摘要，覆盖不能借 fail 能力或旧摘要绕过。
     void conflictRequestBinding_data() {
         QTest::addColumn<QString>("policy");

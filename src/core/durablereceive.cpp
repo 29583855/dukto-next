@@ -161,9 +161,11 @@ struct DurableReceive::Cursor {
 // 日期：2026-11-05；非默认冲突策略使用版本化绑定；默认日志保持旧格式，恢复不能更改策略。
 DurableReceive::DurableReceive(PrivateStore &store, const QString &name, const QUuid &task,
                                StrongManifest &manifest, const QString &root,
-                               ConflictPolicy conflict)
+                               ConflictPolicy conflict, const std::function<void()> &check)
     : store_(store), manifest_(manifest), root_(QDir::cleanPath(root)), conflict_(conflict),
       connection_(QUuid::createUuid().toString()), current_(new Cursor) {
+    if (check)
+        check();
     if (task.isNull() || !QDir::isAbsolutePath(root) || !QFileInfo(root).isDir())
         throw Error(ExitCode::Config, QStringLiteral("持久接收任务或根无效"), "receive");
 #ifdef Q_OS_WIN
@@ -178,7 +180,7 @@ DurableReceive::DurableReceive(PrivateStore &store, const QString &name, const Q
                             {"root", root_},
                             {"rootIdentity", QString::fromLatin1(rootLock_->identity())}};
     if (conflict_ != ConflictPolicy::Rename) {
-        bindingInfo["version"] = 2;
+        bindingInfo["version"] = conflict_ == ConflictPolicy::Skip ? 3 : 2;
         bindingInfo["conflict"] = conflictPolicyName(conflict_);
     }
     const auto binding = next::encodeControl(bindingInfo);
@@ -203,40 +205,71 @@ DurableReceive::DurableReceive(PrivateStore &store, const QString &name, const Q
         sql("PRAGMA temp_store=FILE");
         sql("PRAGMA journal_mode=DELETE");
         sql("PRAGMA synchronous=FULL");
-        sql("CREATE TABLE IF NOT EXISTS binding(spec BLOB NOT NULL)");
-        sql("CREATE TABLE IF NOT EXISTS files(id INTEGER PRIMARY KEY, spec BLOB NOT NULL, "
-            "temporary TEXT NOT NULL,target TEXT NOT NULL,native BLOB NOT NULL,"
-            "state TEXT NOT NULL,confirmed INTEGER NOT NULL)");
-        sql("CREATE TABLE IF NOT EXISTS blocks(file INTEGER NOT NULL,block INTEGER NOT NULL,"
-            "sha BLOB NOT NULL,PRIMARY KEY(file,block))");
-        sql("CREATE TABLE IF NOT EXISTS directories(id INTEGER PRIMARY KEY,source TEXT UNIQUE NOT "
-            "NULL,"
-            "spec BLOB NOT NULL,temporary TEXT NOT NULL,target TEXT NOT NULL,native BLOB NOT "
-            "NULL,state TEXT NOT NULL)");
-        QSqlQuery query(database_);
-        query.prepare("SELECT spec FROM binding");
-        execute(query);
-        if (query.next()) {
-            if (query.value(0).toByteArray() != binding || query.next())
-                throw Error(ExitCode::Integrity, QStringLiteral("接收日志任务绑定不匹配"),
-                            "receive");
-        } else {
-            if (exists)
-                throw Error(ExitCode::Integrity, QStringLiteral("接收日志缺少持久绑定"), "receive");
-            query.finish();
-            query.prepare("INSERT INTO binding VALUES(?)");
-            query.addBindValue(binding);
-            execute(query);
-        }
-        // 日期：2026-11-05；绑定验证通过后事务增加旁表，旧文件/目录/块架构保持原样。
-        sql("BEGIN IMMEDIATE");
+        const bool newSkip = conflict_ == ConflictPolicy::Skip && !exists;
+        if (newSkip)
+            sql("BEGIN IMMEDIATE");
         try {
-            sql("CREATE TABLE IF NOT EXISTS item_failures(id INTEGER PRIMARY KEY,spec BLOB NOT "
-                "NULL,phase TEXT NOT NULL,code INTEGER NOT NULL,stage TEXT NOT NULL,"
-                "resolved INTEGER NOT NULL)");
-            sql("COMMIT");
+            if (conflict_ != ConflictPolicy::Skip || !exists) {
+                sql("CREATE TABLE IF NOT EXISTS binding(spec BLOB NOT NULL)");
+                sql("CREATE TABLE IF NOT EXISTS files(id INTEGER PRIMARY KEY, spec BLOB NOT NULL, "
+                    "temporary TEXT NOT NULL,target TEXT NOT NULL,native BLOB NOT NULL,"
+                    "state TEXT NOT NULL,confirmed INTEGER NOT NULL)");
+                sql("CREATE TABLE IF NOT EXISTS blocks(file INTEGER NOT NULL,block INTEGER NOT "
+                    "NULL,"
+                    "sha BLOB NOT NULL,PRIMARY KEY(file,block))");
+                sql("CREATE TABLE IF NOT EXISTS directories(id INTEGER PRIMARY KEY,source TEXT "
+                    "UNIQUE NOT "
+                    "NULL,"
+                    "spec BLOB NOT NULL,temporary TEXT NOT NULL,target TEXT NOT NULL,native BLOB "
+                    "NOT "
+                    "NULL,state TEXT NOT NULL)");
+            }
+            QSqlQuery query(database_);
+            query.prepare("SELECT spec FROM binding");
+            execute(query);
+            if (query.next()) {
+                if (query.value(0).toByteArray() != binding || query.next())
+                    throw Error(ExitCode::Integrity, QStringLiteral("接收日志任务绑定不匹配"),
+                                "receive");
+            } else {
+                if (exists)
+                    throw Error(ExitCode::Integrity, QStringLiteral("接收日志缺少持久绑定"),
+                                "receive");
+                query.finish();
+                query.prepare("INSERT INTO binding VALUES(?)");
+                query.addBindValue(binding);
+                execute(query);
+            }
+            if (conflict_ == ConflictPolicy::Skip) {
+                if (!exists) {
+                    sql("CREATE TABLE skip_decisions(id INTEGER PRIMARY KEY CHECK(id>0),"
+                        "source TEXT NOT NULL UNIQUE CHECK(length(CAST(source AS BLOB))<=4096),"
+                        "spec BLOB NOT NULL CHECK(length(spec)<=65536))");
+                    sql("CREATE TABLE item_failures(id INTEGER PRIMARY KEY,spec BLOB NOT NULL,"
+                        "phase TEXT NOT NULL,code INTEGER NOT NULL,stage TEXT NOT NULL,"
+                        "resolved INTEGER NOT NULL)");
+                    sql("COMMIT");
+                } else {
+                    sql("SELECT id FROM item_failures LIMIT 0");
+                }
+                verifySkipDecisions(check);
+            } else {
+                // 日期：2026-11-05；绑定验证通过后事务增加旁表，旧文件/目录/块架构保持原样。
+                sql("BEGIN IMMEDIATE");
+                try {
+                    sql("CREATE TABLE IF NOT EXISTS item_failures(id INTEGER PRIMARY KEY,spec BLOB "
+                        "NOT "
+                        "NULL,phase TEXT NOT NULL,code INTEGER NOT NULL,stage TEXT NOT NULL,"
+                        "resolved INTEGER NOT NULL)");
+                    sql("COMMIT");
+                } catch (...) {
+                    database_.rollback();
+                    throw;
+                }
+            }
         } catch (...) {
-            database_.rollback();
+            if (newSkip)
+                database_.rollback();
             throw;
         }
     } catch (...) {
@@ -433,6 +466,12 @@ quint64 DurableReceive::openFile(quint64 file, const QString &destination,
     if (current_->entry.directory)
         throw Error(ExitCode::Config, QStringLiteral("持久接收只接受清单普通文件"), "receive");
     current_->original = validateRelativePath(destination);
+    if (conflict_ == ConflictPolicy::Skip) {
+        const auto decision = skipDecision(file);
+        if (decision["action"] != "receive" || decision["path"] != destination)
+            throw Error(ExitCode::Integrity, QStringLiteral("未决定接收或已跳过的项目不得打开正文"),
+                        "receive");
+    }
     const auto originalPath = resolveInside(root_, current_->original);
     if (conflict_ == ConflictPolicy::Overwrite) {
         current_->reservation.reset(new TargetReservation(originalPath));
@@ -456,7 +495,7 @@ quint64 DurableReceive::openFile(quint64 file, const QString &destination,
                         "conflict");
     }
     if (newlyCreated) {
-        if (conflict_ == ConflictPolicy::Fail &&
+        if ((conflict_ == ConflictPolicy::Fail || conflict_ == ConflictPolicy::Skip) &&
             QFileInfo::exists(resolveInside(root_, current_->original)))
             throw Error(ExitCode::Permission, QStringLiteral("接收目标已存在，冲突策略要求停止"),
                         "conflict");
@@ -748,7 +787,7 @@ QString DurableReceive::finish(const std::function<void()> &check) try {
         if (conflict_ != ConflictPolicy::Overwrite) {
             reservation.reset(new TargetReservation(target));
             if (!reservation->acquired()) {
-                if (conflict_ == ConflictPolicy::Fail)
+                if ((conflict_ == ConflictPolicy::Fail || conflict_ == ConflictPolicy::Skip))
                     throw Error(ExitCode::Permission, QStringLiteral("提交目标已有活动接收任务"),
                                 "conflict");
                 continue;
@@ -790,7 +829,7 @@ QString DurableReceive::finish(const std::function<void()> &check) try {
             if (current_->file->identity() != current_->native)
                 throw Error(ExitCode::Integrity, QStringLiteral("提交竞争中临时文件被替换"),
                             "commit");
-            if (conflict_ == ConflictPolicy::Fail)
+            if ((conflict_ == ConflictPolicy::Fail || conflict_ == ConflictPolicy::Skip))
                 throw Error(ExitCode::Permission,
                             QStringLiteral("提交时目标已存在，原文件保持不变"), "conflict");
             continue;

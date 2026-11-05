@@ -46,6 +46,7 @@ add_library(dukto-core
     src/core/transferitems.cpp
     src/core/durablereceive.cpp
     src/core/receivetree.cpp
+    src/core/receiveskip.cpp
     src/core/fileexchange.cpp
     src/core/paralleltransfer.cpp
     src/core/transferservice.cpp
@@ -131,6 +132,9 @@ if(DUKTO_BUILD_TESTS)
     add_executable(durable-receive-tests tests/durable_receive_tests.cpp)
     target_link_libraries(durable-receive-tests PRIVATE dukto-core Qt5::Test)
     dukto_add_qt_test(durable-receive-tests)
+    add_executable(receive-skip-tests tests/receive_skip_tests.cpp)
+    target_link_libraries(receive-skip-tests PRIVATE dukto-core Qt5::Test)
+    dukto_add_qt_test(receive-skip-tests)
     add_executable(file-exchange-tests tests/file_exchange_tests.cpp)
     target_link_libraries(file-exchange-tests PRIVATE dukto-core Qt5::Test)
     dukto_add_qt_test(file-exchange-tests)
