@@ -1,15 +1,15 @@
 # macOS独立开发预览包
 
-更新日期：2026-11-05。源码提交：`fa6d96ba725670f51ceb3e938078af5c815b392d`。采用C++14和Qt5，Intel及Apple Silicon分别提供GUI和独立CLI。
+更新日期：2026-11-05。源码提交：`3b8bf4ac9459ec2a9caa3b74d9a63baf8c0e9ee7`。采用C++14和Qt5，Intel及Apple Silicon分别提供GUI和独立CLI。
 
 ## 下载与校验
 
-[原生双架构打包与迁移工作流](https://github.com/29583855/dukto-next/actions/runs/41980793643)已整体通过。根据“关于本机”中的芯片选择架构；`uname -m`也可查看。GitHub附件ZIP中包含实际tar.gz、校验值和验收日志。
+[原生双架构打包与迁移工作流](https://github.com/29583855/dukto-next/actions/runs/41986673599)已整体通过。根据“关于本机”中的芯片选择架构；`uname -m`也可查看。GitHub附件ZIP中包含实际tar.gz、校验值和验收日志。
 
 | 架构 | GitHub附件 | 内部tar.gz的SHA-256 |
 | --- | --- | --- |
-| Apple Silicon / arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/41980793643/artifacts/13393997278) | `ec252a8613f18d251e0e8218a352acc60f3c342b83f7679b90a609862d26a59e` |
-| Intel / x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/41980793643/artifacts/13394675167) | `91b5158547303d4c6867ae7f67c05056544e1bb0cdc60f49f483775240ba517b` |
+| Apple Silicon / arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/41986673599/artifacts/13396776400) | `41b3eb0a89ea192656cc27a00ebb3c97143a0ed6e2cbcc22ae05670bb73ea8be` |
+| Intel / x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/41986673599/artifacts/13396198187) | `e9e5478827d8bdc01d33228b8070c6de4fb0b1591041a9c6face03a0bfd758ba` |
 
 先解压下载的ZIP，进入包含tar.gz及.sha256的目录。Apple Silicon示例：
 
@@ -31,11 +31,11 @@ CLI不需要GUI运行，支持发现、R6发送/接收、服务器管理、配�
 
 ## 实际验证范围
 
-两种架构均在中文空格新目录、仅系统PATH下运行实际tar：核对所有文件/链接、adhoc签名、Cocoa真实渲染、Qt/OpenSSL实际从包内加载、独立CLI无GUI框架，以及16通道双向、4→8八组恢复和SHA。两种原生截图已查看。两包各193份应用源码另与精确Git树逐字节核对。
+两种架构均在中文空格新目录、仅系统PATH下运行实际tar：核对所有文件/链接、adhoc签名、Cocoa真实渲染、Qt/OpenSSL实际从包内加载、独立CLI无GUI框架，以及16通道双向、4→8八组恢复和SHA。两种原生截图已查看。两包各195份应用源码另与精确Git树逐字节核对。
 
 此前1bc2774的[独立原生恢复CI](https://github.com/29583855/dukto-next/actions/runs/41971997178)的56组会话/故障/字节进度用例也通过，保持原业务速率与期限。当前fa6d96b完整四平台CI仍在执行，结果记录于[进度文档](执行进度.md)。
 
 这是使用adhoc签名的开发预览包。Developer ID、公证、Gatekeeper、独立干净Mac、完整第三方对应源码及正式发布验收仍未完成；系统可能要求确认来源。历史失败和后续修正分别记录，完整主窗口交互及原生选择器仍继续验收。
 
 
-2026-11-05 v0.39源码补记：新源码增加逐项接收失败原因；此页已验收的预览包仍明确对应fa6d96b，尚不含该新增功能。新包须按新的精确源码和部署运行另行验证，不能沿用旧包SHA声称更新完成。
+2026-11-05 v0.39补记：此页当前双包已更新到3b8bf4a，包含逐项接收失败原因。旧fa6d96b双包保留于dist/macos-preview-20261105-r38-timeout-attach。新双包部署/迁移通过；同源码完整CI41986605449中Apple Silicon的Core and GUI controller tests步骤失败，尚待该job终态日志定位，其他专项继续原运行。不能将独立包通过写成完整回归通过。
