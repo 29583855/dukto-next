@@ -1,0 +1,100 @@
+{
+  "recordedDate": "2026-11-06",
+  "observedUtc": "2026-11-05T19:44:06.161760+00:00",
+  "planVersion": "v0.64",
+  "repository": "29583855/dukto-next",
+  "sourceCommit": "7772151314c5c6f9414a2d6d64c5aa81d1382b97",
+  "localWindows": {
+    "sourceCommit": "7772151314c5c6f9414a2d6d64c5aa81d1382b97",
+    "toolchains": [
+      "UCRT",
+      "MSVC"
+    ],
+    "coreTargetsEach": 21,
+    "privateContentionRowsEach": 3,
+    "repeatedReaderWritesEach": 16,
+    "protocolReportsEach": 5,
+    "originalSourceChangeDeadlineSeconds": 30,
+    "originalAuthorizationDeadlineSeconds": 15,
+    "waitBudgetMs": 500,
+    "maximumAttempts": 21,
+    "errorStageOnContention": "identity-busy",
+    "beforeRepairRegressionFailedRows": 3,
+    "localFeatureChecksPassed": true,
+    "readerContentionMechanismReproduced": true,
+    "historicalBlockingHandleIdentified": false,
+    "sourceAuditFiles": 178,
+    "sourceAuditFindings": 0,
+    "evidence": {
+      "path": "docs/validation/2026-11-06/private-r64-windows/summary.json",
+      "sha256": "b8c901dea9ec3e4e8be41963bfd62899c15eb8cb78ef19fa2226c54dcc2ccf20"
+    },
+    "sourceAndBinaryHashesLinked": true,
+    "nativeCiReverificationPending": true
+  },
+  "previousSource": {
+    "sourceCommit": "3fbec42616e1488c943053eb5ac741a6634830fe",
+    "fullNativeRun": {
+      "id": 42083656124,
+      "head_sha": "3fbec42616e1488c943053eb5ac741a6634830fe",
+      "html_url": "https://github.com/29583855/dukto-next/actions/runs/42083656124",
+      "status": "completed",
+      "conclusion": "failure"
+    },
+    "fiveCoreSuitesPassed": true,
+    "coreTargetsEach": 21,
+    "expectedNativeProtocolCases": 155,
+    "verifiedPassedNativeProtocolCases": 154,
+    "allAvailableReportHashesVerified": true,
+    "failedProtocolCases": [
+      {
+        "runner": "windows-2022",
+        "name": "transfer-faults",
+        "exitCode": 5,
+        "stage": "identity"
+      }
+    ],
+    "muslRun": {
+      "id": 42083735291,
+      "head_sha": "3fbec42616e1488c943053eb5ac741a6634830fe",
+      "html_url": "https://github.com/29583855/dukto-next/actions/runs/42083735291",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    "muslProtocolCases": 38,
+    "muslAllReportHashesVerified": true,
+    "evidence": {
+      "path": "docs/validation/2026-11-06/overwrite-r62-native-terminal-summary.json",
+      "sha256": "2c9782c73ea35881627993da68c99ad0f078d28fa93f59715131deff7002c935"
+    },
+    "earlierB9WindowsParallelIsolationCauseConfirmed": false
+  },
+  "nativePending": {
+    "native": {
+      "sourceCommit": "7772151314c5c6f9414a2d6d64c5aa81d1382b97",
+      "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42095096486",
+      "status": "in_progress",
+      "workflowConclusion": null,
+      "originalEvidenceVerified": false
+    },
+    "musl": {
+      "sourceCommit": "7772151314c5c6f9414a2d6d64c5aa81d1382b97",
+      "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42096266855",
+      "status": "in_progress",
+      "workflowConclusion": null,
+      "originalEvidenceVerified": false
+    },
+    "macOSPackage": {
+      "sourceCommit": "7772151314c5c6f9414a2d6d64c5aa81d1382b97",
+      "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42096271845",
+      "status": "in_progress",
+      "workflowConclusion": null,
+      "originalEvidenceVerified": false
+    }
+  },
+  "currentMacDownloadSourceCommit": "3fbec42616e1488c943053eb5ac741a6634830fe",
+  "currentMacDownloadReceipt": "docs/ci-verification-20261106-r63.json",
+  "publicSkipImplemented": false,
+  "releaseQualified": false,
+  "deliveryComplete": false
+}

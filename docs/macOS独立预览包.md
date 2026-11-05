@@ -1,6 +1,6 @@
 # macOS独立开发预览包
 
-更新日期：2026-11-06。当前源码为`3fbec42616e1488c943053eb5ac741a6634830fe`，C++14/Qt5；Intel和Apple Silicon分别交付GUI与独立CLI，Qt5/OpenSSL运行依赖已放入应用。
+更新日期：2026-11-06。当前可下载包源码为`3fbec42616e1488c943053eb5ac741a6634830fe`，C++14/Qt5；Intel和Apple Silicon分别交付GUI与独立CLI，Qt5/OpenSSL运行依赖已放入应用。
 
 ## 下载与校验
 
@@ -31,7 +31,7 @@ GUI保留Dukto设备/最近/关于布局，底部“服务器 · 上传 / 下载
 
 两架构原生Cocoa服务器页截图已查看，中文和控件布局正常。生产QML/实际Controller测试夹具的服务器入口、页签、返回重开及紧凑尺寸通过；150%/200%缩放使用独立offscreen用例，完整部署GUI交互和原生文件选择器仍另行验收。
 
-同源码[四runner完整CI](https://github.com/29583855/dukto-next/actions/runs/42083656124)与[Alpine musl](https://github.com/29583855/dukto-next/actions/runs/42083735291)另行核验终态与完整原报告。新门槛为各21核心、Windows41/POSIX38协议，四runner合计155；包通过不代替完整矩阵通过。Windows UCRT/MSVC本机各21项CTest及真实TLS占用/恢复专项已通过。
+同源码[四runner完整CI](https://github.com/29583855/dukto-next/actions/runs/42083656124)终态failure：各21核心通过，协议154/155，唯一Windows transfer-faults在改共享根时返回5/identity。Ubuntu和双Mac各38协议、[Alpine musl](https://github.com/29583855/dukto-next/actions/runs/42083735291)另21核心/38协议通过，所有实际存在的通过报告SHA核验。新源码7772151的[双Mac包](https://github.com/29583855/dukto-next/actions/runs/42096271845)与原生矩阵正在验证，取得产物核验前下载保持本页3fbec42。[最新修复回执](ci-verification-20261106-r64.json)。
 
 本机持久归档：dist/macos-preview-20261106-r62-overwrite/BUILD-RECEIPT.json。[公开核验回执](ci-verification-20261106-r63.json)和[当前索引](current-validation.json)记录实际提交、运行、附件ID和摘要。
 

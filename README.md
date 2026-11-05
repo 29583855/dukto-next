@@ -6,11 +6,11 @@
 
 当前已建立 C++14 共用核心、Qt Quick 2 桌面端和独立 CLI。Windows 已验证与原版文件/目录/文本双向互传、超过 4 GiB、10 万文件、100 轮接收，以及首次说明/设置/截图/单实例和有界头像模块。完整原版交互、服务器、多线程、恢复和跨平台验收继续按计划推进。原版目录保留用于对照。
 
-公开仓库为[29583855/dukto-next](https://github.com/29583855/dukto-next)。精确3fbec42共用C++14源码已上传，[双架构Mac实际包](https://github.com/29583855/dukto-next/actions/runs/42083741936)编译/部署/迁移全部成功，[下载与SHA](docs/macOS独立预览包.md)已更新。Intel/Apple Silicon GUI和独立CLI包含Qt5/OpenSSL运行依赖；每包234份应用源码与Git树全集一致，各五份业务原报告及四张原生界面截图核验。完整四runner155/Alpine38协议另行收集终态和原报告；Linux/Windows当前已验部署包仍为31f3db3。Mac为adhoc开发预览，完整主计划和正式签名/公证继续，见[本轮回执](docs/ci-verification-20261106-r63.json)和[验证索引](docs/current-validation.json)。
+公开仓库为[29583855/dukto-next](https://github.com/29583855/dukto-next)。当前生产源码[7772151](https://github.com/29583855/dukto-next/commit/7772151314c5c6f9414a2d6d64c5aa81d1382b97)已上传，Windows私有配置原子替换增加有界竞争等待；本机UCRT/MSVC各21核心与各五协议报告通过，新[四runner](https://github.com/29583855/dukto-next/actions/runs/42095096486)/[Alpine](https://github.com/29583855/dukto-next/actions/runs/42096266855)/[双Mac打包](https://github.com/29583855/dukto-next/actions/runs/42096271845)待终态及原报告核验。当前[Mac下载与SHA](docs/macOS独立预览包.md)保持已验3fbec42，Intel/Apple Silicon包含GUI、独立CLI及Qt5/OpenSSL依赖；各234份应用源码、各五业务原报告和四张原生截图核验。Linux/Windows已验部署包仍为31f3db3。Mac为adhoc开发预览，完整交付继续，见[本轮回执](docs/ci-verification-20261106-r64.json)和[验证索引](docs/current-validation.json)。
 
-新增[b9d9b78上传发送端确认](docs/decisions/0022-上传发送端持久处置与证据恢复.md)已通过Windows双工具链各21核心及真实缺项/确认丢失/故障恢复专项；本轮原生CI与双Mac部署仍运行，尚未替换上述已验包。首轮Windows覆盖错误5保留为未确认根因，详见主计划v0.61。
+新增[b9d9b78上传发送端确认](docs/decisions/0022-上传发送端持久处置与证据恢复.md)已通过本机专项；原CI终态failure保留：四平台临时库glob误判，另Windows并发隔离空闲线程5/基线3的原因未确认。旧运行不再视为进行中，完整历史见主计划v0.64。
 
-新增[3fbec42覆盖占用修正](docs/decisions/0023-Windows覆盖共享占用与同任务恢复.md)已包含于新Mac包；两套Windows各21核心及真实占用/恢复专项通过。b9d9b78迁移测试临时库glob误判的原失败保留；完整交付未完成。
+新增[3fbec42覆盖占用修正](docs/decisions/0023-Windows覆盖共享占用与同任务恢复.md)已包含于当前Mac包。其完整四runner终态failure：各21核心通过，协议154/155，Windows改共享根时私有配置替换失败；Ubuntu/双Mac各38、Alpine另38协议通过。新[私有状态修复](docs/decisions/0024-私有状态原子替换与读者竞争.md)按7772151单独复验。
 
 ## 文档入口
 
@@ -74,9 +74,9 @@ dukto-cli receipts show --task <接收任务ID> --state-directory <明细目录>
 
 崩溃专项 `tests/crash_integration.py` 已接入验证脚本：进程失去所有权后，旧接收记录显示 `interrupted` 和结果未知；查询退出 0 仅表示查询成功，脚本应检查任务 `state`。中断遗留临时文件须核对，当前不自动恢复或删除。
 
-长时基础验证使用 `tests/soak_transfer.py <CLI> --duration 86400 --interval 30 --report <新目录>/summary.json`，依赖 psutil，须配置 Qt 运行库路径。脚本逐轮校验并删除自身副本、保留同名原文件，持续写 CSV；Windows 使用独立 EXE 副本，报告在结束前始终为 running。当前已启动 Windows/Linux 24 小时 R6 基线测试，详见实施进度，不作为新版多通道或全阶段通过。
+长时基础验证使用 `tests/soak_transfer.py <CLI> --duration 86400 --interval 30 --report <新目录>/summary.json`，依赖 psutil，须配置 Qt 运行库路径。脚本逐轮校验并删除自身副本、保留同名原文件，持续写 CSV；Windows 使用独立 EXE 副本，报告在结束前始终为 running。早期已启动的 Windows/Linux 24 小时 R6 基线测试按原输入保留，详见实施进度；本轮没有查询其运行状态，也不作为当前源码、新版多通道或全阶段通过。
 
-当前 Qt 5.15.2 / OpenSSL 1.1.1w 是本机早期开发组合，发布前仍须替换和验证可维护依赖。Alpine Linux x64 已完成 GUI/CLI 实际构建、12 个 CTest（接收核心快照）、IPv6/CLI/崩溃及 OpenSSL 3.5.9 握手验证。三平台构建工作流已编写，macOS、主流 Linux 桌面和正式发布包验收仍待完成。
+当前 Qt 5.15.2 / OpenSSL 1.1.1w 是本机早期开发组合，发布前仍须替换和验证可维护依赖。Alpine Linux x64 已完成 GUI/CLI 实际构建、12 个 CTest（接收核心快照）、IPv6/CLI/崩溃及 OpenSSL 3.5.9 握手验证。此处12项为早期核心快照；三平台实际构建和开发预览包的最新资格见当前验证索引，完整GUI、干净系统及正式发布验收仍未完成。
 
 2026-11-05 增量：Windows UCRT 已通过 15/15 CTest、TLS/CLI 输入和双主体隔离，Windows↔Alpine 新版公共 TLS 两种客户端/服务器组合、五档共 20 次上传下载及摘要/重试/同名保护通过，见 [矩阵](docs/validation/2026-11-04/windows-linux-tls-matrix-ucrt.json)。Alpine 多通道前一快照 15/15 CTest 通过；最新授信/GUI 快照继续验证。上述互通使用 QEMU NAT，不能据此判断物理 LAN 提速。
 
