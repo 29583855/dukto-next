@@ -45,11 +45,15 @@ def preflight_rejection(executable, output, state, capacity):
 
 
 # 日期：2026-11-04；先写入部分文件，再让独立写入者耗尽同一受限文件系统，验证中途磁盘满。
-def run(executable, mount):
+def run(executable, mount, expected_capacity=None):
     filesystem = os.statvfs(mount)
     capacity = filesystem.f_blocks * filesystem.f_frsize
-    if not os.path.ismount(mount) or not 4 * 1024**2 <= capacity <= 64 * 1024**2:
-        raise RuntimeError("test requires a dedicated mounted filesystem of 4–64 MiB")
+    # 日期：2026-11-05；Linux默认4–64MiB保持；APFS显式绑定实际容量且上限512MiB，仍须独立挂载点。
+    maximum = 64 * 1024**2 if expected_capacity is None else 512 * 1024**2
+    if not os.path.ismount(mount) or not 4 * 1024**2 <= capacity <= maximum:
+        raise RuntimeError("test requires a dedicated mounted filesystem within the explicit capacity bound")
+    if expected_capacity is not None:
+        assert capacity == expected_capacity, (capacity, expected_capacity)
     with tempfile.TemporaryDirectory(prefix="dukto-enospc-", dir=mount) as temporary, \
             tempfile.TemporaryDirectory(prefix="dukto-enospc-state-") as metadata:
         output = Path(temporary)
@@ -114,8 +118,10 @@ def main():
     parser.add_argument("executable")
     parser.add_argument("--limited-directory", required=True)
     parser.add_argument("--report", required=True)
+    parser.add_argument("--filesystem-bytes", type=int)
     args = parser.parse_args()
-    report = run(str(Path(args.executable).resolve()), Path(args.limited_directory).resolve())
+    report = run(str(Path(args.executable).resolve()), Path(args.limited_directory).resolve(),
+                 args.filesystem_bytes)
     report["date"] = "2026-11-04"
     text = json.dumps(report, ensure_ascii=False, indent=2) + "\n"
     Path(args.report).write_text(text, encoding="utf-8")

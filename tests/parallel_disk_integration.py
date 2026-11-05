@@ -124,24 +124,27 @@ def exercise(executable, mount, capacity, channels, direction):
                 assert not errors.read()
 
 
-# 日期：2026-11-05；挂载由调用方准备，限定 64 MiB 独立文件系统；本脚本不提权或修改系统挂载。
+# 日期：2026-11-05；默认保持64MiB；APFS可显式绑定至多512MiB的实际独立挂载容量，不填普通用户盘。
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("executable")
     parser.add_argument("--limited-directory", type=Path, required=True)
     parser.add_argument("--threads", type=int, choices=(1, 4, 16), default=4)
     parser.add_argument("--report", type=Path, required=True)
+    parser.add_argument("--filesystem-bytes", type=int, default=64 * 1024**2)
     args = parser.parse_args()
     assert os.name == "posix"
     mount = args.limited_directory.resolve()
     filesystem = os.statvfs(mount)
     capacity = filesystem.f_blocks * filesystem.f_frsize
-    assert os.path.ismount(mount) and capacity == 64 * 1024**2
+    assert os.path.ismount(mount) and capacity == args.filesystem_bytes
+    assert 32 * 1024**2 <= capacity <= 512 * 1024**2
     executable = str(Path(args.executable).resolve())
     cases = [exercise(executable, mount, capacity, args.threads, direction) for direction in ("upload", "download")]
     args.report.parent.mkdir(parents=True, exist_ok=True)
     args.report.write_text(json.dumps({"date": "2026-11-05", "passed": True, "filesystemBytes": capacity,
-        "cases": cases, "scope": "newer TLS real data and isolated actual ENOSPC; no power-loss or Windows/macOS disk qualification"},
+        "cases": cases, "platform": os.uname().sysname,
+        "scope": "newer TLS real data and isolated actual ENOSPC on the reported native filesystem; no power-loss or untested operating-system qualification"},
         ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print("Parallel TLS disk-full and recovery passed")
 
