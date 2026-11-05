@@ -9,11 +9,27 @@
 namespace dukto {
 namespace {
 constexpr int Maximum = 32768;
-// 日期：2026-11-04；严格消费完整版本字符串，禁止无效后缀和不合理段数。
+// 日期：2026-11-05；三个有界 ASCII 十进制段显式检查溢出，不依赖不同 Qt 版本的后缀索引行为。
 QVersionNumber version(const QString &text) {
-    int suffix = 0;
-    const auto value = QVersionNumber::fromString(text, &suffix);
-    return suffix == text.size() && value.segmentCount() == 3 ? value : QVersionNumber();
+    if (text.size() > 32)
+        return {};
+    const auto parts = text.split('.');
+    if (parts.size() != 3)
+        return {};
+    QVector<int> segments;
+    for (const auto &part : parts) {
+        if (part.isEmpty() || part.size() > 10)
+            return {};
+        for (const auto character : part)
+            if (character < QLatin1Char('0') || character > QLatin1Char('9'))
+                return {};
+        bool valid = false;
+        const auto number = part.toInt(&valid, 10);
+        if (!valid)
+            return {};
+        segments.append(number);
+    }
+    return QVersionNumber(segments);
 }
 } // namespace
 

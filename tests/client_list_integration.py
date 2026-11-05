@@ -35,6 +35,52 @@ def check_page(page):
         assert type(entry["revoked"]) is bool and int(entry["revision"]) > 0
 
 
+# 日期：2026-11-05；合成记录创建即采用私有权限；Windows 从真实生产模板继承明确所有者，避免管理员组默认所有者。
+def write_private_record(target, value, template):
+    if os.name != "nt":
+        with os.fdopen(os.open(target, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), "w", encoding="utf-8") as output:
+            output.write(json.dumps(value))
+        assert target.stat().st_mode & 0o777 == 0o600
+        return
+    import ctypes
+    from ctypes import wintypes
+    import msvcrt
+
+    class SecurityAttributes(ctypes.Structure):
+        # 日期：2026-11-05；字段与 Win32 SECURITY_ATTRIBUTES 原生宽度及对齐一致。
+        _fields_ = [("length", wintypes.DWORD), ("descriptor", ctypes.c_void_p), ("inherit", wintypes.BOOL)]
+
+    security = ctypes.WinDLL("advapi32", use_last_error=True)
+    kernel = ctypes.WinDLL("kernel32", use_last_error=True)
+    pointer = ctypes.POINTER(ctypes.c_void_p)
+    security.GetNamedSecurityInfoW.argtypes = [wintypes.LPWSTR, ctypes.c_int, wintypes.DWORD,
+                                               pointer, pointer, pointer, pointer, pointer]
+    security.GetNamedSecurityInfoW.restype = wintypes.DWORD
+    kernel.CreateFileW.argtypes = [wintypes.LPCWSTR, wintypes.DWORD, wintypes.DWORD,
+                                   ctypes.POINTER(SecurityAttributes), wintypes.DWORD, wintypes.DWORD, wintypes.HANDLE]
+    kernel.CreateFileW.restype = wintypes.HANDLE
+    kernel.CloseHandle.argtypes = [wintypes.HANDLE]
+    kernel.LocalFree.argtypes = [ctypes.c_void_p]
+    descriptor = ctypes.c_void_p()
+    code = security.GetNamedSecurityInfoW(str(template), 1, 5, None, None, None, None, ctypes.byref(descriptor))
+    if code:
+        raise ctypes.WinError(code)
+    try:
+        attributes = SecurityAttributes(ctypes.sizeof(SecurityAttributes), descriptor, False)
+        handle = kernel.CreateFileW(str(target), 0x40000000, 0, ctypes.byref(attributes), 1, 0x80, None)
+        if handle == ctypes.c_void_p(-1).value:
+            raise ctypes.WinError(ctypes.get_last_error())
+        try:
+            fd = msvcrt.open_osfhandle(handle, os.O_WRONLY | os.O_BINARY)
+        except BaseException:
+            kernel.CloseHandle(handle)
+            raise
+        with os.fdopen(fd, "w", encoding="utf-8") as output:
+            output.write(json.dumps(value))
+    finally:
+        kernel.LocalFree(descriptor)
+
+
 # 日期：2026-11-05；两真实客户证明状态来源，其后合法私有测试主体只用于条数及字节边界压力。
 def main():
     parser = argparse.ArgumentParser()
@@ -106,12 +152,9 @@ def main():
             client = str(uuid.UUID(int=index + 1))
             generated.append(client)
             record = dict(template, client=client)
-            # 日期：2026-11-05；POSIX 的默认 0644 会被生产私有库正确拒绝，测试资料必须从创建起即为 0600。
+            # 日期：2026-11-05；仅合成合法的私有测试记录，不调整生产对所有者和权限的严格校验。
             target = service / f"client-{client}.json"
-            with os.fdopen(os.open(target, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), "w", encoding="utf-8") as output:
-                output.write(json.dumps(record))
-            if os.name != "nt":
-                assert target.stat().st_mode & 0o777 == 0o600
+            write_private_record(target, record, service / f"client-{clients[0]}.json")
         expected = sorted(clients + generated)
         pages = invoke(executable, state, ["serve", "clients", "--all"])
         seen = []

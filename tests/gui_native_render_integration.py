@@ -34,18 +34,39 @@ def main():
         root = Path(temporary) / "中文路径 with spaces"
         root.mkdir()
         screenshot = root / "desktop.png"
+        geometry_path = root / "geometry.json"
         result = subprocess.run([str(executable), "--self-test", "--data-directory", str(root / "state"),
-                                 "--port", str(free_port()), "--screenshot", str(screenshot)],
+                                 "--port", str(free_port()), "--screenshot", str(screenshot),
+                                 "--render-report", str(geometry_path)],
                                 cwd=root, env=environment, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                 timeout=30)
+        report.parent.mkdir(parents=True, exist_ok=True)
+        image = screenshot.read_bytes() if screenshot.is_file() else b""
+        if image:
+            report.with_suffix(".png").write_bytes(image)
+        geometry = json.loads(geometry_path.read_text(encoding="utf-8")) if geometry_path.is_file() else {}
+        report.write_text(json.dumps({"passed": False, "exitCode": result.returncode,
+            "stdout": result.stdout.decode("utf-8", "replace")[:4096],
+            "stderr": result.stderr.decode("utf-8", "replace")[:4096], "geometry": geometry},
+            ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         assert result.returncode == 0 and not result.stdout and not result.stderr, (
             result.returncode, result.stdout, result.stderr)
-        image = screenshot.read_bytes()
         assert 1000 < len(image) <= 8 * 1024**2
         assert image[:8] == b"\x89PNG\r\n\x1a\n" and image[12:16] == b"IHDR"
         width, height = struct.unpack(">II", image[16:24])
-        # 日期：2026-11-05；允许 Retina/系统缩放的实际物理像素，逻辑窗口比例仍必须为430×700。
-        assert 430 <= width <= 2580 and width * 700 == height * 430, (width, height)
+        # 日期：2026-11-05；Cocoa 可把窗口收至屏幕可用高度，仍核对根布局、实际帧缓冲和原生缩放。
+        assert geometry["platform"] == args.platform and geometry["requestedSize"] == [430, 700]
+        logical_width, logical_height = geometry["logicalSize"]
+        assert logical_width == 430 and 560 <= logical_height <= 700, geometry
+        assert geometry["rootSize"] == geometry["logicalSize"], geometry
+        scale = geometry["devicePixelRatio"]
+        assert 0.75 <= scale <= 6 and geometry["renderedPixels"] == [width, height], geometry
+        assert abs(width - logical_width * scale) <= 1 and abs(height - logical_height * scale) <= 1, geometry
+        frame_width, frame_height = geometry["frameSize"]
+        screen_width, screen_height = geometry["availableScreen"]
+        assert frame_width <= screen_width + 1 and frame_height <= screen_height + 1, geometry
+        if logical_height < 700:
+            assert screen_height < 700 + frame_height - logical_height, geometry
         assert hashlib.sha256(executable.read_bytes()).hexdigest() == binary_sha
         report.parent.mkdir(parents=True, exist_ok=True)
         report.with_suffix(".png").write_bytes(image)
@@ -53,7 +74,7 @@ def main():
         "hostSystem": platform.system(), "hostMachine": platform.machine(),
         "forcedNativePlatform": args.platform, "binarySha256": binary_sha,
         "testScriptSha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
-        "renderedPixels": [width, height], "renderedSha256": hashlib.sha256(image).hexdigest(),
+        "geometry": geometry, "renderedPixels": [width, height], "renderedSha256": hashlib.sha256(image).hexdigest(),
         "workingPathUnicodeAndSpaces": True, "standardErrorEmpty": True,
         "scope": "actual complete GUI entrypoint and framebuffer under forced native platform; first-run view; full shell interaction/native choosers and packaged/clean-system qualification remain open"},
         ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

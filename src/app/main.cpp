@@ -7,13 +7,18 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QFont>
+#include <QJsonArray>
+#include <QJsonDocument>
 #include <QLocalServer>
 #include <QLocalSocket>
 #include <QLockFile>
 #include <QQmlContext>
 #include <QQmlError>
+#include <QQuickItem>
 #include <QQuickWidget>
 #include <QQuickWindow>
+#include <QSaveFile>
+#include <QScreen>
 #include <QStandardPaths>
 #include <QTextStream>
 #include <QTimer>
@@ -34,6 +39,7 @@ int main(int argc, char **argv) {
     parser.addOption({"port", "Legacy discovery/receive port", "port", "4644"});
     parser.addOption({"self-test", "Load QML, render and exit; no transfer is started"});
     parser.addOption({"screenshot", "Save GUI self-test rendering", "path"});
+    parser.addOption({"render-report", "Save actual native self-test window geometry", "path"});
     parser.addOption({"data-directory", "Use an isolated data/configuration directory", "path"});
     if (!parser.parse(app.arguments()))
         return 2;
@@ -121,12 +127,31 @@ int main(int argc, char **argv) {
                          [&](bool visible) { window.setVisible(visible); });
         window.show();
         if (parser.isSet("self-test")) {
-            // 日期：2026-11-04；测试要求 QML 实际加载并完成离屏渲染，不以编译成功替代。
+            // 日期：2026-11-05；保存真实窗口/屏幕/帧缓冲几何，原生小屏幕可缩窗，测试不能假设固定可用高度。
             QTimer::singleShot(800, &app, [&]() {
                 const auto rendered = window.grabFramebuffer();
                 bool passed = !rendered.isNull() && window.status() == QQuickWidget::Ready;
                 if (parser.isSet("screenshot"))
                     passed = passed && rendered.save(parser.value("screenshot"));
+                if (parser.isSet("render-report")) {
+                    const auto available = window.screen()->availableGeometry();
+                    const auto frame = window.frameGeometry();
+                    const auto root = window.rootObject();
+                    const QJsonObject geometry{
+                        {"platform", QGuiApplication::platformName()},
+                        {"requestedSize", QJsonArray{430, 700}},
+                        {"logicalSize", QJsonArray{window.width(), window.height()}},
+                        {"rootSize",
+                         QJsonArray{root ? root->width() : 0, root ? root->height() : 0}},
+                        {"availableScreen", QJsonArray{available.width(), available.height()}},
+                        {"frameSize", QJsonArray{frame.width(), frame.height()}},
+                        {"devicePixelRatio", window.devicePixelRatioF()},
+                        {"renderedPixels", QJsonArray{rendered.width(), rendered.height()}}};
+                    const auto bytes = QJsonDocument(geometry).toJson();
+                    QSaveFile report(parser.value("render-report"));
+                    passed = report.open(QIODevice::WriteOnly) &&
+                             report.write(bytes) == bytes.size() && report.commit() && passed;
+                }
                 app.exit(passed ? 0 : 1);
             });
         }

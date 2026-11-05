@@ -104,6 +104,10 @@ jobs:
         with:
           name: macos-compiled-${{ runner.arch }}
           path: build/DuktoNext-macos-*-compiled.tar.gz*
+      # 日期：2026-11-05；证书固定适配必须先验证错误指纹/主机名/未信任证书，不能只验证正常服务握手。
+      - name: Independent TLS certificate and protocol boundaries
+        if: runner.os != 'Windows'
+        run: python3 tests/secure_channel_integration.py build/secure-channel-probe --report build/secure-channel.json
       - name: Core and GUI controller tests
         env:
           QT_QPA_PLATFORM: offscreen
@@ -200,7 +204,6 @@ jobs:
           python3 tests/final_ack_integration.py build/dukto-cli --auto-retries 3 --report build/final-ack-auto-retry.json
           python3 tests/gui_process_recovery_integration.py build/dukto-cli build/server-panel-process-probe --report build/gui-process-recovery.json
           python3 tests/task_store_integration.py build/task-store-probe --report build/task-store.json
-          python3 tests/secure_channel_integration.py build/secure-channel-probe --report build/secure-channel.json
       - name: Real disk exhaustion on isolated Linux tmpfs
         if: runner.os == 'Linux'
         shell: bash
