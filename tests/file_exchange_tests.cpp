@@ -219,6 +219,7 @@ class FileExchangeTests final : public QObject {
         std::atomic_bool releaseBody{false};
         std::atomic_int bodyRequests{0};
         std::atomic_int unexpectedBodies{0};
+        std::atomic_int controlHeartbeats{0};
         ExchangeServer lane;
         lane.operation = [&](qintptr descriptor) {
             // 日期：2026-11-06；独立数据端完整进行TLS/Hello/认证/加入，再尝试未经控制裁决的块请求。
@@ -266,6 +267,22 @@ class FileExchangeTests final : public QObject {
             // 日期：2026-11-06；逐字段攻击本项准备/最终/回显，数据端始终不提供任何备用源内容。
             dukto::next::SecureChannel peer(3000);
             peer.accept(descriptor, service.configuration());
+            const auto readControl = [&]() {
+                // 日期：2026-11-06；只消费当前请求的精确busy，数量及总时限有界，不能吞掉畸形响应。
+                QElapsedTimer deadline;
+                deadline.start();
+                for (;;) {
+                    const auto frame = peer.read();
+                    if (frame.header.type != dukto::next::Type::TaskState)
+                        return frame;
+                    if (frame.header.correlation != 2 ||
+                        dukto::next::parseControl(frame.payload) !=
+                            QJsonObject{{"state", "busy"}} ||
+                        ++controlHeartbeats > 4 || deadline.elapsed() > 3000)
+                        throw dukto::Error(dukto::ExitCode::Integrity, "fixture control heartbeat",
+                                           "test");
+                }
+            };
             auto value = identity;
             value["kind"] = "parallel-file";
             value["path"] = "data.bin";
@@ -275,7 +292,7 @@ class FileExchangeTests final : public QObject {
             quint64 correlation = 2;
             if (stage == 1 || stage == 4) {
                 peer.write(kind, correlation, value);
-                const auto ack = peer.read();
+                const auto ack = readControl();
                 if (ack.header.type != dukto::next::Type::ItemDispositionAck ||
                     dukto::next::parseControl(ack.payload) != value)
                     throw dukto::Error(dukto::ExitCode::Integrity, "fixture disposition ack",
@@ -285,11 +302,16 @@ class FileExchangeTests final : public QObject {
                 if (stage == 4)
                     releaseBody = true;
             } else if (stage == 2) {
-                const auto decision = peer.read();
+                const auto decision = readControl();
                 if (decision.header.type != dukto::next::Type::ItemDisposition ||
                     dukto::next::parseControl(decision.payload) != value)
-                    throw dukto::Error(dukto::ExitCode::Integrity, "fixture receive decision",
-                                       "test");
+                    throw dukto::Error(
+                        dukto::ExitCode::Integrity,
+                        QString("fixture receive decision: type=%1 correlation=%2 payload=%3")
+                            .arg(int(decision.header.type))
+                            .arg(decision.header.correlation)
+                            .arg(QString::fromUtf8(decision.payload)),
+                        "test");
                 kind = dukto::next::Type::ItemDispositionAck;
             }
             if (attack == 0)
@@ -315,7 +337,7 @@ class FileExchangeTests final : public QObject {
             if (stage < 3)
                 peer.write(kind, correlation, value);
             try {
-                const auto response = peer.read();
+                const auto response = readControl();
                 Q_UNUSED(response);
                 throw dukto::Error(dukto::ExitCode::Integrity, "unexpected rejection response",
                                    "test");
@@ -346,7 +368,17 @@ class FileExchangeTests final : public QObject {
                     dukto::DurableReceive receiver(store, "receive.sqlite", Task, manifest,
                                                    temporary.filePath("output"),
                                                    dukto::ConflictPolicy::Skip);
-                    transfer.receiveTree(peer, manifest, receiver, 2, {}, {}, nullptr, true);
+                    bool forcedHeartbeat = false;
+                    transfer.receiveTree(
+                        peer, manifest, receiver, 2,
+                        [&]() {
+                            // 日期：2026-11-06；固定慢准备时序，真实Pulse必须在处置前发出合法心跳。
+                            if (!forcedHeartbeat) {
+                                QThread::msleep(300);
+                                forcedHeartbeat = true;
+                            }
+                        },
+                        {}, nullptr, true);
                 } else {
                     transfer.sendTree(peer, manifest, 2, {}, {}, true);
                 }
@@ -360,6 +392,8 @@ class FileExchangeTests final : public QObject {
         QVERIFY(control.done());
         QVERIFY2(lane.error.isEmpty(), qPrintable(lane.error));
         QVERIFY2(control.error.isEmpty(), qPrintable(control.error));
+        if (stage == 2)
+            QVERIFY(controlHeartbeats.load() > 0);
         QVERIFY(failureStage == "disposition" || failureStage == "parallel" ||
                 failureStage == "protocol");
         if (stage >= 3)
