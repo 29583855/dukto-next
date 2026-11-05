@@ -17,6 +17,7 @@ import time
 import uuid
 
 from service_integration import free_port, run
+from checkpoint_gate import CheckpointGate
 from proxy_pacing import ProxyPacer
 from process_output import JsonOutputDrain
 from transfer_integration import digest, transfer
@@ -34,6 +35,7 @@ class SlowProxy:
         self.stopped = threading.Event()
         self.threads = []
         self.sockets = []
+        self.gate = None
         self.worker = threading.Thread(target=self.accept, daemon=True)
         self.worker.start()
 
@@ -59,20 +61,37 @@ class SlowProxy:
             except OSError:
                 client.close()
 
-    # 日期：2026-11-05；原4MiB/s改用单调期限补偿超睡，固定片段和取消检查保持。
+    # 日期：2026-11-05；每组只设置一处检查点屏障，配对已完成，后续暂停控制连接可独立通过。
+    def arm_checkpoint(self, direction):
+        assert self.gate is None or self.gate.released
+        self.gate = CheckpointGate(direction)
+        return self.gate
+
+    # 日期：2026-11-05；原4MiB/s保持；屏障等待不获得追赶额度，不解密/修改TLS或缓存整文件。
     def pump(self, source, destination):
         pacer = ProxyPacer()
+        gate = self.gate
+        record = None
         try:
+            direction = "upload" if destination.getpeername()[1] == self.target else "download"
+            record = gate.attach(direction) if gate is not None else None
             while not self.stopped.is_set():
                 receiving = time.monotonic()
-                data = source.recv(16384)
+                amount = gate.allowance(record, self.stopped) if record is not None else 16384
+                if not amount:
+                    break
+                data = source.recv(amount)
                 received = time.monotonic()
                 if not data or pacer.wait(self.stopped, len(data), 4 * 1024 * 1024, received - receiving):
                     break
                 destination.sendall(data)
+                if record is not None:
+                    gate.forwarded(record, len(data), amount)
         except OSError:
             pass
         finally:
+            if record is not None:
+                gate.finished(record)
             try:
                 destination.shutdown(socket.SHUT_WR)
             except OSError:
@@ -81,6 +100,8 @@ class SlowProxy:
     # 日期：2026-11-04；清理仅关闭测试自有套接字和线程，不影响工程长时测试进程。
     def close(self):
         self.stopped.set()
+        if self.gate is not None:
+            self.gate.release()
         self.listener.close()
         self.worker.join(3)
         for connection in self.sockets:
@@ -138,18 +159,27 @@ class TransferProcess:
 
 
 # 日期：2026-11-04；读取所有文件实际已同步字节总量，支持非前缀块与指定故障比例，不依赖 UI 进度。
-def wait_checkpoint(state, task, minimum=4 * 1024 * 1024):
+def wait_checkpoint(state, task, minimum=4 * 1024 * 1024, gate=None):
     log = state / f"receive-{task}.sqlite"
-    deadline = time.monotonic() + 120
-    while time.monotonic() < deadline:
+
+    # 日期：2026-11-05；只读已提交日志，代理密文额度不参与确认量计算。
+    def confirmed():
         if log.exists():
             try:
                 with closing(sqlite3.connect(f"{log.as_uri()}?mode=ro", uri=True, timeout=0.1)) as database:
                     row = database.execute("SELECT SUM(confirmed) FROM files").fetchone()
-                    if row and row[0] and row[0] >= minimum:
-                        return row[0]
+                    return row[0] if row and row[0] else 0
             except sqlite3.OperationalError:
                 pass
+        return 0
+
+    if gate is not None:
+        return gate.checkpoint(confirmed, minimum)
+    deadline = time.monotonic() + 120
+    while time.monotonic() < deadline:
+        result = confirmed()
+        if result >= minimum:
+            return result
         time.sleep(0.03)
     raise AssertionError("no durable checkpoint")
 
@@ -275,19 +305,25 @@ def main():
                 if args.on_conflict != "rename":
                     arguments += ["--on-conflict", args.on_conflict]
                 resume_arguments += ["--threads", str(args.resume_threads or args.threads)]
+                gate = proxy.arm_checkpoint(direction)
                 active = TransferProcess(executable, client_state, arguments)
                 task = active.task(args.ready_timeout)
-                prefix = wait_checkpoint(receive_state, task, checkpoint)
+                prefix = wait_checkpoint(receive_state, task, checkpoint, gate)
+                assert checkpoint <= prefix < total_bytes, (checkpoint, prefix, total_bytes)
+                barrier = gate.evidence()
                 if fault in ("pause", "cancel"):
                     pending, _ = run(executable, client_state, [fault, "--task", task])
                     assert pending["desired"] == fault or pending["state"] == fault + ("d" if fault == "pause" else "led"), pending
+                    gate.release()
                     active.finish()
                     status = wait_state(executable, client_state, task, "paused" if fault == "pause" else "cancelled")
                 elif fault == "kill-client":
                     active.finish(kill=True)
+                    gate.release()
                     status = wait_state(executable, client_state, task, "interrupted")
                 else:
                     process.kill()
+                    gate.release()
                     finish_server(process)
                     active.finish()
                     process = start_server()
@@ -318,7 +354,8 @@ def main():
                     status, _ = run(executable, client_state, ["task", "--task", task])
                     assert status["state"] == "completed" and not status["executionActive"]
                 cases.append({"direction": direction, "fault": fault, "confirmedBeforeFault": prefix,
-                              "finalState": status["state"], "resumeSeconds": resume_seconds, "passed": True})
+                              "checkpointBarrier": barrier, "finalState": status["state"],
+                              "resumeSeconds": resume_seconds, "passed": True})
                 print(f"{direction}/{fault}: passed", flush=True)
             # 日期：2026-11-04；另一个真实配对主体不能查询已知的任务 UUID，撤权也阻止原主体查询。
             other_offer, _ = run(executable, server_state, ["serve", "pairing", "--share", "data", "--allow-download"])

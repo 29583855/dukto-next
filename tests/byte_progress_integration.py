@@ -13,11 +13,11 @@ import uuid
 
 from service_integration import free_port, run
 from transfer_integration import digest
-from transfer_recovery_integration import SlowProxy, TransferProcess, wait_state
+from transfer_recovery_integration import SlowProxy, TransferProcess, wait_checkpoint, wait_state
 
 
 # 日期：2026-11-05；冷传输强制部分字节/查询；恢复已全部落盘时按全量复用与最终查询严格核对。
-def observe(executable, state, operation, pause=False, allow_fully_restored=False):
+def observe(executable, state, operation, pause=False, allow_fully_restored=False, gate=None, receive_state=None):
     initial = []
     while True:
         event = operation.events.get(timeout=60)
@@ -26,6 +26,12 @@ def observe(executable, state, operation, pause=False, allow_fully_restored=Fals
         if event.get("state") == "transferring":
             task = event["taskId"]
             break
+    barrier = None
+    if pause:
+        assert gate is not None and receive_state is not None
+        wait_checkpoint(receive_state, task, gate=gate)
+        gate.publish_progress()
+        barrier = gate.evidence()
     reports = []
     file_done = False
     queried = None
@@ -35,6 +41,7 @@ def observe(executable, state, operation, pause=False, allow_fully_restored=Fals
             value = operation.events.get(timeout=60)
             if value is None:
                 break
+            assert value.get("event") != "error", (value, reports[-16:], gate.evidence() if gate else None)
             assert not any(key in value for key in ("token", "credential", "parallel")), value
             if value.get("event") == "file-completed":
                 file_done = True
@@ -61,14 +68,17 @@ def observe(executable, state, operation, pause=False, allow_fully_restored=Fals
                     assert 0 < int(queried["bytes"]) <= total, queried
                     if pause:
                         run(executable, state, ["pause", "--task", task])
+                        gate.release()
                         operation.finish()
                         stopped = wait_state(executable, state, task, "paused")
                         assert 0 < int(stopped["bytes"]) < total, stopped
                         return {"taskId": task, "paused": True, "reports": reports,
-                                "persisted": stopped["bytes"]}
+                                "persisted": stopped["bytes"], "checkpointBarrier": barrier}
             if value.get("event") == "transfer-completed":
                 final = value
-        assert operation.process.wait(10) == 0 and not operation.process.stderr.read()
+        code = operation.process.wait(10)
+        error = operation.process.stderr.read()
+        assert code == 0 and not error, (code, error, reports[-16:], barrier)
         assert reports and file_done, (queried, reports, file_done)
         fully_restored = queried is None
         if fully_restored:
@@ -140,8 +150,10 @@ def main():
                     else:
                         arguments += ["--remote-path", destination.name + "/source.bin", "--output", str(output)]
                     pause = channels == 4
+                    gate = proxy.arm_checkpoint(direction) if pause else None
                     operation = TransferProcess(executable, client, arguments)
-                    first = observe(executable, client, operation, pause)
+                    receive_state = state / "service" if direction == "upload" else client / "transfers"
+                    first = observe(executable, client, operation, pause, gate=gate, receive_state=receive_state)
                     result = first
                     if pause:
                         resume = ["resume", "--task", first["taskId"], "--threads", "8"]

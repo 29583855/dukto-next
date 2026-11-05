@@ -32,7 +32,7 @@ class JsonOutputDrain:
     def finish(self):
         self.thread.join(5)
         assert not self.thread.is_alive() and not self.error, (self.error, list(self.recent))
-        return {"bytes": self.bytes, "events": dict(self.events)}
+        return {"bytes": self.bytes, "events": dict(self.events), "lastEvents": list(self.recent)}
 
 
 # 日期：2026-11-05；截断末行、非 JSON 输出不能覆盖原期限失败；最多保留十六条有效事件和固定整数。

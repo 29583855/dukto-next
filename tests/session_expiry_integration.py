@@ -470,7 +470,12 @@ def main():
                     assert 0 < prefix < total and not final.exists(), (prefix, total, status)
                     assert output.session_expiries > prior_expiries, list(output.recent)
                     proxy.rate = 4 * 1024 * 1024
-                    completed, restored, resume_seconds = resumed_transfer(executable, client, ["resume", "--task", task, *resume, "--threads", "16"], args.resume_timeout)
+                    try:
+                        completed, restored, resume_seconds = resumed_transfer(executable, client, ["resume", "--task", task, *resume, "--threads", "16"], args.resume_timeout)
+                    except AssertionError as error:
+                        # 日期：2026-11-05；恢复失败仍使原专项失败，将有界客户端/服务端关闭原因写入实际报告。
+                        case.update(resumeFailure=error.args[0], serverEventsAtFailure=list(output.recent))
+                        raise
                     assert completed["taskId"] == task and completed["requestId"] == request
                     assert restored >= prefix, (restored, prefix)
                     assert digest(final) == expected and len(list(final.parent.iterdir())) == 1
