@@ -133,8 +133,8 @@ void Discovery::expire() {
 void Discovery::read() {
     QElapsedTimer slice;
     slice.start();
-    for (int received = 0; received < 64 && slice.elapsed() < 5 && socket_.hasPendingDatagrams();
-         ++received) {
+    int received = 0;
+    for (; received < 64 && slice.elapsed() < 5 && socket_.hasPendingDatagrams(); ++received) {
         const auto packet = socket_.receiveDatagram(1024);
         auto data = packet.data();
         if (data.isEmpty())
@@ -192,7 +192,9 @@ void Discovery::read() {
         if (different)
             emit changed();
     }
-    if (socket_.hasPendingDatagrams() && !readQueued_) {
+    // 日期：2026-11-05；回调刚发送的数据报可能稍后才可读；有收包的批次再查一次。
+    // 空批次不续排，始终最多一个事件，不使用忙轮询或阻塞等待占住界面线程。
+    if ((received > 0 || socket_.hasPendingDatagrams()) && !readQueued_) {
         readQueued_ = true;
         QTimer::singleShot(0, this, [this]() {
             // 日期：2026-11-05；同一实例最多一条后续排空事件，析构时由 Qt 自动撤销回调。

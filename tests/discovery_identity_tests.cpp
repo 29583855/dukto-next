@@ -1,4 +1,6 @@
 #include "core/discovery.h"
+#include <QAbstractEventDispatcher>
+#include <QEventLoop>
 #include <QNetworkDatagram>
 #include <QTest>
 #include <QtEndian>
@@ -50,6 +52,39 @@ class DiscoveryIdentityTests final : public QObject {
         QVERIFY(sender.writeDatagram(reply, QHostAddress::LocalHost, port) > 0);
         QTest::qWait(50);
         QCOMPARE(observedNames(), QStringList{"identity-remote"});
+    }
+
+    // 日期：2026-11-05；真实数据报耗尽后事件循环应回到等待，禁止无限零定时器重查。
+    void idleAfterDatagramDoesNotPoll() {
+        QUdpSocket reservation;
+        QVERIFY(reservation.bind(QHostAddress(QHostAddress::LocalHost), 0));
+        const auto port = reservation.localPort();
+        reservation.close();
+        dukto::Discovery discovery;
+        QVERIFY(discovery.start(port, "idle-discovery-test"));
+        QUdpSocket sender;
+        const QByteArray hello = QByteArray(1, '\x02') + "idle-remote at station (Linux)";
+        QVERIFY(sender.writeDatagram(hello, QHostAddress::LocalHost, port) > 0);
+        const auto present = [&discovery]() {
+            // 日期：2026-11-05；只检查自有报文，不把同网段真实设备计入断言。
+            for (const auto &value : discovery.peers())
+                if (value.toObject()["name"] == "idle-remote")
+                    return true;
+            return false;
+        };
+        QTRY_VERIFY(present());
+        QTest::qWait(50);
+        QEventLoop loop;
+        int wakeups = 0;
+        auto dispatcher = QAbstractEventDispatcher::instance();
+        QVERIFY(dispatcher);
+        connect(dispatcher, &QAbstractEventDispatcher::awake, &loop, [&wakeups]() {
+            // 日期：2026-11-05；只保留固定计数，不积累事件历史或依赖内部私有方法。
+            ++wakeups;
+        });
+        QTimer::singleShot(200, &loop, &QEventLoop::quit);
+        loop.exec();
+        QVERIFY2(wakeups < 256, "idle discovery repeatedly wakes the event loop");
     }
 };
 
