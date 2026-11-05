@@ -9,9 +9,53 @@
 #include <QSslKey>
 #include <QTimer>
 #include <exception>
+#ifdef Q_OS_MACOS
+#include <QHostAddress>
+#include <memory>
+#include <openssl/pem.h>
+#include <openssl/x509v3.h>
+#endif
 
 namespace dukto {
 namespace next {
+#ifdef Q_OS_MACOS
+namespace {
+// 日期：2026-11-05；SecureTransport 合并信任错误；仅独立完成自签/用途/算法/日期/SAN
+// 验证后允许固定叶证书。
+bool validPinnedSelfSigned(const QSslCertificate &certificate, const QString &peerName) {
+    const auto encoded = certificate.toDer();
+    const auto *cursor = reinterpret_cast<const unsigned char *>(encoded.constData());
+    std::unique_ptr<X509, decltype(&X509_free)> native(d2i_X509(nullptr, &cursor, encoded.size()),
+                                                       X509_free);
+    if (!native ||
+        cursor != reinterpret_cast<const unsigned char *>(encoded.constData()) + encoded.size() ||
+        X509_NAME_cmp(X509_get_subject_name(native.get()), X509_get_issuer_name(native.get())) != 0)
+        return false;
+    std::unique_ptr<EVP_PKEY, decltype(&EVP_PKEY_free)> key(X509_get_pubkey(native.get()),
+                                                            EVP_PKEY_free);
+    if (!key || X509_verify(native.get(), key.get()) != 1)
+        return false;
+    std::unique_ptr<X509_STORE, decltype(&X509_STORE_free)> store(X509_STORE_new(),
+                                                                  X509_STORE_free);
+    std::unique_ptr<X509_STORE_CTX, decltype(&X509_STORE_CTX_free)> context(X509_STORE_CTX_new(),
+                                                                            X509_STORE_CTX_free);
+    if (!store || !context || X509_STORE_add_cert(store.get(), native.get()) != 1 ||
+        X509_STORE_CTX_init(context.get(), store.get(), native.get(), nullptr) != 1 ||
+        X509_STORE_CTX_set_purpose(context.get(), X509_PURPOSE_SSL_SERVER) != 1)
+        return false;
+    auto parameters = X509_STORE_CTX_get0_param(context.get());
+    X509_VERIFY_PARAM_set_auth_level(parameters, 2);
+    X509_VERIFY_PARAM_set_hostflags(parameters, X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS);
+    QHostAddress address;
+    const auto name = peerName.toUtf8();
+    const int configured =
+        address.setAddress(peerName)
+            ? X509_VERIFY_PARAM_set1_ip_asc(parameters, name.constData())
+            : X509_VERIFY_PARAM_set1_host(parameters, name.constData(), name.size());
+    return configured == 1 && X509_verify_cert(context.get()) == 1;
+}
+} // namespace
+#endif
 // 日期：2026-11-04；只对完全相同、自签且仍有效的叶证书选择性忽略 SelfSignedCertificate。
 SecureChannel::SecureChannel(int timeoutMs, const std::atomic_bool *cancel)
     : timeoutMs_(timeoutMs), cancel_(cancel) {
@@ -30,10 +74,15 @@ SecureChannel::SecureChannel(int timeoutMs, const std::atomic_bool *cancel)
                              certificate.digest(QCryptographicHash::Sha256) != fingerprint_ ||
                              certificate.effectiveDate() > now || certificate.expiryDate() <= now)
                              return;
-                         for (const auto &error : errors)
-                             if (error.error() != QSslError::SelfSignedCertificate ||
-                                 error.certificate() != certificate)
+                         for (const auto &error : errors) {
+                             bool allowed = error.error() == QSslError::SelfSignedCertificate;
+#ifdef Q_OS_MACOS
+                             if (error.error() == QSslError::CertificateUntrusted)
+                                 allowed = validPinnedSelfSigned(certificate, peerName_);
+#endif
+                             if (!allowed || error.certificate() != certificate)
                                  return;
+                         }
                          if (!errors.isEmpty()) {
                              socket_.ignoreSslErrors(errors);
                              sslErrors_ = false;
@@ -60,6 +109,7 @@ void SecureChannel::connectTo(const QString &host, quint16 port, const QString &
         throw Error(ExitCode::Config, QStringLiteral("安全通道配置无效或通道已使用"), "tls");
     used_ = true;
     fingerprint_ = fingerprint;
+    peerName_ = peerName;
     auto policy = configuration;
     policy.setProtocol(QSsl::TlsV1_2OrLater);
     socket_.setSslConfiguration(policy);

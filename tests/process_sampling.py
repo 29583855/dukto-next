@@ -1,7 +1,6 @@
 """日期：2026-11-05；有界处理短命子进程退出采样竞争，活动进程权限错误仍必须失败。"""
 
 import os
-import platform
 import sys
 import subprocess
 
@@ -33,7 +32,7 @@ def sample(process, peak):
     assert current["rss"] < 512 * 1024**2 and current["private"] < 512 * 1024**2, current
 
 
-# 日期：2026-11-05；Windows 保留模块归属检查，macOS 通过 psutil 线程清单，Linux 才使用 procfs。
+# 日期：2026-11-05；Windows 保留模块归属检查，macOS 通过 libproc 原生线程 ID，Linux 才使用 procfs。
 def thread_inventory(process, windows_inventory):
     if os.name == "nt":
         return windows_inventory(process)

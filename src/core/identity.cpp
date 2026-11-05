@@ -10,6 +10,7 @@
 #include <QUrl>
 #include <memory>
 #include <openssl/crypto.h>
+#include <openssl/err.h>
 #include <openssl/evp.h>
 #include <openssl/pem.h>
 #include <openssl/rand.h>
@@ -23,10 +24,16 @@ using Key = std::unique_ptr<EVP_PKEY, decltype(&EVP_PKEY_free)>;
 using Certificate = std::unique_ptr<X509, decltype(&X509_free)>;
 using Bio = std::unique_ptr<BIO, decltype(&BIO_free)>;
 
-// 日期：2026-11-04；密码学错误不输出 OpenSSL 错误堆栈或私钥输入，只报告操作失败。
+// 日期：2026-11-05；只报告公开的库/原因编号，保留诊断依据，不输出错误堆栈或私钥输入。
 void ensure(bool valid) {
-    if (!valid)
-        throw Error(ExitCode::Runtime, QStringLiteral("服务身份密码学操作失败"), "identity");
+    if (!valid) {
+        const auto code = ERR_peek_last_error();
+        throw Error(ExitCode::Runtime,
+                    QStringLiteral("服务身份密码学操作失败（库 %1，原因 %2）")
+                        .arg(ERR_GET_LIB(code))
+                        .arg(ERR_GET_REASON(code)),
+                    "identity");
+    }
 }
 
 // 日期：2026-11-04；SAN 只允许规范 IP 或有效 ASCII DNS 标签，拒绝通配符和扩展配置分隔符。

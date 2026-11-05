@@ -6,7 +6,7 @@ import tarfile
 import urllib.request
 
 
-# 日期：2026-11-04；下载固定散列存档，验证后仅提取指定运行库，不执行安装脚本。
+# 日期：2026-11-04；下载固定散列存档，验证后提取明确的运行库/导入库/头文件，不执行安装脚本。
 def main():
     destination = Path(__file__).resolve().parent.parent / ".tools/openssl"
     destination.mkdir(parents=True, exist_ok=True)
@@ -16,14 +16,20 @@ def main():
             output.write(block)
     if hashlib.file_digest(archive.open("rb"), "sha256").hexdigest() != "0474e14823c734edc088bef98b829149a47ed8b4654f9638926c2fe4bbc40f38":
         raise RuntimeError("TLS archive SHA-256 mismatch")
-    target = destination / "Library/bin"
-    target.mkdir(parents=True, exist_ok=True)
     with tarfile.open(archive) as package:
-        for name in ["Library/bin/libssl-1_1-x64.dll", "Library/bin/libcrypto-1_1-x64.dll"]:
+        names = ["Library/bin/libssl-1_1-x64.dll", "Library/bin/libcrypto-1_1-x64.dll",
+                 "Library/bin/openssl.exe", "Library/lib/libssl.lib", "Library/lib/libcrypto.lib"]
+        names += [member.name for member in package.getmembers()
+                  if member.name.startswith("Library/include/openssl/") and member.name.endswith(".h")]
+        if not names or "Library/include/openssl/evp.h" not in names:
+            raise RuntimeError("OpenSSL development headers absent")
+        for name in names:
             member = package.getmember(name)
-            if not member.isfile() or member.size > 16 * 1024**2:
-                raise RuntimeError("invalid runtime member")
-            with package.extractfile(member) as source, (target / Path(name).name).open("wb") as output:
+            target = (destination / name).resolve()
+            if not target.is_relative_to(destination.resolve()) or not member.isfile() or member.size > 16 * 1024**2:
+                raise RuntimeError("invalid OpenSSL development member")
+            target.parent.mkdir(parents=True, exist_ok=True)
+            with package.extractfile(member) as source, target.open("wb") as output:
                 while block := source.read(256 * 1024):
                     output.write(block)
     archive.unlink()

@@ -9,6 +9,10 @@
 #include <QRegularExpression>
 #include <QStorageInfo>
 #include <algorithm>
+#include <limits>
+#ifdef Q_OS_MACOS
+#include <sys/mount.h>
+#endif
 #ifndef Q_OS_WIN
 #include <unistd.h>
 #endif
@@ -141,7 +145,38 @@ StorageChecks::StorageChecks() {
     clock_.start();
 }
 
-// 日期：2026-11-04；新目录首次查盘；缓存目录每秒刷新，写入失败仍由实际 I/O 路径处理。
+// 日期：2026-11-05；APFS 的 Data 卷可通过 firmlink 访问，Qt5 挂载前缀匹配可能误选只读系统卷。
+void StorageChecks::refresh(Probe &probe, qint64 now) {
+    probe.ready = false;
+#ifdef Q_OS_MACOS
+    struct statfs information;
+    const auto native = QFile::encodeName(probe.path);
+    if (::statfs(native.constData(), &information) != 0 || information.f_bsize == 0)
+        throw Error(ExitCode::Disk, QStringLiteral("无法取得接收盘原生空间信息"), "space");
+    const auto blocks = static_cast<quint64>(information.f_bavail);
+    const auto size = static_cast<quint64>(information.f_bsize);
+    const auto maximum = std::numeric_limits<qint64>::max();
+    probe.available = blocks > static_cast<quint64>(maximum) / size
+                          ? maximum
+                          : static_cast<qint64>(blocks * size);
+    probe.volume = QByteArray::number(information.f_fsid.val[0]) + ':' +
+                   QByteArray::number(information.f_fsid.val[1]);
+    probe.format = QByteArray(information.f_fstypename).toLower();
+    probe.readOnly = (information.f_flags & MNT_RDONLY) != 0;
+    probe.ready = true;
+#else
+    probe.storage.setPath(probe.path);
+    probe.storage.refresh();
+    probe.available = probe.storage.bytesAvailable();
+    probe.volume = probe.storage.device() + '\0' + probe.storage.rootPath().toUtf8();
+    probe.format = probe.storage.fileSystemType().toLower();
+    probe.readOnly = probe.storage.isReadOnly();
+    probe.ready = probe.storage.isValid() && probe.storage.isReady() && probe.available >= 0;
+#endif
+    probe.refreshed = now;
+}
+
+// 日期：2026-11-05；新目录首次查盘；缓存目录每秒刷新，写入失败仍由实际 I/O 路径处理。
 void StorageChecks::check(const QString &directory, qint64 bytes, bool singleFile) {
     if (bytes < 0)
         throw Error(ExitCode::Config, QStringLiteral("磁盘空间估算长度无效"), "space");
@@ -152,24 +187,22 @@ void StorageChecks::check(const QString &directory, qint64 bytes, bool singleFil
     if (found == probes_.end()) {
         if (probes_.size() == 16)
             probes_.pop_back();
-        QStorageInfo storage(path);
-        probes_.push_front({path, storage, now, storage.bytesAvailable()});
+        Probe probe;
+        probe.path = path;
+        refresh(probe, now);
+        probes_.push_front(std::move(probe));
     } else {
         probes_.splice(probes_.begin(), probes_, found);
         if (now - probes_.front().refreshed >= 1000) {
-            auto &probe = probes_.front();
-            probe.storage.refresh();
-            probe.refreshed = now;
-            probe.available = probe.storage.bytesAvailable();
+            refresh(probes_.front(), now);
         }
     }
     const auto &probe = probes_.front();
-    const auto &storage = probe.storage;
-    if (!storage.isValid() || !storage.isReady() || storage.bytesAvailable() < 0)
+    if (!probe.ready)
         throw Error(ExitCode::Disk, QStringLiteral("无法取得接收盘可用空间"), "space");
-    if (storage.isReadOnly())
+    if (probe.readOnly)
         throw Error(ExitCode::Disk, QStringLiteral("接收文件系统为只读"), "space");
-    const auto format = storage.fileSystemType().toLower();
+    const auto &format = probe.format;
     if (singleFile && bytes > 4294967295LL &&
         (format == "fat32" || format == "vfat" || format == "msdos" || format == "fat"))
         throw Error(ExitCode::Disk,
@@ -193,8 +226,7 @@ void StorageChecks::consumed(const QString &directory, qint64 bytes) {
     if (found == probes_.end())
         throw Error(ExitCode::Config, QStringLiteral("写入前缺少磁盘预检"), "space");
     for (auto &probe : probes_)
-        if (probe.storage.device() == found->storage.device() &&
-            probe.storage.rootPath() == found->storage.rootPath())
+        if (probe.volume == found->volume)
             probe.available = bytes >= probe.available ? 0 : probe.available - bytes;
 }
 

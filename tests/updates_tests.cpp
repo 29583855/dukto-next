@@ -7,7 +7,7 @@
 class UpdatesTests final : public QObject {
     Q_OBJECT
   private slots:
-    // 日期：2026-11-04；受控回环 HTTP 服务覆盖较新/相同版本、无效 JSON、错误状态与超限。
+    // 日期：2026-11-05；受控回环覆盖版本/JSON/状态/超限，断言保留实际失败反馈供平台诊断。
     void descriptions() {
         for (int scenario = 0; scenario < 6; ++scenario) {
             QTcpServer server;
@@ -46,7 +46,8 @@ class UpdatesTests final : public QObject {
             QSignalSpy completed(&updates, &dukto::Updates::completed);
             updates.check(QUrl(QString("http://127.0.0.1:%1/version").arg(server.serverPort())));
             QTRY_COMPARE(completed.count(), 1);
-            QCOMPARE(completed[0][0].toBool(), scenario == 0);
+            QVERIFY2(completed[0][0].toBool() == (scenario == 0),
+                     qPrintable(completed[0][3].toString()));
             if (scenario == 0)
                 QCOMPARE(completed[0][1].toString(), QString("1.0.0"));
             if (scenario >= 2)

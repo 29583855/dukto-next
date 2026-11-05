@@ -52,6 +52,7 @@ class SecureChannel final {
     int timeoutMs_;
     const std::atomic_bool *cancel_;
     const std::atomic_bool *taskCancel_ = nullptr;
+    QString peerName_;
     QByteArray fingerprint_;
     QByteArray peerFingerprint_;
     bool sslErrors_ = false;

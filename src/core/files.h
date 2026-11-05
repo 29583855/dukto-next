@@ -46,9 +46,15 @@ class StorageChecks final {
     struct Probe {
         QString path;
         QStorageInfo storage;
-        qint64 refreshed;
-        qint64 available;
+        QByteArray volume;
+        QByteArray format;
+        bool ready = false;
+        bool readOnly = false;
+        qint64 refreshed = 0;
+        qint64 available = -1;
     };
+    // 日期：2026-11-05；macOS 直接查询目标路径所在 APFS 卷，其他平台保留 Qt 磁盘接口。
+    void refresh(Probe &probe, qint64 now);
     QElapsedTimer clock_;
     std::list<Probe> probes_;
 };
