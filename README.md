@@ -6,7 +6,7 @@
 
 当前已建立 C++14 共用核心、Qt Quick 2 桌面端和独立 CLI。Windows 已验证与原版文件/目录/文本双向互传、超过 4 GiB、10 万文件、100 轮接收，以及首次说明/设置/截图/单实例和有界头像模块。完整原版交互、服务器、多线程、恢复和跨平台验收继续按计划推进。原版目录保留用于对照。
 
-公开仓库为[29583855/dukto-next](https://github.com/29583855/dukto-next)。d0a8e01的双Mac实际GUI/独立CLI预览包及各225份应用源码已核验，[下载入口](docs/macOS独立预览包.md)保持可用；同提交四runner各21核心、146协议和Alpine36协议原报告已逐份核验。新源码d2a5359增加持久晚期跳过与原生身份约束清理，通过Windows UCRT/MSVC完整各21回归、跳过专项各33项；[新原生矩阵](https://github.com/29583855/dukto-next/actions/runs/42061143560)继续。Linux/Windows已验包仍为31f3db3。公开skip、协议/任务衔接及完整主计划继续，完整交付未完成，见[构建摘要](docs/构建验证摘要.md)及[公开索引](docs/current-validation.json)。
+公开仓库为[29583855/dukto-next](https://github.com/29583855/dukto-next)。最新74dd5ce把实际传输完成接到处置日志并修复确认丢失后的重命名恢复，通过Windows UCRT/MSVC各21核心、52组方向/场景；[新原生矩阵](https://github.com/29583855/dukto-next/actions/runs/42065923177)及[双Mac新包](https://github.com/29583855/dukto-next/actions/runs/42066089117)继续。上一版d2a5359五环境核心和Alpine完整36协议已核验；当前已验双Mac部署包仍为d0a8e01，[下载入口](docs/macOS独立预览包.md)可用。Linux/Windows已验包仍为31f3db3。公开skip及完整主计划继续，见[构建摘要](docs/构建验证摘要.md)及[公开索引](docs/current-validation.json)。
 
 ## 文档入口
 

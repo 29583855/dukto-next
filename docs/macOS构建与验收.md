@@ -1,6 +1,6 @@
 # macOS 构建与验收
 
-更新日期：2026-11-05。当前d0a8e01的Intel/Apple Silicon C++14 GUI与独立CLI原生编译、各21核心、依赖部署及实际包迁移均已通过并逐项核验。最新[下载及SHA](macOS独立预览包.md)已更新，各225份内附应用源码与精确Git树一致。同提交四runner完整协议42049324101现已终态success，146份原协议子报告SHA已核验；新d2a5359晚期skip原生矩阵继续，当前实际包仍为d0a8e01；正式发布、公证、干净系统及完整原生交互仍待验收。
+更新日期：2026-11-06。最新74dd5ce已上传并启动[四runner原生编译](https://github.com/29583855/dukto-next/actions/runs/42065923177)和[双Mac新包](https://github.com/29583855/dukto-next/actions/runs/42066089117)，须按精确提交收集原报告。上一版d2a5359的Intel/Apple Silicon C++14 GUI与独立CLI编译、各21核心及POSIX34跳过专项已逐份核验，[原证据](validation/2026-11-06/late-skip-r58-native-cores-summary.json)包含实际Mach-O与架构信息。当前已验部署包仍为d0a8e01，[下载及SHA](macOS独立预览包.md)可用；各225份内附源码与精确Git树一致，正式发布及完整平台验收继续。
 
 ## 运行环境
 
