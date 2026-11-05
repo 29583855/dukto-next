@@ -39,10 +39,21 @@ jobs:
           "$PWD/.tools/openssl/Library/bin" >> $env:GITHUB_PATH
       # 日期：2026-11-05；只改验证输入，原生CLI仍用C++14；原完整矩阵和包运行继续保持。
       - name: Configure C++14 CLI
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DDUKTO_BUILD_TESTS=OFF
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DDUKTO_BUILD_TESTS=ON
       - name: Build CLI
         id: compile
-        run: cmake --build build --config Release --target dukto-cli --parallel 4
+        run: cmake --build build --config Release --target dukto-cli secure-channel-probe --parallel 4
+      - name: Independent TLS and sender failure boundaries
+        if: ${{ !cancelled() && steps.compile.outcome == 'success' }}
+        shell: bash
+        run: |
+          binary=build/secure-channel-probe
+          openssl=openssl
+          if [[ "$RUNNER_OS" == Windows ]]; then
+            binary=build/Release/secure-channel-probe.exe
+            openssl=.tools/openssl/Library/bin/openssl.exe
+          fi
+          python -u -X utf8 tests/secure_channel_integration.py "$binary" --openssl "$openssl" --report build/secure-channel.json
       - name: Overwrite source permission and root faults
         if: ${{ !cancelled() && steps.compile.outcome == 'success' }}
         shell: bash
@@ -76,6 +87,7 @@ jobs:
           for channels in 1 4 16; do
             python -u -X utf8 tests/parallel_disk_integration.py build/dukto-cli --limited-directory "$mount" --threads "$channels" --on-conflict overwrite --report "build/overwrite-disk-$channels.json"
           done
+          python -u -X utf8 tests/parallel_disk_integration.py build/dukto-cli --limited-directory "$mount" --threads 1 --report build/rename-disk-1.json
       - name: Preserve native fault evidence
         if: always()
         uses: actions/upload-artifact@v4

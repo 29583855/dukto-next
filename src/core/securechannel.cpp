@@ -7,6 +7,7 @@
 #include <QSslCertificate>
 #include <QSslError>
 #include <QSslKey>
+#include <QThread>
 #include <QTimer>
 #include <exception>
 #ifdef Q_OS_MACOS
@@ -95,6 +96,46 @@ SecureChannel::~SecureChannel() {
     socket_.abort();
 }
 
+// 日期：2026-11-05；只在业务发送期启用；绑定同一个请求序号，不跨任务读取或保留远端正文。
+void SecureChannel::observePeerFailure(quint64 correlation) {
+    failureCorrelation_ = correlation;
+}
+
+// 日期：2026-11-05；写等待期间远端可先拒绝正文；先处理完整失败帧再判断断线，固定四帧上限。
+void SecureChannel::checkPeerFailure() {
+    if (!failureCorrelation_ || !established_)
+        return;
+    for (int count = 0; count < 4; ++count) {
+        if (socket_.bytesAvailable() < HeaderBytes)
+            return;
+        const auto header = decodeHeader(socket_.peek(HeaderBytes));
+        if (header.correlation != failureCorrelation_)
+            throw Error(ExitCode::Integrity, QStringLiteral("发送期响应请求序号不同"), "transfer");
+        if (header.type != Type::Failure && header.type != Type::Progress &&
+            header.type != Type::TaskState)
+            return;
+        if (socket_.bytesAvailable() < HeaderBytes + header.payloadBytes)
+            return;
+        socket_.read(HeaderBytes);
+        Frame frame{header, socket_.read(header.payloadBytes)};
+        const auto value = parseControl(frame.payload);
+        if (header.type == Type::Failure) {
+            const auto code = value["code"].toInt(-1);
+            if (code < 1 || code > 7 || !value["message"].isString() || !value["stage"].isString())
+                throw Error(ExitCode::Config, QStringLiteral("发送期错误响应无效"), "transfer");
+            throw Error(static_cast<ExitCode>(code), value["message"].toString(),
+                        value["stage"].toString());
+        }
+        if (header.type == Type::Progress) {
+            if (!progress_)
+                throw Error(ExitCode::Config, QStringLiteral("发送期未协商字节进度帧"), "progress");
+            progress_(frame);
+        } else if (value != QJsonObject{{"state", "busy"}}) {
+            throw Error(ExitCode::Config, QStringLiteral("发送期忙心跳字段无效"), "transfer");
+        }
+    }
+}
+
 // 日期：2026-11-05；只转换已有授信，不重新建立 socket，不把同一 4 MiB 同时计入两类。
 void SecureChannel::classifyAsData() {
     credit_.classifyAsData();
@@ -149,7 +190,7 @@ void SecureChannel::check(QElapsedTimer &elapsed, const QString &stage) const {
         throw Error(ExitCode::Network, QStringLiteral("安全连接操作超时"), stage);
 }
 
-// 日期：2026-11-04；信号回调只记录异常再退出局部事件循环，避免 C++ 异常穿过 Qt 分发栈。
+// 日期：2026-11-05；回调只记录异常；写等待先观察同请求失败，读等待不触碰正在解码的半帧。
 void SecureChannel::waitUntil(const std::function<bool()> &ready, QElapsedTimer &elapsed,
                               const QString &stage) {
     std::exception_ptr failure;
@@ -161,6 +202,8 @@ void SecureChannel::waitUntil(const std::function<bool()> &ready, QElapsedTimer 
         // 日期：2026-11-04；完成谓词先于断开检查，允许读取对端发送完毕后留下的最后一帧。
         try {
             check(elapsed, stage);
+            if (writing_)
+                checkPeerFailure();
             if (ready()) {
                 done = true;
                 loop.quit();
@@ -243,9 +286,11 @@ Frame SecureChannel::read() {
     }
 }
 
-// 日期：2026-11-04；通道串行执行一帧，最大排队大小由已验证帧长度确定，写完才接受下一帧。
+// 日期：2026-11-05；逐帧有界排空；发送期先保留已到达的远端失败，再处理后续断开。
 void SecureChannel::write(const Frame &frame) {
     try {
+        checkPeerFailure();
+        writing_ = true;
         if (!socket_.isEncrypted() || !socket_.isOpen() ||
             socket_.state() != QAbstractSocket::ConnectedState)
             throw Error(ExitCode::Network, QStringLiteral("安全连接尚未建立"), "protocol");
@@ -269,7 +314,9 @@ void SecureChannel::write(const Frame &frame) {
                 return socket_.bytesToWrite() == 0 && socket_.encryptedBytesToWrite() == 0;
             },
             elapsed, "protocol");
+        writing_ = false;
     } catch (...) {
+        writing_ = false;
         socket_.abort();
         throw;
     }
@@ -281,14 +328,33 @@ void SecureChannel::write(Type type, quint64 correlation, const QJsonObject &obj
     write({{type, correlation, static_cast<quint32>(bytes.size())}, bytes});
 }
 
+// 日期：2026-11-05；错误响应后等待发送端观察并关闭；每次最多丢弃64KiB，固定一秒上限，不积累正文。
+void SecureChannel::writeFailure(quint64 correlation, const QJsonObject &object) {
+    write(Type::Failure, correlation, object);
+    QElapsedTimer elapsed;
+    elapsed.start();
+    const auto budget = qMin(timeoutMs_, 1000);
+    while (socket_.state() != QAbstractSocket::UnconnectedState && elapsed.elapsed() < budget) {
+        if ((cancel_ && cancel_->load()) || (taskCancel_ && taskCancel_->load()))
+            break;
+        if (socket_.bytesAvailable() > 0)
+            socket_.read(qMin<qint64>(socket_.bytesAvailable(), 64 * 1024));
+        else
+            QThread::msleep(5);
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 1);
+    }
+    socket_.disconnectFromHost();
+}
+
 // 日期：2026-11-04；摘要针对实际握手叶证书的 DER，不针对易变化的 PEM 文本或公钥字符串。
 QByteArray SecureChannel::peerFingerprint() const {
     return peerFingerprint_;
 }
 
-// 日期：2026-11-04；固定 TLS 读缓冲继续生效；只泵送本工作线程事件，不接受或吞掉业务请求。
+// 日期：2026-11-05；固定读缓冲，帧边界先检查发送期远端失败，普通业务确认不被消费。
 void SecureChannel::checkpoint(const QString &stage) {
     QCoreApplication::processEvents(QEventLoop::AllEvents, 1);
+    checkPeerFailure();
     if ((cancel_ && cancel_->load()) || (taskCancel_ && taskCancel_->load()))
         throw Error(ExitCode::Cancelled, QStringLiteral("安全连接操作已取消"), stage);
     if (!established_ || socket_.state() != QAbstractSocket::ConnectedState ||

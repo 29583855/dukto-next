@@ -75,7 +75,7 @@ def certificates(root, openssl):
     return results, key
 
 
-# 日期：2026-11-04；为每个安全边界建立独立回环监听，协议正文和慢速行为由测试端独立注入。
+# 日期：2026-11-05；每个边界独立TLS监听，实际首片段后注入失败，并分片普通/错误正文。
 def run_client(executable, certificate, key, hostname, ca, pin, mode, expected, payload=None):
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     context.minimum_version = ssl.TLSVersion.TLSv1_2
@@ -96,7 +96,33 @@ def run_client(executable, certificate, key, hostname, ca, pin, mode, expected, 
                     assert header == (b"DKTNEXT1", 1, 0, 1, 0, 7, header[6], 0), header
                     request = json.loads(exact(secure, header[6]))
                     assert request == {"test": "independent-client", "size": "9007199254740993"}, request
-                    if mode in ("cancel", "checkpoint-cancel"):
+                    if mode.startswith("write-"):
+                        # 日期：2026-11-05；先核对真实首片段再发送原始失败，失败正文跨多次TLS写入时也不得误解码半帧。
+                        data_header = struct.unpack(">8sHHHHQII", exact(secure, 32))
+                        assert data_header[:6] == (b"DKTNEXT1", 1, 0, 40, 0, 7)
+                        assert 40 < data_header[6] <= 256 * 1024 + 40
+                        exact(secure, data_header[6])
+                        if mode == "write-abrupt":
+                            return
+                        body = b'{"code":5,"stage":"receive","message":"independent disk failure"}'
+                        if mode == "write-invalid-failure":
+                            body = b'{"code":99,"stage":"receive","message":"invalid code"}'
+                        response = frame(7, body)
+                        if mode == "write-wrong-correlation":
+                            response = response[:16] + struct.pack(">Q", 8) + response[24:]
+                        if mode in ("write-fragmented-failure", "write-fragmented-failure-close"):
+                            for start, end in ((0, 13), (13, 35), (35, 47), (47, len(response))):
+                                secure.sendall(response[start:end])
+                                time.sleep(0.01)
+                        else:
+                            secure.sendall(response)
+                        if mode.endswith("-close"):
+                            secure.shutdown(socket.SHUT_WR)
+                            while secure.recv(64 * 1024):
+                                pass
+                        else:
+                            time.sleep(0.1)
+                    elif mode in ("cancel", "checkpoint-cancel"):
                         time.sleep(0.5)
                     elif mode == "checkpoint-disconnect":
                         pass
@@ -125,6 +151,8 @@ def run_client(executable, certificate, key, hostname, ca, pin, mode, expected, 
     assert not thread.is_alive() and not errors, (mode, expected, errors, result.stdout, result.stderr)
     assert result.returncode == expected and not result.stderr, (result.returncode, result.stdout, result.stderr)
     event = json.loads(result.stdout)
+    if mode in ("write-failure", "write-fragmented-failure", "write-failure-close", "write-fragmented-failure-close"):
+        assert event["code"] == 5 and event["stage"] == "receive", event
     if mode in ("timeout", "cancel"):
         assert event["elapsedMs"] < 1500, event
     return {"passed": True, "exitCode": result.returncode, "elapsedMs": event["elapsedMs"],
@@ -154,7 +182,7 @@ def server_case(executable, certificate, key):
             process.communicate(timeout=5)
 
 
-# 日期：2026-11-04；正反例均真实执行，未完成或任何断言失败时不产生 passed 报告。
+# 日期：2026-11-05；信任/取消/期限及发送期失败正反例实际执行，断言失败不产生通过报告。
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("executable")
@@ -184,6 +212,12 @@ def main():
                  ("atomicCancellation", "valid", "localhost", certs["valid"], "none", "cancel", 7, None),
                  ("scanDisconnection", "valid", "localhost", certs["valid"], "none", "checkpoint-disconnect", 3, None),
                  ("scanCancellation", "valid", "localhost", certs["valid"], "none", "checkpoint-cancel", 7, None)]
+        cases.append(("observerFragmentedNormalResponse", "valid", "localhost", certs["valid"], "none",
+                      "observe-ok", 0, frame(2, b'{"test":"server-accepted","padding":"' + b"x" * 256 + b'"}')))
+        for mode, expected_code in (("write-failure", 5), ("write-fragmented-failure", 5),
+                                    ("write-wrong-correlation", 6), ("write-invalid-failure", 2),
+                                    ("write-abrupt", 3), ("write-failure-close", 5), ("write-fragmented-failure-close", 5)):
+            cases.append((mode, "valid", "localhost", certs["valid"], "none", mode, expected_code, None))
         for label in ("expired", "future", "clientOnly"):
             certificate_text = certs[label].read_text()
             certificate_text = certificate_text[certificate_text.index("-----BEGIN CERTIFICATE-----"):]

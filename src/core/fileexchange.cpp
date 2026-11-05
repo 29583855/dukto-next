@@ -51,6 +51,21 @@ void checkpoint(next::SecureChannel &channel, const std::function<void()> &check
         check();
 }
 
+class SendFailureScope final {
+  public:
+    // 日期：2026-11-05；整个发送树包含目录/空文件/正文，任何阶段先保留同请求远端原始失败。
+    SendFailureScope(next::SecureChannel &channel, quint64 correlation) : channel_(channel) {
+        channel_.observePeerFailure(correlation);
+    }
+    // 日期：2026-11-05；异常退出也撤销观察，后续任务控制响应仍由其原有读取器严格验证。
+    ~SendFailureScope() {
+        channel_.observePeerFailure(0);
+    }
+
+  private:
+    next::SecureChannel &channel_;
+};
+
 class Pulse final {
   public:
     // 日期：2026-11-04；本地清单冻结/恢复重读期间发送小心跳，避免对端误判为空闲超时。
@@ -199,10 +214,11 @@ void receiveStrongManifest(next::SecureChannel &channel, const QUuid &task,
     }
 }
 
-// 日期：2026-11-04；目录和文件依强清单 ID 顺序交换，接收端的最终映射仅作为相对路径返回。
+// 日期：2026-11-05；按强清单顺序发送，限定同请求失败观察；接收最终映射仍只返回相对路径。
 void sendStrongTree(next::SecureChannel &channel, const QUuid &task, StrongManifest &manifest,
                     quint64 correlation, const std::function<void()> &check,
                     const std::function<void(const StrongEntry &, const QString &)> &completed) {
+    SendFailureScope failureScope(channel, correlation);
     const auto count = next::decimal(manifest.summary()["entries"], 10000000);
     for (quint64 id = 1; id <= count; ++id) {
         checkpoint(channel, check);

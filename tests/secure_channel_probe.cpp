@@ -56,7 +56,7 @@ class Server final : public QTcpServer {
 };
 } // namespace
 
-// 日期：2026-11-04；以生产 SecureChannel 实际连接独立 Python TLS 对端，失败用统一错误码报告。
+// 日期：2026-11-05；独立TLS对端验证生产通道、发送中拒绝及分片；统一错误码保留原始根因。
 int main(int argc, char **argv) {
     QCoreApplication app(argc, argv);
     const auto args = app.arguments();
@@ -99,8 +99,36 @@ int main(int argc, char **argv) {
                 // 日期：2026-11-04；测试通过同线程定时器触发生产原子取消路径。
                 cancelled.store(true);
             });
+        if (args[6] == "observe-ok")
+            channel.observePeerFailure(7);
         channel.write(dukto::next::Type::Hello, 7,
                       {{"test", "independent-client"}, {"size", "9007199254740993"}});
+        if (args[6].startsWith("write-")) {
+            // 日期：2026-11-05；真实发送32MiB上限；独立对端在第一片段后拒绝，不等待整个8MiB块结束。
+            channel.observePeerFailure(7);
+            const auto payload =
+                dukto::next::encodeFragment({QUuid("12345678-1234-1234-1234-123456789abc"), 1, 0, 0,
+                                             QByteArray(256 * 1024, 'x')});
+            for (int index = 0; index < 128; ++index) {
+                channel.checkpoint("send");
+                channel.write(
+                    {{dukto::next::Type::Data, 7, static_cast<quint32>(payload.size())}, payload});
+            }
+            const auto response = channel.read();
+            if (response.header.correlation != 7)
+                throw dukto::Error(dukto::ExitCode::Integrity,
+                                   QStringLiteral("测试响应请求序号不同"), "transfer");
+            if (response.header.type != dukto::next::Type::Failure)
+                return 1;
+            const auto failure = dukto::next::parseControl(response.payload);
+            const auto code = failure["code"].toInt(-1);
+            if (code < 1 || code > 7 || !failure["message"].isString() ||
+                !failure["stage"].isString())
+                throw dukto::Error(dukto::ExitCode::Config, QStringLiteral("测试错误响应无效"),
+                                   "transfer");
+            throw dukto::Error(static_cast<dukto::ExitCode>(code), failure["message"].toString(),
+                               failure["stage"].toString());
+        }
         if (args[6].startsWith("checkpoint-")) {
             QElapsedTimer work;
             work.start();

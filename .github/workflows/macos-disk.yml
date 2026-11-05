@@ -88,6 +88,20 @@ jobs:
             hdiutil detach "$mount"
             trap - EXIT
           done
+      - name: Single channel default TLS APFS disk exhaustion and recovery
+        if: ${{ !cancelled() && steps.compile.outcome == 'success' }}
+        shell: bash
+        run: |
+          image="$RUNNER_TEMP/dukto-tls1-limited.dmg"
+          mount="$RUNNER_TEMP/dukto-tls1-mount"
+          test ! -e "$image"
+          mkdir "$mount"
+          hdiutil create -size 256m -fs APFS -volname Dukto-TLS1-Limited "$image"
+          hdiutil attach -nobrowse -mountpoint "$mount" "$image"
+          trap 'hdiutil detach "$mount"' EXIT
+          diskutil info -plist "$mount" > build/apfs-tls1-filesystem.log
+          capacity=$(python -c 'import os,sys; s=os.statvfs(sys.argv[1]); print(s.f_blocks*s.f_frsize)' "$mount")
+          python -u -X utf8 tests/parallel_disk_integration.py build/dukto-cli --limited-directory "$mount" --filesystem-bytes "$capacity" --threads 1 --report build/apfs-tls1-disk.json
       - name: Preserve APFS native evidence
         if: always()
         uses: actions/upload-artifact@v4

@@ -8,7 +8,7 @@
 
 当前包：`dist/windows-preview-20261105-r23-overwrite/DuktoNext-windows-x64-preview.zip`，SHA-256：`c830a482351eebc78cf9831e7e76ee8db1c89900f0724a61f0fb370c62be1de0`。源码 `c3fc7815679b16dc5f0f3aa432dad56d92ae312f`，487文件、211应用输入与精确Git树匹配。实际ZIP系统PATH/中文空格目录迁移、双向1/4/16覆盖和8组已有文件4→8恢复通过，GUI截图已查看；[运行报告](validation/2026-11-05/windows-r23-runtime-r49.json)、[源码身份](validation/2026-11-05/windows-r23-source-linkage-r49.json)、[受信依赖/许可映射](validation/2026-11-05/windows-r23-signed-payload-map-r49.json)分别保留。
 
-支持 `--on-conflict overwrite` 和GUI同名普通文件覆盖选择，目录合并保留无关项。既有客户端/会话/排队/重试/最终确认/fail及恢复也在本包重新验证。该包CLI SHA为fe8373a79ac439e6f77ade487bed978f0af6c751b6980caff58fc0cc6ae51268；证书生命周期专项本次未重跑。原生Mac/Linux新覆盖资格、完整处置确认、干净系统和正式发布仍待验收。历史r22及以前的包与结果保持原范围。
+支持 `--on-conflict overwrite` 和GUI同名普通文件覆盖选择，目录合并保留无关项。既有客户端/会话/排队/重试/最终确认/fail及恢复也在本包重新验证。该包CLI SHA为fe8373a79ac439e6f77ade487bed978f0af6c751b6980caff58fc0cc6ae51268；证书生命周期已用同一CLI原位重跑通过。原生Mac/Linux新覆盖资格、完整处置确认、干净系统和正式发布仍待验收。历史r22及以前的包与结果保持原范围。
 
 ## r22主窗口修复预览包（历史，2026-11-05）
 
@@ -105,3 +105,6 @@ v0.41当前可用Windows r20：dist/windows-preview-20261105-r20/DuktoNext-windo
 
 
 2026-11-05 v0.46版本范围补记：上方已验收的实际包早于证书续期/指纹迁移功能，不含serve renew、profile-info及trust；新源码和新包的资格分别记录，新包实际下载校验结束后再更换入口。
+
+
+v0.51：r23同一fe8373a7 CLI原位运行已完成证书生命周期七检查及双向检查点复用，报告windows-r23-certificate-lifecycle-r50-inplace.json。复制单个EXE离开包的首轮测试无法定位SQL插件，原失败保留，新增--in-place保持EXE旁依赖布局。r23仍早于0017发送期修复，新包/原生盘满另验。

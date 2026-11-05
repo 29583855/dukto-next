@@ -594,10 +594,9 @@ void ServiceWorker::run() {
     } catch (const Error &error) {
         try {
             if (connection)
-                connection->write(next::Type::Failure, correlation,
-                                  {{"code", static_cast<int>(error.code)},
-                                   {"stage", error.stage},
-                                   {"message", error.message}});
+                connection->writeFailure(correlation, {{"code", static_cast<int>(error.code)},
+                                                       {"stage", error.stage},
+                                                       {"message", error.message}});
         } catch (const Error &) {
         }
         auto event = error.json();

@@ -27,6 +27,8 @@ class SecureChannel final {
     void write(const Frame &frame);
     // 日期：2026-11-04；控制请求与数据帧共用同一长度、JSON 及写缓冲约束。
     void write(Type type, quint64 correlation, const QJsonObject &object);
+    // 日期：2026-11-05；终止失败帧写出后最多等一秒接收对端关闭，有界丢弃在途正文，避免RST遮盖根因。
+    void writeFailure(quint64 correlation, const QJsonObject &object);
     // 日期：2026-11-04；返回已经过握手校验的证书指纹，供配对核对和受保护的信任记录使用。
     QByteArray peerFingerprint() const;
     // 日期：2026-11-04；长扫描/摘要期间定期处理本线程 TLS
@@ -38,6 +40,8 @@ class SecureChannel final {
     void classifyAsData();
     // 日期：2026-11-05；限定数据树交换期间的进度观察者；只能在所属线程注册或清除。
     void observeProgress(std::function<void(const Frame &)> handler);
+    // 日期：2026-11-05；发送树期间先消费同请求的完整失败/进度/忙心跳，零值恢复普通读写。
+    void observePeerFailure(quint64 correlation);
 
   private:
     // 日期：2026-11-04；所有等待在本线程事件循环处理网络事件，25ms 检查取消，不跨线程碰 socket。
@@ -47,6 +51,8 @@ class SecureChannel final {
     void check(QElapsedTimer &elapsed, const QString &stage) const;
     // 日期：2026-11-04；握手完成后再次核对指纹和证书期限，受信 CA 也不能绕过固定指纹要求。
     void handshake();
+    // 日期：2026-11-05；每次最多处理四个完整有界帧，不等待不完整帧，也不吞掉业务确认。
+    void checkPeerFailure();
     BufferCredit credit_{4 * 1024 * 1024};
     QSslSocket socket_;
     int timeoutMs_;
@@ -58,6 +64,8 @@ class SecureChannel final {
     bool sslErrors_ = false;
     bool used_ = false;
     bool established_ = false;
+    quint64 failureCorrelation_ = 0;
+    bool writing_ = false;
     std::function<void(const Frame &)> progress_;
 };
 } // namespace next

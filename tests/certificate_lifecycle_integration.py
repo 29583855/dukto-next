@@ -33,17 +33,20 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("executable")
     parser.add_argument("--report", required=True)
+    # 日期：2026-11-05；独立包需要保留相邻qt.conf及SQL插件，避免复制单个EXE后误报部署失败。
+    parser.add_argument("--in-place", action="store_true")
     args = parser.parse_args()
     original_executable = Path(args.executable).resolve()
     before = digest(original_executable)
-    result = {"passed": False, "checks": [], "recoveries": [], "executableSha256": before}
+    result = {"passed": False, "checks": [], "recoveries": [], "executableSha256": before,
+              "inPlaceRequested": args.in_place}
     outputs, secrets = [], []
     service = active = proxy = None
     try:
         with tempfile.TemporaryDirectory(prefix="dukto-certificate-") as temporary:
             root = Path(temporary).resolve()
             executable = str(original_executable)
-            if os.name == "nt":
+            if os.name == "nt" and not args.in_place:
                 local = root / "dukto-cli.exe"
                 shutil.copyfile(executable, local)
                 executable = str(local)
