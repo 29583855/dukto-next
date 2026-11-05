@@ -85,3 +85,7 @@ CI 通过后继续实际桌面交互、三平台互通、macOS 独立 GUI/CLI �
 ## 原生部署预览流程（2026-11-05，待实际执行）
 
 [macos-package.yml](../.github/workflows/macos-package.yml)手动运行两架构本机编译与Qt5部署，[打包脚本](../scripts/package_macos.py)保留原编译件，部署框架/QML及独立CLI，逐个检查Mach-O依赖并使用本地adhoc签名。[迁移专项](../tests/macos_package_integration.py)在中文空格目录解开真实tar，以系统PATH运行并核对dyld实际加载来源、CLI不加载GUI框架、Cocoa入口、16通道双向与4→8恢复。当前只完成脚本及语法审计，尚未实际运行通过。Developer ID、公证、Gatekeeper、干净系统、完整对应源码及正式发布资格仍须单独完成。
+
+## 计时偏差的实际证据（2026-11-05）
+
+[双方向原生诊断](https://github.com/29583855/dukto-next/actions/runs/41962777596)显示ARM64上传代理名义睡眠7.581秒、实际20.601秒，下载6.905秒、实际18.601秒。先修正代理重复相对睡眠造成的限速偏差：保持原速率和期限、按单调期限补偿、补偿上限0.25秒。真实TCP注入70ms超睡已在Windows验证2MiB用时4.079秒；两Mac原门槛尚待实际复验。这是测试基础设施修正，未宣称产品性能问题已经解决。

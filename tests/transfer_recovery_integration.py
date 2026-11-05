@@ -17,6 +17,7 @@ import time
 import uuid
 
 from service_integration import free_port, run
+from proxy_pacing import ProxyPacer
 from process_output import JsonOutputDrain
 from transfer_integration import digest, transfer
 
@@ -58,12 +59,15 @@ class SlowProxy:
             except OSError:
                 client.close()
 
-    # 日期：2026-11-04；每个 16 KiB 片段限为 4 MiB/s，使外部进程可稳定观察实际已同步块。
+    # 日期：2026-11-05；原4MiB/s改用单调期限补偿超睡，固定片段和取消检查保持。
     def pump(self, source, destination):
+        pacer = ProxyPacer()
         try:
             while not self.stopped.is_set():
+                receiving = time.monotonic()
                 data = source.recv(16384)
-                if not data or self.stopped.wait(len(data) / (4 * 1024 * 1024)):
+                received = time.monotonic()
+                if not data or pacer.wait(self.stopped, len(data), 4 * 1024 * 1024, received - receiving):
                     break
                 destination.sendall(data)
         except OSError:

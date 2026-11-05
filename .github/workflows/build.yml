@@ -80,6 +80,9 @@ jobs:
         run: python -X utf8 tests/source_snapshot_integration.py --report build/source-snapshot.json
       - name: Validate bounded process sampling
         run: python -X utf8 tests/process_sampling_integration.py --report build/process-sampling.json
+      # 日期：2026-11-05；真实TCP注入70ms超睡，独立验证代理速率/取消后再执行业务专项。
+      - name: Validate bounded proxy pacing
+        run: python -X utf8 tests/proxy_pacing_integration.py --report proxy-pacing.json
       - name: Configure
         run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
       - name: Compile
@@ -152,6 +155,7 @@ jobs:
         with:
           name: validation-${{ matrix.os }}
           path: |
+            proxy-pacing.json
             build/*.log
             build/*.json
             build/*.png

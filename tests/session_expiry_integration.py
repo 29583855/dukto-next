@@ -21,6 +21,7 @@ import uuid
 
 from credential_rotation_integration import IndependentSession
 from process_output import JsonOutputDrain, timeout_evidence
+from proxy_pacing import ProxyPacer
 from service_integration import free_port, run
 from transfer_integration import digest, transfer
 from transfer_recovery_integration import SlowProxy, TransferProcess, wait_state
@@ -108,7 +109,8 @@ class ExpiryProxy(SlowProxy):
                     value[key + "AfterCaseSeconds"] = round(value.pop(key) - marker["started"], 3)
             for key in ("throttleSeconds", "actualThrottleSeconds", "receiveWaitSeconds", "sendWaitSeconds"):
                 value[key] = round(value[key], 3)
-        return {"scope": "opaque TLS forwarding including handshake and control; not durable payload bytes",
+        return {"pacing": "monotonic deadline; timer oversleep catchup bounded to 0.25s; receive blocking not credited",
+                "scope": "opaque TLS forwarding including handshake and control; not durable payload bytes",
                 "directions": records}
 
     # 日期：2026-11-05；默认每通道 512 KiB/s；诊断可显式调速，不能假定任何主机都能在到期前落盘。
@@ -124,13 +126,14 @@ class ExpiryProxy(SlowProxy):
                       "sendWaitSeconds": 0.0, "milestones": [], "direction": direction}
             self.sequence += 1
             self.observations.append(record)
+        pacer = ProxyPacer()
         try:
             while not self.stopped.is_set():
                 receiving = time.monotonic()
                 data = source.recv(16384)
                 received = time.monotonic()
                 delay = len(data) / self.rate
-                stopped = not data or self.stopped.wait(delay)
+                stopped = not data or pacer.wait(self.stopped, len(data), self.rate, received - receiving)
                 throttled = time.monotonic()
                 with self.observation_lock:
                     record["receiveWaitSeconds"] += received - receiving

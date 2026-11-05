@@ -23,6 +23,9 @@ jobs:
           echo "$(brew --prefix qt@5)/bin" >> "$GITHUB_PATH"
           echo "$(brew --prefix openssl@3)/bin" >> "$GITHUB_PATH"
           echo "DUKTO_TEST_OPENSSL=$(brew --prefix openssl@3)/bin/openssl" >> "$GITHUB_ENV"
+      # 日期：2026-11-05；真实TCP注入70ms超睡，独立验证代理速率/取消后再执行业务专项。
+      - name: Validate bounded proxy pacing
+        run: python -X utf8 tests/proxy_pacing_integration.py --report proxy-pacing.json
       - name: Configure C++14
         run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
       - name: Compile diagnostic targets
@@ -55,6 +58,7 @@ jobs:
         with:
           name: macos-diagnostics-${{ matrix.os }}
           path: |
+            proxy-pacing.json
             build/*.log
             build/*.json
             build/*.xml
