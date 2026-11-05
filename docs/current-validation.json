@@ -1,7 +1,7 @@
 {
-  "observedUtc": "2026-11-05T17:50:39.721365+00:00",
-  "productionCommit": "b9d9b78cf48a866e9b3449bd722578a94af005dc",
-  "testCommit": "b9d9b78cf48a866e9b3449bd722578a94af005dc",
+  "observedUtc": "2026-11-05T18:25:23.035221+00:00",
+  "productionCommit": "3fbec42616e1488c943053eb5ac741a6634830fe",
+  "testCommit": "3fbec42616e1488c943053eb5ac741a6634830fe",
   "packages": [
     {
       "architecture": "arm64",
@@ -51,30 +51,32 @@
   "focusedRunUrl": "https://github.com/29583855/dukto-next/actions/runs/42036473915",
   "focusedWorkflowConclusion": "success",
   "nativeFull": {
-    "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42078226601",
-    "sourceCommit": "b9d9b78cf48a866e9b3449bd722578a94af005dc",
+    "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42083656124",
+    "sourceCommit": "3fbec42616e1488c943053eb5ac741a6634830fe",
     "workflowConclusion": null,
     "status": "in_progress",
     "fullProtocolPending": true,
-    "expectedProtocolCasesTotal": 154,
+    "expectedProtocolCasesTotal": 155,
     "expectedCoreTargetsEach": 21,
     "allProtocolReportHashesVerified": false
   },
-  "nativeMuslRunUrl": "https://github.com/29583855/dukto-next/actions/runs/42078314092",
+  "nativeMuslRunUrl": "https://github.com/29583855/dukto-next/actions/runs/42083735291",
   "originalFailureRunsRetained": [
     42028894157,
     42030418070,
     42031325487,
     42036465929,
-    42039126426
+    42039126426,
+    42078314092,
+    42078319293
   ],
   "releaseQualified": false,
   "deliveryComplete": false,
-  "planVersion": "v0.61",
-  "currentSourceStage": "upload sender historical receipts persisted and recovered from paged receiver evidence; Windows local checks complete, current native and Mac package CI in progress",
+  "planVersion": "v0.62",
+  "currentSourceStage": "bounded Windows atomic-overwrite contention and explicit same-task recovery verified locally; new native matrix and dual macOS packages pending",
   "nativeMusl": {
-    "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42078314092",
-    "sourceCommit": "b9d9b78cf48a866e9b3449bd722578a94af005dc",
+    "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42083735291",
+    "sourceCommit": "3fbec42616e1488c943053eb5ac741a6634830fe",
     "workflowConclusion": null,
     "status": "in_progress",
     "expectedProtocolCases": 38,
@@ -388,8 +390,8 @@
     "evidence": "docs/validation/2026-11-06/late-skip-r58-musl-terminal-summary.json"
   },
   "macOSPreviewPending": {
-    "sourceCommit": "b9d9b78cf48a866e9b3449bd722578a94af005dc",
-    "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42078319293",
+    "sourceCommit": "3fbec42616e1488c943053eb5ac741a6634830fe",
+    "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42083741936",
     "status": "in_progress",
     "workflowConclusion": null,
     "packagesVerified": false
@@ -498,5 +500,109 @@
     "currentRemoteContentReverified": false,
     "firstUcrtOverwriteError5RootCauseConfirmed": false,
     "evidence": "docs/validation/2026-11-06/upload-r61-windows/summary.json"
+  },
+  "previousUploadR61NativeObservation": [
+    {
+      "id": 42078226601,
+      "head_sha": "b9d9b78cf48a866e9b3449bd722578a94af005dc",
+      "status": "in_progress",
+      "conclusion": null,
+      "html_url": "https://github.com/29583855/dukto-next/actions/runs/42078226601",
+      "jobs": [
+        {
+          "id": 127424040591,
+          "name": "native (macos-15-intel, brew)",
+          "status": "in_progress",
+          "conclusion": null,
+          "activeOrFailed": [
+            "Protocol integration all independent cases"
+          ]
+        },
+        {
+          "id": 127424041074,
+          "name": "native (ubuntu-22.04, system)",
+          "status": "in_progress",
+          "conclusion": null,
+          "activeOrFailed": [
+            "Protocol integration all independent cases"
+          ]
+        },
+        {
+          "id": 127424041118,
+          "name": "native (macos-15, brew)",
+          "status": "completed",
+          "conclusion": "failure",
+          "activeOrFailed": [
+            "Protocol integration all independent cases"
+          ]
+        },
+        {
+          "id": 127424041295,
+          "name": "native (windows-2022, 5.15.2, win64_msvc2019_64)",
+          "status": "in_progress",
+          "conclusion": null,
+          "activeOrFailed": [
+            "Protocol integration all independent cases"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 42078314092,
+      "head_sha": "b9d9b78cf48a866e9b3449bd722578a94af005dc",
+      "status": "completed",
+      "conclusion": "failure",
+      "html_url": "https://github.com/29583855/dukto-next/actions/runs/42078314092",
+      "jobs": [
+        {
+          "id": 127424356467,
+          "name": "musl",
+          "status": "completed",
+          "conclusion": "failure",
+          "activeOrFailed": [
+            "All original independent protocol cases"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 42078319293,
+      "head_sha": "b9d9b78cf48a866e9b3449bd722578a94af005dc",
+      "status": "completed",
+      "conclusion": "failure",
+      "html_url": "https://github.com/29583855/dukto-next/actions/runs/42078319293",
+      "jobs": [
+        {
+          "id": 127424377012,
+          "name": "package (macos-15)",
+          "status": "completed",
+          "conclusion": "failure",
+          "activeOrFailed": [
+            "Validate relocated native preview"
+          ]
+        },
+        {
+          "id": 127424377648,
+          "name": "package (macos-15-intel)",
+          "status": "completed",
+          "conclusion": "failure",
+          "activeOrFailed": [
+            "Validate relocated native preview"
+          ]
+        }
+      ]
+    }
+  ],
+  "windowsOverwriteContention": {
+    "sourceCommit": "3fbec42616e1488c943053eb5ac741a6634830fe",
+    "localFeatureChecksPassed": true,
+    "coreTargetsEach": 21,
+    "protocolReportsEach": 6,
+    "busyScenariosEach": 12,
+    "waitBudgetMs": 500,
+    "maximumAttempts": 21,
+    "explicitSameTaskResumeVerified": true,
+    "historicalError5OwnerIdentified": false,
+    "evidence": "docs/validation/2026-11-06/overwrite-r62-windows/summary.json"
   }
 }
