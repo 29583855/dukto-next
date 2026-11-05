@@ -6,7 +6,7 @@
 
 当前已建立 C++14 共用核心、Qt Quick 2 桌面端和独立 CLI。Windows 已验证与原版文件/目录/文本双向互传、超过 4 GiB、10 万文件、100 轮接收，以及首次说明/设置/截图/单实例和有界头像模块。完整原版交互、服务器、多线程、恢复和跨平台验收继续按计划推进。原版目录保留用于对照。
 
-公开仓库为29583855/dukto-next，31f3db3修复版已完成双Mac、Linux及Windows r24实际包编译和迁移，当前下载已更新。四runner各28项TLS和覆盖故障/确认专项通过；双Mac原APFS14份报告、Ubuntu及Alpine独立真实盘满通过。原完整矩阵的会话观察/Intel界面失败已修正，新四runner核心步骤通过，Ubuntu/双Mac完整协议job和Alpine完整运行通过，Windows协议继续；双Mac新物理盘满14报告业务全部通过，工作流保留Intel清理失败并继续设备状态复验。新增持久处置基础通过Windows两套工具链，公开skip尚未接入。完整交付未完成。下载、校验和剩余范围见[当前构建验证摘要](docs/构建验证摘要.md)及[公开验证索引](docs/current-validation.json)。
+公开仓库为29583855/dukto-next，31f3db3修复版已完成双Mac、Linux及Windows r24实际包编译和迁移，当前下载已更新。四runner各28项TLS和覆盖故障/确认专项通过；双Mac原APFS14份报告、Ubuntu及Alpine独立真实盘满通过。原完整矩阵的会话观察/Intel界面失败已修正，新四runner核心步骤通过，四runner完整运行及Alpine完整运行全部通过，146+36项协议原报告SHA已核验；双Mac新物理盘满14报告业务全部通过，工作流保留Intel清理失败并继续设备状态复验。新增持久处置基础通过Windows两套工具链，公开skip尚未接入。完整交付未完成。下载、校验和剩余范围见[当前构建验证摘要](docs/构建验证摘要.md)及[公开验证索引](docs/current-validation.json)。
 
 ## 文档入口
 
