@@ -70,3 +70,8 @@ Qt 桌面端由应用明确使用软件渲染，部署参数相应关闭 ANGLE �
 ## r17初始化竞争修正预览（2026-11-05）
 
 持久包为dist/windows-preview-20261105-r17/DuktoNext-windows-x64-preview.zip，SHA-256：4825c481916e8daa5ee81b0d3180737a87a3e143b12f3a509892110f7fdba944。实际ZIP系统PATH迁移通过，包含2627d48初始化轮询；185份应用输入与1bc2774精确Git树核对，24包/364个依赖文件/53份许可核对通过。原生截图已查看。完整对应源码、干净系统及正式发布仍待验，历史r16继续保留。
+
+
+## r18逐项查询和网络稳定性修复（2026-11-05）
+
+当前包为`dist/windows-preview-20261105-r18/DuktoNext-windows-x64-preview.zip`，SHA-256：`76328048c393ea824d2939a83e4ec818ef553052c0e2c2777c9bb02d521b74a9`。源码fa6d96b；193份包内应用源码与精确Git树相同。新增逐项查询及R6 I/O期限/多通道加入确认修复。实际包的[系统PATH迁移](validation/2026-11-05/windows-package-r18-runtime-r38.json)、[源码核验](validation/2026-11-05/windows-r18-source-linkage-r38.json)及[依赖许可映射](validation/2026-11-05/windows-r18-signed-payload-map-r38.json)均通过，原生GUI截图已查看。旧包保留；干净系统、完整对应源码/独立重建及正式发布仍待验收。
