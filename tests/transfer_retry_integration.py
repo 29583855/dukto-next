@@ -13,6 +13,7 @@ import uuid
 
 from process_output import JsonOutputDrain
 from service_integration import free_port, run
+from proxy_pacing import ProxyPacer
 from transfer_integration import digest
 from transfer_recovery_integration import SlowProxy, TransferProcess, wait_checkpoint, wait_state
 
@@ -25,12 +26,15 @@ class ReconnectProxy(SlowProxy):
 
     # 日期：2026-11-05；冷传输限速到可见部分检查点，重连后仍为原始 TLS 字节转发。
     def pump(self, source, destination):
+        pacer = ProxyPacer()
         try:
             while not self.stopped.is_set():
+                receiving = time.monotonic()
                 data = source.recv(16384)
+                received = time.monotonic()
                 if not data:
                     return
-                if self.rate and self.stopped.wait(len(data) / self.rate):
+                if self.rate and pacer.wait(self.stopped, len(data), self.rate, received - receiving):
                     return
                 destination.sendall(data)
         except OSError:

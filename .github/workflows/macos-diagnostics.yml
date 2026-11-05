@@ -43,8 +43,20 @@ jobs:
           } > build/macos-diagnostic-environment.log 2>&1
           printf '%s\n' "$GITHUB_SHA" > build/diagnostic-source-commit.log
       - name: Original UDP chain limit
+        id: discovery
         if: ${{ !cancelled() && steps.compile.outcome == 'success' }}
         run: build/core-tests discoveryYieldsAndRejectsMalformedGoodbye -o build/discovery-chain.log,txt -o build/discovery-chain.xml,junitxml
+      # 日期：2026-11-05；原门槛先独立执行；失败后额外采样只定位栈，不替代原结果。
+      - name: Profile original UDP deadline failure
+        if: ${{ !cancelled() && steps.discovery.outcome == 'failure' }}
+        shell: bash
+        run: |
+          build/core-tests discoveryYieldsAndRejectsMalformedGoodbye -o build/discovery-profile-test.log,txt -o build/discovery-profile-test.xml,junitxml &
+          probe_pid=$!
+          if ! /usr/bin/sample "$probe_pid" 2 1 -file build/discovery-profile.log > build/discovery-profile-command.log 2>&1; then
+            echo "Sampling unavailable or process already exited; original test result remains unchanged" >> build/discovery-profile-command.log
+          fi
+          wait "$probe_pid"
       # 日期：2026-11-05；两个方向独立诊断，保持原20秒/512KiB/s/90秒门槛。
       - name: Single channel upload session original limits
         if: ${{ !cancelled() && steps.compile.outcome == 'success' }}

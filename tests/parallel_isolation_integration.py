@@ -16,6 +16,7 @@ import psutil
 
 from process_output import JsonOutputDrain
 from service_integration import free_port, run
+from proxy_pacing import ProxyPacer
 from transfer_integration import digest, transfer
 from transfer_recovery_integration import SlowProxy, TransferProcess, wait_checkpoint, wait_state
 
@@ -30,11 +31,14 @@ class HeldUploadProxy(SlowProxy):
 
     # 日期：2026-11-05；只控制本测试代理流量；正文先有真实持久块，认证/查询/暂停短连接不触及阈值。
     def pump(self, source, destination):
+        pacer = ProxyPacer()
         forwarded = 0
         holding = False
         try:
             while not self.stopped.is_set():
+                receiving = time.monotonic()
                 data = source.recv(16384)
+                received = time.monotonic()
                 if not data:
                     break
                 if forwarded >= 8 * 1024 * 1024 and not self.released.is_set():
@@ -42,11 +46,9 @@ class HeldUploadProxy(SlowProxy):
                         with self.held_lock:
                             self.held += 1
                         holding = True
-                    # 日期：2026-11-05；每 1/32 秒继续最多 16 KiB，4 MiB 块约八秒；不以极慢片段规避正常块确认期限。
-                    self.released.wait(1 / 32)
-                    if self.stopped.is_set():
-                        break
-                if self.stopped.wait(len(data) / (4 * 1024 * 1024)):
+                # 日期：2026-11-05；保持原512KiB/s与4MiB/s两个等待的合成速率，释放后恢复原4MiB/s。
+                rate = (4 * 1024 * 1024) / 9 if holding and not self.released.is_set() else 4 * 1024 * 1024
+                if pacer.wait(self.stopped, len(data), rate, received - receiving):
                     break
                 destination.sendall(data)
                 forwarded += len(data)

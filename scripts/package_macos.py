@@ -38,6 +38,14 @@ def expand_path(value, image, executable):
     return Path(value).resolve() if value.startswith("/") else None
 
 
+# 日期：2026-11-05；加载名允许空格；动态库自身LC_ID_DYLIB不属于外部依赖。
+def load_names(image):
+    names = re.findall(r"^\s+(.+?) \(compatibility version", checked(["otool", "-L", image]), re.M)
+    identities = {line.strip() for line in checked(["otool", "-D", image]).splitlines()
+                  if line.strip().startswith(("@", "/")) and not line.rstrip().endswith(":")}
+    return [name for name in names if name not in identities]
+
+
 # 日期：2026-11-05；Qt部署工具可能漏掉brotli等rpath传递库，只从本机已安装Cellar复制精确匹配文件。
 def deploy_transitive(app):
     cellar = Path(checked(["brew", "--cellar"]).strip()).resolve()
@@ -54,7 +62,7 @@ def deploy_transitive(app):
         images = sorted(path for path in app.rglob("*")
                         if path.is_file() and not path.is_symlink() and native_file(path))
         for image in images:
-            names = re.findall(r"^\s+(\S+) \(compatibility version", checked(["otool", "-L", image]), re.M)
+            names = load_names(image)
             for name in names:
                 if name.startswith(("/System/Library/", "/usr/lib/")):
                     continue
@@ -62,7 +70,29 @@ def deploy_transitive(app):
                 bundled = framework / name[len("@rpath/"):] if name.startswith("@rpath/") else direct
                 if bundled is not None and bundled.is_file() and bundled.resolve().is_relative_to(app):
                     continue
-                assert ".framework/" not in name, ("Qt framework deployment incomplete", image, name)
+                if ".framework/" in name:
+                    position = name.index(".framework/")
+                    relative = name[name.rfind("/", 0, position) + 1:]
+                    target = framework / relative
+                    if not target.is_file():
+                        source = direct
+                        if source is None:
+                            source = Path(checked(["qmake", "-query", "QT_INSTALL_LIBS"]).strip()) / relative
+                        source = source.resolve(strict=True)
+                        assert source.is_relative_to(cellar), ("Framework outside installed Cellar", source)
+                        index_part = next(index for index, part in enumerate(source.parts) if part.endswith(".framework"))
+                        source_root = Path(*source.parts[:index_part + 1])
+                        destination = framework / source_root.name
+                        assert not destination.exists(), ("Partial framework cannot be overwritten", destination)
+                        shutil.copytree(source_root, destination, symlinks=True)
+                        target.chmod(target.stat().st_mode | 0o200)
+                        checked(["install_name_tool", "-id", "@rpath/" + relative, target])
+                        copied.append({"path": target.relative_to(app).as_posix(), "source": str(source),
+                                       "originalSha256": sha256(source)})
+                    checked(["install_name_tool", "-change", name,
+                             "@executable_path/../Frameworks/" + relative, image])
+                    changed = True
+                    continue
                 filename = Path(name).name
                 if direct is not None and direct.is_file():
                     candidates = {direct.resolve()}
@@ -100,7 +130,7 @@ def dependencies(app):
                     if path.is_file() and not path.is_symlink() and native_file(path))
     result = []
     for image in images:
-        names = re.findall(r"^\s+(\S+) \(compatibility version", checked(["otool", "-L", image]), re.M)
+        names = load_names(image)
         commands = checked(["otool", "-l", image])
         rpaths = re.findall(r"cmd LC_RPATH\s+cmdsize \d+\s+path (.+?) \(offset", commands)
         search = [framework]

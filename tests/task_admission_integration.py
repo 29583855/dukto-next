@@ -18,6 +18,7 @@ import uuid
 from credential_rotation_integration import IndependentSession
 from process_output import JsonOutputDrain
 from service_integration import free_port, run
+from proxy_pacing import ProxyPacer
 from transfer_integration import digest, transfer
 from transfer_recovery_integration import SlowProxy, TransferProcess, wait_checkpoint, wait_state
 
@@ -67,10 +68,13 @@ class AdmissionBlocker(IndependentSession):
 class QueueProxy(SlowProxy):
     # 日期：2026-11-05；每通道 1 MiB/s 为公平顺序和中途暂停留下实际可观察窗口，不解密生产 TLS。
     def pump(self, source, destination):
+        pacer = ProxyPacer()
         try:
             while not self.stopped.is_set():
+                receiving = time.monotonic()
                 data = source.recv(16384)
-                if not data or self.stopped.wait(len(data) / (1024 * 1024)):
+                received = time.monotonic()
+                if not data or pacer.wait(self.stopped, len(data), 1024 * 1024, received - receiving):
                     break
                 destination.sendall(data)
         except OSError:

@@ -62,3 +62,7 @@ Qt 桌面端由应用明确使用软件渲染，部署参数相应关闭 ANGLE �
 新包位于 `dist/windows-preview-20261105-r15/DuktoNext-windows-x64-preview.zip`，SHA-256为 `5fa8f761a2166351f87043c7655f9cf809737fc60e78f55e721cfd4b8ac932f5`，持久存放在用户目录下的DuktoNextArtifacts。它包含3360496的并行错误根因保留及暂停/取消分类修复。[系统PATH迁移](validation/2026-11-05/package-windows-runtime-r15.json)通过：486份清单文件、GUI原生渲染、无桌面依赖CLI、16通道双向、客户端、会话、排队、14组重试、6组最终确认、fail冲突及4→8恢复。截图已查看。
 
 [应用源码关联](validation/2026-11-05/windows-r15-source-linkage-r30.json)逐文件验证包内源码及78份生产输入；源码为生成时快照，不包含后续诊断/CI/文档更新。[24个依赖包的364份文件及53份许可](validation/2026-11-05/windows-r15-signed-payload-map-r30.json)重新与受信签名原包核对。旧r12/r13/r14归档仍缺失，此新包不恢复或冒充历史摘要。cleanSystemQualified与releaseQualified继续为false，完整对应源码/独立重建仍待完成。
+
+## r16 共享数据库校验修复预览（2026-11-05）
+
+持久包为dist/windows-preview-20261105-r16/DuktoNext-windows-x64-preview.zip，SHA-256：b606036baa5d4da5d270a57192a114134b9a44dff8b76039cc46e0d38c1e6b98。系统PATH实际迁移通过，包含da2799b并发私有数据库校验修复；GUI、独立CLI、16通道双向、会话、混合排队、14重试、最终确认和fail/4→8恢复通过。[应用源及生产输入核验](validation/2026-11-05/windows-r16-source-linkage-r32.json)与[依赖许可核验](validation/2026-11-05/windows-r16-signed-payload-map-r32.json)保留。应用源码为打包时冻结快照，后续夹具/部署修改另行记录；干净系统、完整对应源码、独立重建及正式发布资格仍未完成。

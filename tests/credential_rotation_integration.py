@@ -16,6 +16,7 @@ import time
 import uuid
 
 from service_integration import free_port, run
+from proxy_pacing import ProxyPacer
 from transfer_integration import digest, transfer
 from transfer_recovery_integration import SlowProxy, TransferProcess, wait_checkpoint
 from transfer_faults_integration import failure, stopped_task
@@ -53,9 +54,12 @@ class RotationProxy(SlowProxy):
 
     # 日期：2026-11-05；只阻断轮换对应方向，不因认证失败或普通传输误触发故障。
     def pump(self, source, destination):
+        pacer = ProxyPacer()
         try:
             while not self.stopped.is_set():
+                receiving = time.monotonic()
                 data = source.recv(16384)
+                received = time.monotonic()
                 if not data:
                     break
                 response = source.getpeername()[1] == self.target
@@ -74,7 +78,7 @@ class RotationProxy(SlowProxy):
                             if time.monotonic() >= deadline:
                                 return
                         return
-                if self.rate and self.stopped.wait(len(data) / self.rate):
+                if self.rate and pacer.wait(self.stopped, len(data), self.rate, received - receiving):
                     return
                 destination.sendall(data)
         except OSError:

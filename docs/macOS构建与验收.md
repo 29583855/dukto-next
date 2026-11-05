@@ -26,7 +26,7 @@
 
 ## 结果与下一步
 
-初次提供的 airen3339/dukto-next 对本机账号仅有读取权限。用户随后明确授权使用当前 29583855 账号创建公开仓库并操作上传、编译，已创建 [29583855/dukto-next](https://github.com/29583855/dukto-next)。现已上传跨平台共用源码与工作流并实际执行多轮原生编译，初始提交 a51a5ec；当前已编译源码 336049615719a597c3251f491d33b4d31a9dbec5。
+初次提供的 airen3339/dukto-next 对本机账号仅有读取权限。用户随后明确授权使用当前 29583855 账号创建公开仓库并操作上传、编译，已创建 [29583855/dukto-next](https://github.com/29583855/dukto-next)。现已上传跨平台共用源码与工作流并实际执行多轮原生编译，初始提交 a51a5ec；当前已编译源码 da2799b2e85cdbdc4d530f202ff6bebd80599d59。
 
 macOS 编译成功后即保存实际 GUI/独立 CLI，artifact 为 `macos-compiled-X64` 和 `macos-compiled-ARM64`；内部 tar 保留应用链接和可执行权限，附源码提交 SHA、许可证及摘要。这是仍需匹配 Qt5/OpenSSL 的编译输出，自包含发布包、签名和公证继续单独验收。每个原生 runner 无论成功或失败均保存日志与 JSON，截图也加入归档；对应 artifact 为 `validation-macos-15-intel` 和 `validation-macos-15`。[原工作流静态记录](validation/2026-11-05/ci-structure-r28.json)仅反映运行前历史状态。现在 remoteActionsExecuted=true，实际编译与测试记录见下表，不能用整体 CI 失败掩盖已通过子项，也不能用编译通过冒称整体 CI 成功。
 
@@ -91,3 +91,7 @@ CI 通过后继续实际桌面交互、三平台互通、macOS 独立 GUI/CLI �
 [双方向原生诊断](https://github.com/29583855/dukto-next/actions/runs/41962777596)显示ARM64上传代理名义睡眠7.581秒、实际20.601秒，下载6.905秒、实际18.601秒。先修正代理重复相对睡眠造成的限速偏差：保持原速率和期限、按单调期限补偿、补偿上限0.25秒。真实TCP注入70ms超睡已在Windows验证2MiB用时4.079秒；两Mac原门槛尚待实际复验。这是测试基础设施修正，未宣称产品性能问题已经解决。
 
 部署首轮ARM64在严格检查中发现libbrotlidec依赖的libbrotlicommon未被macdeployqt部署，已保留原失败。打包器新增从已安装Cellar精确匹配传递库、来源和原摘要记录、加载名修正及独立CLI/GUI框架rpath检查；新原生结果待验，不跳过缺库校验。
+
+## 两架构原会话门槛通过（2026-11-05）
+
+[0df8231原生诊断](https://github.com/29583855/dukto-next/actions/runs/41963964567)两架构单通道上传/下载全部通过原门槛；ARM64恢复16.129/9.622秒，Intel为24.197/15.161秒，持久复用与摘要全部核对。ARM64 job成功；Intel UDP链5000/10秒仍超时（本次10250ms足够），因此Intel job仍失败，继续独立采样定位。da2799b两架构18/18 CTest（204.60/240.73秒）及实际编译tar已归档到dist/macos-compiled-20261105-r31。原完整CI因新夹具替代而取消，完整产品资格仍不能勾选。部署预览发现QtPrintSupport框架传递依赖，新增完整框架复制与自身ID区分后继续原生验证。
