@@ -8,17 +8,33 @@
 #include <QCryptographicHash>
 #include <QDateTime>
 #include <QDir>
+#include <QElapsedTimer>
 #include <QFileInfo>
 #include <QJsonDocument>
 #include <QMutex>
 #include <QMutexLocker>
 #include <QSqlQuery>
+#include <QThread>
 #include <limits>
 
 namespace dukto {
 namespace {
 const QString Columns = "id,owner,request,spec,state,desired,revision,manifest,total,entries,"
                         "processed,error,message,requesthash";
+
+// 日期：2026-11-05；保留5秒初始化预算，以10ms短轮询避免多进程共享指数退避长期错过已释放的锁。
+void lockInitialization(QLockFile &lock) {
+    QElapsedTimer elapsed;
+    elapsed.start();
+    for (;;) {
+        if (lock.tryLock(0))
+            return;
+        const auto remaining = 5000 - elapsed.elapsed();
+        if (remaining <= 0)
+            throw Error(ExitCode::Permission, QStringLiteral("任务库正在初始化，请重试"), "task");
+        QThread::msleep(static_cast<unsigned long>(qMin<qint64>(10, remaining)));
+    }
+}
 
 // 日期：2026-11-04；任何失败都只报告规范错误，不回显 SQL 和任务中的本地绝对路径。
 void checked(QSqlQuery &query) {
@@ -184,8 +200,7 @@ TaskStore::TaskStore(PrivateStore &store, bool control)
     QMutexLocker initializationGuard(&initializationMutex);
     QLockFile initialization(QDir(store.directory()).filePath("tasks-init.lock"));
     initialization.setStaleLockTime(0);
-    if (!initialization.tryLock(5000))
-        throw Error(ExitCode::Permission, QStringLiteral("任务库正在初始化，请重试"), "task");
+    lockInitialization(initialization);
     if (!store.exists("tasks.sqlite"))
         store.write("tasks.sqlite", {});
     if (store.validateFile("tasks.sqlite") > MaxMetadataBytes)

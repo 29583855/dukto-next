@@ -33,14 +33,17 @@ def exact(stream, length):
 # 日期：2026-11-05；证书显式声明服务器用途/密钥用法，覆盖有效期/主机名，不更改系统信任或时间。
 def certificates(root, openssl):
     cert, key, csr = root / "valid.pem", root / "key.pem", root / "request.pem"
-    common = [openssl, "req", "-new", "-newkey", "rsa:2048", "-nodes", "-subj", "/CN=localhost",
+    # 日期：2026-11-05；隔离系统req扩展；OpenSSL1.1的默认v3_ca与-addext会重复basicConstraints。
+    request_config = root / "request.cnf"
+    request_config.write_text("[req]\ndistinguished_name=dn\nprompt=no\n[dn]\nCN=localhost\n", encoding="ascii")
+    common = [openssl, "req", "-config", str(request_config), "-new", "-newkey", "rsa:2048", "-nodes", "-subj", "/CN=localhost",
               "-addext", "subjectAltName=DNS:localhost,IP:127.0.0.1",
               "-addext", "basicConstraints=critical,CA:FALSE",
               "-addext", "keyUsage=critical,digitalSignature,keyEncipherment",
               "-addext", "extendedKeyUsage=serverAuth", "-keyout", str(key)]
     subprocess.run(common + ["-x509", "-days", "1", "-out", str(cert)],
                    capture_output=True, check=True, timeout=30)
-    subprocess.run([openssl, "req", "-new", "-key", str(key), "-subj", "/CN=localhost", "-out", str(csr)],
+    subprocess.run([openssl, "req", "-config", str(request_config), "-new", "-key", str(key), "-subj", "/CN=localhost", "-out", str(csr)],
                    capture_output=True, check=True, timeout=30)
     (root / "index").touch()
     (root / "serial").write_text("1000\n", encoding="ascii")

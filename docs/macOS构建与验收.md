@@ -1,6 +1,6 @@
 # macOS 构建与验收
 
-更新日期：2026-11-05。状态：Intel/Apple Silicon 原生 GUI/CLI 编译、严格资源采样及各 18 项 CTest 已实际通过；20 项独立 TLS、Cocoa 主入口渲染及面板进程恢复已通过；短会话到期检查点失败，完整业务仍未通过，尚未完成 macOS 全部发布验收。
+更新日期：2026-11-05。状态：Intel/Apple Silicon原生C++14 GUI/CLI、各18项CTest、20项独立TLS、Cocoa渲染及面板恢复已通过；修正测试代理累计超睡后，四组默认单通道双向会话通过。ARM64完整26项协议与c49独立部署迁移已通过；Intel完整协议22/26且部署工具超时，需修正复验。
 
 ## 运行环境
 
@@ -19,14 +19,14 @@
 | 核心与 QML | 18 项 CTest，包含严格路径、日志、并发、任务、生产服务器面板 | 9198cb5 两种架构各 18/18 实际通过（ARM64 168.00 秒；Intel 197.26 秒） |
 | 完整主入口渲染 | 强制 `QT_QPA_PLATFORM=cocoa`，隔离中文空格目录，启动 `.app` 的实际 GUI，保存 PNG | 两种架构通过；实际帧缓冲 ARM64 430×653、Intel 430×700，PNG 已查看 |
 | Cocoa 面板进程恢复 | 真实按钮、退出旧面板进程、重开面板并恢复同一任务、复用已同步数据 | 两种架构通过：4→8 下载、真实退出/重开面板，同任务和已同步数据复用 |
-| CLI/TLS 与恢复 | 既有协议/服务/权限/多通道/重试/最终确认及新增 fail 冲突、4→8 八组恢复 | 基础 R6/CLI/崩溃/POSIX/服务/身份列表通过；会话到期失败，后续完整专项未执行 |
+| CLI/TLS 与恢复 | 既有协议/服务/权限/多通道/重试/最终确认及新增 fail 冲突、4→8 八组恢复 | 四组单通道双向默认会话已通过；62f49c1完整矩阵ARM64为26/26，Intel为22/26，失败继续处理 |
 | 资源采样 | 严格活动进程错误、512 MiB 门槛及短命进程；Darwin 原生线程采样 | 两种架构实际自检通过；Darwin 采用 libproc 线程 ID/RSS/physical footprint |
 
 渲染检查强制选择原生插件，记录窗口/QML 根/屏幕/帧缓冲和缩放几何；CI 小屏幕自动缩窗不再被误当作固定 430×700。失败时也保留截图与实际反馈。offscreen 只用于独立 CTest。它覆盖主入口及首次说明画面；面板恢复覆盖服务器页按钮。完整主窗口交互、原生文件/目录选择器和其他画面仍需单独验收。
 
 ## 结果与下一步
 
-初次提供的 airen3339/dukto-next 对本机账号仅有读取权限。用户随后明确授权使用当前 29583855 账号创建公开仓库并操作上传、编译，已创建 [29583855/dukto-next](https://github.com/29583855/dukto-next)。现已上传跨平台共用源码与工作流并实际执行多轮原生编译，初始提交 a51a5ec；当前已编译源码 da2799b2e85cdbdc4d530f202ff6bebd80599d59。
+初次提供的 airen3339/dukto-next 对本机账号仅有读取权限。用户随后明确授权使用当前 29583855 账号创建公开仓库并操作上传、编译，已创建 [29583855/dukto-next](https://github.com/29583855/dukto-next)。现已上传跨平台共用源码与工作流并实际执行多轮原生编译，初始提交 a51a5ec；当前已编译源码62f49c1e0a0f66f08f80928bae3ca14414f5637b，其生产C++与da2799b一致。
 
 macOS 编译成功后即保存实际 GUI/独立 CLI，artifact 为 `macos-compiled-X64` 和 `macos-compiled-ARM64`；内部 tar 保留应用链接和可执行权限，附源码提交 SHA、许可证及摘要。这是仍需匹配 Qt5/OpenSSL 的编译输出，自包含发布包、签名和公证继续单独验收。每个原生 runner 无论成功或失败均保存日志与 JSON，截图也加入归档；对应 artifact 为 `validation-macos-15-intel` 和 `validation-macos-15`。[原工作流静态记录](validation/2026-11-05/ci-structure-r28.json)仅反映运行前历史状态。现在 remoteActionsExecuted=true，实际编译与测试记录见下表，不能用整体 CI 失败掩盖已通过子项，也不能用编译通过冒称整体 CI 成功。
 
@@ -45,7 +45,7 @@ CI 通过后继续实际桌面交互、三平台互通、macOS 独立 GUI/CLI �
 
 本机同一 APFS/证书修复源码 [18/18 Windows UCRT](validation/2026-11-05/ctest-macos-compat-r29-ucrt.log)、[独立 TLS 拒绝边界](validation/2026-11-05/secure-channel-macos-compat-r29-ucrt.json)通过。后续几何/版本/字体修改的[两项回归](validation/2026-11-05/ctest-version-font-r29-ucrt.log)、[真实 Windows 原生截图与几何](validation/2026-11-05/native-geometry-r29-windows.json)及[私有合成记录分页](validation/2026-11-05/client-list-explicit-owner-r29-ucrt.json)通过。它们各自覆盖明确范围，不代替 Mac 原生结果。
 
-## 当前已交付的编译结果（源码 9198cb5，2026-11-05）
+## 历史编译结果（源码 9198cb5，2026-11-05）
 
 [原生 CI 与完整日志](https://github.com/29583855/dukto-next/actions/runs/41954110035)已完成两种 Mac job。两者整体结论均为 failure：编译和已列子项实际通过，业务步骤因会话到期专项失败而停止；不改变原测试时限来取得通过结果。
 
@@ -65,7 +65,7 @@ CI 通过后继续实际桌面交互、三平台互通、macOS 独立 GUI/CLI �
 
 同一运行四个runner现已全部结束，整体为failure；Windows会话/排队通过，重试中的远程暂停返回4/parallel而预期7，另记R29-03。两Mac已列通过项不变，后续业务继续验收。[完整终态](validation/2026-11-05/terminal-state-r29.json)与[全量附件](validation/2026-11-05/github-evidence-r29-all-runners-terminal/receipt.json)保留。
 
-## 最新编译与独立专项验证（3360496，2026-11-05）
+## 3360496编译与独立专项验证（2026-11-05）
 
 [本轮CI](https://github.com/29583855/dukto-next/actions/runs/41958459234)已编译两个Mac架构，附件已下载并核对GitHub ZIP、内部tar、源码提交、Mach-O CPU和执行权限；原始字节存于本机dist/macos-compiled-20261105-r30。
 
@@ -82,16 +82,31 @@ CI 通过后继续实际桌面交互、三平台互通、macOS 独立 GUI/CLI �
 
 两架构单独UDP复验已通过；原完整Intel超时仍保留。短会话接收临时文件不足首个4MiB块，继续使用原20秒会话和512KiB/s代理，新增实际收包/限速/发包耗时，两个方向独立执行。这只是诊断，当前完整业务及自包含部署资格尚未通过。共享SQLite并发校验已在Windows复现并修复，新源码的原生Mac构建/测试结果仍待上传后的实际CI。
 
-## 原生部署预览流程（2026-11-05，待实际执行）
+## 原生部署预览流程（2026-11-05，实际验证中）
 
-[macos-package.yml](../.github/workflows/macos-package.yml)手动运行两架构本机编译与Qt5部署，[打包脚本](../scripts/package_macos.py)保留原编译件，部署框架/QML及独立CLI，逐个检查Mach-O依赖并使用本地adhoc签名。[迁移专项](../tests/macos_package_integration.py)在中文空格目录解开真实tar，以系统PATH运行并核对dyld实际加载来源、CLI不加载GUI框架、Cocoa入口、16通道双向与4→8恢复。当前只完成脚本及语法审计，尚未实际运行通过。Developer ID、公证、Gatekeeper、干净系统、完整对应源码及正式发布资格仍须单独完成。
+[macos-package.yml](../.github/workflows/macos-package.yml)手动运行两架构本机编译与Qt5部署，[打包脚本](../scripts/package_macos.py)保留原编译件，部署框架/QML及独立CLI，逐个检查Mach-O依赖并使用本地adhoc签名。[迁移专项](../tests/macos_package_integration.py)在中文空格目录解开真实tar，以系统PATH运行并核对dyld实际加载来源、CLI不加载GUI框架、Cocoa入口、16通道双向与4→8恢复。原生执行已发现并修正brotli及QtPrintSupport遗漏依赖；c49dc9d的ARM64实际tar迁移已通过，Intel仍在部署阶段超时，具体身份见下文。Developer ID、公证、Gatekeeper、干净系统、完整对应源码及正式发布资格仍须单独完成。
 
 ## 计时偏差的实际证据（2026-11-05）
 
-[双方向原生诊断](https://github.com/29583855/dukto-next/actions/runs/41962777596)显示ARM64上传代理名义睡眠7.581秒、实际20.601秒，下载6.905秒、实际18.601秒。先修正代理重复相对睡眠造成的限速偏差：保持原速率和期限、按单调期限补偿、补偿上限0.25秒。真实TCP注入70ms超睡已在Windows验证2MiB用时4.079秒；两Mac原门槛尚待实际复验。这是测试基础设施修正，未宣称产品性能问题已经解决。
+[双方向原生诊断](https://github.com/29583855/dukto-next/actions/runs/41962777596)显示ARM64上传代理名义睡眠7.581秒、实际20.601秒，下载6.905秒、实际18.601秒。先修正代理重复相对睡眠造成的限速偏差：保持原速率和期限、按单调期限补偿、补偿上限0.25秒。真实TCP注入70ms超睡已在Windows验证2MiB用时4.079秒；两Mac原门槛已实际通过，具体记录见下文。这是测试基础设施修正，未宣称产品性能问题已经解决。
 
 部署首轮ARM64在严格检查中发现libbrotlidec依赖的libbrotlicommon未被macdeployqt部署，已保留原失败。打包器新增从已安装Cellar精确匹配传递库、来源和原摘要记录、加载名修正及独立CLI/GUI框架rpath检查；新原生结果待验，不跳过缺库校验。
 
 ## 两架构原会话门槛通过（2026-11-05）
 
 [0df8231原生诊断](https://github.com/29583855/dukto-next/actions/runs/41963964567)两架构单通道上传/下载全部通过原门槛；ARM64恢复16.129/9.622秒，Intel为24.197/15.161秒，持久复用与摘要全部核对。ARM64 job成功；Intel UDP链5000/10秒仍超时（本次10250ms足够），因此Intel job仍失败，继续独立采样定位。da2799b两架构18/18 CTest（204.60/240.73秒）及实际编译tar已归档到dist/macos-compiled-20261105-r31。原完整CI因新夹具替代而取消，完整产品资格仍不能勾选。部署预览发现QtPrintSupport框架传递依赖，新增完整框架复制与自身ID区分后继续原生验证。
+
+## v0.33 APFS真实磁盘满（2026-11-05）
+
+[双架构原生工作流](https://github.com/29583855/dukto-next/actions/runs/41967829452)整体成功；[六份实际报告及源码关联](validation/2026-11-05/macos-apfs-qualification-r33.json)记录两种架构各自创建的256MiB APFS隔离镜像上的原协议和4/16通道双向TLS写满、已有持久检查点、原文件保护、释放空间后恢复及SHA核对。上传按明确失败后新请求恢复，下载恢复原任务；两者语义分别记录。控制记录存放在另一个未写满的临时卷，因此不代表元数据卷同时写满或完整故障矩阵通过。
+
+62f49c1的独立UDP/四组单通道原门槛会话CI也整体成功，原Intel间歇超时保留。部署已生成两架构依赖闭包和adhoc签名tar；迁移需识别系统Cryptex中的缓存镜像，已依据Apple公开dyld API增加原生缓存成员核验，第三方路径仍严格限定包内。原始失败均保留；当前终态及后续修复见下文，Developer ID/公证、干净系统和正式发布未完成。
+
+## v0.34 终态核对与初始化竞争修正（2026-11-05）
+
+- [x] [62f49c1完整CI](https://github.com/29583855/dukto-next/actions/runs/41966084944)已结束：Ubuntu全部通过；ARM64各18项CTest、20项独立TLS、Cocoa及26/26协议通过。Windows为18项CTest及26/28协议通过；Intel为18项CTest、TLS/Cocoa及22/26协议通过。整体failure已保存，不以通过子项代替整体结果。
+- [x] [c49dc9d ARM64实际部署包](https://github.com/29583855/dukto-next/actions/runs/41968009381/artifacts/13389365034)通过中文空格目录、系统PATH、包内Qt/OpenSSL真实加载、独立CLI无GUI框架、Cocoa渲染、16通道双向及4→8八组恢复。tar SHA256为e6de953e1a63c96dbb3a1fc09caa19f4115f1f2834151d3f4c865801a402a5a5；1547文件、71链接、77 Mach-O、183应用源码逐字节核验。该包对应c49dc9d，不包含本节新增初始化轮询。Intel同轮因macdeployqt原300秒工具预算失败，整个工作流failure。
+- [x] Windows TLS失败已定位为测试证书继承OpenSSL1.1默认v3_ca后再次-addext导致basicConstraints重复；测试改用独立req配置。生产证书信任与用途/有效期/主机名/pin拒绝规则保持。MSVC/UCRT新构建均通过20项TLS。
+- [x] 任务初始化保留原5秒上限及活进程锁语义，以最多10ms非阻塞轮询代替Qt长退避；两工具链各18项CTest、真实八进程持锁竞争、活持锁进程5秒拒绝及kill后恢复通过。MSVC竞争0.359秒、拒绝5.031秒；UCRT具体数值见任务专项报告。旧本机实现在本次额外竞争中也通过，因此尚不能宣称CI原初始化失败根因完全证明，须Windows CI复验。
+- [ ] Intel完整协议仍有16通道下载会话恢复的连接断开，以及fail恢复/八组恢复/字节进度的中途暂停竞态。下一步增加有界服务端关闭诊断并在真实持久检查点处设置测试数据转发屏障，仍须在完整传输前注入故障，保留原速率、SHA和恢复时限。
+- [ ] 新Mac打包仅把macdeployqt工具预算改为有界900秒并保存超时部分输出；业务测试期限保持。新源码尚待上传后的双架构原生部署和完整CI。Developer ID/公证、干净系统、完整对应源码及其他主计划未完成项继续保留；deliveryComplete=false。

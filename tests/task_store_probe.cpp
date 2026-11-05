@@ -2,7 +2,9 @@
 #include "core/taskstore.h"
 
 #include <QCoreApplication>
+#include <QDir>
 #include <QJsonDocument>
+#include <QLockFile>
 #include <QTextStream>
 #include <QTimer>
 
@@ -20,10 +22,20 @@ void output(const QJsonObject &object) {
 int main(int argc, char **argv) {
     QCoreApplication app(argc, argv);
     const auto args = app.arguments();
-    if (args.size() != 6 || (args[1] != "create" && args[1] != "hold"))
+    if (args.size() != 6 || (args[1] != "create" && args[1] != "hold" && args[1] != "init-lock"))
         return 2;
     try {
         dukto::PrivateStore store(args[2], true);
+        if (args[1] == "init-lock") {
+            // 日期：2026-11-05；真实持有初始化锁，供多个进程同时等待后释放；不改生产锁和等待期限。
+            QLockFile initialization(QDir(store.directory()).filePath("tasks-init.lock"));
+            initialization.setStaleLockTime(0);
+            if (!initialization.tryLock(0))
+                return 4;
+            output({{"initializationHeld", true}});
+            QTimer::singleShot(30000, &app, &QCoreApplication::quit);
+            return app.exec();
+        }
         dukto::TaskStore tasks(store);
         const auto task =
             tasks.create(QUuid(args[3]), QUuid(args[4]), "download", "docs", "sample.bin", args[5]);

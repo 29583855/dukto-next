@@ -15,12 +15,23 @@ from package_windows import sha256, source_archive
 
 
 # 日期：2026-11-05；仅执行显式工具参数，原生部署/签名/依赖检查任一失败都中止。
-def checked(command):
-    result = subprocess.run([str(value) for value in command], capture_output=True,
-                            encoding="utf-8", errors="replace", timeout=300)
+def checked(command, timeout=300, log=None):
+    try:
+        result = subprocess.run([str(value) for value in command], capture_output=True,
+                                encoding="utf-8", errors="replace", timeout=timeout)
+    except subprocess.TimeoutExpired as error:
+        # 日期：2026-11-05；部署工具超时仍失败并保存真实部分输出，不能丢弃工具运行到的阶段。
+        if log is not None:
+            parts = [value.decode("utf-8", "replace") if isinstance(value, bytes) else value or ""
+                     for value in (error.stdout, error.stderr)]
+            log.write_text("".join(parts), encoding="utf-8")
+        raise
+    output = result.stdout + result.stderr
+    if log is not None:
+        log.write_text(output, encoding="utf-8")
     if result.returncode:
         raise RuntimeError((command, result.returncode, result.stdout, result.stderr))
-    return result.stdout + result.stderr
+    return output
 
 
 # 日期：2026-11-05；只检查真实Mach-O文件，框架符号链接由最终归档清单单列。
@@ -173,9 +184,10 @@ def main():
     cli = app / "Contents/MacOS/dukto-cli"
     shutil.copy2(build / "dukto-cli", cli)
     qt = Path(checked(["qmake", "-query", "QT_HOST_BINS"]).strip())
-    deployed = checked([qt / "macdeployqt", app, "-executable=" + str(cli),
-                        "-qmldir=" + str(root / "ui"), "-always-overwrite", "-verbose=2"])
-    (output / "macdeployqt.log").write_text(deployed, encoding="utf-8")
+    # 日期：2026-11-05；Intel原生部署曾超过工具300秒预算，改为有界900秒；业务测试原时限保持。
+    checked([qt / "macdeployqt", app, "-executable=" + str(cli),
+             "-qmldir=" + str(root / "ui"), "-always-overwrite", "-verbose=2"],
+            timeout=900, log=output / "macdeployqt.log")
     transitive = deploy_transitive(app)
     bindings = dependencies(app)
     # 日期：2026-11-05；所有bundle写入结束后再签名，重定位的库和CLI必须一起通过严格签名检查。

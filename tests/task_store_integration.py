@@ -6,6 +6,7 @@ from pathlib import Path
 import sqlite3
 import subprocess
 import tempfile
+import time
 import uuid
 
 
@@ -58,6 +59,43 @@ def main():
             repeated = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
             processes.append(repeated)
             assert finish(repeated)["taskId"] == task_id
+            # 日期：2026-11-05；先持锁再同时启动八个创建进程，原5秒初始化预算内必须全部返回同一个持久任务。
+            contested = [executable, "init-lock", str(root / "contended"), owner, request, str(root)]
+            initializer = subprocess.Popen(contested, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
+            processes.append(initializer)
+            assert json.loads(initializer.stdout.readline())["initializationHeld"]
+            contenders = []
+            contested[1] = "create"
+            started = time.monotonic()
+            for _ in range(8):
+                contender = subprocess.Popen(contested, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
+                processes.append(contender)
+                contenders.append(contender)
+            time.sleep(0.15)
+            initializer.terminate()
+            initializer.communicate(timeout=5)
+            contested_results = [finish(process) for process in contenders]
+            contested_seconds = time.monotonic() - started
+            assert contested_seconds < 5, contested_seconds
+            assert len({value["taskId"] for value in contested_results}) == 1
+            with closing(sqlite3.connect(root / "contended/tasks.sqlite")) as database:
+                assert database.execute("SELECT COUNT(*) FROM tasks").fetchone()[0] == 1
+                assert database.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
+            # 日期：2026-11-05；活进程持续持锁仍须在原5秒预算拒绝，不能删除活锁或无限延长初始化等待。
+            blocked_command = [executable, "init-lock", str(root / "held-timeout"), owner, request, str(root)]
+            blocker = subprocess.Popen(blocked_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
+            processes.append(blocker)
+            assert json.loads(blocker.stdout.readline())["initializationHeld"]
+            blocked_command[1] = "create"
+            started = time.monotonic()
+            blocked = subprocess.Popen(blocked_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
+            processes.append(blocked)
+            refused = finish(blocked, 4)
+            initialization_timeout_seconds = time.monotonic() - started
+            assert refused["stage"] == "task" and 4.8 <= initialization_timeout_seconds < 6
+            assert blocker.poll() is None
+            blocker.terminate()
+            blocker.communicate(timeout=5)
         finally:
             for process in processes:
                 if process.poll() is None:
@@ -65,6 +103,9 @@ def main():
                     process.communicate(timeout=5)
     report = {"date": "2026-11-04", "passed": True, "competingProcesses": 8,
               "persistedTasks": 1, "activeLeaseRefused": True, "leaseRecoveredAfterKill": True,
+              "contendedInitializationProcesses": 8, "contendedInitializationSeconds": round(contested_seconds, 3),
+              "activeInitializationOwnerPreserved": True,
+              "initializationTimeoutSeconds": round(initialization_timeout_seconds, 3),
               "scope": "persistent task metadata and execution ownership; no file resume or durable file commit claim"}
     text = json.dumps(report, ensure_ascii=False, indent=2) + "\n"
     Path(args.report).write_text(text, encoding="utf-8")
