@@ -6,7 +6,7 @@
 
 当前已建立 C++14 共用核心、Qt Quick 2 桌面端和独立 CLI。Windows 已验证与原版文件/目录/文本双向互传、超过 4 GiB、10 万文件、100 轮接收，以及首次说明/设置/截图/单实例和有界头像模块。完整原版交互、服务器、多线程、恢复和跨平台验收继续按计划推进。原版目录保留用于对照。
 
-公开仓库为[29583855/dukto-next](https://github.com/29583855/dukto-next)。最新74dd5ce把实际传输完成接到处置日志并修复确认丢失后的重命名恢复，通过Windows UCRT/MSVC各21核心、52组方向/场景；[新原生矩阵](https://github.com/29583855/dukto-next/actions/runs/42065923177)及[双Mac新包](https://github.com/29583855/dukto-next/actions/runs/42066089117)继续。上一版d2a5359五环境核心和Alpine完整36协议已核验；当前已验双Mac部署包仍为d0a8e01，[下载入口](docs/macOS独立预览包.md)可用。Linux/Windows已验包仍为31f3db3。公开skip及完整主计划继续，见[构建摘要](docs/构建验证摘要.md)及[公开索引](docs/current-validation.json)。
+公开仓库为[29583855/dukto-next](https://github.com/29583855/dukto-next)。74dd5ce共用源码已上传，[双架构Mac实际包](https://github.com/29583855/dukto-next/actions/runs/42066089117)编译/部署/迁移全部成功，当前[下载与SHA](docs/macOS独立预览包.md)已更新，GUI与独立CLI含Qt5/OpenSSL依赖。五种原生环境各21核心、[四runner150协议](https://github.com/29583855/dukto-next/actions/runs/42065923177)及[Alpine37协议](https://github.com/29583855/dukto-next/actions/runs/42066082958)原报告摘要全部核验，各229份内附应用源码匹配精确Git树。Linux/Windows当前已验部署包仍为31f3db3。Mac仍为adhoc开发预览，公开skip、完整主计划和正式签名/公证继续，见[公开核验回执](docs/ci-verification-20261106-r60.json)、[构建摘要](docs/构建验证摘要.md)和[验证索引](docs/current-validation.json)。
 
 ## 文档入口
 

@@ -1,6 +1,6 @@
 # macOS 构建与验收
 
-更新日期：2026-11-06。最新74dd5ce已上传并启动[四runner原生编译](https://github.com/29583855/dukto-next/actions/runs/42065923177)和[双Mac新包](https://github.com/29583855/dukto-next/actions/runs/42066089117)，须按精确提交收集原报告。上一版d2a5359的Intel/Apple Silicon C++14 GUI与独立CLI编译、各21核心及POSIX34跳过专项已逐份核验，[原证据](validation/2026-11-06/late-skip-r58-native-cores-summary.json)包含实际Mach-O与架构信息。当前已验部署包仍为d0a8e01，[下载及SHA](macOS独立预览包.md)可用；各225份内附源码与精确Git树一致，正式发布及完整平台验收继续。
+更新日期：2026-11-06。精确74dd5ce已上传，[双Mac包](https://github.com/29583855/dukto-next/actions/runs/42066089117)和[四runner完整CI](https://github.com/29583855/dukto-next/actions/runs/42065923177)全部success。Intel/Apple Silicon各21核心及37协议原报告SHA核验；GUI与独立CLI实际部署/迁移、各五份业务报告和229份应用源码全集核验通过。[当前下载与SHA](macOS独立预览包.md)和[公开核验回执](ci-verification-20261106-r60.json)已更新。Qt5/OpenSSL由CI自行安装，adhoc预览不代表Developer ID签名、公证或完整交付完成。
 
 ## 运行环境
 
@@ -244,3 +244,13 @@ v0.48终态：f230f3d双Mac独立包42013431292已success并实际下载/校验/
 
 
 v0.48字形终态补记：732b58d四runner各19核心通过；双Mac Cocoa/150%/200%均28个标签字形/0缺字，两尺寸导航通过，原始附件和Mac高DPI截图已核对。仅该字形/核心子项通过，42014821263完整协议仍运行。
+
+
+### v0.60 双架构Mac交付与完整原生终态（2026-11-06）
+
+- [x] 用户授权的公开仓库[29583855/dukto-next](https://github.com/29583855/dukto-next)已上传共用C++14/Qt5源码。精确74dd5ce的[双Mac部署工作流](https://github.com/29583855/dukto-next/actions/runs/42066089117)整体success；Intel与Apple Silicon自动安装Qt5/OpenSSL，完成GUI与独立CLI原生编译、部署和实际迁移，当前[下载与SHA](macOS独立预览包.md)已切换到该提交。
+- [x] 两架构各229份内附应用源码与精确Git树全集逐字节匹配；arm64的1547份载荷、Intel的1705份载荷及各71框架链接核验，Mach-O架构、执行位、依赖来源和adhoc签名通过。各五份原业务报告SHA核验：独立CLI、16通道双向、1/4/16覆盖、覆盖恢复及4→8默认恢复；两张Cocoa服务器页截图已查看。主窗口导航夹具的Cocoa与150%/200%独立offscreen通过，不能扩大为所有原生选择器验收。
+- [x] 同源码[四runner完整CI](https://github.com/29583855/dukto-next/actions/runs/42065923177)全部success：Windows、Ubuntu glibc、macOS arm64/x86_64各21核心/GUI，合计150项协议子报告全部读取并核验原SHA（Windows39，其余各37）。[Alpine musl](https://github.com/29583855/dukto-next/actions/runs/42066082958)另21核心/37协议通过，五种原生环境的QtTest原报告均核对。
+- [x] d2a5359的四runner最终原报告补齐，按旧提交Windows38/POSIX36合计146项核验，不能误用新增专项后的150项门槛。历史失败、原日志、Qt头像既有警告及首轮尚未证实根因的两项观察保留。
+- [x] 新包和GitHub原ZIP持久归档于dist/macos-preview-20261106-r59-dispositions；[公开核验回执](ci-verification-20261106-r60.json)、验证索引、README和Mac说明已同步更新。文档保持原UTF-8/BOM/换行，本轮未修改生产代码；r59的176文件无TODO/占位标记结论仍仅限原审计范围。
+- [ ] Mac仍为adhoc开发预览；Developer ID签名/公证、干净系统、完整对应依赖源码及独立重建继续。公开skip、客户机上传发送处置、对等摘要、R6完整策略、预算/GC、原版全交互/原生选择器、物理LAN提速/3×3及当前全平台24h仍未全部完成。冻结旧长测输入保持不变，deliveryComplete=false。
