@@ -83,3 +83,6 @@ Qt 桌面端由应用明确使用软件渲染，部署参数相应关闭 ANGLE �
 ## r19逐项失败原因预览（2026-11-05）
 
 当前可用包为`dist/windows-preview-20261105-r19/DuktoNext-windows-x64-preview.zip`，SHA-256：`f04057d0e9f3d2cec9fa86e83af37993ab777484790c6ec07d7ea100a1a28a12`。源码3b8bf4a；195份应用输入与精确Git树相同。[实际ZIP系统PATH迁移](validation/2026-11-05/windows-package-r19-runtime-r39.json)、[新增原因专项](validation/2026-11-05/windows-r19-item-failures-r39.json)、[源码核验](validation/2026-11-05/windows-r19-source-linkage-r39.json)与[依赖许可映射](validation/2026-11-05/windows-r19-signed-payload-map-r39.json)均通过。原生GUI截图已查看，旧版本保留。完整第三方对应源码、独立重建、干净系统及正式发布资格仍未完成。
+
+
+v0.41当前可用Windows r20：dist/windows-preview-20261105-r20/DuktoNext-windows-x64-preview.zip，SHA-256 `54934373992c49fa774d9fb706759108924a6ad1bc9625ac1b9b82b3f6e908e7`。实际迁移、199应用输入/精确Git树和364依赖/53许可核对通过，生产7590363、完整源码文档bed94bf。1842009重查不在此包；原失败及新构建分别保留，完整正式发布资格继续未完成。
