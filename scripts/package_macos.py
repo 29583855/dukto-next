@@ -38,6 +38,60 @@ def expand_path(value, image, executable):
     return Path(value).resolve() if value.startswith("/") else None
 
 
+# 日期：2026-11-05；Qt部署工具可能漏掉brotli等rpath传递库，只从本机已安装Cellar复制精确匹配文件。
+def deploy_transitive(app):
+    cellar = Path(checked(["brew", "--cellar"]).strip()).resolve()
+    framework = app / "Contents/Frameworks"
+    framework.mkdir(exist_ok=True)
+    executable = app / "Contents/MacOS/dukto-gui"
+    for image in (executable, app / "Contents/MacOS/dukto-cli"):
+        commands = checked(["otool", "-l", image])
+        if "path @executable_path/../Frameworks (offset" not in commands:
+            checked(["install_name_tool", "-add_rpath", "@executable_path/../Frameworks", image])
+    index, copied = None, []
+    for _ in range(64):
+        changed = False
+        images = sorted(path for path in app.rglob("*")
+                        if path.is_file() and not path.is_symlink() and native_file(path))
+        for image in images:
+            names = re.findall(r"^\s+(\S+) \(compatibility version", checked(["otool", "-L", image]), re.M)
+            for name in names:
+                if name.startswith(("/System/Library/", "/usr/lib/")):
+                    continue
+                direct = expand_path(name, image, executable)
+                bundled = framework / name[len("@rpath/"):] if name.startswith("@rpath/") else direct
+                if bundled is not None and bundled.is_file() and bundled.resolve().is_relative_to(app):
+                    continue
+                assert ".framework/" not in name, ("Qt framework deployment incomplete", image, name)
+                filename = Path(name).name
+                if direct is not None and direct.is_file():
+                    candidates = {direct.resolve()}
+                else:
+                    if index is None:
+                        index = {}
+                        for path in cellar.rglob("*.dylib"):
+                            if path.is_file():
+                                index.setdefault(path.name, set()).add(path.resolve())
+                    candidates = index.get(filename, set())
+                assert candidates and all(path.is_relative_to(cellar) for path in candidates), (image, name, candidates)
+                hashes = {sha256(path) for path in candidates}
+                assert len(hashes) == 1, ("Ambiguous installed dependency", image, name, candidates)
+                source = sorted(candidates)[0]
+                target = framework / filename
+                if not target.exists():
+                    shutil.copy2(source, target)
+                    target.chmod(target.stat().st_mode | 0o200)
+                    checked(["install_name_tool", "-id", "@rpath/" + filename, target])
+                    copied.append({"path": target.relative_to(app).as_posix(), "source": str(source),
+                                   "originalSha256": sha256(source)})
+                replacement = "@executable_path/../Frameworks/" + filename
+                checked(["install_name_tool", "-change", name, replacement, image])
+                changed = True
+        if not changed:
+            return copied
+    raise RuntimeError("Native dependency closure exceeded64 passes")
+
+
 # 日期：2026-11-05；逐个Mach-O解析实际加载命令，拒绝Homebrew/构建目录残留和无法解析的rpath。
 def dependencies(app):
     executable = app / "Contents/MacOS/dukto-gui"
@@ -92,6 +146,7 @@ def main():
     deployed = checked([qt / "macdeployqt", app, "-executable=" + str(cli),
                         "-qmldir=" + str(root / "ui"), "-always-overwrite", "-verbose=2"])
     (output / "macdeployqt.log").write_text(deployed, encoding="utf-8")
+    transitive = deploy_transitive(app)
     bindings = dependencies(app)
     # 日期：2026-11-05；所有bundle写入结束后再签名，重定位的库和CLI必须一起通过严格签名检查。
     checked(["codesign", "--force", "--deep", "--sign", "-", app])
@@ -137,7 +192,8 @@ def main():
             files.append({"path": relative, "sha256": sha256(path), "bytes": path.stat().st_size})
     manifest = {"date": datetime.now(timezone.utc).isoformat(), "architecture": platform.machine(),
                 "sourceCommit": os.environ.get("GITHUB_SHA"), "files": files, "links": links,
-                "dependencies": bindings, "licenses": licenses, "applicationSources": source_files,
+                "dependencies": bindings, "transitiveSources": transitive,
+                "licenses": licenses, "applicationSources": source_files,
                 "inputCliSha256": sha256(build / "dukto-cli"),
                 "inputGuiSha256": sha256(original / "Contents/MacOS/dukto-gui"),
                 "signature": "adhoc", "developerIdSigned": False, "notarized": False,
