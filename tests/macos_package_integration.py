@@ -16,18 +16,28 @@ from transfer_integration import digest
 
 
 # 日期：2026-11-05；从实际dyld日志核对加载来源，CLI不得加载QtGUI/Widgets/QML/Quick框架。
-def loaded(command, environment, working, stage, cli=False):
+def loaded(command, environment, working, stage, log, cli=False):
     diagnostic = {**environment, "DYLD_PRINT_LIBRARIES": "1"}
     result = subprocess.run([str(value) for value in command], cwd=working, env=diagnostic,
                             capture_output=True, encoding="utf-8", errors="replace", timeout=30)
+    log.write_text(result.stdout + result.stderr, encoding="utf-8")
     assert result.returncode == 0, (result.returncode, result.stdout, result.stderr)
-    paths = []
+    paths, apple_cryptex = [], []
     for line in result.stderr.splitlines():
         assert line.startswith(("dyld[", "dyld:")), line
         if "/" not in line:
             continue
         path = Path(line[line.index("/"):]).resolve()
         if str(path).startswith(("/System/Library/", "/usr/lib/")):
+            continue
+        # 日期：2026-11-05；系统更新的Cryptex路径须实际存在且通过Apple锚签名核验，不放行任意外部库。
+        cryptex = Path("/System/Volumes/Preboot/Cryptexes/OS")
+        if any(path.is_relative_to(cryptex / suffix) for suffix in ("System/Library", "usr/lib")):
+            assert path.is_file(), ("Missing Apple Cryptex image", path)
+            signed = subprocess.run(["/usr/bin/codesign", "--verify", "--strict", "-R", "=anchor apple", str(path)],
+                                    capture_output=True, timeout=30)
+            assert signed.returncode == 0, ("Unverified Apple Cryptex image", path, signed.stderr)
+            apple_cryptex.append(str(path))
             continue
         assert path.is_relative_to(stage), ("Dependency loaded outside relocated package", path)
         paths.append(path.relative_to(stage).as_posix())
@@ -36,7 +46,7 @@ def loaded(command, environment, working, stage, cli=False):
     if cli:
         assert not any(any(name in value for name in ("QtGui.framework", "QtWidgets.framework",
                                                        "QtQml.framework", "QtQuick.framework")) for value in paths), paths
-    return sorted(set(paths))
+    return sorted(set(paths)), sorted(set(apple_cryptex))
 
 
 # 日期：2026-11-05；真实归档核对后迁移，环境不含Homebrew路径；独立专项使用包内CLI。
@@ -85,11 +95,14 @@ def main():
         signed = subprocess.run(["/usr/bin/codesign", "--verify", "--deep", "--strict", str(app)],
                                 capture_output=True, timeout=30)
         assert signed.returncode == 0, signed.stderr
-        cli_modules = loaded([native_cli, "--help"], environment, working, stage, cli=True)
+        report.parent.mkdir(parents=True, exist_ok=True)
+        cli_modules, cli_apple = loaded([native_cli, "--help"], environment, working, stage,
+                                        report.with_name(report.stem + "-cli-dyld.log"), cli=True)
         screenshot, geometry = working / "native.png", working / "geometry.json"
-        gui_modules = loaded([gui, "--self-test", "--data-directory", working / "gui-state",
+        gui_modules, gui_apple = loaded([gui, "--self-test", "--data-directory", working / "gui-state",
                               "--port", str(free_port()), "--screenshot", screenshot,
-                              "--render-report", geometry], environment, working, stage)
+                              "--render-report", geometry], environment, working, stage,
+                                        report.with_name(report.stem + "-gui-dyld.log"))
         layout = json.loads(geometry.read_text(encoding="utf-8"))
         assert layout["platform"] == "cocoa" and layout["logicalSize"] == layout["rootSize"]
         assert layout["logicalSize"][0] == 430 and 560 <= layout["logicalSize"][1] <= 700
@@ -113,7 +126,9 @@ def main():
         value = {"date": "2026-11-05", "passed": True, "archiveSha256": digest(archive),
                  "sourceCommit": manifest["sourceCommit"], "architecture": platform.machine(),
                  "verifiedFiles": len(manifest["files"]), "verifiedLinks": len(manifest["links"]),
-                 "cliModules": cli_modules, "guiModules": gui_modules, "geometry": layout, "cases": cases,
+                 "cliModules": cli_modules, "guiModules": gui_modules,
+                 "appleAnchorVerifiedCryptexModules": sorted(set(cli_apple + gui_apple)),
+                 "geometry": layout, "cases": cases,
                  "systemPathOnly": True, "runtimeMigrationQualified": True,
                  "developerIdSigned": False, "notarized": False, "cleanSystemQualified": False,
                  "releaseQualified": False,
