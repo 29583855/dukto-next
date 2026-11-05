@@ -6,6 +6,7 @@
 #include <QDragMoveEvent>
 #include <QDropEvent>
 #include <QFont>
+#include <QGlyphRun>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QMimeData>
@@ -14,8 +15,10 @@
 #include <QQuickItem>
 #include <QQuickWidget>
 #include <QQuickWindow>
+#include <QRawFont>
 #include <QSignalSpy>
 #include <QTemporaryDir>
+#include <QTextLayout>
 #include <QtEndian>
 #include <QtTest>
 
@@ -54,6 +57,33 @@ class UiTests final : public QObject {
     // 日期：2026-11-05；从生产主窗口实际点击服务器入口，必须只打开一个根级全屏面板。
     void serverEntryThroughMainQml() {
         QFETCH(QSize, size);
+        // 日期：2026-11-05；按Qt实际回退字体整形中文标签，字形0必须失败，不能把方框截图计为显示通过。
+        const auto sample =
+            QStringLiteral("服务器连接与文件任务本机共享返回下载上传设备最近关于设置");
+        QTextLayout textLayout(sample, QApplication::font());
+        textLayout.beginLayout();
+        auto line = textLayout.createLine();
+        QVERIFY(line.isValid());
+        line.setLineWidth(8192);
+        textLayout.endLayout();
+        int glyphCount = 0;
+        int missingGlyphs = 0;
+        QJsonArray families;
+        for (const auto &run : textLayout.glyphRuns()) {
+            families.append(run.rawFont().familyName());
+            for (const auto glyph : run.glyphIndexes()) {
+                ++glyphCount;
+                if (glyph == 0)
+                    ++missingGlyphs;
+            }
+        }
+        const QJsonObject fontCoverage{{"sample", sample},
+                                       {"glyphCount", glyphCount},
+                                       {"missingGlyphs", missingGlyphs},
+                                       {"fontFamilies", families},
+                                       {"passed", glyphCount > 0 && missingGlyphs == 0}};
+        QVERIFY2(fontCoverage["passed"].toBool(),
+                 QJsonDocument(fontCoverage).toJson(QJsonDocument::Compact).constData());
         QTemporaryDir temporary;
         QVERIFY(temporary.isValid());
         QSettings::setDefaultFormat(QSettings::IniFormat);
@@ -123,6 +153,7 @@ class UiTests final : public QObject {
         QVERIFY(image.save(stem + ".png"));
         const QJsonObject geometry{
             {"platform", QGuiApplication::platformName()},
+            {"chineseGlyphCoverage", fontCoverage},
             {"requestedSize", QJsonArray{size.width(), size.height()}},
             {"logicalSize", QJsonArray{view.width(), view.height()}},
             {"pixels", QJsonArray{image.width(), image.height()}},

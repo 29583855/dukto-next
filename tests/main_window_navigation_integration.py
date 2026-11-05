@@ -61,6 +61,7 @@ def main():
                     stem = working / "Testing/QtTest" / ("main-server-" + size)
                     geometry = json.loads(stem.with_suffix(".json").read_text(encoding="utf-8"))
                     assert geometry["platform"] == platform and geometry["popupInstances"] == 1, geometry
+                    assert geometry["chineseGlyphCoverage"]["passed"] and geometry["chineseGlyphCoverage"]["missingGlyphs"] == 0, geometry
                     ratio = geometry["devicePixelRatio"]
                     assert ratio > 0 and (platform != "offscreen" or abs(ratio - float(scale)) < 0.01), geometry
                     assert all(abs(pixel - logical * ratio) <= 1 for pixel, logical in
