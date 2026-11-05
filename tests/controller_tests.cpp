@@ -1,0 +1,157 @@
+#include "app/controller.h"
+#include <QApplication>
+#include <QDir>
+#include <QSignalSpy>
+#include <QStandardPaths>
+#include <QTcpSocket>
+#include <QTemporaryDir>
+#include <QtEndian>
+#include <QtTest>
+
+class ControllerTests final : public QObject {
+    Q_OBJECT
+  private slots:
+#ifdef Q_OS_LINUX
+    // 日期：2026-11-04；独立 XDG 下载目录首次自动创建；用户已保存但缺失的目录只提示、不重建。
+    void preparesFreshDefaultDownloadDirectory() {
+        QTemporaryDir temporary;
+        QVERIFY(temporary.isValid());
+        const auto previous = qgetenv("XDG_CONFIG_HOME");
+        const bool hadPrevious = qEnvironmentVariableIsSet("XDG_CONFIG_HOME");
+        struct EnvironmentGuard {
+            QByteArray previous;
+            bool existed;
+            // 日期：2026-11-04；无论断言成功或提前返回，都恢复当前进程的 XDG 配置路径。
+            ~EnvironmentGuard() {
+                if (existed)
+                    qputenv("XDG_CONFIG_HOME", previous);
+                else
+                    qunsetenv("XDG_CONFIG_HOME");
+            }
+        } guard{previous, hadPrevious};
+        const auto configuration = temporary.filePath("xdg");
+        const auto downloads = temporary.filePath("fresh-downloads");
+        QVERIFY(QDir().mkpath(configuration));
+        QFile userDirectories(configuration + "/user-dirs.dirs");
+        QVERIFY(userDirectories.open(QIODevice::WriteOnly));
+        userDirectories.write(("XDG_DOWNLOAD_DIR=\"" + downloads + "\"\n").toUtf8());
+        userDirectories.close();
+        qputenv("XDG_CONFIG_HOME", configuration.toUtf8());
+        // 日期：2026-11-04；构造控制器前先核对 Qt 已采用隔离目录，禁止写入真实用户下载目录。
+        QCOMPARE(QStandardPaths::writableLocation(QStandardPaths::DownloadLocation), downloads);
+        QSettings::setDefaultFormat(QSettings::IniFormat);
+        QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, temporary.path());
+        QTcpServer reservation;
+        QVERIFY(reservation.listen(QHostAddress::LocalHost, 0));
+        const auto port = reservation.serverPort();
+        reservation.close();
+        {
+            Controller controller(port, nullptr, temporary.filePath("state"));
+            QCOMPARE(controller.outputDirectory(), downloads);
+            QVERIFY(QFileInfo(downloads).isDir());
+            QVERIFY(controller.status().contains(QStringLiteral("就绪")));
+        }
+        QSettings settings(QSettings::IniFormat, QSettings::UserScope, "DuktoNext", "Desktop");
+        const auto unavailable = temporary.filePath("saved-but-missing");
+        settings.setValue("output", unavailable);
+        settings.sync();
+        {
+            Controller controller(port, nullptr, temporary.filePath("state"));
+            QVERIFY(!QFileInfo::exists(unavailable));
+            QVERIFY(controller.status().contains(QStringLiteral("接收目录不可用")));
+        }
+    }
+#endif
+    // 日期：2026-11-04；所有设置和历史使用独立临时目录，不能改变真实用户配置。
+    void textHistorySurvivesRestart() {
+        QTemporaryDir temporary;
+        QVERIFY(temporary.isValid());
+        QSettings::setDefaultFormat(QSettings::IniFormat);
+        QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, temporary.path());
+        const auto data = temporary.filePath("data");
+        const auto output = temporary.filePath("received");
+        QVERIFY(QDir().mkpath(output));
+        QSettings settings(QSettings::IniFormat, QSettings::UserScope, "DuktoNext", "Desktop");
+        settings.setValue("output", output);
+        settings.sync();
+        QVERIFY(settings.fileName().startsWith(temporary.path()));
+        QTcpServer reserve;
+        QVERIFY(reserve.listen(QHostAddress::LocalHost, 0));
+        const auto port = reserve.serverPort();
+        reserve.close();
+        QString id;
+        const auto content = QStringLiteral("持久文本\nUnicode café 🚀");
+        {
+            Controller controller(port, nullptr, data);
+            QCOMPARE(controller.outputDirectory(), output);
+            QCOMPARE(controller.themeColor(), QString("#268600"));
+            QVERIFY(controller.addresses().contains("127.0.0.1"));
+            QSignalSpy text(&controller, &Controller::textReceived);
+            QTcpSocket sender;
+            sender.connectToHost(QHostAddress::LocalHost, port);
+            QVERIFY(sender.waitForConnected(2000));
+            // 日期：2026-11-04；从独立包头输入文本，验证真实收发事件到历史查询链路。
+            const auto number = [](qint64 value) {
+                QByteArray bytes(8, '\0');
+                qToLittleEndian(value, reinterpret_cast<uchar *>(bytes.data()));
+                return bytes;
+            };
+            const auto bytes = content.toUtf8();
+            sender.write(number(1) + number(bytes.size()) + "___DUKTO___TEXT___" + '\0' +
+                         number(bytes.size()) + bytes);
+            sender.flush();
+            QTRY_COMPARE(text.count(), 1);
+            QCOMPARE(text[0][0].toString(), content);
+            QCOMPARE(controller.history().size(), 1);
+            const auto item = controller.history()[0].toMap();
+            QVERIFY(item["hasText"].toBool());
+            QCOMPARE(item["peer"].toString(), QString("127.0.0.1"));
+            id = item["id"].toString();
+            controller.openHistory(id);
+            QCOMPARE(text.count(), 2);
+            QCOMPARE(text[1][0].toString(), content);
+            controller.setThemeColor("#0078d4");
+            QTRY_VERIFY(!controller.busy());
+        }
+        {
+            Controller controller(port, nullptr, data);
+            QCOMPARE(controller.themeColor(), QString("#0078d4"));
+            QCOMPARE(controller.history().size(), 1);
+            QCOMPARE(controller.history()[0].toMap()["peer"].toString(), QString("127.0.0.1"));
+            QSignalSpy text(&controller, &Controller::textReceived);
+            controller.openHistory(id);
+            QCOMPARE(text.count(), 1);
+            QCOMPARE(text[0][0].toString(), content);
+            controller.sendText("127.0.0.1", 65536, "must reject");
+            QVERIFY(!controller.busy());
+            QVERIFY(controller.status().contains(QStringLiteral("端口")));
+            controller.openHistory("999999999");
+            QVERIFY(controller.status().contains(QStringLiteral("不存在")));
+            QSignalSpy batches(&controller, &Controller::batchOpened);
+            QTcpSocket sender;
+            sender.connectToHost(QHostAddress::LocalHostIPv6, port);
+            QVERIFY(sender.waitForConnected(2000));
+            // 日期：2026-11-04；实际接收两个空文件，批次历史必须打开完整两项明细。
+            const auto number = [](qint64 value) {
+                QByteArray bytes(8, '\0');
+                qToLittleEndian(value, reinterpret_cast<uchar *>(bytes.data()));
+                return bytes;
+            };
+            sender.write(number(2) + number(0) + "first" + '\0' + number(0) + "second" + '\0' +
+                         number(0));
+            sender.flush();
+            QTRY_COMPARE(controller.history().size(), 2);
+            QCOMPARE(controller.history()[0].toMap()["peer"].toString(), QString("::1"));
+            controller.openHistory(controller.history()[0].toMap()["id"].toString());
+            QCOMPARE(batches.count(), 1);
+            QCOMPARE(controller.batchFiles().size(), 2);
+            QCOMPARE(controller.batchFiles()[0].toMap()["source"].toString(), QString("first"));
+            QCOMPARE(controller.batchFiles()[1].toMap()["source"].toString(), QString("second"));
+            QVERIFY(!controller.batchHasNext());
+            QVERIFY(QFileInfo::exists(controller.batchFiles()[0].toMap()["path"].toString()));
+        }
+    }
+};
+
+QTEST_MAIN(ControllerTests)
+#include "controller_tests.moc"

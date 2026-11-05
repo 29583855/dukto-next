@@ -1,0 +1,231 @@
+name: Build and validate C++14 GUI and CLI
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  native:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-2022
+            qt: '5.15.2'
+            arch: win64_msvc2019_64
+          - os: ubuntu-22.04
+            qt: system
+          - os: macos-15-intel
+            qt: brew
+          - os: macos-15
+            qt: brew
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Windows Qt
+        if: runner.os == 'Windows'
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ matrix.qt }}
+          arch: ${{ matrix.arch }}
+          modules: qtquickcontrols2
+          cache: true
+      - name: Install Linux Qt
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libssl-dev qtbase5-dev qtdeclarative5-dev qtquickcontrols2-5-dev libqt5sql5-sqlite qml-module-qtquick-controls2 qml-module-qtquick-layouts qml-module-qtquick-window2 qml-module-qtquick2 qml-module-qtqml qml-module-qtqml-models2 qml-module-qtqml-workerscript2 qml-module-qtgraphicaleffects
+      - name: Install macOS Qt5
+        if: runner.os == 'macOS'
+        run: |
+          brew install qt@5 openssl@3
+          echo "CMAKE_PREFIX_PATH=$(brew --prefix qt@5)" >> "$GITHUB_ENV"
+          echo "OPENSSL_ROOT_DIR=$(brew --prefix openssl@3)" >> "$GITHUB_ENV"
+          echo "$(brew --prefix qt@5)/bin" >> "$GITHUB_PATH"
+          sudo ifconfig lo0 alias 127.0.0.2
+      # 日期：2026-11-05；实际运行时核对 Intel/Apple Silicon 架构，保留 Qt5/TLS/SDK 来源及版本，不以配置代替验收。
+      - name: Record native macOS toolchain
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          mkdir -p build
+          if [[ "${{ matrix.os }}" == "macos-15-intel" ]]; then
+            test "$(uname -m)" = "x86_64"
+          else
+            test "$(uname -m)" = "arm64"
+          fi
+          {
+            sw_vers
+            uname -m
+            xcodebuild -version
+            xcrun --show-sdk-version
+            clang++ --version
+            cmake --version
+            qmake -query
+            "$(brew --prefix openssl@3)/bin/openssl" version -a
+          } > build/macos-environment.log 2>&1
+          brew info --json=v2 qt@5 openssl@3 > build/macos-dependencies.json
+      - name: Windows early development TLS runtime
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          python scripts/ci_tls_runtime.py
+          "$PWD/.tools/openssl/Library/bin" >> $env:GITHUB_PATH
+      - name: Install validation sampler
+        run: python -m pip install psutil
+      - name: Validate source snapshot timestamps and contents
+        run: python -X utf8 tests/source_snapshot_integration.py --report build/source-snapshot.json
+      - name: Validate bounded process sampling
+        run: python -X utf8 tests/process_sampling_integration.py --report build/process-sampling.json
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+      - name: Compile
+        run: cmake --build build --config Release --parallel 4
+      # 日期：2026-11-05；原生编译成功即保存实际 GUI/CLI，tar 保留应用链接与可执行权限；运行依赖部署另验。
+      - name: Archive macOS compilation outputs
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          cp LICENSE build/LICENSE
+          cat > build/MACOS-BUILD-README.txt <<'EOF'
+          Dukto Next macOS development compilation outputs
+
+          Includes the real GUI app and independent CLI for this runner architecture.
+          Matching Qt5/OpenSSL runtime dependencies are required on the target Mac.
+          This archive is not a self-contained, notarized release package.
+          Native runtime tests and detailed results are separate validation artifacts.
+          Source and license: https://github.com/29583855/dukto-next
+          EOF
+          printf '%s\n' "$GITHUB_SHA" > build/SOURCE-COMMIT.txt
+          tar -czf "build/DuktoNext-macos-$RUNNER_ARCH-compiled.tar.gz" -C build dukto-cli dukto-gui.app LICENSE MACOS-BUILD-README.txt SOURCE-COMMIT.txt
+          shasum -a 256 "build/DuktoNext-macos-$RUNNER_ARCH-compiled.tar.gz" > "build/DuktoNext-macos-$RUNNER_ARCH-compiled.tar.gz.sha256"
+      - name: Preserve macOS compiled GUI and CLI
+        if: runner.os == 'macOS'
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-compiled-${{ runner.arch }}
+          path: build/DuktoNext-macos-*-compiled.tar.gz*
+      - name: Core and GUI controller tests
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: ctest --test-dir build -C Release --output-on-failure --output-log build/ctest.log
+      - name: Native Cocoa GUI render and process recovery
+        if: runner.os == 'macOS'
+        env:
+          QT_QPA_PLATFORM: cocoa
+        run: |
+          python3 tests/gui_native_render_integration.py build/dukto-gui.app/Contents/MacOS/dukto-gui --platform cocoa --report build/macos-native-render.json
+          python3 tests/gui_process_recovery_integration.py build/dukto-cli build/server-panel-process-probe --report build/macos-native-process-recovery.json
+      - name: Protocol integration Windows
+        if: runner.os == 'Windows'
+        run: |
+          python -X utf8 tests/legacy_integration.py build/Release/dukto-cli.exe --report build/legacy.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -X utf8 tests/cli_contracts.py build/Release/dukto-cli.exe --report build/cli.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -X utf8 tests/crash_integration.py build/Release/dukto-cli.exe --report build/crash.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -X utf8 tests/windows_path_integration.py build/Release/dukto-cli.exe --report build/windows-path.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -X utf8 tests/windows_signal_integration.py build/Release/dukto-cli.exe --report build/windows-signal.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -X utf8 tests/service_integration.py build/Release/dukto-cli.exe --report build/service.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -X utf8 tests/client_list_integration.py build/Release/dukto-cli.exe --report build/client-list.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -X utf8 tests/credential_rotation_integration.py build/Release/dukto-cli.exe --report build/credential-rotation.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -X utf8 tests/session_expiry_integration.py build/Release/dukto-cli.exe --report build/session-expiry.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -X utf8 tests/task_admission_integration.py build/Release/dukto-cli.exe --report build/task-admission-upload.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -X utf8 tests/task_admission_integration.py build/Release/dukto-cli.exe --mode download --report build/task-admission-download.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -X utf8 tests/task_admission_integration.py build/Release/dukto-cli.exe --mode mixed --report build/task-admission-mixed.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -X utf8 tests/transfer_retry_integration.py build/Release/dukto-cli.exe --report build/transfer-retry.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -X utf8 tests/conflict_fail_integration.py build/Release/dukto-cli.exe --report build/conflict-fail.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -X utf8 tests/transfer_recovery_integration.py build/Release/dukto-cli.exe --on-conflict fail --threads 4 --resume-threads 8 --files 4 --payload-mib 8 --checkpoint-percent 50 --report build/conflict-fail-recovery.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -X utf8 tests/transfer_integration.py build/Release/dukto-cli.exe --report build/transfer.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -X utf8 tests/transfer_recovery_integration.py build/Release/dukto-cli.exe --report build/transfer-recovery.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -X utf8 tests/parallel_transfer_integration.py build/Release/dukto-cli.exe --report build/parallel-transfer.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -X utf8 tests/transfer_recovery_integration.py build/Release/dukto-cli.exe --threads 4 --resume-threads 8 --files 4 --payload-mib 8 --checkpoint-percent 50 --report build/parallel-recovery.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -X utf8 tests/parallel_isolation_integration.py build/Release/dukto-cli.exe --report build/parallel-isolation.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -X utf8 tests/byte_progress_integration.py build/Release/dukto-cli.exe --report build/byte-progress.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -X utf8 tests/transfer_faults_integration.py build/Release/dukto-cli.exe --report build/transfer-faults.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -X utf8 tests/final_ack_integration.py build/Release/dukto-cli.exe --report build/final-ack.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -X utf8 tests/final_ack_integration.py build/Release/dukto-cli.exe --auto-retries 3 --report build/final-ack-auto-retry.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -X utf8 tests/gui_process_recovery_integration.py build/Release/dukto-cli.exe build/Release/server-panel-process-probe.exe --report build/gui-process-recovery.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -X utf8 tests/task_store_integration.py build/Release/task-store-probe.exe --report build/task-store.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -X utf8 tests/secure_channel_integration.py build/Release/secure-channel-probe.exe --openssl .tools/openssl/Library/bin/openssl.exe --report build/secure-channel.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Protocol integration Unix
+        if: runner.os != 'Windows'
+        run: |
+          python3 tests/legacy_integration.py build/dukto-cli --report build/legacy.json
+          python3 tests/cli_contracts.py build/dukto-cli --report build/cli.json
+          python3 tests/crash_integration.py build/dukto-cli --report build/crash.json
+          python3 tests/posix_path_integration.py build/dukto-cli --report build/posix-path.json
+          python3 tests/service_integration.py build/dukto-cli --report build/service.json
+          python3 tests/client_list_integration.py build/dukto-cli --report build/client-list.json
+          python3 tests/credential_rotation_integration.py build/dukto-cli --report build/credential-rotation.json
+          python3 tests/session_expiry_integration.py build/dukto-cli --report build/session-expiry.json
+          python3 tests/task_admission_integration.py build/dukto-cli --report build/task-admission-upload.json
+          python3 tests/task_admission_integration.py build/dukto-cli --mode download --report build/task-admission-download.json
+          python3 tests/task_admission_integration.py build/dukto-cli --mode mixed --report build/task-admission-mixed.json
+          python3 tests/transfer_retry_integration.py build/dukto-cli --report build/transfer-retry.json
+          python3 tests/conflict_fail_integration.py build/dukto-cli --report build/conflict-fail.json
+          python3 tests/transfer_recovery_integration.py build/dukto-cli --on-conflict fail --threads 4 --resume-threads 8 --files 4 --payload-mib 8 --checkpoint-percent 50 --report build/conflict-fail-recovery.json
+          python3 tests/transfer_integration.py build/dukto-cli --report build/transfer.json
+          python3 tests/transfer_recovery_integration.py build/dukto-cli --report build/transfer-recovery.json
+          python3 tests/parallel_transfer_integration.py build/dukto-cli --report build/parallel-transfer.json
+          python3 tests/transfer_recovery_integration.py build/dukto-cli --threads 4 --resume-threads 8 --files 4 --payload-mib 8 --checkpoint-percent 50 --report build/parallel-recovery.json
+          python3 tests/parallel_isolation_integration.py build/dukto-cli --report build/parallel-isolation.json
+          python3 tests/byte_progress_integration.py build/dukto-cli --report build/byte-progress.json
+          python3 tests/transfer_faults_integration.py build/dukto-cli --report build/transfer-faults.json
+          python3 tests/final_ack_integration.py build/dukto-cli --report build/final-ack.json
+          python3 tests/final_ack_integration.py build/dukto-cli --auto-retries 3 --report build/final-ack-auto-retry.json
+          python3 tests/gui_process_recovery_integration.py build/dukto-cli build/server-panel-process-probe --report build/gui-process-recovery.json
+          python3 tests/task_store_integration.py build/task-store-probe --report build/task-store.json
+          python3 tests/secure_channel_integration.py build/secure-channel-probe --report build/secure-channel.json
+      - name: Real disk exhaustion on isolated Linux tmpfs
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/dukto-limited"
+          sudo mount -t tmpfs -o "size=8m,uid=$(id -u),gid=$(id -g)" tmpfs "$RUNNER_TEMP/dukto-limited"
+          trap 'sudo umount "$RUNNER_TEMP/dukto-limited"' EXIT
+          python3 tests/disk_integration.py build/dukto-cli --limited-directory "$RUNNER_TEMP/dukto-limited" --report build/disk.json
+      - name: Real TLS transfer disk exhaustion and recovery
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/dukto-tls-limited"
+          sudo mount -t tmpfs -o "size=64m,uid=$(id -u),gid=$(id -g)" tmpfs "$RUNNER_TEMP/dukto-tls-limited"
+          trap 'sudo umount "$RUNNER_TEMP/dukto-tls-limited"' EXIT
+          python3 tests/parallel_disk_integration.py build/dukto-cli --limited-directory "$RUNNER_TEMP/dukto-tls-limited" --report build/parallel-disk.json
+      - name: Preserve validation logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-${{ matrix.os }}
+          path: |
+            build/*.log
+            build/*.json
+            build/*.png
+            build/Testing/Temporary/*
+            build/Testing/QtTest/*

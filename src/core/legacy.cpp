@@ -1,0 +1,516 @@
+#include "legacy.h"
+#include "catalog.h"
+#include "error.h"
+#include "files.h"
+#include "manifest.h"
+#include "sourcefile.h"
+
+#include <QCryptographicHash>
+#include <QDateTime>
+#include <QDir>
+#include <QElapsedTimer>
+#include <QFileInfo>
+#include <QJsonArray>
+#include <QSqlError>
+#include <QSqlQuery>
+#include <QStandardPaths>
+#include <QTcpSocket>
+#include <QUuid>
+#include <QtEndian>
+#include <utility>
+
+namespace dukto {
+namespace {
+class Wire final {
+  public:
+    // 日期：2026-11-04；限制用户态接收缓冲并设置无进展超时。
+    Wire(std::atomic_bool &cancelled, int timeout) : cancelled_(cancelled), timeout_(timeout) {
+        socket.setReadBufferSize(BufferSize * 2);
+        clock_.start();
+    }
+    // 日期：2026-11-04；所有阻塞等待均在工作线程，每 100ms 处理一次取消。
+    void check() {
+        if (cancelled_.load())
+            throw Error(ExitCode::Cancelled, QStringLiteral("传输已取消"), "transfer");
+        if (clock_.elapsed() > timeout_)
+            throw Error(ExitCode::Network, QStringLiteral("连接或传输无进展超时"), "transfer");
+    }
+    // 日期：2026-11-04；连接成功前不发送数据，主机名解析由 Qt 处理。
+    void connect(const QString &host, quint16 port) {
+        socket.connectToHost(host, port);
+        while (socket.state() != QAbstractSocket::ConnectedState) {
+            check();
+            if (!socket.waitForConnected(100) &&
+                socket.state() == QAbstractSocket::UnconnectedState)
+                throw Error(ExitCode::Network, socket.errorString(), "connect");
+        }
+        clock_.restart();
+    }
+    // 日期：2026-11-04；每段输出等待发送缓冲排空，避免累计整个文件到 Qt 队列。
+    void write(const QByteArray &data) {
+        check();
+        const auto size = socket.write(data);
+        if (size != data.size())
+            throw Error(ExitCode::Network, socket.errorString(), "send");
+        while (socket.bytesToWrite() > 0) {
+            check();
+            if (socket.waitForBytesWritten(100))
+                clock_.restart();
+            else if (socket.state() == QAbstractSocket::UnconnectedState)
+                throw Error(ExitCode::Network, socket.errorString(), "send");
+        }
+    }
+    // 日期：2026-11-04；精确读取有限片段，分片包头和提前断线不会误判成功。
+    QByteArray read(qint64 count) {
+        if (count < 0 || count > BufferSize)
+            throw Error(ExitCode::Config, QStringLiteral("内部读取长度越界"), "receive");
+        QByteArray result;
+        result.reserve(static_cast<int>(count));
+        while (result.size() < count) {
+            check();
+            const auto bytes = socket.read(count - result.size());
+            if (!bytes.isEmpty()) {
+                result.append(bytes);
+                clock_.restart();
+                continue;
+            }
+            if (socket.state() == QAbstractSocket::UnconnectedState)
+                throw Error(ExitCode::Network, QStringLiteral("传输尚未完整，对端已断开"),
+                            "receive");
+            socket.waitForReadyRead(100);
+        }
+        return result;
+    }
+    // 日期：2026-11-04；R6 线格式为有符号 64 位小端整数。
+    qint64 integer() {
+        const auto bytes = read(8);
+        return qFromLittleEndian<qint64>(reinterpret_cast<const uchar *>(bytes.constData()));
+    }
+    // 日期：2026-11-04；限制零结尾名称长度，防止无限增长的恶意包头。
+    QString name() {
+        QByteArray bytes;
+        while (bytes.size() <= MaxPathBytes) {
+            const auto c = read(1);
+            if (c[0] == '\0') {
+                const auto result = QString::fromUtf8(bytes);
+                if (result.toUtf8() != bytes)
+                    throw Error(ExitCode::Config, QStringLiteral("文件名不是有效 UTF-8"),
+                                "receive");
+                return result;
+            }
+            bytes.append(c);
+        }
+        throw Error(ExitCode::Config, QStringLiteral("文件名超过协议上限"), "receive");
+    }
+    QTcpSocket socket;
+
+  private:
+    std::atomic_bool &cancelled_;
+    int timeout_;
+    QElapsedTimer clock_;
+};
+
+// 日期：2026-11-04；不依赖宿主机字节序序列化旧协议字段。
+QByteArray encode(qint64 value) {
+    QByteArray bytes(8, '\0');
+    qToLittleEndian(value, reinterpret_cast<uchar *>(bytes.data()));
+    return bytes;
+}
+
+// 日期：2026-11-04；根目录映射保存在磁盘，避免大量顶层目录占用无界内存。
+QString mapDestination(QSqlDatabase &database, const QString &output, const QString &relative,
+                       bool directory) {
+    validateRelativePath(relative);
+    const auto separator = relative.indexOf('/');
+    const auto root = relative.section('/', 0, 0);
+    QSqlQuery query(database);
+    query.prepare("SELECT target FROM roots WHERE source=?");
+    query.addBindValue(root);
+    if (!query.exec())
+        throw Error(ExitCode::Disk, query.lastError().text(), "receive");
+    if (query.next()) {
+        const auto target = query.value(0).toString();
+        return resolveInside(output,
+                             target + (separator < 0 ? QString() : relative.mid(separator)));
+    }
+    if (separator >= 0)
+        throw Error(ExitCode::Config, QStringLiteral("目录条目必须先于其子文件"), "receive");
+    if (!directory)
+        return resolveInside(output, relative);
+    QString target;
+    const QString destination = resolveInside(output, relative);
+#ifdef Q_OS_WIN
+    NativeDirectoryLock parentLock(QFileInfo(destination).absolutePath(), false);
+#else
+    PosixDirectory parentLock(QFileInfo(destination).absolutePath(), false);
+#endif
+    for (int index = 0; index < 100000; ++index) {
+        const auto candidate = renamedPath(destination, index);
+#ifdef Q_OS_WIN
+        if (QDir().mkdir(candidate)) {
+#else
+        if (parentLock.createChild(QFileInfo(candidate).fileName())) {
+#endif
+            target = QFileInfo(candidate).fileName();
+            break;
+        }
+        if (!QFileInfo::exists(candidate))
+            throw Error(ExitCode::Disk, QStringLiteral("创建目录失败"), "receive");
+    }
+    if (target.isEmpty())
+        throw Error(ExitCode::Disk, QStringLiteral("目录重命名超过限制"), "receive");
+    query.prepare("INSERT INTO roots VALUES (?, ?)");
+    query.addBindValue(root);
+    query.addBindValue(target);
+    if (!query.exec())
+        throw Error(ExitCode::Disk, query.lastError().text(), "receive");
+    return resolveInside(output, target);
+}
+} // namespace
+
+// 日期：2026-11-04；复制请求，调用者可立即释放其配置对象。
+LegacyJob::LegacyJob(LegacyRequest request, QObject *parent)
+    : QThread(parent), request_(std::move(request)) {
+}
+
+// 日期：2026-11-04；socket 与清单析构均在 run 返回前完成。
+LegacyJob::~LegacyJob() {
+    cancel();
+    wait();
+}
+
+// 日期：2026-11-04；不向工作线程直接调用 QObject 网络接口。
+void LegacyJob::cancel() {
+    cancelled_.store(true);
+}
+
+// 日期：2026-11-04；异常出口始终发送最终结果，不能吞掉错误返回成功。
+void LegacyJob::run() {
+    elapsed_.start();
+    int code = 0;
+    QJsonObject outcome;
+    try {
+        outcome = request_.descriptor < 0 ? send() : receive();
+    } catch (const Error &error) {
+        code = static_cast<int>(error.code);
+        outcome = error.json();
+    } catch (const std::exception &error) {
+        const Error wrapped(ExitCode::Runtime, QString::fromUtf8(error.what()), "transfer");
+        code = 1;
+        outcome = wrapped.json();
+    }
+    if (catalog_ && !taskId_.isEmpty()) {
+        outcome.insert("taskId", taskId_);
+        outcome.insert("catalog", catalog_->path());
+        if (code) {
+            try {
+                catalog_->finish(taskId_, "failed", receivedBytes_,
+                                 outcome.value("message").toString());
+            } catch (const Error &error) {
+                outcome.insert("catalogError", error.message);
+            }
+        }
+    }
+    catalog_.reset();
+    outcome.insert("elapsedMs", QString::number(elapsed_.elapsed()));
+    const auto completedBytes = outcome.value("bytes").toString().toLongLong();
+    outcome.insert(
+        "rateBytesPerSecond",
+        QString::number(elapsed_.elapsed() > 0 ? completedBytes * 1000.0 / elapsed_.elapsed() : 0,
+                        'f', 0));
+    emit result(code, outcome);
+}
+
+// 日期：2026-11-04；先完成有界扫描，确认源身份后逐条发送，进度仅代表本地发送。
+QJsonObject LegacyJob::send() {
+    Wire wire(cancelled_, request_.timeoutMs);
+    Manifest manifest;
+    if (request_.textMode && request_.text.size() > MaxTextBytes)
+        throw Error(ExitCode::Config, QStringLiteral("文本超过 8 MiB 限制，请作为文件发送"),
+                    "scan");
+    if (!request_.textMode) {
+        emit event({{"eventVersion", 1}, {"event", "progress"}, {"stage", "scan"}});
+        manifest.scan(request_.paths, &cancelled_);
+    }
+    const qint64 total = request_.textMode ? request_.text.size() : manifest.totalBytes;
+    wire.connect(request_.host, request_.port);
+    wire.write(encode(request_.textMode ? 1 : manifest.count) + encode(total));
+    qint64 sent = 0;
+    QElapsedTimer progress;
+    progress.start();
+    Entry entry;
+    if (request_.textMode) {
+        wire.write(QByteArray("___DUKTO___TEXT___") + '\0' + encode(total));
+        for (int offset = 0; offset < request_.text.size(); offset += static_cast<int>(BufferSize))
+            wire.write(request_.text.mid(offset, static_cast<int>(BufferSize)));
+        sent = total;
+    } else
+        while (manifest.next(entry)) {
+            wire.check();
+            const QFileInfo before(entry.source);
+            if (!before.exists() || isLinkedPath(entry.source) ||
+                (entry.size >= 0 && (before.size() != entry.size ||
+                                     before.lastModified().toMSecsSinceEpoch() != entry.modified)))
+                throw Error(ExitCode::Integrity, QStringLiteral("扫描后源文件已变化"), "send");
+            wire.write(entry.relative.toUtf8() + '\0' + encode(entry.size));
+            if (entry.size < 0)
+                continue;
+            SourceFile source(entry.source);
+            auto &file = source.device();
+            if (file.size() != entry.size)
+                throw Error(ExitCode::Integrity, QStringLiteral("打开时源文件大小已变化"), "send");
+            qint64 remaining = entry.size;
+            while (remaining > 0) {
+                const auto bytes = file.read(qMin(BufferSize, remaining));
+                if (bytes.isEmpty())
+                    throw Error(ExitCode::Disk, QStringLiteral("源文件读取失败或被截短"), "send");
+                wire.write(bytes);
+                remaining -= bytes.size();
+                sent += bytes.size();
+                if (progress.elapsed() >= 200) {
+                    emit event({{"eventVersion", 1},
+                                {"event", "progress"},
+                                {"stage", "send"},
+                                {"object", entry.relative},
+                                {"bytes", QString::number(sent)},
+                                {"elapsedMs", QString::number(elapsed_.elapsed())},
+                                {"total", QString::number(total)}});
+                    progress.restart();
+                }
+            }
+            const QFileInfo after(entry.source);
+            if (after.size() != entry.size ||
+                after.lastModified().toMSecsSinceEpoch() != entry.modified)
+                throw Error(ExitCode::Integrity, QStringLiteral("传输期间源文件已变化"), "send");
+            source.verify();
+        }
+    wire.socket.disconnectFromHost();
+    return {{"eventVersion", 1},
+            {"event", "result"},
+            {"stage", "sent"},
+            {"peer", request_.host + ':' + QString::number(request_.port)},
+            {"bytes", QString::number(sent)},
+            {"receiverVerified", false},
+            {"message", QStringLiteral("本地发送完成；R6 协议不提供远端校验确认")}};
+}
+
+// 日期：2026-11-04；所有已提交文件都有实际长度检查，失败只清理未完成临时文件。
+QJsonObject LegacyJob::receive() {
+    Wire wire(cancelled_, request_.timeoutMs);
+    if (!wire.socket.setSocketDescriptor(request_.descriptor))
+        throw Error(ExitCode::Network, wire.socket.errorString(), "receive");
+    const auto peerAddress = wire.socket.peerAddress();
+    // 日期：2026-11-04；双栈监听收到的 IPv4 映射地址统一还原，与 IPv4 发现记录一致。
+    const auto peer = peerAddress.toString().startsWith("::ffff:", Qt::CaseInsensitive)
+                          ? QHostAddress(peerAddress.toIPv4Address()).toString()
+                          : peerAddress.toString();
+    const qint64 count = wire.integer();
+    const qint64 total = wire.integer();
+    if (count <= 0 || count > 10000000 || total < 0)
+        throw Error(ExitCode::Config, QStringLiteral("非法批次条目数或总长度"), "receive");
+#ifdef Q_OS_WIN
+    NativeDirectoryLock outputLock(request_.output, false);
+#else
+    PosixDirectory outputLock(request_.output, false);
+#endif
+    const auto catalogPath =
+        request_.catalogPath.isEmpty()
+            ? QDir(QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation))
+                  .filePath("receipts.sqlite")
+            : request_.catalogPath;
+    catalog_.reset(new Catalog(catalogPath));
+    taskId_ = catalog_->begin(total, count, peer);
+    const auto connection = QUuid::createUuid().toString(QUuid::WithoutBraces);
+    QSqlDatabase mapping = QSqlDatabase::addDatabase("QSQLITE", connection);
+    QTemporaryDir metadata;
+    // 日期：2026-11-04；先清理查询和数据库引用，确保异常路径也释放连接。
+    struct DatabaseGuard {
+        QSqlDatabase &database;
+        QString connection;
+        // 日期：2026-11-04；打开或建表失败同样关闭连接，临时映射无需保留未提交事务。
+        ~DatabaseGuard() {
+            database.close();
+            database = QSqlDatabase();
+            QSqlDatabase::removeDatabase(connection);
+        }
+    } guard{mapping, connection};
+    mapping.setDatabaseName(metadata.filePath("roots.sqlite"));
+    if (!metadata.isValid() || !mapping.open())
+        throw Error(ExitCode::Disk, QStringLiteral("无法建立接收清单"), "receive");
+    QSqlQuery query(mapping);
+    for (const auto sql : {"PRAGMA cache_size=-2048", "PRAGMA max_page_count=65536",
+                           "CREATE TABLE roots(source TEXT PRIMARY KEY, target TEXT)",
+                           "CREATE TABLE paths(name TEXT PRIMARY KEY)"})
+        if (!query.exec(sql))
+            throw Error(ExitCode::Disk, query.lastError().text(), "receive");
+    if (!mapping.transaction())
+        throw Error(ExitCode::Disk, mapping.lastError().text(), "receive");
+    qint64 received = 0;
+    QElapsedTimer progress;
+    progress.start();
+    QString lastPath;
+    QByteArray text;
+    bool receivedText = false;
+    StorageChecks storage;
+    for (qint64 index = 0; index < count; ++index) {
+#ifndef Q_OS_WIN
+        // 日期：2026-11-04；POSIX 不能禁止外部改名，每个条目开始前重新核对接收根的 inode。
+        outputLock.verify();
+#endif
+        // 日期：2026-11-04；映射只供当前任务使用，分批提交避免海量小文件逐项同步数据库。
+        if (index > 0 && index % 256 == 0 && (!mapping.commit() || !mapping.transaction()))
+            throw Error(ExitCode::Disk, mapping.lastError().text(), "receive");
+        const auto name = wire.name();
+        const auto size = wire.integer();
+        if (size < -1 || (size >= 0 && size > total - received))
+            throw Error(ExitCode::Config, QStringLiteral("文件长度超出批次声明"), "receive");
+        const bool textMode = name == "___DUKTO___TEXT___";
+        if (!textMode) {
+            validateRelativePath(name);
+            query.prepare("INSERT OR IGNORE INTO paths VALUES (?)");
+            query.addBindValue(name.normalized(QString::NormalizationForm_C).toCaseFolded());
+            if (!query.exec())
+                throw Error(ExitCode::Disk, query.lastError().text(), "receive");
+            if (query.numRowsAffected() != 1)
+                throw Error(ExitCode::Config, QStringLiteral("批次含重复或大小写冲突路径"),
+                            "receive");
+        }
+        receivedText = receivedText || textMode;
+        if (textMode && (count != 1 || size < 0 || size > MaxTextBytes))
+            throw Error(ExitCode::Config, QStringLiteral("文本长度或条目数越界"), "receive");
+        if (size == -1) {
+            lastPath = mapDestination(mapping, request_.output, name, true);
+#ifdef Q_OS_WIN
+            NativeDirectoryLock directoryLock(lastPath, true);
+#else
+            PosixDirectory directoryLock(lastPath, true);
+#endif
+            catalog_->append(taskId_, index + 1, name, lastPath, -1, {});
+            continue;
+        }
+        std::unique_ptr<IncomingFile> file;
+        QString storageDirectory;
+        if (!textMode) {
+            // 日期：2026-11-04；文件名已核对后预检剩余批次空间；文本不按文件数据占用估算。
+            const auto destination = mapDestination(mapping, request_.output, name, false);
+            storageDirectory = QFileInfo(destination).absolutePath();
+            storage.check(request_.output, total - received);
+            storage.check(storageDirectory, size, true);
+            file.reset(new IncomingFile(destination));
+        }
+        QCryptographicHash hash(QCryptographicHash::Sha256);
+        qint64 remaining = size;
+        while (remaining > 0) {
+            const auto bytes = wire.read(qMin(BufferSize, remaining));
+            if (file) {
+                writeAll(file->device(), bytes);
+                storage.consumed(storageDirectory, bytes.size());
+            } else
+                text.append(bytes);
+            hash.addData(bytes);
+            remaining -= bytes.size();
+            received += bytes.size();
+            receivedBytes_ = received;
+            if (progress.elapsed() >= 200) {
+                emit event({{"eventVersion", 1},
+                            {"event", "progress"},
+                            {"stage", "receive"},
+                            {"object", name},
+                            {"bytes", QString::number(received)},
+                            {"elapsedMs", QString::number(elapsed_.elapsed())},
+                            {"total", QString::number(total)}});
+                progress.restart();
+            }
+        }
+        if (file)
+            lastPath = file->commit();
+        if (textMode && QString::fromUtf8(text).toUtf8() != text)
+            throw Error(ExitCode::Integrity, QStringLiteral("收到的文本不是有效 UTF-8"), "receive");
+        catalog_->append(taskId_, index + 1, name, lastPath, size, hash.result());
+        if (progress.elapsed() >= 200 || count == 1 || index == count - 1) {
+            emit event({{"eventVersion", 1},
+                        {"event", "file"},
+                        {"path", lastPath},
+                        {"bytes", QString::number(size)},
+                        {"sha256", QString::fromLatin1(hash.result().toHex())}});
+            progress.restart();
+        }
+    }
+    if (received != total)
+        throw Error(ExitCode::Integrity, QStringLiteral("批次长度与实际接收不一致"), "receive");
+    if (!mapping.commit())
+        throw Error(ExitCode::Disk, mapping.lastError().text(), "receive");
+    catalog_->finish(taskId_, "completed", received);
+    wire.socket.disconnectFromHost();
+    QJsonObject result{{"eventVersion", 1},
+                       {"event", "result"},
+                       {"stage", "received"},
+                       {"peer", peer},
+                       {"bytes", QString::number(received)},
+                       {"entries", QString::number(count)},
+                       {"path", lastPath}};
+    if (receivedText)
+        result.insert("text", QString::fromUtf8(text));
+    return result;
+}
+
+// 日期：2026-11-04；兼容接收保留原版单活动连接约定。
+LegacyListener::LegacyListener(QString output, int timeoutMs, QObject *parent,
+                               const QString &catalogPath)
+    : QTcpServer(parent), output_(std::move(output)), timeoutMs_(timeoutMs),
+      catalogPath_(catalogPath) {
+    setMaxPendingConnections(1);
+}
+
+// 日期：2026-11-04；监听退出时先取消子任务，保证无悬空信号或后台写入。
+LegacyListener::~LegacyListener() {
+    close();
+    if (active_) {
+        active_->cancel();
+        active_->wait();
+    }
+}
+
+// 日期：2026-11-04；网络对象仍由工作线程自己关闭。
+void LegacyListener::cancel() {
+    if (active_)
+        active_->cancel();
+}
+
+// 日期：2026-11-04；不销毁 socket，不存在重建监听器时抢占端口的窗口。
+bool LegacyListener::setOutput(const QString &output) {
+    if (active_ || !QFileInfo(output).isDir())
+        return false;
+    output_ = output;
+    return true;
+}
+
+// 日期：2026-11-04；忙时显式断开新连接，不能无限排队占用描述符。
+void LegacyListener::incomingConnection(qintptr descriptor) {
+    if (active_) {
+        QTcpSocket rejected;
+        rejected.setSocketDescriptor(descriptor);
+        rejected.abort();
+        return;
+    }
+    LegacyRequest request;
+    request.descriptor = descriptor;
+    request.output = output_;
+    request.timeoutMs = timeoutMs_;
+    request.catalogPath = catalogPath_;
+    active_ = new LegacyJob(request, this);
+    emit event({{"eventVersion", 1},
+                {"event", "progress"},
+                {"stage", "receive"},
+                {"bytes", "0"},
+                {"total", "0"}});
+    connect(active_, &LegacyJob::event, this, &LegacyListener::event);
+    connect(active_, &LegacyJob::result, this, &LegacyListener::result);
+    // 日期：2026-11-04；仅在线程真正退出后归还活动槽位。
+    connect(active_, &QThread::finished, this, [this]() {
+        active_->deleteLater();
+        active_ = nullptr;
+    });
+    active_->start();
+}
+} // namespace dukto
