@@ -1,17 +1,17 @@
 # macOS独立开发预览包
 
-2026-11-05 v0.48：下述d4626d0旧包的首页“服务器”入口存在QML作用域错误。本地源码已修复并通过双Windows原生/高DPI专项，新包尚待编译与验证；旧包原迁移和CLI结果保留，不能当作入口通过。
+当前f230f3d已修复首页“服务器”入口和紧凑窗口首次说明。旧d4626d0包含入口作用域缺陷，历史包仅按各自原验证范围理解。
 
-更新日期：2026-11-05。源码提交：`d4626d019d8af38289819a30953fe315fbaff360`。采用C++14和Qt5，Intel及Apple Silicon分别提供GUI和独立CLI。
+更新日期：2026-11-05。源码提交：`f230f3d6efa17c8da9f5fe3fc770e95817d78ce5`。采用C++14和Qt5，Intel及Apple Silicon分别提供GUI和独立CLI。
 
 ## 下载与校验
 
-[d4626d0双架构打包与迁移工作流](https://github.com/29583855/dukto-next/actions/runs/42007080163)已整体通过。根据芯片选择架构；GitHub附件下载可能需要登录，附件ZIP内含tar.gz、校验值和日志。
+[f230f3d双架构打包与迁移工作流](https://github.com/29583855/dukto-next/actions/runs/42013431292)已整体通过。根据芯片选择架构；GitHub附件下载可能需要登录，ZIP内含tar.gz、校验值和原始日志。
 
 | 架构 | GitHub附件 | 内部tar.gz的SHA-256 |
 | --- | --- | --- |
-| Apple Silicon / arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42007080163/artifacts/13405556953) | `42fd340e832396ac9fde8ee4b0f0c857063ac6b30d7cbe45bba368bcd1f818d0` |
-| Intel / x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42007080163/artifacts/13406121322) | `a5da95b4a90b223dcf10b0dca093b581184de725690094e05d21d36c77ab5bfe` |
+| Apple Silicon / arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42013431292/artifacts/13407958747) | `c0c72c9efe383c2c86ec5f2d4915787c10de898549227090e3d8b819a85f3448` |
+| Intel / x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42013431292/artifacts/13409165841) | `239ebd05abb8ccd400aa3071737a2f173d9c58f21c1173bdc9e7726f95bda8c9` |
 
 先解压下载的ZIP，进入包含tar.gz及.sha256的目录。Apple Silicon示例：
 
@@ -33,9 +33,11 @@ CLI不需要GUI运行，支持发现、R6发送/接收、服务器管理、配�
 
 ## 实际验证范围
 
-两种架构均在中文空格新目录、仅系统PATH下运行实际tar：核对所有文件/链接、adhoc签名、Cocoa真实渲染、Qt/OpenSSL实际从包内加载、独立CLI无GUI框架，以及16通道双向、4→8八组恢复和SHA。两种原生截图已查看。两包各207份应用输入另与精确d4626d0 Git树逐字节核对。
+两架构均在中文空格新目录、仅系统PATH下运行实际tar，核对文件/链接、adhoc签名、Cocoa实际渲染、Qt/OpenSSL包内加载、独立CLI不加载GUI框架，以及16通道双向、4→8八组恢复和SHA。71框架链接、Mach-O/执行位、209应用输入与精确f230f3d树匹配，两实际包截图已查看。
 
-本次d4626d0双包部署/迁移通过，两种Mac原生核心各19/19；完整协议回归42006921571仍在运行，终态单独记录。包含证书续期、资料查询和显式指纹迁移。完整下载回执保存在dist/macos-preview-20261105-r47-certificate-macos-terminal/BUILD-RECEIPT.json。
+独立打包前从生产Main.qml点击服务器入口，360×560/430×700、三个页签、返回/重开、窗口变化和原生/150%/200%场景均通过，两个架构的原生服务器截图已查看。该专项使用真实生产Controller的编译测试程序；实际包另验GUI渲染与CLI传输，不称作直接点击部署.app或完整原生选择器验收。
+
+完整回执：`dist/macos-preview-20261105-r48-main-server-macos-terminal/BUILD-RECEIPT.json`。四平台完整协议42013382497仍在运行；新增中文字形门槛由生产输入相同的732b58d运行42014821263验证，四runner字形/导航和各19核心已通过；完整协议仍在运行，不将编译/打包或字形子项当作整体验收。旧d4626d0的Intel排队期限原失败继续保留。
 
 这是使用adhoc签名的开发预览包。Developer ID、公证、Gatekeeper、独立干净Mac、完整第三方对应源码及正式发布验收仍未完成；系统可能要求确认来源。历史失败和后续修正分别记录，完整主窗口交互及原生选择器仍继续验收。
 

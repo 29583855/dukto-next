@@ -1,14 +1,16 @@
 # Windows 独立预览包
 
-2026-11-05 v0.48：下述d4626d0旧包的首页“服务器”入口存在QML作用域错误。本地源码已修复并通过双Windows原生/高DPI专项，新包尚待编译与验证；旧包原迁移和CLI结果保留，不能当作入口通过。
+当前r22已修复首页服务器入口和紧凑首次说明。旧d4626d0/r21包含入口作用域缺陷，旧验证按原范围保留。
 
 更新日期：2026-11-05。当前为开发预览，完整功能和发布验收仍按主计划执行。
 
-## 当前r21证书版预览包（2026-11-05）
+## 当前r22主窗口修复预览包（2026-11-05）
 
-当前包：`dist/windows-preview-20261105-r21-certificate/DuktoNext-windows-x64-preview.zip`，SHA-256：`cceb3232a1b3488bda9c20c249fd116540a99397e5a8cfd65c19da277fa3c1d8`。源码d4626d0，207份应用输入与精确Git树相同，含证书续期、公开资料查询及显式指纹迁移。[实际迁移报告](validation/2026-11-05/windows-r21-runtime-r46.json)、[证书专项](validation/2026-11-05/windows-r21-certificate-r46.json)、[源码关联](validation/2026-11-05/windows-r21-source-linkage-r46.json)及[依赖许可核对](validation/2026-11-05/windows-r21-signed-payload-map-r46.json)均通过，原生截图已查看。
+当前包：`dist/windows-preview-20261105-r22-main-server/DuktoNext-windows-x64-preview.zip`，SHA-256：`df5e563edb8dc9d8250b663bcc782f6cea778354905e299877ca5c7bb5d9ba13`。源码f230f3d，487文件、209应用输入与精确Git树匹配；[实际迁移报告](validation/2026-11-05/windows-r22-runtime-r48.json)、[源码关联](validation/2026-11-05/windows-r22-source-linkage-r48.json)和[受信依赖/许可核对](validation/2026-11-05/windows-r22-signed-payload-map-r48.json)均通过，实际GUI截图已查看。
 
-实际ZIP解压后在中文空格路径/仅系统PATH中验证GUI、独立CLI、16通道双向、客户端管理、会话恢复、排队、重试、最终确认、fail及恢复。证书专项将CLI复制至隔离测试目录，运行依赖仅来自实际包及系统；独立OpenSSL仅生成夹具。完整第三方对应源码/独立重建、干净系统及正式发布资格继续未完成。下文旧包按各自版本理解，当前入口以本节为准。
+实际ZIP迁移至中文空格路径、只用系统PATH，GUI/独立CLI/16双向、客户端/会话/排队/重试/最终确认/fail及恢复均通过。生产主窗口真实点击、两尺寸、三页导航、返回/重开和原生/150%/200%另由同一生产QML的编译测试程序通过；不声称直接点击部署EXE。CLI摘要仍为7875f59a16d0638a1fe1401a1e7414b7181455f3e4c273cd0995bf0670cb07f1，与已验证证书功能版本相同。全量协议、对应源码/独立重建、干净系统及正式发布继续未完成。
+
+旧r21及其SHA/证书专项报告保留在原目录，不将旧入口当作通过。下文历史包按各自版本理解。
 
 ## 生成
 

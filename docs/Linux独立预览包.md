@@ -1,19 +1,21 @@
 # Linux 独立预览包
 
-2026-11-05 v0.48：下述d4626d0旧包的首页“服务器”入口存在QML作用域错误。本地源码已修复并通过双Windows原生/高DPI专项，新包尚待编译与验证；旧包原迁移和CLI结果保留，不能当作入口通过。
+当前f230f3d已修复首页服务器入口；旧d4626d0包含入口作用域缺陷，旧验证按原范围保留。
 
 更新日期：2026-11-05。当前目标为 Ubuntu 24.04 或更新版本的 x86_64 glibc 环境，要求 glibc 2.39 或更新版本。此包不覆盖 Alpine musl、其他架构或 macOS；正式发布资格仍为 false。
 
 
 ## 当前可下载包（2026-11-05）
 
-[下载x86_64 glibc证书版独立预览包](https://github.com/29583855/dukto-next/actions/runs/42007092492/artifacts/13405122545)（GitHub Actions附件下载可能需要登录）。附件ZIP内含tar、SHA清单及迁移证据。tar SHA-256：
+[下载x86_64 glibc主窗口修复预览包](https://github.com/29583855/dukto-next/actions/runs/42013436060/artifacts/13408830894)（GitHub附件下载可能需要登录）。ZIP内含tar、SHA清单和迁移证据。内部tar SHA-256：
 
 ```text
-45289312b01d4534e5bfebdc302239828bfe3f91ee80532237f2739a0019f729
+97ad356b3bc7ee0b37c74cad979c0fb07b08dc71b2fbcc0b93ad352f8b7349e0
 ```
 
-源码提交d4626d0，Ubuntu24.04/glibc2.39起，x86_64，GUI与独立CLI；包含证书续期、资料查询和显式指纹迁移。19/19核心与实际Xvfb/Weston两种迁移、包内依赖、16通道双向、完整性及幂等断言均通过，两截图已查看。708文件、2链接、132 ELF和207应用输入与精确Git树匹配。[完整回执](validation/2026-11-05/github-evidence-r47-certificate-linux-terminal/receipt.json)。完整协议回归仍在同次运行；干净系统、物理桌面、完整第三方对应源码/重建和正式发布尚未验收。旧44892f0包保持原目录和摘要。
+源码提交f230f3d，Ubuntu24.04/glibc2.39起，x86_64，GUI和独立CLI。19/19核心、生产主窗口入口原生/150%/200%及实际Xvfb/Weston迁移、16通道双向、完整性/幂等均通过。708文件、2链接、132 ELF和209应用输入与精确Git树匹配；两实际包及原生服务器截图已查看，中文可正常显示。此打包环境已安装文泉驿字体，不替代另一个Ubuntu22缺字runner的修复验收。
+
+[完整回执](validation/2026-11-05/github-evidence-r48-main-server-linux-terminal/receipt.json)。完整协议仍在运行；干净系统、物理桌面、完整第三方对应源码/重建及正式发布继续未完成。旧d4626d0包、摘要和入口缺陷证据保留。
 
 ## 构建依赖
 
@@ -89,4 +91,4 @@ v0.43当前Linux包首轮终态：41998140793在Ubuntu24.04实际编译、19项�
 v0.47：当前下载入口已更新为d4626d0证书版。此前v0.46范围补记指当时旧包，旧记录保留。
 
 
-v0.48字体补记：Linux桌面需系统中文字库，例如Ubuntu的fonts-wqy-zenhei（Alpine为font-wqy-zenhei）；现有包构建/迁移环境已安装并由发行版管理，包未内嵌CJK字体。纯CLI无桌面/字体依赖。本轮Ubuntu22通用CI漏装导致中文方框，已保留原图，补齐依赖并增加真实Qt字形门槛，新门槛跨平台结果待验；不能用原导航通过替代中文显示验收。
+v0.48字体补记：Linux桌面需系统中文字库，例如Ubuntu的fonts-wqy-zenhei（Alpine为font-wqy-zenhei）；现有包构建/迁移环境已安装并由发行版管理，包未内嵌CJK字体。纯CLI无桌面/字体依赖。本轮Ubuntu22通用CI漏装导致中文方框，已保留原图，补齐依赖并增加真实Qt字形门槛，新门槛四runner原生/150%/200%和各19核心均已通过，原始附件已归档；不能用原导航通过替代中文显示验收。
