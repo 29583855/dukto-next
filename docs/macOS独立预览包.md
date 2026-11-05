@@ -33,9 +33,12 @@ CLI不需要GUI运行，支持发现、R6发送/接收、服务器管理、配�
 
 两种架构均在中文空格新目录、仅系统PATH下运行实际tar：核对所有文件/链接、adhoc签名、Cocoa真实渲染、Qt/OpenSSL实际从包内加载、独立CLI无GUI框架，以及16通道双向、4→8八组恢复和SHA。两种原生截图已查看。两包各195份应用源码另与精确Git树逐字节核对。
 
-此前1bc2774的[独立原生恢复CI](https://github.com/29583855/dukto-next/actions/runs/41971997178)的56组会话/故障/字节进度用例也通过，保持原业务速率与期限。当前fa6d96b完整四平台CI仍在执行，结果记录于[进度文档](执行进度.md)。
+此前1bc2774的[独立原生恢复CI](https://github.com/29583855/dukto-next/actions/runs/41971997178)的56组会话/故障/字节进度用例也通过，保持原业务速率与期限。3b8bf4a完整CI已结束：Intel18/18、ARM17/18 CTest；两者各30/30协议通过。ARM的UDP连锁测试超过原10秒门槛。7590363签名缓存改动及其原生复验结果记录于[进度文档](执行进度.md)，本页旧包不包含该改动。
 
 这是使用adhoc签名的开发预览包。Developer ID、公证、Gatekeeper、独立干净Mac、完整第三方对应源码及正式发布验收仍未完成；系统可能要求确认来源。历史失败和后续修正分别记录，完整主窗口交互及原生选择器仍继续验收。
 
 
 2026-11-05 v0.39补记：此页当前双包已更新到3b8bf4a，包含逐项接收失败原因。旧fa6d96b双包保留于dist/macos-preview-20261105-r38-timeout-attach。新双包部署/迁移通过；同源码完整CI41986605449中Apple Silicon的Core and GUI controller tests步骤失败，尚待该job终态日志定位，其他专项继续原运行。不能将独立包通过写成完整回归通过。
+
+
+2026-11-05 v0.40补记：3b8完整CI的具体失败已归档为CoreTests::discoveryYieldsAndRejectsMalformedGoodbye，5000包原10秒门槛；服务器GUI和30协议通过。7590363的新双包与完整原生验证继续，未以旧包SHA宣称更新。

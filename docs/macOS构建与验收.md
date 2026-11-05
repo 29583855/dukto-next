@@ -1,6 +1,6 @@
 # macOS 构建与验收
 
-更新日期：2026-11-05。状态：fa6d96b的Intel/Apple Silicon各18CTest与29协议完整通过，独立包部署/迁移也已通过。本轮逐项失败证据继续新原生CI；既有可下载包明确仍为fa6d96b。正式发布资格尚未完成。
+更新日期：2026-11-05。当前可下载独立预览包为3b8bf4a，两架构部署/迁移通过；其完整CI为Intel18/18、ARM17/18，ARM唯一失败为UDP连锁原10秒门槛。7590363已上传签名缓存改动，Windows双工具链19/19通过；新版双Mac原生复验继续。正式发布资格尚未完成。
 
 ## 运行环境
 
@@ -189,3 +189,15 @@ v0.39 双Mac独立包交付补记（2026-11-05）：
 - [x] [41986673599](https://github.com/29583855/dukto-next/actions/runs/41986673599)双架构完整打包运行success，源码3b8bf4a。已实际下载并逐层核验两份tar、源码SHA、执行位、Mach-O、71框架链接、原生依赖、adhoc签名和两包各195份应用输入；中文空格目录/仅系统PATH的Cocoa GUI、独立CLI及16通道双向/4→8八组恢复通过。两张原生截图已查看。回执`github-evidence-r39-item-failures/receipt.json`与dist/BUILD-RECEIPT均保存。
 - [x] 新包持久存放在`dist/macos-preview-20261105-r39-item-failures/`。ARM64 tar SHA `41b3eb0a89ea192656cc27a00ebb3c97143a0ed6e2cbcc22ae05670bb73ea8be`；Intel tar SHA `e9e5478827d8bdc01d33228b8070c6de4fb0b1591041a9c6face03a0bfd758ba`。公开下载入口已更新到macOS独立预览包说明，旧fa6d96b双包保留。
 - [ ] 同源码的[完整原生CI41986605449](https://github.com/29583855/dukto-next/actions/runs/41986605449)继续原运行，Apple Silicon的Core and GUI controller tests步骤已经失败，具体测试日志须等该job终态后归档定位；不能以编译、Windows或独立包迁移成功覆盖该失败。没有取消/重启其他专项。当前正式发布与总计划交付均未完成，Developer ID/公证、干净Mac以及其他计划项仍待验。
+
+
+## v0.40 发现原门槛与原生回归（2026-11-05）
+
+- [x] 原3b8bf4a完整CI41986605449终态已归档：Intel、Ubuntu各18/18 CTest及30/30协议，Windows18/18及32/32协议通过；ARM17/18 CTest与30/30协议通过，唯一失败是原5000次真实UDP连锁测试超出10秒，QtTest报告约需11.85秒。服务器GUI通过，双Mac逐项原因截图已实际查看。全量回执`github-evidence-r40-native-full-terminal/receipt.json`保留该失败，不以独立包通过覆盖它。
+- [x] 新源码7590363缓存每次公告的本机身份，收包/回复不再反复同步查询系统主机名；启动、改名、显式及60秒周期公告刷新，原R6格式和64包/5ms处理片保持。原core_tests.cpp的SHA保持`1b825e24642a8e24dff158b75ce7c99f68b7a6bdbe1c26ce86e4d0b786c1da4b`，5000包/10秒门槛不变。边界见决策0013。
+- [x] Windows UCRT/MSVC完整C++14 GUI/CLI编译，两套各19/19 CTest通过（118.77/124.32秒），真实旧协议与CLI回归通过；全组前后CLI摘要相同。新增身份刷新测试首轮误计真实设备导致失败，原源码副本/两套失败报告保留；修正为只核对测试身份后完整复验通过。`discovery-r40-final-*-summary.json`、逐项日志和截图已归档；源码扫描162维护文件、0标记，C++14/格式通过。
+- [x] 当前80生产输入和165应用/验证输入已与7590363逐字节关联。UCRT CLI SHA `15a8fd5c6515092b70107dba708ed53fb2c144f8c7873a670cfc5683ba205539`，MSVC SHA `ad6bd1d01547962dc5c5def6dfa807b4b6819d6731bda2f6d06db6fc07efd2a6`。旧Windows r19和双Mac r39包仍明确是3b8bf4a，不冒充包含本次缓存改动。
+- [ ] 新源码完整四平台CI、双Mac原门槛对照诊断和双Mac独立包继续；单独微基准仅定位查询成本，不能替代原门槛或物理局域网提速。核心日志改为在后续协议前立即归档，不跳过失败或后续独立测试。尚未宣称ARM失败已修复。
+- [x] fa6对应glibc原冻结资格33671已终态exit1归档：18/18 CTest（543.64秒），10协议9过1失败；session-expiry在原90秒恢复期限确认142606336/268435475字节、复用8388608字节后超时。前后CLI SHA同为`9e9d49bcb2e540848dfb60e6ac07f6a49192d3669f5bac9dd2b755664c3b5962`。原失败保留于`linux-glibc-timeout-attach-r38`，不放宽门槛。
+- [x] 后续独立Linux会话诊断仍用同一fa6二进制与原20秒/512KiB/s/90秒门槛，保留91次有界/proc观察及原始报告。环境确认为单vCPU、QEMU TCG；诊断仍超时，采样可能影响耗时，尚不能凭此定位某一函数或宣称应用崩溃。`linux-glibc-session-diagnostic-r40/results/sampling.json`中原二进制/脚本前后SHA一致。当前3b8的musl40851和旧musl4687长测继续原运行，均不改动。
+- [ ] skip/overwrite、完整处置汇总与最终确认、R6完整基线、预算/GC、证书生命周期、当前版本24小时、物理LAN/3×3、干净系统与正式签名发布等总计划项仍未完成。
