@@ -1,21 +1,21 @@
 # Linux 独立预览包
 
-当前c3fc781包含显式覆盖、目录合并和目标预约，并保留首页服务器入口修复；旧d4626d0包含入口作用域缺陷，旧验证按原范围保留。
+当前31f3db3包含发送期远端错误保留、显式覆盖、目录合并、目标预约及首页服务器入口修复；旧d4626d0包含入口作用域缺陷，旧验证按原范围保留。
 
 更新日期：2026-11-05。当前目标为 Ubuntu 24.04 或更新版本的 x86_64 glibc 环境，要求 glibc 2.39 或更新版本。此包不覆盖 Alpine musl、其他架构或 macOS；正式发布资格仍为 false。
 
 
 ## 当前可下载包（2026-11-05）
 
-[下载x86_64 glibc主窗口修复预览包](https://github.com/29583855/dukto-next/actions/runs/42021830358/artifacts/13413382771)（GitHub附件下载可能需要登录）。ZIP内含tar、SHA清单和迁移证据。内部tar SHA-256：
+[下载x86_64 glibc预览包](https://github.com/29583855/dukto-next/actions/runs/42030410632/artifacts/13415898193)（GitHub附件下载可能需要登录）。ZIP内含tar、SHA清单和迁移证据。内部tar SHA-256：
 
 ```text
-791c027a67181caef5a36fa55352cfb2c0d04c5d9b472567ce24b3703d1a7d71
+184402a446c14d99b9918c1bcbe961a28d4170a1e2dfb45654704b9a3c401dcf
 ```
 
-源码提交c3fc781，Ubuntu24.04/glibc2.39起，x86_64，GUI和独立CLI。19/19核心、生产主窗口入口原生/150%/200%及实际Xvfb/Weston迁移、16通道双向、完整性/幂等均通过。708文件、2链接、132 ELF和211应用输入与精确Git树匹配；两实际包及原生服务器截图已查看，中文可正常显示。此打包环境已安装文泉驿字体，不替代另一个Ubuntu22缺字runner的修复验收。
+源码31f3db3，Ubuntu24.04/glibc2.39起，x86_64，GUI和独立CLI。实际Xvfb/X11和Weston/Wayland迁移、16通道双向、1/4/16覆盖及4→8恢复均通过；两个显示报告的内部业务结果已逐项核对。708文件、2链接、132 ELF及213应用输入与精确Git树匹配，两实际截图已查看，中文显示正常。GUI需系统CJK字体，例如fonts-wqy-zenhei。
 
-[完整回执](validation/2026-11-05/github-evidence-r51-prior-overwrite-linux-terminal/receipt.json)。完整协议仍在运行；干净系统、物理桌面、完整第三方对应源码/重建及正式发布继续未完成。旧d4626d0包、摘要和入口缺陷证据保留。
+[完整回执](validation/2026-11-05/github-evidence-r52-peer-close-linux-terminal/receipt.json)。原31f3db3完整矩阵和Alpine完整协议有会话到期日志观察失败，保留原failure；本机两种Linux独立64MiB tmpfs五报告/九故障方向均通过，不代替完整协议或完整原生桌面资格。干净系统、物理桌面、第三方对应源码/重建及正式发布继续未完成。
 
 ## 构建依赖
 

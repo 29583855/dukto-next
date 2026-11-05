@@ -1,19 +1,19 @@
 # macOS独立开发预览包
 
-当前c3fc781包含显式同名普通文件覆盖/目录合并及有界目标预约，并保留首页“服务器”入口和紧凑窗口首次说明修复。旧d4626d0包含入口作用域缺陷，历史包仅按各自原验证范围理解。
+当前31f3db3在显式覆盖、目标预约及首页服务器入口基础上，修复单通道发送期间远端磁盘错误被网络错误遮盖的问题。旧d4626d0包含入口作用域缺陷，历史包仅按各自原验证范围理解。
 
-更新日期：2026-11-05。源码提交：`c3fc7815679b16dc5f0f3aa432dad56d92ae312f`。采用C++14和Qt5，Intel及Apple Silicon分别提供GUI和独立CLI。
+更新日期：2026-11-05。源码提交：`31f3db3bfb5a8bf70b6217afd50df3284e27934c`。采用C++14和Qt5，Intel及Apple Silicon分别提供GUI和独立CLI。
 
 ## 下载与校验
 
-[c3fc781双架构打包与迁移工作流](https://github.com/29583855/dukto-next/actions/runs/42021825424)已整体通过。根据芯片选择架构；GitHub附件下载可能需要登录，ZIP内含tar.gz、校验值和原始日志。
+[31f3db3双架构打包与迁移工作流](https://github.com/29583855/dukto-next/actions/runs/42030403502)已通过。按芯片选择架构；GitHub附件下载可能需要登录，ZIP内含tar.gz、校验值和原始日志。
 
 | 架构 | GitHub附件 | 内部tar.gz的SHA-256 |
 | --- | --- | --- |
-| Apple Silicon / arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42021825424/artifacts/13411478707) | `64fc8fe6f62915928298095efee0a37f830061e47e05bdedd0fd9b1ecdb95c3a` |
-| Intel / x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42021825424/artifacts/13412438377) | `19bd668eca81b3e3db32d7e44b0436709749623c06178e0f9d42f1d9a4a38505` |
+| Apple Silicon / arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42030403502/artifacts/13416925250) | `a566766f24d6bafe97218ed595badd6773494aef45582bac0bcb496707d4c1a5` |
+| Intel / x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42030403502/artifacts/13417420747) | `7bc1f6f8a966566db426d5377573cadc8f87f588daeb11f3fd944532d9e6ea88` |
 
-先解压下载的ZIP，进入包含tar.gz及.sha256的目录。Apple Silicon示例：
+先解压下载的ZIP。Apple Silicon示例（Intel将arm64替换为x86_64）：
 
 ```sh
 shasum -a 256 -c DuktoNext-macos-arm64-preview.tar.gz.sha256
@@ -23,24 +23,19 @@ open "Dukto Next.app"
 ./dukto-cli --help
 ```
 
-Intel将命令中的`arm64`替换为`x86_64`。使用tar解包可保留应用框架符号链接和入口执行权限。Qt5、OpenSSL及QML运行依赖已放入应用，不需另装Qt。整体移动解压目录后仍可运行；CLI启动器与.app保持相邻。日常GUI也可放入Applications；其独立CLI位于`Dukto Next.app/Contents/MacOS/dukto-cli`。
+tar解包保留框架链接及执行权限。Qt5、OpenSSL和QML依赖已放入应用，无需另装Qt；移动整个目录后仍可运行。CLI启动器与.app保持相邻，应用内独立入口为`Dukto Next.app/Contents/MacOS/dukto-cli`。
 
-## 图形与命令行
+## 功能和实际验证
 
-打开.app进入与Dukto相近的设备/最近/关于布局，底部“服务器 · 上传 / 下载”进入服务器面板。客户端主动连接服务器，配对后浏览授权目录、上传或下载；服务器无需主动连接客户机。并发档位为1/2/4/8/16，下载、上传与恢复均可选择。
+GUI沿用Dukto设备/最近/关于布局，底部“服务器 · 上传 / 下载”进入服务器面板。客户机主动连接服务器、配对、浏览授权目录、上传和下载；服务器无需主动连接客户机。上传、下载及恢复支持1/2/4/8/16档位。CLI支持发现、R6发送/接收、服务器管理、配对、任务/接收证据、暂停、取消和恢复，独立于GUI运行；命令见`./dukto-cli --help`及[项目示例](../README.md)。
 
-CLI不需要GUI运行，支持发现、R6发送/接收、服务器管理、配对、上传、下载、任务/逐项接收证据查询、暂停、取消与恢复。完整语法执行`./dukto-cli --help`查看，[项目示例](../README.md)列有两端配置及命令。
+两架构实际tar在中文空格新目录、仅系统PATH下运行Cocoa GUI和CLI，71框架链接、Mach-O/执行位、adhoc签名、Qt/OpenSSL包内加载及213应用输入与精确31f3db3树匹配。各五项业务原报告SHA逐份核对，包含16通道双向、双向1/4/16覆盖、已有文件4→8恢复和默认恢复。两张实际包截图已查看，中文和接收就绪显示正常。
 
-## 实际验证范围
+完整回执：`dist/macos-preview-20261105-r53-peer-close-macos-terminal/BUILD-RECEIPT.json`。核验汇总：[本轮证据](validation/2026-11-05/peer-close-r53-packages-and-validation-summary.json)。主窗口导航另由生产QML/真实Controller的编译测试程序通过，不称直接操作部署.app或完整原生选择器验收。
 
-两架构均在中文空格新目录、仅系统PATH下运行实际tar，核对文件/链接、adhoc签名、Cocoa实际渲染、Qt/OpenSSL包内加载、独立CLI不加载GUI框架，以及16通道双向、4→8八组恢复和SHA。71框架链接、Mach-O/执行位、211应用输入与精确c3fc781树匹配，两实际包截图已查看。
+完整31f3db3矩阵42028894157仍为failure：Intel36项协议全部通过，但证书页按钮测试失败；ARM有会话到期日志观察失败。原附件和日志保留，测试修正本机已通过，新的原生复验待执行。31f3db3双Mac APFS14份报告已通过；6012114重复测试Intel的R6未成功注入、TLS4超时仍是失败，新的物理空间预留夹具待原生验证。
 
-独立打包前从生产Main.qml点击服务器入口，360×560/430×700、三个页签、返回/重开、窗口变化和原生/150%/200%场景均通过，两个架构的原生服务器截图已查看。该专项使用真实生产Controller的编译测试程序；实际包另验GUI渲染与CLI传输，不称作直接点击部署.app或完整原生选择器验收。
-
-完整回执：`dist/macos-preview-20261105-r50-overwrite-macos-terminal/BUILD-RECEIPT.json`。本次双向1/4/16覆盖、8组已有文件4→8恢复及默认恢复等十份子报告已逐份核对SHA；实际GUI截图已查看。c3fc781的两Mac核心各19/19，完整协议继续42021742293；旧f230f3d/732b58d两次四runner矩阵均终态通过。旧d4626d0的Intel排队期限原失败继续保留。
-
-这是使用adhoc签名的开发预览包。Developer ID、公证、Gatekeeper、独立干净Mac、完整第三方对应源码及正式发布验收仍未完成；系统可能要求确认来源。历史失败和后续修正分别记录，完整主窗口交互及原生选择器仍继续验收。
-
+当前为adhoc签名开发预览。Developer ID、公证、Gatekeeper、独立干净Mac、完整第三方对应源码和正式发布尚未完成。完整功能验收继续按主计划，deliveryComplete=false。
 
 ## 历史版本记录
 

@@ -1,10 +1,18 @@
 # Windows 独立预览包
 
-当前r23包含显式覆盖、目标预约，以及此前首页服务器入口和紧凑首次说明修复。旧d4626d0/r21包含入口作用域缺陷，旧验证按原范围保留。
+当前r24包含发送期远端错误保留、显式覆盖、目标预约，以及首页服务器入口和紧凑首次说明修复。旧d4626d0/r21包含入口作用域缺陷，旧验证按原范围保留。
 
 更新日期：2026-11-05。当前为开发预览，完整功能和发布验收仍按主计划执行。
 
-## 当前r23覆盖预览包（2026-11-05）
+## 当前r24预览包（2026-11-05）
+
+当前包：`dist/windows-preview-20261105-r24-peer-close/DuktoNext-windows-x64-preview.zip`，SHA-256：`ad02396dbba52a80df3e21315d79aa10936ea44a1fc7a77fae97f355801826ee`。源码`31f3db3bfb5a8bf70b6217afd50df3284e27934c`，213应用输入与精确Git树匹配。364受信依赖、24包和53许可核对通过。实际ZIP在系统PATH/中文空格目录运行GUI及独立CLI，包含客户端、会话、排队、重试、最终确认、fail/overwrite和4→8恢复；同一包CLI七项证书生命周期及双向检查点复用通过。实际截图已查看。
+
+[运行报告](validation/2026-11-05/windows-r24-runtime-r52.json)、[源码身份](validation/2026-11-05/windows-r24-source-linkage-r52.json)、[依赖映射](validation/2026-11-05/windows-r24-signed-payload-map-r52.json)、[证书生命周期](validation/2026-11-05/windows-r24-certificate-lifecycle-r52.json)。CLI SHA为`58cda186aabbde9998ff98bd20697d1138bf95a1d06532fadde75936c81da38a`。
+
+支持CLI `--on-conflict overwrite`及GUI同名普通文件覆盖，合并目录保留无关项。原31f3db3 Windows完整协议38项中会话日志观察失败，本机修正测试已通过，原生复验继续。完整处置/最终确认、干净系统、第三方对应源码/独立重建及正式发布尚未完成。
+
+## r23覆盖预览包（历史，2026-11-05）
 
 当前包：`dist/windows-preview-20261105-r23-overwrite/DuktoNext-windows-x64-preview.zip`，SHA-256：`c830a482351eebc78cf9831e7e76ee8db1c89900f0724a61f0fb370c62be1de0`。源码 `c3fc7815679b16dc5f0f3aa432dad56d92ae312f`，487文件、211应用输入与精确Git树匹配。实际ZIP系统PATH/中文空格目录迁移、双向1/4/16覆盖和8组已有文件4→8恢复通过，GUI截图已查看；[运行报告](validation/2026-11-05/windows-r23-runtime-r49.json)、[源码身份](validation/2026-11-05/windows-r23-source-linkage-r49.json)、[受信依赖/许可映射](validation/2026-11-05/windows-r23-signed-payload-map-r49.json)分别保留。
 

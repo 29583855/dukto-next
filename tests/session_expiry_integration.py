@@ -171,6 +171,7 @@ class ExpiryOutput(JsonOutputDrain):
     # 日期：2026-11-05；在后台读取器解析前计数到期响应，避免最近 16 条诊断淘汰后丢失证据。
     def __init__(self, stream):
         self.session_expiries = 0
+        self.condition = threading.Condition()
         super().__init__(self.lines(stream))
 
     # 日期：2026-11-05；不保留历史报文，只增加固定整数，正常 JSON 校验仍由共用读取器完成。
@@ -178,8 +179,17 @@ class ExpiryOutput(JsonOutputDrain):
         for line in stream:
             event = json.loads(line)
             if event.get("code") == 4 and event.get("stage") == "session":
-                self.session_expiries += 1
+                with self.condition:
+                    self.session_expiries += 1
+                    self.condition.notify_all()
             yield line
+
+
+    # 日期：2026-11-05；仅等原截止内的真实服务输出，不要求跨进程事件在客户端退出前同步可见。
+    def wait_expiry(self, previous, deadline):
+        with self.condition:
+            return self.condition.wait_for(lambda: self.session_expiries > previous,
+                                           timeout=max(0.0, deadline - time.monotonic()))
 
 
 # 日期：2026-11-05；只读取已提交检查点，不把网络发送量或客户端进度当作持久复用量。
@@ -453,6 +463,7 @@ def main():
                     marker = proxy.mark()
                     active = TimedTransfer(executable, client, [*arguments, "--threads", str(channels)])
                     task = active.task(timeout=args.ready_timeout)
+                    expiry_deadline = time.monotonic() + args.expiry_timeout
                     code, stage = expired_transfer(active, args.expiry_timeout)
                     observed = active.evidence()
                     active = None
@@ -468,7 +479,8 @@ def main():
                     cases.append(case)
                     print(json.dumps({"kind": "session-expiry-observation", **case}, ensure_ascii=False), flush=True)
                     assert 0 < prefix < total and not final.exists(), (prefix, total, status)
-                    assert output.session_expiries > prior_expiries, list(output.recent)
+                    assert output.wait_expiry(prior_expiries, expiry_deadline), list(output.recent)
+                    case["serverExpiryObservedAfterCaseSeconds"] = round(time.monotonic() - marker["started"], 3)
                     proxy.rate = 4 * 1024 * 1024
                     try:
                         completed, restored, resume_seconds = resumed_transfer(executable, client, ["resume", "--task", task, *resume, "--threads", "16"], args.resume_timeout)

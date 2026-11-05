@@ -1,7 +1,6 @@
 """日期：2026-11-05；独立小型挂载点上的新版 TLS 中途 ENOSPC，验证文件保护及释放空间后继续使用。"""
 
 import argparse
-import errno
 import json
 import os
 from pathlib import Path
@@ -9,24 +8,11 @@ import subprocess
 import tempfile
 import time
 
+from limited_filesystem import exhaust
 from service_integration import free_port, run
 from transfer_faults_integration import failure
 from transfer_integration import digest, transfer
 from transfer_recovery_integration import SlowProxy, TransferProcess, wait_checkpoint, wait_state
-
-
-# 日期：2026-11-05；仅填本测试创建的小型独立挂载点，必须实际取得内核 ENOSPC，禁止作用于普通用户盘。
-def exhaust(path, capacity):
-    written = 0
-    try:
-        with path.open("wb", buffering=0) as output:
-            while written <= capacity:
-                written += output.write(b"f" * (64 * 1024))
-    except OSError as error:
-        if error.errno == errno.ENOSPC:
-            return written
-        raise
-    raise AssertionError("Dedicated filesystem was not exhausted within capacity")
 
 
 # 日期：2026-11-05；每方向独立元数据、身份与目标，首次已同步块后才填盘，不能把预检查拒绝当作中途故障。
@@ -86,7 +72,8 @@ def exercise(executable, mount, capacity, channels, direction, policy):
                 assert active.process.poll() is None and 0 < confirmed < size
                 filler = target / "filler"
                 print(f"{direction}: durable {confirmed}, exhausting dedicated filesystem", flush=True)
-                filled = exhaust(filler, capacity)
+                exhausted = exhaust(filler, capacity)
+                filled = exhausted["fillerBytes"]
                 assert active.process.poll() is None, "Transfer finished before the disk fault was injected"
                 barrier = gate.evidence()
                 gate.release()
@@ -121,7 +108,7 @@ def exercise(executable, mount, capacity, channels, direction, policy):
                 print(f"{direction}: content, original protection and recovery passed", flush=True)
                 return {"direction": direction, "channels": channels, "passed": True, "bytes": str(size),
                         "confirmedBeforeFull": confirmed, "fillerBytes": filled, "kernelError": "ENOSPC", "failure": failed,
-                        "checkpointGateBeforeRelease": barrier,
+                        "checkpointGateBeforeRelease": barrier, "exhaustion": exhausted,
                         "retainedPartCountAfterFailure": len(retained), "recovery": recovery, "sha256": expected,
                         "originalPreservedBeforePublication": True, "sameNameOriginalPreserved": policy == "rename",
                         "originalReplacedAfterRecovery": policy == "overwrite", "conflictPolicy": policy}

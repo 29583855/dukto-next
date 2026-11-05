@@ -129,20 +129,34 @@ class ServerPanelTests final : public QObject {
         auto local = root->findChild<QQuickItem *>("serverLocalFlick");
         auto remote = root->findChild<QQuickItem *>("serverClientFlick");
         QVERIFY(sections && local && remote);
-        // 日期：2026-11-05；先完成布局并滚动可视位置，然后投递真实鼠标点击到生产按钮。
+        // 日期：2026-11-05；展开布局后等待可见几何连续稳定，再对真实控件投递一次点击，最多三秒。
         const auto click = [&](const char *name, QQuickItem *flick) {
             auto item = root->findChild<QQuickItem *>(name);
             if (!item)
                 return false;
-            QTest::qWait(60);
-            const auto position = item->mapToItem(flick, QPointF()).y();
-            const auto current = flick->property("contentY").toDouble();
-            const auto maximum =
-                qMax(0.0, flick->property("contentHeight").toDouble() - flick->height());
-            flick->setProperty("contentY", qBound(0.0, current + position - 160, maximum));
-            QTest::qWait(60);
-            QTest::mouseClick(&view, Qt::LeftButton, Qt::NoModifier,
-                              item->mapToScene(item->boundingRect().center()).toPoint());
+            QPointF previous(-1, -1);
+            int stable = 0;
+            const auto ready = QTest::qWaitFor(
+                [&]() {
+                    const auto position = item->mapToItem(flick, QPointF()).y();
+                    const auto current = flick->property("contentY").toDouble();
+                    const auto maximum =
+                        qMax(0.0, flick->property("contentHeight").toDouble() - flick->height());
+                    flick->setProperty("contentY", qBound(0.0, current + position - 160, maximum));
+                    const auto bounds = item->mapRectToItem(flick, item->boundingRect());
+                    const auto point = item->mapToScene(item->boundingRect().center());
+                    const bool visible = item->isVisible() && item->isEnabled() &&
+                                         item->width() > 0 && item->height() > 0 &&
+                                         bounds.top() >= 0 && bounds.bottom() <= flick->height() &&
+                                         view.rect().contains(point.toPoint());
+                    stable = visible && point == previous ? stable + 1 : 0;
+                    previous = point;
+                    return stable >= 3;
+                },
+                3000);
+            if (!ready)
+                return false;
+            QTest::mouseClick(&view, Qt::LeftButton, Qt::NoModifier, previous.toPoint());
             return true;
         };
         sections->setProperty("currentIndex", 2);
@@ -151,7 +165,9 @@ class ServerPanelTests final : public QObject {
         auto renew = root->findChild<QQuickItem *>("serverRenewButton");
         QVERIFY(renew && !renew->isEnabled());
         QVERIFY(click("serverRenewConfirmed", local));
-        QVERIFY(renew->isEnabled());
+        QTRY_VERIFY_WITH_TIMEOUT(
+            root->findChild<QObject *>("serverRenewConfirmed")->property("checked").toBool(), 3000);
+        QTRY_VERIFY_WITH_TIMEOUT(renew->isEnabled(), 3000);
         QVERIFY(click("serverRenewButton", local));
         QTRY_VERIFY_WITH_TIMEOUT(!server.busy(), 30000);
         const auto newPin = server.identity()["fingerprint"].toString();

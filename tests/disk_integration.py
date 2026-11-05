@@ -1,7 +1,6 @@
 """日期：2026-11-04；仅在独立小型挂载点制造真实 ENOSPC，禁止填满普通用户磁盘。"""
 
 import argparse
-import errno
 import json
 import os
 from pathlib import Path
@@ -12,6 +11,7 @@ import tempfile
 import time
 
 from legacy_integration import finish, free_port, frame
+from limited_filesystem import exhaust
 
 
 # 日期：2026-11-04；接收明细放在另一个临时目录，真实数据盘满不能连带破坏测试控制记录。
@@ -65,7 +65,8 @@ def run(executable, mount, expected_capacity=None):
         process = receive(executable, output, state, port)
         try:
             with socket.create_connection(("127.0.0.1", port), timeout=8) as sender:
-                size = min(2 * 1024**2, capacity // 2)
+                # 日期：2026-11-05；APFS可为小文件预留完整extent；较大声明确保还有未分配正文。
+                size = capacity // 2 if capacity > 64 * 1024**2 else min(2 * 1024**2, capacity // 2)
                 sender.sendall(struct.pack("<qq", 1, size) + b"preserved.bin\0" +
                                struct.pack("<q", size) + b"x" * (256 * 1024))
                 deadline = time.monotonic() + 5
@@ -73,15 +74,14 @@ def run(executable, mount, expected_capacity=None):
                     if time.monotonic() > deadline:
                         raise AssertionError("receiver did not write the first fragment")
                     time.sleep(0.02)
-                # 日期：2026-11-04；只写本测试创建的 filler，实际内核必须返回 ENOSPC 才能通过。
+                # 日期：2026-11-05；只耗尽自有小卷；APFS快速预留物理空间，不能先触发原5秒无进展期限。
+                exhausted = exhaust(output / "filler", capacity)
                 try:
-                    with (output / "filler").open("wb", buffering=0) as filler:
-                        while True:
-                            filler.write(b"f" * (64 * 1024))
-                except OSError as error:
-                    assert error.errno == errno.ENOSPC, error
-                try:
-                    sender.sendall(b"x" * (size - 256 * 1024))
+                    remaining = size - 256 * 1024
+                    while remaining:
+                        count = min(256 * 1024, remaining)
+                        sender.sendall(b"x" * count)
+                        remaining -= count
                 except (BrokenPipeError, ConnectionResetError):
                     pass
             events = finish(process, 5)
@@ -109,7 +109,7 @@ def run(executable, mount, expected_capacity=None):
         return {"passed": True, "filesystemBytes": capacity, "kernelError": "ENOSPC",
                 "preflight": preflight,
                 "receiverExitCode": 5, "originalPreserved": True, "temporaryCleaned": True,
-                "nextReceivePassed": True, "failureResult": result}
+                "nextReceivePassed": True, "failureResult": result, "exhaustion": exhausted}
 
 
 # 日期：2026-11-04；挂载由测试环境预先准备；脚本不自行挂载、提权或填充用户普通磁盘。
