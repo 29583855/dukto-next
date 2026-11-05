@@ -60,6 +60,15 @@ def certificates(root, openssl):
                         "-out", str(target), "-config", str(config), "-startdate", start, "-enddate", end],
                        capture_output=True, check=True, timeout=30)
         results[name] = target
+    purpose = root / "client-only.cnf"
+    purpose.write_text("subjectAltName=DNS:localhost,IP:127.0.0.1\n"
+                       "basicConstraints=critical,CA:FALSE\n"
+                       "keyUsage=critical,digitalSignature,keyEncipherment\n"
+                       "extendedKeyUsage=clientAuth\n", encoding="ascii")
+    target = root / "client-only.pem"
+    subprocess.run([openssl, "x509", "-req", "-in", str(csr), "-signkey", str(key), "-days", "1",
+                    "-extfile", str(purpose), "-out", str(target)], capture_output=True, check=True, timeout=30)
+    results["clientOnly"] = target
     return results, key
 
 
@@ -172,7 +181,7 @@ def main():
                  ("atomicCancellation", "valid", "localhost", certs["valid"], "none", "cancel", 7, None),
                  ("scanDisconnection", "valid", "localhost", certs["valid"], "none", "checkpoint-disconnect", 3, None),
                  ("scanCancellation", "valid", "localhost", certs["valid"], "none", "checkpoint-cancel", 7, None)]
-        for label in ("expired", "future"):
+        for label in ("expired", "future", "clientOnly"):
             certificate_text = certs[label].read_text()
             certificate_text = certificate_text[certificate_text.index("-----BEGIN CERTIFICATE-----"):]
             value = hashlib.sha256(ssl.PEM_cert_to_DER_cert(certificate_text)).hexdigest()
