@@ -1,6 +1,7 @@
 """日期：2026-11-05；验证macOS预览包在中文空格新目录中的原生GUI、独立CLI和真实TLS迁移。"""
 
 import argparse
+import ctypes
 import json
 import os
 from pathlib import Path
@@ -13,6 +14,23 @@ import tempfile
 
 from service_integration import free_port
 from transfer_integration import digest
+
+
+# 日期：2026-11-05；Cryptex实体文件验证Apple签名；仅在系统dyld共享缓存中的无实体系统镜像可通过缓存成员核验。
+def verify_apple_image(path, cryptex):
+    if path.is_file():
+        signed = subprocess.run(["/usr/bin/codesign", "--verify", "--strict", "-R", "=anchor apple", str(path)],
+                                capture_output=True, timeout=30)
+        assert signed.returncode == 0, ("Unverified Apple Cryptex image", path, signed.stderr)
+        return {"loadPath": str(path), "verification": "codesign Apple anchor"}
+    contains = ctypes.CDLL(None)._dyld_shared_cache_contains_path
+    contains.argtypes, contains.restype = [ctypes.c_char_p], ctypes.c_bool
+    canonical = "/" + path.relative_to(cryptex).as_posix()
+    for candidate in (str(path), canonical):
+        if contains(candidate.encode("utf-8")):
+            return {"loadPath": str(path), "verification": "system dyld shared-cache membership",
+                    "cachePath": candidate}
+    raise AssertionError(("Cryptex image has neither Apple-verified file nor system-cache membership", path))
 
 
 # 日期：2026-11-05；从实际dyld日志核对加载来源，CLI不得加载QtGUI/Widgets/QML/Quick框架。
@@ -30,14 +48,10 @@ def loaded(command, environment, working, stage, log, cli=False):
         path = Path(line[line.index("/"):]).resolve()
         if str(path).startswith(("/System/Library/", "/usr/lib/")):
             continue
-        # 日期：2026-11-05；系统更新的Cryptex路径须实际存在且通过Apple锚签名核验，不放行任意外部库。
+        # 日期：2026-11-05；系统更新的Cryptex只通过Apple签名或系统共享缓存核验，不放行任意外部库。
         cryptex = Path("/System/Volumes/Preboot/Cryptexes/OS")
         if any(path.is_relative_to(cryptex / suffix) for suffix in ("System/Library", "usr/lib")):
-            assert path.is_file(), ("Missing Apple Cryptex image", path)
-            signed = subprocess.run(["/usr/bin/codesign", "--verify", "--strict", "-R", "=anchor apple", str(path)],
-                                    capture_output=True, timeout=30)
-            assert signed.returncode == 0, ("Unverified Apple Cryptex image", path, signed.stderr)
-            apple_cryptex.append(str(path))
+            apple_cryptex.append(verify_apple_image(path, cryptex))
             continue
         assert path.is_relative_to(stage), ("Dependency loaded outside relocated package", path)
         paths.append(path.relative_to(stage).as_posix())
@@ -46,7 +60,7 @@ def loaded(command, environment, working, stage, log, cli=False):
     if cli:
         assert not any(any(name in value for name in ("QtGui.framework", "QtWidgets.framework",
                                                        "QtQml.framework", "QtQuick.framework")) for value in paths), paths
-    return sorted(set(paths)), sorted(set(apple_cryptex))
+    return sorted(set(paths)), list({item["loadPath"]: item for item in apple_cryptex}.values())
 
 
 # 日期：2026-11-05；真实归档核对后迁移，环境不含Homebrew路径；独立专项使用包内CLI。
@@ -127,7 +141,7 @@ def main():
                  "sourceCommit": manifest["sourceCommit"], "architecture": platform.machine(),
                  "verifiedFiles": len(manifest["files"]), "verifiedLinks": len(manifest["links"]),
                  "cliModules": cli_modules, "guiModules": gui_modules,
-                 "appleAnchorVerifiedCryptexModules": sorted(set(cli_apple + gui_apple)),
+                 "verifiedAppleSystemImages": list({item["loadPath"]: item for item in cli_apple + gui_apple}.values()),
                  "geometry": layout, "cases": cases,
                  "systemPathOnly": True, "runtimeMigrationQualified": True,
                  "developerIdSigned": False, "notarized": False, "cleanSystemQualified": False,
