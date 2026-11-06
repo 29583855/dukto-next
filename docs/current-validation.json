@@ -1,5 +1,5 @@
 {
-  "observedUtc": "2026-11-06T21:52:52.430943+00:00",
+  "observedUtc": "2026-11-06T22:17:03.859916+00:00",
   "productionCommit": "ed4f5cf08c96f04671e49e5138eda8ce1790ead3",
   "testCommit": "ed4f5cf08c96f04671e49e5138eda8ce1790ead3",
   "packages": [
@@ -181,16 +181,16 @@
   "focusedRunUrl": "https://github.com/29583855/dukto-next/actions/runs/42036473915",
   "focusedWorkflowConclusion": "success",
   "nativeFull": {
-    "id": 42276738981,
-    "head_sha": "a316e4a4f947ac9a53aa6dd4477eb5b8e2a7fb38",
+    "id": 42282812778,
+    "head_sha": "ed4f5cf08c96f04671e49e5138eda8ce1790ead3",
     "status": "completed",
     "conclusion": "success",
-    "html_url": "https://github.com/29583855/dukto-next/actions/runs/42276738981",
-    "run_attempt": 1,
-    "sourceCommit": "a316e4a4f947ac9a53aa6dd4477eb5b8e2a7fb38",
+    "html_url": "https://github.com/29583855/dukto-next/actions/runs/42282812778",
+    "run_attempt": 2,
+    "sourceCommit": "ed4f5cf08c96f04671e49e5138eda8ce1790ead3",
     "evidence": {
-      "path": "docs/validation/2026-11-07/text-send-r99-native-terminal/receipt.json",
-      "sha256": "4e925961855239abe68898110d7e27d2d842a6676373cc2ab724a1f18d5af3a0"
+      "path": "docs/validation/2026-11-07/clipboard-r100-native-retry-terminal/receipt.json",
+      "sha256": "50aef2afb90b4444e3150065c36661ecec59cb8641e4346f9d940b3c087f7456"
     },
     "originalReportsVerified": true,
     "coreTargetsEach": 23,
@@ -214,7 +214,7 @@
   "releaseQualified": false,
   "deliveryComplete": false,
   "planVersion": "v0.101",
-  "currentSourceStage": "R101 native cancellation regression extended; Windows MSVC/UCRT complete core and native/high-DPI passed; R100 deployed package identity retained; full delivery and native qualification pending",
+  "currentSourceStage": "R101 exact Mac GUI/CLI compilation verified; four-runner new send-cancellation fixture failures retained; R100 full native retry qualified; R102 fixture candidate under local validation",
   "nativeMusl": {
     "sourceCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
     "productionCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
@@ -638,7 +638,7 @@
       "sourceCommit": "31f3db3bfb5a8bf70b6217afd50df3284e27934c"
     }
   ],
-  "publicVerificationReceipt": "docs/ci-verification-20261107-r96.json",
+  "publicVerificationReceipt": "docs/ci-verification-20261107-r101.json",
   "lastVerifiedCopiedFull": {
     "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42065923177",
     "sourceCommit": "74dd5cec71fde472b940e869661d6e8533042a65",
@@ -17580,7 +17580,7 @@
       "sha256": "872c369563c6beb92b4421968bdf88a82f6621aae9bcad048f3a3fe316c7c56a"
     }
   },
-  "currentSourceCommit": "ed4f5cf08c96f04671e49e5138eda8ce1790ead3",
+  "currentSourceCommit": "1f82d5d3b9ae36e77ee98da942c2fc5369310c7a",
   "productionImplementationUnchangedFrom": "88f33b2c83f2950307c362fb64c693f7e9e5929d",
   "nativeRegressionGuardR98": {
     "date": "2026-11-07",
@@ -19613,7 +19613,7 @@
       "sha256": "4e925961855239abe68898110d7e27d2d842a6676373cc2ab724a1f18d5af3a0"
     }
   },
-  "currentGuiSourceCommitPending": true,
+  "currentGuiSourceCommitPending": false,
   "coreProductionCommit": "88f33b2c83f2950307c362fb64c693f7e9e5929d",
   "linuxPreviewR98": {
     "sourceCommit": "b2e4659b347c65eef24c8e568e07e96a2d6ff2d7",
@@ -20225,13 +20225,111 @@
   "cancelRecoveryR101": {
     "manifest": {
       "path": "docs/ci-verification-20261107-r101.json",
-      "sha256": "f2dcd03296675ac83220d42b233d0796cce5a4ed8103be22b9ebc104ce7c6663"
+      "sha256": "6d9234aa49743324c60ea113ff14d7a97b65f011a9dd1039098b698e1aa20fe1"
     },
     "windowsEvidence": {
       "path": "docs/validation/2026-11-07/cancel-r101-qualified/verified-receipt.json",
       "sha256": "50f750cc6ceeee5c2e561f0417681d0fab3697e6cb8d49604141503daef81be1"
     },
     "nativeCIPending": true,
-    "wholeF18Qualified": false
+    "wholeF18Qualified": false,
+    "nativeCoreAndNavigationQualified": false,
+    "nativeFailureEvidence": {
+      "path": "docs/validation/2026-11-07/cancel-r101-native-observation/observation-221303.json",
+      "sha256": "21d2699d95adf471680f6d9ecfdeef0dde1ce3c939696151116ccd8753f10f4b"
+    }
+  },
+  "macOSCompilationR101": {
+    "evidence": {
+      "path": "docs/validation/2026-11-07/cancel-r101-macos-compiled/receipt.json",
+      "sha256": "c5a8f5eddefdbe81d31af82690e235d238cfeaf02393f60a994c512abe6330da"
+    },
+    "packages": [
+      {
+        "sourceCommit": "1f82d5d3b9ae36e77ee98da942c2fc5369310c7a",
+        "architecture": "arm64",
+        "artifactId": 13543243824,
+        "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42300792120/artifacts/13543243824",
+        "artifactSha256": "af80381e08bf17916c5ac4f91b4754a3cb7e74541d4f8cb36158b66eb97b1ccc",
+        "archive": "DuktoNext-macos-ARM64-compiled.tar.gz",
+        "sha256": "629ab2ca00f35e59268ec391ba294f5d76d328acfe3b7779d2bb1246f0a7cb15",
+        "binaries": [
+          {
+            "path": "dukto-cli",
+            "sha256": "bd5293c38bb49e336a3dbd3ee020c8d0b3afb08f895e189955cbfe70721f8eb2",
+            "architecture": "arm64",
+            "executable": true
+          },
+          {
+            "path": "dukto-gui.app/Contents/MacOS/dukto-gui",
+            "sha256": "a86cd12b4c2b04e823e581aa573b2fed0984c6b2b5c21880b83d8fa4da233569",
+            "architecture": "arm64",
+            "executable": true
+          }
+        ],
+        "compileStepsPassed": true,
+        "dependenciesDeployed": false
+      },
+      {
+        "sourceCommit": "1f82d5d3b9ae36e77ee98da942c2fc5369310c7a",
+        "architecture": "x86_64",
+        "artifactId": 13543578499,
+        "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42300792120/artifacts/13543578499",
+        "artifactSha256": "d2c68143f010509e0e4230d3e1f2964d3b844a14bb5472019e12b76ca5abb2aa",
+        "archive": "DuktoNext-macos-X64-compiled.tar.gz",
+        "sha256": "ca4c89fd5724d621618ec594d169d3295207a5b24002afbd1cc0c1402552e87f",
+        "binaries": [
+          {
+            "path": "dukto-cli",
+            "sha256": "caa4cd33a32a341ecec7b65cc69564ec31411d7f29c1a33b8d9574f9bb21762d",
+            "architecture": "x86_64",
+            "executable": true
+          },
+          {
+            "path": "dukto-gui.app/Contents/MacOS/dukto-gui",
+            "sha256": "98f2038c16ca94cf23e2b6d70b02c71442a2913742194e782cfa80191f90bc52",
+            "architecture": "x86_64",
+            "executable": true
+          }
+        ],
+        "compileStepsPassed": true,
+        "dependenciesDeployed": false
+      }
+    ],
+    "bothArchitecturesCompiledAndVerified": true,
+    "dependenciesDeployed": false
+  },
+  "nativeFullBeforeR100RetryQualification": {
+    "id": 42276738981,
+    "head_sha": "a316e4a4f947ac9a53aa6dd4477eb5b8e2a7fb38",
+    "status": "completed",
+    "conclusion": "success",
+    "html_url": "https://github.com/29583855/dukto-next/actions/runs/42276738981",
+    "run_attempt": 1,
+    "sourceCommit": "a316e4a4f947ac9a53aa6dd4477eb5b8e2a7fb38",
+    "evidence": {
+      "path": "docs/validation/2026-11-07/text-send-r99-native-terminal/receipt.json",
+      "sha256": "4e925961855239abe68898110d7e27d2d842a6676373cc2ab724a1f18d5af3a0"
+    },
+    "originalReportsVerified": true,
+    "coreTargetsEach": 23,
+    "protocolReports": 188,
+    "explicitDarwinExpectedFailures": 2,
+    "qualifiedWithExplicitBoundary": true
+  },
+  "nativeR101FailureObservation": {
+    "sourceCommit": "1f82d5d3b9ae36e77ee98da942c2fc5369310c7a",
+    "evidence": {
+      "path": "docs/validation/2026-11-07/cancel-r101-native-observation/observation-221303.json",
+      "sha256": "21d2699d95adf471680f6d9ecfdeef0dde1ce3c939696151116ccd8753f10f4b"
+    },
+    "coreTargets": {
+      "windows": "22/23",
+      "ubuntu": "22/23",
+      "macOS-arm64": "23/23",
+      "macOS-x86_64": "23/23"
+    },
+    "allFourNativeCancellationScenesQualified": false,
+    "fullProtocolTerminalPending": true
   }
 }

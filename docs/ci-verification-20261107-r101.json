@@ -1,6 +1,6 @@
 {
   "planVersion": "v0.101",
-  "observedUtc": "2026-11-06T21:52:52.430943+00:00",
+  "observedUtc": "2026-11-06T22:17:03.859916+00:00",
   "basedOnSourceCommit": "ed4f5cf08c96f04671e49e5138eda8ce1790ead3",
   "buildInputs": [
     {
@@ -855,10 +855,100 @@
   },
   "originalTransferCoreUnchanged": true,
   "productionCancellationBugFixClaimed": false,
-  "nativeCIRequested": false,
+  "nativeCIRequested": true,
   "nativeCIPending": true,
   "qualifiedScope": "Windows MSVC/UCRT 23 targets each; production QML cancellation in 3 phases, native and 150/200 percent scenes, cleanup and later same-instance bidirectional content; native QtTest selector rejects clipboard slots",
   "wholeF18Qualified": false,
   "releaseQualified": false,
-  "deliveryComplete": false
+  "deliveryComplete": false,
+  "sourceCommit": "1f82d5d3b9ae36e77ee98da942c2fc5369310c7a",
+  "sourcePublication": {
+    "path": "docs/validation/2026-11-07/cancel-r101-macos-compiled/source-publication-verification.json",
+    "sha256": "c59058c8dca42c14688e4cd10172dd41151daf883ce5f9beb7bd77c7b4ff2e64"
+  },
+  "nativeCI": {
+    "sourceCommit": "1f82d5d3b9ae36e77ee98da942c2fc5369310c7a",
+    "runId": 42300792120,
+    "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42300792120",
+    "reusedAutomaticPushRun": true,
+    "observation": {
+      "path": "docs/validation/2026-11-07/cancel-r101-native-observation/observation-221303.json",
+      "sha256": "21d2699d95adf471680f6d9ecfdeef0dde1ce3c939696151116ccd8753f10f4b"
+    },
+    "allFourCoreArtifactsRetained": true,
+    "allFourNativeCancellationScenesQualified": false,
+    "fullProtocolTerminalPending": true
+  },
+  "macOSCompilation": {
+    "evidence": {
+      "path": "docs/validation/2026-11-07/cancel-r101-macos-compiled/receipt.json",
+      "sha256": "c5a8f5eddefdbe81d31af82690e235d238cfeaf02393f60a994c512abe6330da"
+    },
+    "packages": [
+      {
+        "sourceCommit": "1f82d5d3b9ae36e77ee98da942c2fc5369310c7a",
+        "architecture": "arm64",
+        "artifactId": 13543243824,
+        "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42300792120/artifacts/13543243824",
+        "artifactSha256": "af80381e08bf17916c5ac4f91b4754a3cb7e74541d4f8cb36158b66eb97b1ccc",
+        "archive": "DuktoNext-macos-ARM64-compiled.tar.gz",
+        "sha256": "629ab2ca00f35e59268ec391ba294f5d76d328acfe3b7779d2bb1246f0a7cb15",
+        "binaries": [
+          {
+            "path": "dukto-cli",
+            "sha256": "bd5293c38bb49e336a3dbd3ee020c8d0b3afb08f895e189955cbfe70721f8eb2",
+            "architecture": "arm64",
+            "executable": true
+          },
+          {
+            "path": "dukto-gui.app/Contents/MacOS/dukto-gui",
+            "sha256": "a86cd12b4c2b04e823e581aa573b2fed0984c6b2b5c21880b83d8fa4da233569",
+            "architecture": "arm64",
+            "executable": true
+          }
+        ],
+        "compileStepsPassed": true,
+        "dependenciesDeployed": false
+      },
+      {
+        "sourceCommit": "1f82d5d3b9ae36e77ee98da942c2fc5369310c7a",
+        "architecture": "x86_64",
+        "artifactId": 13543578499,
+        "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42300792120/artifacts/13543578499",
+        "artifactSha256": "d2c68143f010509e0e4230d3e1f2964d3b844a14bb5472019e12b76ca5abb2aa",
+        "archive": "DuktoNext-macos-X64-compiled.tar.gz",
+        "sha256": "ca4c89fd5724d621618ec594d169d3295207a5b24002afbd1cc0c1402552e87f",
+        "binaries": [
+          {
+            "path": "dukto-cli",
+            "sha256": "caa4cd33a32a341ecec7b65cc69564ec31411d7f29c1a33b8d9574f9bb21762d",
+            "architecture": "x86_64",
+            "executable": true
+          },
+          {
+            "path": "dukto-gui.app/Contents/MacOS/dukto-gui",
+            "sha256": "98f2038c16ca94cf23e2b6d70b02c71442a2913742194e782cfa80191f90bc52",
+            "architecture": "x86_64",
+            "executable": true
+          }
+        ],
+        "compileStepsPassed": true,
+        "dependenciesDeployed": false
+      }
+    ],
+    "bothArchitecturesCompiledAndVerified": true,
+    "dependenciesDeployed": false
+  },
+  "previousR100Full": {
+    "sourceCommit": "ed4f5cf08c96f04671e49e5138eda8ce1790ead3",
+    "evidence": {
+      "path": "docs/validation/2026-11-07/clipboard-r100-native-retry-terminal/receipt.json",
+      "sha256": "50aef2afb90b4444e3150065c36661ecec59cb8641e4346f9d940b3c087f7456"
+    },
+    "coreTargetsEach": 23,
+    "protocolReports": 188,
+    "explicitDarwinExpectedFailures": 2,
+    "onlyIntelRetried": true
+  },
+  "nativeCoreAndNavigationQualified": false
 }

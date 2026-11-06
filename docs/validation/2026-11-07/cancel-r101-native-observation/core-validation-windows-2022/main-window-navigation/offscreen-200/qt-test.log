@@ -1,0 +1,12 @@
+********* Start testing of UiTests *********
+Config: Using QtTest library 5.15.2, Qt 5.15.2 (x86_64-little_endian-llp64 shared (dynamic) release build; by MSVC 2019), windows server2016
+PASS   : UiTests::initTestCase()
+PASS   : UiTests::serverEntryThroughMainQml(compact)
+PASS   : UiTests::serverEntryThroughMainQml(default)
+FAIL!  : UiTests::cancelThenTransferAgainThroughQml(send) QTestLib: This test case check ("(((peer->state()) == (QAbstractSocket::UnconnectedState)))") failed because the requested timeout (5000 ms) was too short, 6450 ms would have been sufficient this time.
+D:\a\dukto-next\dukto-next\tests\ui_tests.cpp(176) : failure location
+PASS   : UiTests::cancelThenTransferAgainThroughQml(receive-header)
+PASS   : UiTests::cancelThenTransferAgainThroughQml(receive-partial)
+PASS   : UiTests::cleanupTestCase()
+Totals: 6 passed, 1 failed, 0 skipped, 0 blacklisted, 11648ms
+********* Finished testing of UiTests *********

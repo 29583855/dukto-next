@@ -15,7 +15,20 @@
 
 解压ZIP后用tar保留权限和框架链接，启动方式见下方示例。当前是adhoc开发预览；Developer ID、公证、干净系统、最低系统、完整GUI/选择器、第三方源码独立重建及正式发行继续验收。完整协议和长期按各自真实终态收验。
 
-## R100最新编译产物（2026-11-07）
+## R101最新编译产物（2026-11-07）
+
+精确源码`1f82d5d3b9ae36e77ee98da942c2fc5369310c7a`已公开；[原生CI 42300792120](https://github.com/29583855/dukto-next/actions/runs/42300792120)的Apple Silicon和Intel实际编译、归档及附件上传成功。GUI与独立CLI的附件摘要、内部tar摘要、源码、Mach-O架构和执行权限均已核验。
+
+| 架构 | 编译产物 | 内部tar.gz SHA-256 |
+| --- | --- | --- |
+| arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42300792120/artifacts/13543243824) | `629ab2ca00f35e59268ec391ba294f5d76d328acfe3b7779d2bb1246f0a7cb15` |
+| x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42300792120/artifacts/13543578499) | `ca4c89fd5724d621618ec594d169d3295207a5b24002afbd1cc0c1402552e87f` |
+
+[R101编译原件回执](validation/2026-11-07/cancel-r101-macos-compiled/receipt.json)。这些归档需要匹配的Qt5/OpenSSL依赖；含依赖预览包继续使用本页顶部R100入口。Qt5/OpenSSL由CI自动下载安装，无需用户手动配置构建环境。
+
+R101新增取消回归在四runner均观察到发送场景失败：Linux未稳定停在取消点，云Windows及两Mac出现对端EOF五秒超时；接收两场景通过。原报告已保留，[原始观察](validation/2026-11-07/cancel-r101-native-observation/observation-221303.json)。新慢端夹具仍在本机验证，不能把编译成功记为完整测试通过。
+
+## R100编译记录（2026-11-07）
 
 精确源码`ed4f5cf08c96f04671e49e5138eda8ce1790ead3`已上传公开仓库；[四平台CI 42282812778](https://github.com/29583855/dukto-next/actions/runs/42282812778)已自动启动，Apple Silicon与Intel的实际编译、归档和附件上传步骤均成功。两份GUI/独立CLI归档的GitHub摘要、内部tar摘要、源码提交、Mach-O架构及执行权限已逐件核验。
 
@@ -24,7 +37,7 @@
 | Apple Silicon / arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42282812778/artifacts/13535778206) |
 | Intel / x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42282812778/artifacts/13535669142) |
 
-[R100编译原件回执](validation/2026-11-07/clipboard-r100-macos-compiled/receipt.json)绑定实际GUI和CLI摘要。这些归档需要匹配的Qt5/OpenSSL运行依赖；当前含依赖R100包见顶部；本节保留独立编译原件。R100完整原生回归仍待终态和原件收验，编译成功不授予整轮测试或正式发布资格。
+[R100编译原件回执](validation/2026-11-07/clipboard-r100-macos-compiled/receipt.json)绑定实际GUI和CLI摘要。这些归档需要匹配的Qt5/OpenSSL运行依赖；当前含依赖R100包见顶部；本节保留独立编译原件。R100定向补跑后四runner终态success，原件已核验各23核心及合计188协议，两条Darwin预期失败明确披露；首轮附件上传超时保持历史失败。正式发布继续验收。
 
 ## R99编译记录（2026-11-07）
 
