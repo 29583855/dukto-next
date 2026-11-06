@@ -1,0 +1,35 @@
+name: Native macOS listener reuse and restart diagnostics
+on:
+  workflow_dispatch:
+jobs:
+  probe:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-15, macos-15-intel]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install native Qt5
+        run: brew install qt@5
+      # 日期：2026-11-06；保持R95生产与原测试不动，独立探针读取原生复用和正常FIN后的重启结果。
+      - name: Verify production and original tests unchanged
+        run: |
+          git fetch --no-tags origin 5dd243fbad36da36568943513deed95ee124ba2d
+          git diff --exit-code 5dd243fbad36da36568943513deed95ee124ba2d -- src ui CMakeLists.txt tests/core_tests.cpp tests/file_exchange_tests.cpp
+          mkdir -p evidence
+          printf '%s\n' "$GITHUB_SHA" > evidence/diagnostic-commit.txt
+          sw_vers > evidence/environment.log
+          uname -m >> evidence/environment.log
+      - name: Compile independent C++14 probe
+        run: |
+          cmake -S tests/listener_probe -B probe-build -DCMAKE_PREFIX_PATH="$(brew --prefix qt@5)" -DCMAKE_BUILD_TYPE=Release
+          cmake --build probe-build --target listener-reuse-probe --parallel 2
+      - name: Record socket reuse sharing and graceful restart
+        run: probe-build/listener-reuse-probe > evidence/reuse-probe.json
+      - name: Preserve original native diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-listener-reuse-${{ matrix.os }}
+          path: evidence/**

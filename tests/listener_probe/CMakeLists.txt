@@ -14,3 +14,7 @@ find_package(Qt5 5.15 REQUIRED COMPONENTS Core Network)
 add_executable(listener-probe main.cpp ../../src/core/tcplistener.cpp)
 target_include_directories(listener-probe PRIVATE ../../src/core)
 target_link_libraries(listener-probe PRIVATE Qt5::Core Qt5::Network)
+
+# 日期：2026-11-06；复用/TIME_WAIT独立对照不链接生产实现，不改变原独占测试。
+add_executable(listener-reuse-probe reuse.cpp)
+target_link_libraries(listener-reuse-probe PRIVATE Qt5::Core Qt5::Network)

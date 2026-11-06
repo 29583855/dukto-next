@@ -1,7 +1,7 @@
 {
-  "observedUtc": "2026-11-06T15:42:45.328102+00:00",
-  "productionCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
-  "testCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
+  "observedUtc": "2026-11-06T15:58:25.359187+00:00",
+  "productionCommit": "5dd243fbad36da36568943513deed95ee124ba2d",
+  "testCommit": "5dd243fbad36da36568943513deed95ee124ba2d",
   "packages": [
     {
       "architecture": "x86_64",
@@ -205,8 +205,8 @@
   ],
   "releaseQualified": false,
   "deliveryComplete": false,
-  "planVersion": "v0.93",
-  "currentSourceStage": "R95 Mac listener guard implemented; selected Windows regressions passed; native Mac qualification pending",
+  "planVersion": "v0.94",
+  "currentSourceStage": "R95 native Mac guard rejects product conflicts but external Qt same-family sharing still fails; reuse/FIN probe pending",
   "nativeMusl": {
     "sourceCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
     "productionCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
@@ -616,7 +616,7 @@
       "sourceCommit": "31f3db3bfb5a8bf70b6217afd50df3284e27934c"
     }
   ],
-  "publicVerificationReceipt": "docs/ci-verification-20261106-r94.json",
+  "publicVerificationReceipt": "docs/ci-verification-20261106-r95.json",
   "lastVerifiedCopiedFull": {
     "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42065923177",
     "sourceCommit": "74dd5cec71fde472b940e869661d6e8533042a65",
@@ -14282,10 +14282,10 @@
     "sha256": "5877602852c2008dee2d13d865ae3803684324bf4b54be592a5c870e67232f5f"
   },
   "listenerGuardR95": {
-    "observedUtc": "2026-11-06T15:42:45.328102+00:00",
+    "observedUtc": "2026-11-06T15:58:25.359187+00:00",
     "planVersion": "v0.94",
     "previousProductionCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
-    "productionCommitPending": true,
+    "productionCommitPending": false,
     "cppStandard": 14,
     "buildInputs": [
       {
@@ -15148,11 +15148,29 @@
     "macOSListenerSnapshotMaximumAttempts": 3,
     "socketReuseOptionsChanged": false,
     "kernelExclusiveBindingClaimed": false,
-    "nativeMacRegressionPending": true,
+    "nativeMacRegressionPending": false,
     "parallelExitRootCauseProven": false,
     "entireNativeProtocolPending": true,
     "releaseQualified": false,
-    "deliveryComplete": false
+    "deliveryComplete": false,
+    "productionCommit": "5dd243fbad36da36568943513deed95ee124ba2d",
+    "testCommit": "5dd243fbad36da36568943513deed95ee124ba2d",
+    "nativeMacRegressionPassed": false,
+    "nativeMacRegressionRun": {
+      "id": 42245971316,
+      "head_sha": "5dd243fbad36da36568943513deed95ee124ba2d",
+      "status": "completed",
+      "conclusion": "failure",
+      "html_url": "https://github.com/29583855/dukto-next/actions/runs/42245971316"
+    },
+    "nativeMacFailureEvidence": {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/receipt.json",
+      "sha256": "7a5c28a301796b2fdaddff0cd483c7ebb42ea43ba8d3d55af668c8d95c487849"
+    },
+    "nativeMacAllOriginalArtifactsVerified": true,
+    "nativeGracefulRestartRowsPassed": true,
+    "externalLateSameFamilyQtSharingPreventionQualified": false,
+    "reuseOptionNativeProbePending": true
   },
-  "listenerGuardR95ProductionPending": true
+  "listenerGuardR95ProductionPending": false
 }

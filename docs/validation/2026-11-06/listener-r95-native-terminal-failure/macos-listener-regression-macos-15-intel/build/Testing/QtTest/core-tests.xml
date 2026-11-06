@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="0" failures="2" tests="26" name="CoreTests">
+  <properties>
+    <property value="5.15.19" name="QTestVersion"/>
+    <property value="5.15.19" name="QtVersion"/>
+    <property value="Qt 5.15.19 (x86_64&#x002D;little_endian&#x002D;lp64 shared (dynamic) release build; by Clang 16.0.0 (clang&#x002D;1600.0.26.6) (Apple))" name="QtBuild"/>
+  </properties>
+  <testcase result="pass" name="initTestCase"/>
+  <testcase result="fail" name="exclusiveTcpBinding">
+    <failure tag="exclusive&#x002D;first&#x002D;ipv4&#x002D;wildcard&#x002D;then&#x002D;specific" message="&apos;!shared.listen(secondAddress, port)&apos; returned FALSE. (a same&#x002D;family Qt shared listener bypassed the exclusive port)" result="fail"/>
+  </testcase>
+  <testcase result="pass" name="tcpAddressFamilies"/>
+  <testcase result="pass" name="tcpGracefulRestart"/>
+  <testcase result="pass" name="privateStoreContracts"/>
+  <testcase result="pass" name="privateMutableFileValidation"/>
+  <testcase result="pass" name="sourceObjectPinned"/>
+  <testcase result="pass" name="sourceMutationRejected"/>
+  <testcase result="pass" name="posixFileInformationRejectsUnsafeNames"/>
+  <testcase result="pass" name="posixSafeSourcePaths"/>
+  <testcase result="pass" name="storageSpacePreflight"/>
+  <testcase result="pass" name="posixDirectoryReplacementRejected"/>
+  <testcase result="pass" name="catalogOwnershipAndInterruptedState"/>
+  <testcase result="pass" name="catalogPersistenceAndPages"/>
+  <testcase result="pass" name="endpointBoundaries"/>
+  <testcase result="pass" name="rejectsUnsafePaths"/>
+  <testcase result="pass" name="atomicConflictAndCleanup"/>
+  <testcase result="pass" name="concurrentExclusiveCommits"/>
+  <testcase result="pass" name="nativeCommitFailureCleansTemporary"/>
+  <testcase result="pass" name="shortWritesAndDiskFailures"/>
+  <testcase result="pass" name="manifestRoundTrip"/>
+  <testcase result="pass" name="uniqueManifestRoots"/>
+  <testcase result="pass" name="discoveryYieldsAndRejectsMalformedGoodbye"/>
+  <testcase result="fail" name="discoveryAggregatesAddresses">
+    <failure message="&apos;second.bind(QHostAddress(&quot;127.0.0.2&quot;), 0)&apos; returned FALSE. ()" result="fail"/>
+  </testcase>
+  <testcase result="pass" name="cancelReceiveReleasesResources"/>
+  <testcase result="pass" name="cleanupTestCase"/>
+  <system-err/>
+</testsuite>

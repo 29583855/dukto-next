@@ -1,0 +1,19 @@
+********* Start testing of CoreTests *********
+Config: Using QtTest library 5.15.19, Qt 5.15.19 (arm64-little_endian-lp64 shared (dynamic) release build; by Clang 17.0.0 (clang-1700.6.4.2) (Apple)), osx 15.8
+PASS   : CoreTests::initTestCase()
+PASS   : CoreTests::exclusiveTcpBinding(exclusive-first-ipv4-then-dual)
+PASS   : CoreTests::exclusiveTcpBinding(exclusive-first-dual-then-ipv4)
+FAIL!  : CoreTests::exclusiveTcpBinding(exclusive-first-ipv4-wildcard-then-specific) '!shared.listen(secondAddress, port)' returned FALSE. (a same-family Qt shared listener bypassed the exclusive port)
+   Loc: [/Users/runner/work/dukto-next/dukto-next/tests/core_tests.cpp(89)]
+PASS   : CoreTests::exclusiveTcpBinding(exclusive-first-ipv6-same)
+PASS   : CoreTests::exclusiveTcpBinding(qt-first-ipv4-then-dual)
+PASS   : CoreTests::exclusiveTcpBinding(qt-first-dual-then-ipv4)
+PASS   : CoreTests::exclusiveTcpBinding(qt-first-ipv4-wildcard-then-specific)
+PASS   : CoreTests::exclusiveTcpBinding(qt-first-ipv6-same)
+PASS   : CoreTests::tcpAddressFamilies()
+PASS   : CoreTests::tcpGracefulRestart(ipv4)
+PASS   : CoreTests::tcpGracefulRestart(ipv6)
+PASS   : CoreTests::tcpGracefulRestart(dual)
+PASS   : CoreTests::cleanupTestCase()
+Totals: 13 passed, 1 failed, 0 skipped, 0 blacklisted, 326ms
+********* Finished testing of CoreTests *********
