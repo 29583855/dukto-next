@@ -1,5 +1,6 @@
 #include "app/controller.h"
 #include "core/buffercredit.h"
+#include "core/files.h"
 #include <QApplication>
 #include <QDir>
 #include <QSignalSpy>
@@ -12,6 +13,81 @@
 class ControllerTests final : public QObject {
     Q_OBJECT
   private slots:
+    // 日期：2026-11-07；保持原8MiB UTF-8能力，分别覆盖字符数/字节数超限、最大中文和代理对边界。
+    void outgoingTextBounds_data() {
+        QTest::addColumn<QString>("text");
+        QTest::addColumn<bool>("accepted");
+        const int limit = static_cast<int>(dukto::MaxTextBytes);
+        QTest::newRow("empty") << QString() << true;
+        QTest::newRow("maximum-ascii") << QString(limit, 'x') << true;
+        QTest::newRow("maximum-chinese") << (QString(limit / 3, QChar(0x6c49)) + "ab") << true;
+        QTest::newRow("maximum-surrogate-pair")
+            << (QString(limit - 4, 'x') + QString::fromUtf8("🚀")) << true;
+        QString isolated;
+        isolated += QChar(0xd800);
+        isolated += 'x';
+        isolated += QChar(0xdfff);
+        QTest::newRow("isolated-surrogates") << isolated << true;
+        QTest::newRow("ascii-one-byte-over") << QString(limit + 1, 'x') << false;
+        QTest::newRow("chinese-one-byte-over") << QString(limit / 3 + 1, QChar(0x6c49)) << false;
+        QTest::newRow("large-input-before-conversion")
+            << QString(32 * 1024 * 1024, QChar(0x6c49)) << false;
+    }
+
+    // 日期：2026-11-07；独立TCP端逐字节核对真实R6帧，拒绝项不得连接；所有路径最终归还临时及任务授信。
+    void outgoingTextBounds() {
+        QFETCH(QString, text);
+        QFETCH(bool, accepted);
+        QTemporaryDir temporary;
+        QVERIFY(temporary.isValid());
+        QSettings::setDefaultFormat(QSettings::IniFormat);
+        QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, temporary.path());
+        QSettings settings(QSettings::IniFormat, QSettings::UserScope, "DuktoNext", "Desktop");
+        settings.setValue("output", temporary.path());
+        settings.sync();
+        QTcpServer reservation;
+        QVERIFY(reservation.listen(QHostAddress::LocalHost, 0));
+        const auto port = reservation.serverPort();
+        reservation.close();
+        Controller controller(port, nullptr, temporary.filePath("state"));
+        QTcpServer receiver;
+        QVERIFY(receiver.listen(QHostAddress::LocalHost, 0));
+        QSignalSpy connected(&receiver, &QTcpServer::newConnection);
+        const auto before = dukto::BufferCredit::usage()["dataUsed"].toString().toLongLong();
+        QCOMPARE(controller.sendText("127.0.0.1", receiver.serverPort(), text), accepted);
+        if (!accepted) {
+            QVERIFY(!controller.busy());
+            QVERIFY(controller.status().contains(QStringLiteral("8 MiB")));
+            QTest::qWait(20);
+            QCOMPARE(connected.count(), 0);
+        } else {
+            QTRY_COMPARE_WITH_TIMEOUT(connected.count(), 1, 5000);
+            auto socket = receiver.nextPendingConnection();
+            QVERIFY(socket);
+            QByteArray frame;
+            // 日期：2026-11-07；Qt事件循环驱动独立接收，不阻塞GUI线程等待工作线程的网络写入。
+            const auto drain = [&]() { frame += socket->readAll(); };
+            connect(socket, &QTcpSocket::readyRead, &controller, drain);
+            drain();
+            const auto payload = text.toUtf8();
+            QTRY_COMPARE_WITH_TIMEOUT(frame.size(), 43 + payload.size(), 10000);
+            QCOMPARE(qFromLittleEndian<qint64>(reinterpret_cast<const uchar *>(frame.constData())),
+                     qint64(1));
+            QCOMPARE(
+                qFromLittleEndian<qint64>(reinterpret_cast<const uchar *>(frame.constData() + 8)),
+                qint64(payload.size()));
+            QCOMPARE(frame.mid(16, 19), QByteArray("___DUKTO___TEXT___\0", 19));
+            QCOMPARE(
+                qFromLittleEndian<qint64>(reinterpret_cast<const uchar *>(frame.constData() + 35)),
+                qint64(payload.size()));
+            QCOMPARE(frame.mid(43), payload);
+            QTRY_VERIFY_WITH_TIMEOUT(!controller.busy(), 5000);
+            QVERIFY(controller.status().contains(QStringLiteral("发送")));
+            disconnect(socket, nullptr, &controller, nullptr);
+        }
+        QTRY_COMPARE(dukto::BufferCredit::usage()["dataUsed"].toString().toLongLong(), before);
+    }
+
 #ifdef Q_OS_LINUX
     // 日期：2026-11-04；独立 XDG 下载目录首次自动创建；用户已保存但缺失的目录只提示、不重建。
     void preparesFreshDefaultDownloadDirectory() {

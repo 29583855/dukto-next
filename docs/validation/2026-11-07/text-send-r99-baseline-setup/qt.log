@@ -1,0 +1,10 @@
+********* Start testing of UiTests *********
+Config: Using QtTest library 5.15.19, Qt 5.15.19 (x86_64-little_endian-llp64 shared (dynamic) release build; by GCC 16.1.0), windows 11
+PASS   : UiTests::initTestCase()
+FAIL!  : UiTests::rejectedTextKeepsDraftThroughQml() Compared values are not the same
+   Actual   (((host->property("text").toString())))             : ""
+   Expected (QString("127.0.0.1:%1").arg(receiver.serverPort())): "127.0.0.1:51244"
+E:/project/dukto/tests/ui_tests.cpp(88) : failure location
+PASS   : UiTests::cleanupTestCase()
+Totals: 2 passed, 1 failed, 0 skipped, 0 blacklisted, 19005ms
+********* Finished testing of UiTests *********

@@ -104,8 +104,8 @@ class Controller final : public QObject {
     Q_INVOKABLE void sendFiles(const QString &host, int port);
     // 日期：2026-11-04；弹出目录选择器并流式发送文件夹。
     Q_INVOKABLE void sendFolder(const QString &host, int port);
-    // 日期：2026-11-04；验证文本长度后通过原版协议发送。
-    Q_INVOKABLE void sendText(const QString &host, int port, const QString &text);
+    // 日期：2026-11-07；转换前核对UTF-8上限及临时授信，返回是否实际启动，失败保留编辑草稿。
+    Q_INVOKABLE bool sendText(const QString &host, int port, const QString &text);
     // 日期：2026-11-04；获取当前剪贴板文本并复用文本发送。
     Q_INVOKABLE void sendClipboard(const QString &host, int port);
     // 日期：2026-11-04；用户显式复制收到的文本。

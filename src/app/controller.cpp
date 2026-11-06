@@ -1,4 +1,5 @@
 #include "controller.h"
+#include "core/buffercredit.h"
 #include "core/catalog.h"
 #include "core/endpoint.h"
 #include "core/error.h"
@@ -264,20 +265,57 @@ void Controller::sendFolder(const QString &host, int port) {
     start(request);
 }
 
-// 日期：2026-11-04；发送空文本有效，长度约束由共用核心执行。
-void Controller::sendText(const QString &host, int port, const QString &text) {
-    dukto::LegacyRequest request;
-    if (!prepareRequest(request, host, port))
-        return;
-    request.textMode = true;
-    request.text = text.toUtf8();
-    start(request);
+// 日期：2026-11-07；无分配计算Qt UTF-8字节数，孤立代理码元按Qt默认问号编码，超过原上限立即拒绝。
+static qint64 outgoingTextBytes(const QString &text) {
+    if (text.size() > dukto::MaxTextBytes)
+        throw dukto::Error(dukto::ExitCode::Config,
+                           QStringLiteral("文本超过 8 MiB 限制，请作为文件发送"), "scan");
+    qint64 bytes = 0;
+    for (int index = 0; index < text.size(); ++index) {
+        const auto ch = text.at(index);
+        if (ch.isHighSurrogate() && index + 1 < text.size() &&
+            text.at(index + 1).isLowSurrogate()) {
+            bytes += 4;
+            ++index;
+        } else if (ch.isSurrogate() || ch.unicode() < 0x80)
+            ++bytes;
+        else
+            bytes += ch.unicode() < 0x800 ? 2 : 3;
+        if (bytes > dukto::MaxTextBytes)
+            throw dukto::Error(dukto::ExitCode::Config,
+                               QStringLiteral("文本超过 8 MiB 限制，请作为文件发送"), "scan");
+    }
+    return bytes;
 }
 
-// 日期：2026-11-04；剪贴板与文本编辑框走相同的协议和错误路径。
+// 日期：2026-11-07；先核对上限和编码临时额度；令牌先于请求声明，异常反馈后也先释放正文再归还额度。
+bool Controller::sendText(const QString &host, int port, const QString &text) {
+    std::unique_ptr<dukto::BufferCredit> conversion;
+    dukto::LegacyRequest request;
+    if (!prepareRequest(request, host, port))
+        return false;
+    try {
+        const auto bytes = outgoingTextBytes(text);
+        conversion.reset(new dukto::BufferCredit(qint64(text.size()) * 3 + 64 * 1024, true));
+        request.textMode = true;
+        request.text = text.toUtf8();
+        if (request.text.size() != bytes)
+            throw dukto::Error(dukto::ExitCode::Runtime,
+                               QStringLiteral("文本编码长度校验失败，未开始发送"), "scan");
+        start(std::move(request));
+        return sender_ != nullptr;
+    } catch (const dukto::Error &error) {
+        status_ = error.message;
+        emit stateChanged();
+        return false;
+    }
+}
+
+// 日期：2026-11-07；显式发送只读取一次系统剪贴板，复用转换前字节检查；系统读取本身另行验收。
 void Controller::sendClipboard(const QString &host, int port) {
-    if (clipboardAvailable())
-        sendText(host, port, QApplication::clipboard()->text());
+    const auto text = QApplication::clipboard()->text();
+    if (!text.isEmpty())
+        sendText(host, port, text);
 }
 
 // 日期：2026-11-04；复制操作仅影响用户明确选择的文本。

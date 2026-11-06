@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="0" failures="1" tests="3" name="UiTests">
+  <properties>
+    <property value="5.15.19" name="QTestVersion"/>
+    <property value="5.15.19" name="QtVersion"/>
+    <property value="Qt 5.15.19 (x86_64&#x002D;little_endian&#x002D;llp64 shared (dynamic) release build; by GCC 16.1.0)" name="QtBuild"/>
+  </properties>
+  <testcase result="pass" name="initTestCase"/>
+  <testcase result="fail" name="rejectedTextKeepsDraftThroughQml">
+    <failure message="Compared values are not the same
+   Actual   (((host&#x002D;&gt;property(&quot;text&quot;).toString())))             : &quot;&quot;
+   Expected (QString(&quot;127.0.0.1:%1&quot;).arg(receiver.serverPort())): &quot;127.0.0.1:51244&quot;" result="fail"/>
+  </testcase>
+  <testcase result="pass" name="cleanupTestCase"/>
+  <system-err/>
+</testsuite>

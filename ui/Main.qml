@@ -589,6 +589,7 @@ Rectangle {
                             if (index === 0) {
                                 textEditor.readOnly = false;
                                 textEditor.text = "";
+                                textDialog.sendError = "";
                                 textDialog.open();
                             } else if (index === 1)
                                 controller.sendClipboard(root.targetHost, root.targetPort);
@@ -624,12 +625,12 @@ Rectangle {
         id: textDialog
 
         objectName: "textDialog"
-        // 日期：2026-11-06；先移除QML正文，再归还控制器持有的显示授信，关闭后不缓存完整收到文本。
+        property string sendError: ""
+        // 日期：2026-11-07；关闭后先清正文；只读页随后归还授信，成功发送和主动关闭也不缓存草稿。
         onClosed: {
-            if (textEditor.readOnly) {
-                textEditor.text = "";
+            textEditor.text = "";
+            if (textEditor.readOnly)
                 controller.releaseReceivedText();
-            }
         }
         title: textEditor.readOnly ? "收到的文本" : "发送文字"
         anchors.centerIn: parent
@@ -655,6 +656,16 @@ Rectangle {
                     placeholderText: "输入文本…"
                 }
 
+            }
+
+            Label {
+                objectName: "sendTextError"
+                Layout.fillWidth: true
+                visible: !textEditor.readOnly && textDialog.sendError.length > 0
+                text: textDialog.sendError
+                textFormat: Text.PlainText
+                wrapMode: Text.WordWrap
+                color: "#a62c2c"
             }
 
             RowLayout {
@@ -692,13 +703,19 @@ Rectangle {
                 }
 
                 Button {
+                    objectName: "sendTextSubmitButton"
                     text: "发送"
                     visible: !textEditor.readOnly
                     enabled: !controller.busy
                     onClicked: {
-                        controller.sendText(root.targetHost, root.targetPort, textEditor.text);
-                        textDialog.close();
-                        sendDialog.close();
+                        // 日期：2026-11-07；仅实际启动后关闭，超限/授信/地址错误显示在编辑器内并允许原稿重试。
+                        if (controller.sendText(root.targetHost, root.targetPort, textEditor.text)) {
+                            textDialog.sendError = "";
+                            textDialog.close();
+                            sendDialog.close();
+                        } else {
+                            textDialog.sendError = controller.status;
+                        }
                     }
                 }
 
