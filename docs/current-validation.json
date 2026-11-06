@@ -1,5 +1,5 @@
 {
-  "observedUtc": "2026-11-06T14:56:36.012607+00:00",
+  "observedUtc": "2026-11-06T15:04:01.276285+00:00",
   "productionCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
   "testCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
   "packages": [
@@ -12498,7 +12498,7 @@
     "localGlibcPending": false,
     "localGlibcRemoteRoot": "/home/dukto/legacy-text-r93-glibc",
     "localGlibcSnapshotSha256": "835d6da81eb43a3c340c5acf5db8d5b54169a5e03b4a468f001db0be3f2f71ef",
-    "nativeCiPending": true,
+    "nativeCiPending": false,
     "newMacPackagePending": false,
     "currentMacPackageSourceCommit": "8eb76cea15a49f7021867c0c6d9c1e551872d19f",
     "entireCacheAndDocumentBudgetCompleted": false,
@@ -12525,12 +12525,12 @@
       "native": {
         "id": 42224583301,
         "head_sha": "b615d8a0e820bcf9de05d0dce546e930b27ad748",
-        "status": "in_progress",
-        "conclusion": null,
+        "status": "completed",
+        "conclusion": "failure",
         "html_url": "https://github.com/29583855/dukto-next/actions/runs/42224583301"
       }
     },
-    "observedUtc": "2026-11-06T13:38:21.210124+00:00",
+    "observedUtc": "2026-11-06T15:04:01.276285+00:00",
     "newMacPackageReady": false,
     "macosPackageFailed": true,
     "macosFailureEvidence": {
@@ -12557,7 +12557,15 @@
       "path": "docs/validation/2026-11-06/legacy-text-r93-native-arm-job-failure/receipt.json",
       "sha256": "f4c88dbd7f597064001ddfe86c390f54c9bd032696629a2c3ca4e259742b1a65"
     },
-    "nativeArmFailureCase": "legacy-text-credit empty-case sender memory sample missing"
+    "nativeArmFailureCase": "legacy-text-credit empty-case sender memory sample missing",
+    "nativeWholeTerminalOriginalsVerified": true,
+    "nativeRunPassed": false,
+    "nativeProtocolReports": 184,
+    "nativeProtocolFailures": 1,
+    "nativeWholeTerminalEvidence": {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/receipt.json",
+      "sha256": "f2765a512def5d729aaf08593ebc939c6ab2b4ad1e11aed3f6f2ff6dbfa63db0"
+    }
   },
   "nativeFullBeforeR93": {
     "sourceCommit": "8eb76cea15a49f7021867c0c6d9c1e551872d19f",
@@ -14144,7 +14152,12 @@
     "earlyMuslSnapshotQualification": {
       "path": "docs/validation/2026-11-06/text-view-r94-musl/verified-receipt.json",
       "sha256": "38e12c2154465e6937daede1f549e7d3617ee6d16b034e2390eb0ea2222e60d3"
-    }
+    },
+    "previousR93NativeTerminal": {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/receipt.json",
+      "sha256": "f2765a512def5d729aaf08593ebc939c6ab2b4ad1e11aed3f6f2ff6dbfa63db0"
+    },
+    "previousR93NativeRunPassed": false
   },
   "localTextViewR94Pending": false,
   "nativeFullBeforeR94": {
@@ -14152,11 +14165,18 @@
     "productionCommit": "b615d8a0e820bcf9de05d0dce546e930b27ad748",
     "runId": 42224583301,
     "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42224583301",
-    "status": "in_progress",
-    "workflowConclusion": null,
-    "fullProtocolPending": true,
-    "allOriginalReportsVerified": false,
-    "expectedCoreTargetsEach": 23
+    "status": "completed",
+    "workflowConclusion": "failure",
+    "fullProtocolPending": false,
+    "allOriginalReportsVerified": true,
+    "expectedCoreTargetsEach": 23,
+    "allCasesPassed": false,
+    "protocolReports": 184,
+    "protocolFailures": 1,
+    "evidence": {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/receipt.json",
+      "sha256": "f2765a512def5d729aaf08593ebc939c6ab2b4ad1e11aed3f6f2ff6dbfa63db0"
+    }
   },
   "nativeMuslBeforeR94": {
     "sourceCommit": "b615d8a0e820bcf9de05d0dce546e930b27ad748",
@@ -14200,5 +14220,9 @@
       "path": "docs/validation/2026-11-06/discovery-r92-macos-package-terminal/receipt.json",
       "sha256": "4f5e4fdd5d48c7be9b78bbb6664532d500bccacac6e7db91337f6d1f21764032"
     }
+  },
+  "verifiedR93NativeFailure": {
+    "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/receipt.json",
+    "sha256": "f2765a512def5d729aaf08593ebc939c6ab2b4ad1e11aed3f6f2ff6dbfa63db0"
   }
 }

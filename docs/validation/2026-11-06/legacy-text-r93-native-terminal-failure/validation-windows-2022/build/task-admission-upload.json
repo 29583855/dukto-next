@@ -1,0 +1,169 @@
+{
+  "date": "2026-11-05",
+  "passed": true,
+  "binarySha256": "5f2f39a484c2cc3b1fd76da95d23ed8c9cd2fa103100fee2395c4a891a4c07d3",
+  "scriptSha256": "fbedc28ce703d04518736f363fb8e31467a7e401df03d287769b0154bec05001",
+  "mode": "upload",
+  "checks": [
+    "two active tasks and shared16 lanes",
+    "old peer busy refusal",
+    "queued > frame timeout with heartbeat",
+    "no queued scan/manifest",
+    "queue cancel",
+    "unbound queue pause/resume",
+    "owner FIFO and round robin",
+    "other owner query refused",
+    "same task/checkpoint restoration and SHA",
+    "16 requested,8 actually granted",
+    "queued expiry",
+    "queued disconnect",
+    "queued revocation",
+    "queued process restart and same task recovery"
+  ],
+  "recovery": [
+    {
+      "task": "a-first",
+      "direction": "upload",
+      "confirmedBeforePause": 4194304,
+      "restoredBytes": 33554432,
+      "passed": true
+    },
+    {
+      "task": "b-first",
+      "direction": "upload",
+      "confirmedBeforePause": 4194304,
+      "restoredBytes": 33554432,
+      "passed": true
+    }
+  ],
+  "payloadSha256": "ff76f8c9cc6065fe82a109d47fbffd93b1324da2522ad2143899fa97aa8ff2d3",
+  "serverOutput": [
+    {
+      "bytes": 4164,
+      "events": {
+        "paired": 3,
+        "service-connection-closed": 28
+      },
+      "lastEvents": [
+        {
+          "code": 7,
+          "event": "service-connection-closed",
+          "eventVersion": 1,
+          "message": "传输已收到持久暂停或取消请求",
+          "stage": "transfer"
+        },
+        {
+          "code": 7,
+          "event": "service-connection-closed",
+          "eventVersion": 1,
+          "message": "传输已收到持久暂停或取消请求",
+          "stage": "transfer"
+        },
+        {
+          "code": 7,
+          "event": "service-connection-closed",
+          "eventVersion": 1,
+          "message": "数据通道任务已请求暂停或取消",
+          "stage": "parallel"
+        },
+        {
+          "code": 7,
+          "event": "service-connection-closed",
+          "eventVersion": 1,
+          "message": "数据通道任务已请求暂停或取消",
+          "stage": "parallel"
+        },
+        {
+          "code": 7,
+          "event": "service-connection-closed",
+          "eventVersion": 1,
+          "message": "数据通道任务已请求暂停或取消",
+          "stage": "parallel"
+        },
+        {
+          "code": 7,
+          "event": "service-connection-closed",
+          "eventVersion": 1,
+          "message": "数据通道任务已请求暂停或取消",
+          "stage": "parallel"
+        },
+        {
+          "code": 7,
+          "event": "service-connection-closed",
+          "eventVersion": 1,
+          "message": "数据通道任务已请求暂停或取消",
+          "stage": "parallel"
+        },
+        {
+          "code": 7,
+          "event": "service-connection-closed",
+          "eventVersion": 1,
+          "message": "数据通道任务已请求暂停或取消",
+          "stage": "parallel"
+        },
+        {
+          "code": 7,
+          "event": "service-connection-closed",
+          "eventVersion": 1,
+          "message": "数据通道任务已请求暂停或取消",
+          "stage": "parallel"
+        },
+        {
+          "code": 7,
+          "event": "service-connection-closed",
+          "eventVersion": 1,
+          "message": "数据通道任务已请求暂停或取消",
+          "stage": "parallel"
+        },
+        {
+          "code": 7,
+          "event": "service-connection-closed",
+          "eventVersion": 1,
+          "message": "数据通道任务已请求暂停或取消",
+          "stage": "parallel"
+        },
+        {
+          "code": 3,
+          "event": "service-connection-closed",
+          "eventVersion": 1,
+          "message": "安全连接已断开或无法连接",
+          "stage": "protocol"
+        },
+        {
+          "code": 4,
+          "event": "service-connection-closed",
+          "eventVersion": 1,
+          "message": "认证会话已到期，请用相同资料重新连接并继续原任务",
+          "stage": "session"
+        },
+        {
+          "code": 3,
+          "event": "service-connection-closed",
+          "eventVersion": 1,
+          "message": "安全连接已断开",
+          "stage": "transfer"
+        },
+        {
+          "code": 4,
+          "event": "service-connection-closed",
+          "eventVersion": 1,
+          "message": "配对或认证被拒绝，请核对凭据、有效期和授权",
+          "stage": "auth"
+        },
+        {
+          "code": 4,
+          "event": "service-connection-closed",
+          "eventVersion": 1,
+          "message": "配对或认证被拒绝，请核对凭据、有效期和授权",
+          "stage": "auth"
+        }
+      ]
+    },
+    {
+      "bytes": 0,
+      "events": {},
+      "lastEvents": []
+    }
+  ],
+  "scope": "real local TLS owner-round-robin start admission, before any scan/manifest; active work nonpreemptive,100 waiting structural cap separately unit tested; physical network, cross-process shared budgets and all platforms remain open"
+}

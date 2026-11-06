@@ -1,0 +1,1273 @@
+{
+  "observedUtc": "2026-11-06T15:01:18.938668+00:00",
+  "sourceCommit": "b615d8a0e820bcf9de05d0dce546e930b27ad748",
+  "run": {
+    "id": 42224583301,
+    "head_sha": "b615d8a0e820bcf9de05d0dce546e930b27ad748",
+    "status": "completed",
+    "conclusion": "failure",
+    "html_url": "https://github.com/29583855/dukto-next/actions/runs/42224583301"
+  },
+  "jobs": [
+    {
+      "id": 127914745514,
+      "name": "native (macos-15-intel, brew)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 127914745534,
+      "name": "native (windows-2022, 5.15.2, win64_msvc2019_64)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 127914745781,
+      "name": "native (macos-15, brew)",
+      "status": "completed",
+      "conclusion": "failure"
+    },
+    {
+      "id": 127914745977,
+      "name": "native (ubuntu-22.04, system)",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "artifacts": [
+    {
+      "name": "validation-windows-2022",
+      "id": 13513025907,
+      "sha256": "60e245b8355816c6bd65e11c0f6744ab270d2f5785a6054b98d1da0e44334fc7"
+    },
+    {
+      "name": "validation-macos-15-intel",
+      "id": 13508718249,
+      "sha256": "4d717e7c35f7f278efa5f9765f06f195296de687a873b5917c5278697f1c85df"
+    },
+    {
+      "name": "validation-macos-15",
+      "id": 13507232798,
+      "sha256": "6e3bcff06bb8c6692b22554fee9bbe702be2f5d4c155dad8449755d46290d95b"
+    },
+    {
+      "name": "core-validation-windows-2022",
+      "id": 13506281224,
+      "sha256": "48fc0aab27293b11d5a231e8d0058ddcadc138636b3d621135c7fc7c51116f52"
+    },
+    {
+      "name": "core-validation-macos-15",
+      "id": 13506275650,
+      "sha256": "fc74e5f5d7e60b50724f9f1805c378d89fbde8331a4d74f18cb81f4313570a0f"
+    },
+    {
+      "name": "validation-ubuntu-22.04",
+      "id": 13506209902,
+      "sha256": "aa231397f1b19b2654c36a4df09810a9384e9072f1fa27bffd2eaf91e6852fa2"
+    },
+    {
+      "name": "core-validation-ubuntu-22.04",
+      "id": 13505417090,
+      "sha256": "253991ff5fd1494900095cd0833e0bb9e3e299e64852e8d0c7a27c1f284924d9"
+    },
+    {
+      "name": "core-validation-macos-15-intel",
+      "id": 13504919894,
+      "sha256": "ee324c106d106a8a6a390f14e75939e7781eccbc13d5bcc998243448d53cc45e"
+    }
+  ],
+  "coreSuites": [
+    {
+      "runner": "core-validation-macos-15",
+      "ctest": {
+        "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15/ctest.log",
+        "sha256": "1278d4e24665ac69ebcabd91efc66dfc207e8fa6d6268ce53072871fef0813c6"
+      },
+      "coreTargets": 23,
+      "xmls": [
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15/Testing/QtTest/avatars-tests.xml",
+          "sha256": "98fc362ef45486ffda7a09e2e59e226ed1ab6dfe2a3962c101d7a6b6eccc0098"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15/Testing/QtTest/browse-tests.xml",
+          "sha256": "debf9d9f918b77b05f75f473c0b322035eaf7a0454defb11e51ec4888a1d8f3e"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15/Testing/QtTest/buffer-credit-tests.xml",
+          "sha256": "ca3ae2f314959a73275dfa5dfc741c5f7a002e7bd51181dc60f6d21e88094321"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15/Testing/QtTest/controller-tests.xml",
+          "sha256": "b3edd0418610aa54bbe034c5af54828bbf321501f472ce96126b0e5844fc119b"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15/Testing/QtTest/core-tests.xml",
+          "sha256": "fe3c3d9b4451496f3f1a415f0a4f2aab821e0e0568d8738cfee0744f8d245455"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15/Testing/QtTest/discovery-identity-tests.xml",
+          "sha256": "ece0e332444c2f26bebd1694cc8331c6af5f387175350cf6ab613a2ab8fc9843"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15/Testing/QtTest/disposition-journal-tests.xml",
+          "sha256": "67b5f10d61b3bea4d18db8eb32dde2291a51721730c08264e798b796e3b46146"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15/Testing/QtTest/durable-receive-tests.xml",
+          "sha256": "cb26177f6282c954620c1c01529907903bc737290b4d184ac9c21b04b8f5ac36"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15/Testing/QtTest/file-exchange-tests.xml",
+          "sha256": "060d5792500f6a4a866cad8926273c32c48463379e7568ee1e6556bedb170a6b"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15/Testing/QtTest/identity-tests.xml",
+          "sha256": "c001ce482b5abbf199185c45dd47a5290b1ed0f4fbfe469ed1decb27774dcb21"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15/Testing/QtTest/protocol-tests.xml",
+          "sha256": "1f90bff6ad5d9eee3f0f27ec18d64533bddd844cf704606859cf4542292bc542"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15/Testing/QtTest/receive-skip-tests.xml",
+          "sha256": "55cd1b88e92809c16a0c9bfa623b37284d47bec0c9227eac9b02c093c16d6159"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15/Testing/QtTest/server-panel-tests.xml",
+          "sha256": "8e3bd0003140231e4619a66407ab66403d632adb175e9e9eb3b4579fd73d1a91"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15/Testing/QtTest/sqlite-cache-tests.xml",
+          "sha256": "db87dec3300a0a7002d7446505a37f8661576fdba117c72b8c30c6b370a72c82"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15/Testing/QtTest/strong-manifest-tests.xml",
+          "sha256": "2e72f4287342d822e82f6e841c4642a79036c05bc884d3e21c4facaf7fbf018f"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15/Testing/QtTest/task-store-tests.xml",
+          "sha256": "c42d76cfffeb20cd508109a825a7960fede7308f35b83c5a6ab270185525262d"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15/Testing/QtTest/transfer-accounting-tests.xml",
+          "sha256": "fbf1d572e17890121258643b2eafdcef4cdff0713cc15c68180943df44669ed2"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15/Testing/QtTest/transfer-items-tests.xml",
+          "sha256": "d679793aa871acd5f9f0365fd770d8dde110007f3717de234c7fa4bbd2ac71c8"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15/Testing/QtTest/transfer-operation-tests.xml",
+          "sha256": "eb697c90b4de16b10df4377200025fb305785e20e889c66177d6e264b8533cca"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15/Testing/QtTest/transfer-scheduler-tests.xml",
+          "sha256": "075c7bc8ec9059afacbf5efa766cb559f031530321b13158708fe5ae2b31d200"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15/Testing/QtTest/ui-tests.xml",
+          "sha256": "677fa560feab68da6cadc45395901b9fc01f649410fe22287d96d4c6310d3fc7"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15/Testing/QtTest/updates-tests.xml",
+          "sha256": "f08561ae215a6c781bccf4363a02844448e03e30c084e8558d2e514140173e84"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "runner": "core-validation-macos-15-intel",
+      "ctest": {
+        "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15-intel/ctest.log",
+        "sha256": "61f3eb7d28a69a4c0452b4ac7b5cede7fc47208f68058d62f498c048eec24beb"
+      },
+      "coreTargets": 23,
+      "xmls": [
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15-intel/Testing/QtTest/avatars-tests.xml",
+          "sha256": "ce561226063a62ee70137cb25815dc133191be7e16e8ae45dc108f5858591238"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15-intel/Testing/QtTest/browse-tests.xml",
+          "sha256": "e8be11b060139ae990b6a6aaf3b042801a2834614cb391caa3146a207ead542e"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15-intel/Testing/QtTest/buffer-credit-tests.xml",
+          "sha256": "3ace4e7f4b1e17d948020d9b9532790ed64cd4d70f7f8335fb4f619143071167"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15-intel/Testing/QtTest/controller-tests.xml",
+          "sha256": "2ff0f176b7f88b50864dc6a3c4f076a08d9f31a8a8225c082d9cd21ce33cd63c"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15-intel/Testing/QtTest/core-tests.xml",
+          "sha256": "18904f197f927128f4dda8785fdec34f40cb979b34fc8e2c02e1e9509df6cd9c"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15-intel/Testing/QtTest/discovery-identity-tests.xml",
+          "sha256": "309306d2cd18f41abad0ec902ba68217335f6a0ad110ab55221e3a3f5d7b714a"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15-intel/Testing/QtTest/disposition-journal-tests.xml",
+          "sha256": "86e121e317432453dcf8e806783c3428b0efc64da2e50e20c1255686c2cae7d2"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15-intel/Testing/QtTest/durable-receive-tests.xml",
+          "sha256": "e48edfc39c525a5bc1ed4f5c4ec0ac3b6ff6174e330f108f73f1d4f86dfdee50"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15-intel/Testing/QtTest/file-exchange-tests.xml",
+          "sha256": "7e5011487d67cd99eb675e11f214bc7bf8f0fab58639a3ea65ca8a153cac0e99"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15-intel/Testing/QtTest/identity-tests.xml",
+          "sha256": "057a96a8f4f333c3c0ecf71ce0a5ae50eb174e16764cb72d157c6fedafcd5962"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15-intel/Testing/QtTest/protocol-tests.xml",
+          "sha256": "9dadcbd69c98b9b43182968c27193f005eb4a207715252c615a5febd7612c730"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15-intel/Testing/QtTest/receive-skip-tests.xml",
+          "sha256": "0e38fc02e19bbcfcef3faaf2daab488d60296c0d7d0ef0bfade059997bca3cae"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15-intel/Testing/QtTest/server-panel-tests.xml",
+          "sha256": "4d1be145cc82daed0da82208ebccac28fe7077d22d7282331cb0a19b4b58659a"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15-intel/Testing/QtTest/sqlite-cache-tests.xml",
+          "sha256": "c6f1fbcd9c0e6af8d72a88cea7b4a697b24eb7ec68f7011dabb0bd96f87719fc"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15-intel/Testing/QtTest/strong-manifest-tests.xml",
+          "sha256": "8f088e4286ddf9f786876974856bdab4eca465a246ed8d99a6b40c216bc6cdfb"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15-intel/Testing/QtTest/task-store-tests.xml",
+          "sha256": "7d30ddb8bb9f018c7821d15ab8f6fc63847913b47720647c56f237c29c8d8f31"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15-intel/Testing/QtTest/transfer-accounting-tests.xml",
+          "sha256": "bba84f473eb311d0227b078c97160cde6326893b7319a2eefe2f5f991cc10032"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15-intel/Testing/QtTest/transfer-items-tests.xml",
+          "sha256": "b9b436132f123d9313fc6b66fb67eb3962ea490759a526e82f3b4f43cc06d3e0"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15-intel/Testing/QtTest/transfer-operation-tests.xml",
+          "sha256": "f15699cd29e70f752db53e82c0d25bbd07b99657cc288b7fe07126c3bd3d86a7"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15-intel/Testing/QtTest/transfer-scheduler-tests.xml",
+          "sha256": "74cfe3fc10ffb42c65d4182ebd03597e1b846abb50673596a6d9739b82e77224"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15-intel/Testing/QtTest/ui-tests.xml",
+          "sha256": "904d229841de81c9ab8b8973dcf2e5e5077c20ba7096bce42e6217841794f3a8"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-macos-15-intel/Testing/QtTest/updates-tests.xml",
+          "sha256": "3be3d7f6916dafbcabe0259a66cd44b2b0cf9d0b8813bcce676ceadebf6db019"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "runner": "core-validation-ubuntu-22.04",
+      "ctest": {
+        "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-ubuntu-22.04/ctest.log",
+        "sha256": "61bc06e5b356723cf9216c992dbc5e028ec3b708280062b4d69883b1d8b05a2c"
+      },
+      "coreTargets": 23,
+      "xmls": [
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-ubuntu-22.04/Testing/QtTest/avatars-tests.xml",
+          "sha256": "4f25b82b709c5f706ddfa79d2ea7db0a39e32aed267761b1812a9caa4f4997f3"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-ubuntu-22.04/Testing/QtTest/browse-tests.xml",
+          "sha256": "77463fc04695e8139a1ed337cdf21c33fd552eafa6134c9584695be4c8c2feb1"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-ubuntu-22.04/Testing/QtTest/buffer-credit-tests.xml",
+          "sha256": "df591e4708fa1fd0298f71cc635539f6b216b98c99204e122bb232989faab4a7"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-ubuntu-22.04/Testing/QtTest/controller-tests.xml",
+          "sha256": "1c116a16089d39b8fe0e7c4521b4025d2854956b76a3e18a63e73c4fd9527c85"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-ubuntu-22.04/Testing/QtTest/core-tests.xml",
+          "sha256": "a0c828967c67059e2e5520b9f6497368f2ef43117f4ae1b69d567295d3713d17"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-ubuntu-22.04/Testing/QtTest/discovery-identity-tests.xml",
+          "sha256": "1a445f9c960de11689beb746dffa19d2ad5bf4dc130268a1d26c05d4183c19e1"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-ubuntu-22.04/Testing/QtTest/disposition-journal-tests.xml",
+          "sha256": "f346eb1fcf825184029dd28d29e35a1463b6dcd560946c56fd075027a36de35d"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-ubuntu-22.04/Testing/QtTest/durable-receive-tests.xml",
+          "sha256": "a2dd273018409b356861c5028d9d430dec11f91f72d44b521695dcc52002f1bb"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-ubuntu-22.04/Testing/QtTest/file-exchange-tests.xml",
+          "sha256": "e3cc550d00e23b84ae5106c4c8e0b312851842ec786d80e58b3110754391ea8b"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-ubuntu-22.04/Testing/QtTest/identity-tests.xml",
+          "sha256": "6fe2b46999d2960d9db8753959d60c1c4f62e050996db103a3e310ca55a34e0a"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-ubuntu-22.04/Testing/QtTest/protocol-tests.xml",
+          "sha256": "d44980fd9cccba49a15cd8bbf8c1c27c2734628facb48811612c393279adc301"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-ubuntu-22.04/Testing/QtTest/receive-skip-tests.xml",
+          "sha256": "07504a96790aaf808b2617d404a549808cdabbf9371981c631026bad4b310d9b"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-ubuntu-22.04/Testing/QtTest/server-panel-tests.xml",
+          "sha256": "15e42e83fa4e94a5ad8386b82da99de0608b36a87d0a76fea19bde337a2476c1"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-ubuntu-22.04/Testing/QtTest/sqlite-cache-tests.xml",
+          "sha256": "f025a466a0b7f647e2b067167fe0f7cba58176a66b37d188986a8a8c154049c1"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-ubuntu-22.04/Testing/QtTest/strong-manifest-tests.xml",
+          "sha256": "3e69650245f4a274d0b29519f83ea0fb9d949527ae4bf30b1ada3cf9b22e917d"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-ubuntu-22.04/Testing/QtTest/task-store-tests.xml",
+          "sha256": "d1864a1770da01d142dda29489836524c466f0c4256434c77850bed45d237354"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-ubuntu-22.04/Testing/QtTest/transfer-accounting-tests.xml",
+          "sha256": "7debdf4ed2a01f5f3aee2cc340f654dc3e6990b1dc0c5d3aa6d9f6c780ee6c80"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-ubuntu-22.04/Testing/QtTest/transfer-items-tests.xml",
+          "sha256": "1f4ab6c50f0ebe486dffef93f140b93a6d29bb79658bc27ace8ae464e7eed7b8"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-ubuntu-22.04/Testing/QtTest/transfer-operation-tests.xml",
+          "sha256": "d94b2a36b4440526952f95c571b2eb12e35916041cacde0e36cd9ece36e62f69"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-ubuntu-22.04/Testing/QtTest/transfer-scheduler-tests.xml",
+          "sha256": "858f698c4f2a17a761d7175a010d8f5bd66fb61e71f100eba96dd3183b8794e8"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-ubuntu-22.04/Testing/QtTest/ui-tests.xml",
+          "sha256": "a87b8f7ff0a7f5a8c3832ca2dffa7c2ec2893fb5389fa8511241b6c38a309bc9"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-ubuntu-22.04/Testing/QtTest/updates-tests.xml",
+          "sha256": "7422f74fdaa61e895774875d49861da5e81818f6ba2f1c88b5a62b8faeaa382e"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "runner": "core-validation-windows-2022",
+      "ctest": {
+        "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-windows-2022/ctest.log",
+        "sha256": "2b31c1e2998801b0e6ceb8daa9e901144122fb4b178593ab888b74563d93a7ac"
+      },
+      "coreTargets": 23,
+      "xmls": [
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-windows-2022/Testing/QtTest/avatars-tests.xml",
+          "sha256": "f908c8cea413e82dd2a8a14bbe83d3050c72c6febdddafb3b8683195590a0e55"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-windows-2022/Testing/QtTest/browse-tests.xml",
+          "sha256": "87332940174863a08293e7769b9718a32915fdfe6746cd33b7bfa12dc274501e"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-windows-2022/Testing/QtTest/buffer-credit-tests.xml",
+          "sha256": "28900985ab50a25ecbdf5e7d5a3c4bac40b725b0b1ba990fe64144c85780ed8e"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-windows-2022/Testing/QtTest/controller-tests.xml",
+          "sha256": "8ccb08f9180254608d2641a7a236fbcb4e665092643768b16425ffbb98f88b50"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-windows-2022/Testing/QtTest/core-tests.xml",
+          "sha256": "81d7978dd2f1f2bd6ee06e1476aa06062f33c158ac2deec07e68e879357e965f"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-windows-2022/Testing/QtTest/discovery-identity-tests.xml",
+          "sha256": "63a5828c65420c1a4068b220db0028ede3a65cadd55122f507a15ebb5570c354"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-windows-2022/Testing/QtTest/disposition-journal-tests.xml",
+          "sha256": "b92fb521213fc227e1d19bc4974563382b79e9e6fc580cec679d65f78222725d"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-windows-2022/Testing/QtTest/durable-receive-tests.xml",
+          "sha256": "3151cf8a179fd949a689f46a61eeb20125e7023b893c7e9edca114569b58418e"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-windows-2022/Testing/QtTest/file-exchange-tests.xml",
+          "sha256": "de57f99d875d8fc2c2831c38fd90029fe832ade96a25a4a1ae3013e7f028f97e"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-windows-2022/Testing/QtTest/identity-tests.xml",
+          "sha256": "09f935a41c1cfaa6c22507f9f17065dba35cdb61fecb20e898fe3e6c731f98e7"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-windows-2022/Testing/QtTest/protocol-tests.xml",
+          "sha256": "b0da4f0880ef781c314071af9dbdfd17a0eefd37c176bb0871422f7916e1795b"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-windows-2022/Testing/QtTest/receive-skip-tests.xml",
+          "sha256": "4fcf812d7cb31210b1e0d27959a7cafac28001a5ff59d108b9b014857b041484"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-windows-2022/Testing/QtTest/server-panel-tests.xml",
+          "sha256": "fde49e950634ef17398a9ca7fae3e224780cb39614e4ee51580673b46a5df756"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-windows-2022/Testing/QtTest/sqlite-cache-tests.xml",
+          "sha256": "6aea2b8610e5884b4ea133eae23bc17cc5f0ade576e67e7472928921cf3c375a"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-windows-2022/Testing/QtTest/strong-manifest-tests.xml",
+          "sha256": "a54b99aee3af4e20e772e48dc77ceddc54aa20e551e58364fc3ea1da14cb113e"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-windows-2022/Testing/QtTest/task-store-tests.xml",
+          "sha256": "7f3b1c681023254fe9455501a3335a4d1ef557ff937691facb260ac224e0dfa2"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-windows-2022/Testing/QtTest/transfer-accounting-tests.xml",
+          "sha256": "31d2e6341b62b29535de388d8b2837ea9d243b7bdfb72659b4d02e47198eee01"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-windows-2022/Testing/QtTest/transfer-items-tests.xml",
+          "sha256": "8fdad474c46b756bfe2c1be5be21046d8591c72fccb0cdc909668c0419325711"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-windows-2022/Testing/QtTest/transfer-operation-tests.xml",
+          "sha256": "958a81286481a9bd3b6fea2486b38ed62fd98f5e5342604886102fd9df7e414b"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-windows-2022/Testing/QtTest/transfer-scheduler-tests.xml",
+          "sha256": "347541a121a5464d5814d59e5ea6a9c0e17aee697337e2760ba946bbfa568d1d"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-windows-2022/Testing/QtTest/ui-tests.xml",
+          "sha256": "53ff7dea33331078d101673e09dd5b3d9614bf06dec609ac293011834b0bac42"
+        },
+        {
+          "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/core-validation-windows-2022/Testing/QtTest/updates-tests.xml",
+          "sha256": "541adec5ecee8f0b6d52bc2d800a026ca02a37bcb09ea3bf4b9cee09eb08c219"
+        }
+      ],
+      "passed": true
+    }
+  ],
+  "protocolSuites": [
+    {
+      "platform": "darwin",
+      "suite": {
+        "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/protocol-suite.json",
+        "sha256": "5d718929ff680e945d54c908bfd00b7f929fa6fbb12506262adbe710597a1443"
+      },
+      "cases": 45,
+      "passed": false
+    },
+    {
+      "platform": "darwin",
+      "suite": {
+        "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/protocol-suite.json",
+        "sha256": "79c2049a8f78d245eb920bdca20dbfac40bb06360cb18c2fb3c18db2b8b8db33"
+      },
+      "cases": 45,
+      "passed": true
+    },
+    {
+      "platform": "linux",
+      "suite": {
+        "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/protocol-suite.json",
+        "sha256": "e2dfc888ed92df0d54a92532cedcab321ea95269bcd1a3baded37ce62ace8cb1"
+      },
+      "cases": 45,
+      "passed": true
+    },
+    {
+      "platform": "win32",
+      "suite": {
+        "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/protocol-suite.json",
+        "sha256": "ad31c9071479089d1c583f8b9d25521f21635ee331131bf7d800a2fd99aa5f1e"
+      },
+      "cases": 49,
+      "passed": true
+    }
+  ],
+  "verifiedOriginalReports": [
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/parallel-failure.json",
+      "sha256": "5a9cc251053f34798e360a6e7460f4c451b4bcbe4e01fa1ed4c6d13661384fbe"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/legacy.json",
+      "sha256": "626c3fb74ef9faf4e8719322a2136e8c98059ce114866072f946c8c661262eb9"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/legacy-text-credit.json",
+      "sha256": "3b00c758623708c6a71611c358af43820144035b4df6db59b63c8315e48c6a95"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/legacy-timeout.json",
+      "sha256": "3e6c49c2f892509f06143fffe037a78582be2e85a54cbb4d16aed5a6e6007303"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/parallel-attach.json",
+      "sha256": "5e6916c3df44943c63b7f40e530b74ac9c0b4e9fc9f7b6825615784f6566ed07"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/cli.json",
+      "sha256": "1ef5b16f652f3b54b28a0dd965993fa88e2d38ee7e49f74242c13fbf83e9fad2"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/crash.json",
+      "sha256": "c8e9c3b46118c4d73caad648ec35e4a2bb79312d05abdc03d89c2991fa4e8827"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/posix-path.json",
+      "sha256": "98ab6e892322ac5b250f54c5802a5e64b864f0123b29540657e37026f1098c2e"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/service.json",
+      "sha256": "097323f5683f9f265683f5cc7ca8437b7b7bb55e4ee7a03b3149fd44c931f730"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/service-accounting.json",
+      "sha256": "8359cd44f6db97798151435de14761c9279ed56a7e11b8ef031d0f8ec60f415c"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/client-accounting.json",
+      "sha256": "ab69a0a6d3a031094f7f9ac9024abc635b1e1616abebfedc55c92239a06bc14b"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/client-list.json",
+      "sha256": "6d7673513670d1f90f2e9cddd7e78b3b2d73ce4bc4b413e9f715411c6f1b4b3d"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/credential-rotation.json",
+      "sha256": "1aa387d40bf3f39ee5dad349d02af35ada33cf66f3a0fe0a206b57c06ce66f40"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/certificate-lifecycle.json",
+      "sha256": "c908eadc92c422b060223ea31fc7658ec7eceaed4c8883337c4bb584834d92b2"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/session-expiry.json",
+      "sha256": "92e87332e6eaeb987940171311ecbc7a81bc0f7a38ffe85bf8ef10e1c67dd0c2"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/task-admission-upload.json",
+      "sha256": "5c9f7399b8dccb6e915d426c2b9a4cbc037f33805e93288e7ffcf72e8a4bf849"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/task-admission-download.json",
+      "sha256": "9fdd9c0421184d6ad0307004f54ce757ec592ace67090f6e1d0a73a59c7caaf9"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/task-admission-mixed.json",
+      "sha256": "234aa4e881385ea33b59743a559857641ba77fc4403a6a90719d7333fd88dedf"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/transfer-retry.json",
+      "sha256": "6d32c6a0677873ddeafaa3ee23d2a229ab2625cba0bce61448dcf602012e197e"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/conflict-fail.json",
+      "sha256": "86913f7dd0edc9c5af23e83bcf0686ddc225ec09278898d47084a66d1fd1985e"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/conflict-overwrite.json",
+      "sha256": "8f2d39fdd6b10022e55cc3d4afd77321b224199c67dd737f60277215453a5e3b"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/conflict-skip.json",
+      "sha256": "3bec5a3330c805788d3029be8b2c37bd4ff580409f524c9f1cc6db198cd14997"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/task-items.json",
+      "sha256": "1032f1ea221882557ede259bd27b3ffa6825ff251ec02a28124cc8193e121902"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/disposition-transfer.json",
+      "sha256": "a7c2503a67738b7879e8ceedbbf52144cb6db241c0785f864b87a13a2d15f94b"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/disposition-summary.json",
+      "sha256": "380e5088039b6fd393ff83ede5e82645ac6fefde7961a846f6fca897d275ee98"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/upload-receipt.json",
+      "sha256": "ecbbda7a5d5c5eb48922ab002cf07d67666d4d01574537e4a9c83d6ab64ace50"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/completed-history.json",
+      "sha256": "f647500b66e57e48763f7e79e290f1cc4f4bb171138d1d203a382f9310910a9a"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/item-failures.json",
+      "sha256": "5d037146e5711c090c82e4ce3ea340e8df2db20373b1ec2ccc4881b19ac4c6c5"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/conflict-fail-recovery.json",
+      "sha256": "04fa05a8a032d2cb847c49a777e449e8271cf162e2fe3607998060a4d8ae3f6a"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/conflict-overwrite-recovery.json",
+      "sha256": "47a7071e6187ce8c2dd8d2f4212cc21e8d9ca44818b34af83adb048413caad84"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/conflict-skip-recovery.json",
+      "sha256": "9b0978627cfec10016e781fb5564df7a5d876d468f7fe71551180d620baddd04"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/transfer.json",
+      "sha256": "b1c6566c0c27a36d012a4b61bd6e972762894f98f2e3c831308f506a7e67f39b"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/transfer-recovery.json",
+      "sha256": "759bd20acb46c0b6db038e6513f54f3cf1ca0d7f6db728afdb8140c4d272d8e7"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/parallel-transfer.json",
+      "sha256": "7796e4196cccb639302119977e23973566ab51eff5573e8f6d35cefb87a5a9f8"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/parallel-recovery.json",
+      "sha256": "9c6bd2b57a53ee03ed51ba7dd6f9d400898620273447c420b2138805f75f055c"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/parallel-isolation.json",
+      "sha256": "a3e04fabf6c1dd725813fd7af663ba7e0425ea9d3047c08733b70797db73d98c"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/byte-progress.json",
+      "sha256": "69f351162d8ed2a304f5e89e36fe59f073c0bd61306407587d94c57f8c3422dc"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/transfer-faults.json",
+      "sha256": "62bf36fe7195e05683a047c12711406b5ae991c7a48b60eb50975cd444cbf573"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/final-ack.json",
+      "sha256": "8fcf6750c1b56bae590f90a97546d2a0f2d31e5c24884ddc13aff2f540a49d69"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/final-ack-auto-retry.json",
+      "sha256": "2ed359f59ea1fea9fa3c45e6321b5252c2aa53ad4b92fa27e2ea942fcc4c0be0"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/overwrite-faults.json",
+      "sha256": "82f99662c044b8d938f71eacfb196b8a84d1d51dc917975c9301a0da62378174"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/overwrite-final-ack.json",
+      "sha256": "dbec04c844cb684c8279dfd3bdcdf3e8cff88f4b68bd86b8fee25d37d68e04b5"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/overwrite-final-ack-auto-retry.json",
+      "sha256": "bd42581055e1226802c1dcb97c1550c88bf2ec9e3dbb088a0308bd7b9151bd88"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/gui-process-recovery.json",
+      "sha256": "c68458503a0f6634c5422f703417f5353ac66f1b4dd1e9832e26b4a3a6bf98f1"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15/build/task-store.json",
+      "sha256": "b00a5ef8698860227604daafcae3105f10e25837feee8fa2dc02710066d38e51"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/parallel-failure.json",
+      "sha256": "a09d815b14d594ad70b2a513b4a61d7937663bbb240a6d6fdc8cf728f1538014"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/legacy.json",
+      "sha256": "897773bf63dcaaee7fed8a36fecef6c9b874e2286a8c09b9e56470cbdc2f54de"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/legacy-text-credit.json",
+      "sha256": "f1629d030c9a9d92a6f1686a2725e5c0b04ef491879ebd8d961c6fbb45ad7297"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/legacy-timeout.json",
+      "sha256": "511449dceff50f22839d0201cc94ff9025981d34106edfd5de7918c22a7d8788"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/parallel-attach.json",
+      "sha256": "911bb8a0578918ab1fb2a6a903bf79066b9a3066e7a521fc05d1da2ca3239d71"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/cli.json",
+      "sha256": "885e19489be522f7bc4aace97a7679d712a086933794a27e2cddc4670fbf058a"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/crash.json",
+      "sha256": "c8e9c3b46118c4d73caad648ec35e4a2bb79312d05abdc03d89c2991fa4e8827"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/posix-path.json",
+      "sha256": "98ab6e892322ac5b250f54c5802a5e64b864f0123b29540657e37026f1098c2e"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/service.json",
+      "sha256": "097323f5683f9f265683f5cc7ca8437b7b7bb55e4ee7a03b3149fd44c931f730"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/service-accounting.json",
+      "sha256": "24ffa77880451c832e29beb79a81ec05fd16f3b884044076fe63e09ceba03642"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/client-accounting.json",
+      "sha256": "0fe5662a83e501778f4d216521241d03f9bf5f5c000300284932102a5302dbd8"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/client-list.json",
+      "sha256": "129b31931ed5c394f111e57be2dba90a8447725715837dd5be3240aaf4477d42"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/credential-rotation.json",
+      "sha256": "f33ccb2b41d1ffe2e353c31dae16bc8b3422fd257cdc411003fd74a092076fa3"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/certificate-lifecycle.json",
+      "sha256": "16b9b4ed131f18bed556ad22a0d57dc61c1a948cf2360ce1588bc7c377507f87"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/session-expiry.json",
+      "sha256": "0c8fd15b60af868943ee042db268c25f55bc77d3e01a9cc80647a54a297f1a1f"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/task-admission-upload.json",
+      "sha256": "7b1a8db83d35be45545af2153fd353718005fd90ecc6a29a189d7d21d91a8cce"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/task-admission-download.json",
+      "sha256": "0a2d455106494f69b9a138b0cc81b941c922ac2bfa6d7ca6971868df8518315b"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/task-admission-mixed.json",
+      "sha256": "959080a8796453ff5fcb88b44549229af8a73ea6456aa94f75a478edc7f0168e"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/transfer-retry.json",
+      "sha256": "7c03e413bc02e8971f099eca7c65d26f3504d290770b23ff722706af36e2459b"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/conflict-fail.json",
+      "sha256": "dace5ed011c5b1c4f73e33ef717589a9cd5b388edee3c5843cb3ebfca76ad413"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/conflict-overwrite.json",
+      "sha256": "cb9df0cd225ad371556f53e7834cc6e47dda358dd67bd56e20b193c36edc9216"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/conflict-skip.json",
+      "sha256": "1a54ee7d49431ded497bde0fa93c6f92cd1e0288bb84ecf85d228c69d9386781"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/task-items.json",
+      "sha256": "ccfc2a62344a0d179afcf7e59b45078f0de76b5c44834f018e918148901138cd"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/disposition-transfer.json",
+      "sha256": "93719b5a200a668e69d2ca0874960153266bf41fd781716d144202a8c68ea98e"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/disposition-summary.json",
+      "sha256": "29e634de8bac2dc9076cbebbc1d3bed8dbd288675c045c82aba6e21f77ff8f15"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/upload-receipt.json",
+      "sha256": "293c829e6ad9a543f454b739766835a3b1583a9b83c5c82ed7d982c44e14e010"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/completed-history.json",
+      "sha256": "5c8536208137a653b408ed9d2ffffa8c86ec13b17e68ce84c23f8f1f2afdda12"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/item-failures.json",
+      "sha256": "4b1a5a3117c6ee1bd626e40eda9b7a60dc460a8b840175d1dcee75abb182058b"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/conflict-fail-recovery.json",
+      "sha256": "f7c4e2f700e53ee6fb2d043d3c4d3cd213c8179f3480b59ad969fff72bb8583a"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/conflict-overwrite-recovery.json",
+      "sha256": "caaf2da2f2a18daf37e4705c595e84251529a51d13df54bb207d1ee56ee15176"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/conflict-skip-recovery.json",
+      "sha256": "bd30c3cf3526f4560036e05119ba0d7a0541b887da8d26c593b1d7d7be258314"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/transfer.json",
+      "sha256": "b1c6566c0c27a36d012a4b61bd6e972762894f98f2e3c831308f506a7e67f39b"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/transfer-recovery.json",
+      "sha256": "991b3d15522e5692d1f3acee34e79bdc445166795db3c173a6b2d3de6b00ea3a"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/parallel-transfer.json",
+      "sha256": "908e8a8601d01acfb96c34406d79057ef99d3bf0db3a2258782f3dbd84c5fc81"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/parallel-recovery.json",
+      "sha256": "a75aafc98e8a3f3826fd15e50f951fe3f199f5497bf2369ada39ac27b235f67f"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/parallel-isolation.json",
+      "sha256": "00ac06f470227dbc64bff7ad6d92c8a3724e3eaccd8938b06c7e44397c66f717"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/byte-progress.json",
+      "sha256": "421eae7a35c2a192738898a80a11303a79e988ff50fc91673a81cfef6102e4e7"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/transfer-faults.json",
+      "sha256": "61fe5ba3c86195902284e32370a44e367e474233fff4f7fe83b4a276fb0aa014"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/final-ack.json",
+      "sha256": "693a4144d972fb89a788fc148499f0db5baf048e4bab744ad9b45138c5c9b6b6"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/final-ack-auto-retry.json",
+      "sha256": "5fc2323f38c23725b7bb120c9c91d301c33f09b304acfa6c297658970e3cf447"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/overwrite-faults.json",
+      "sha256": "aa2cc53c7bd77ab21f5a879182b328c89be8a4a7e4fdf884c260fcf4d83efaf9"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/overwrite-final-ack.json",
+      "sha256": "5114d789c98f5e24cb2fee3a296967831c5c78744cc0c3454c9ee0548d4de5c0"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/overwrite-final-ack-auto-retry.json",
+      "sha256": "3ef129e1ea7a2afa529fe227b98488eb001f436d39c2fcc021f86a25149333e6"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/gui-process-recovery.json",
+      "sha256": "dfb40ef35ab89a9e3c39d8d89ad944fbff25f9bd1f32e6d39b5d61f183a7e0dd"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-macos-15-intel/build/task-store.json",
+      "sha256": "646524849cbef392f2e7f09608a5f0bd0597792cb8bbfaf63c6c5dd595951fcc"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/parallel-failure.json",
+      "sha256": "062f6bb417ff7ddcdf7dbd2626485acd744dc6a8567bfd676bf552b063ee1c62"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/legacy.json",
+      "sha256": "a521223b3c3a94f83efad6608de6f81f9cde74ec86440a1c62d45422ec302510"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/legacy-text-credit.json",
+      "sha256": "862fff70b56a89d046628bb04e1cc2f174806103757b85a0ec9c9c009a0f790f"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/legacy-timeout.json",
+      "sha256": "296d8690f52b32051bce6ebc38fccc78dca5c0899cf49f5a2b18c5be24560e43"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/parallel-attach.json",
+      "sha256": "923e29267a5bdd2157d8b1893ad9fb9a64438f0082957dd0b534a9821efac451"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/cli.json",
+      "sha256": "e7f8374b76639c101e31f30938248c46b5289a21922219059c3af60d8ed0c51f"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/crash.json",
+      "sha256": "c8e9c3b46118c4d73caad648ec35e4a2bb79312d05abdc03d89c2991fa4e8827"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/posix-path.json",
+      "sha256": "98ab6e892322ac5b250f54c5802a5e64b864f0123b29540657e37026f1098c2e"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/service.json",
+      "sha256": "097323f5683f9f265683f5cc7ca8437b7b7bb55e4ee7a03b3149fd44c931f730"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/service-accounting.json",
+      "sha256": "e969710d8b7553f039ef6ea90dcc56795755dabb9f639301d49fe34ad46e7cc8"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/client-accounting.json",
+      "sha256": "176271a214e40906650676841fed483631cd011ab9414cad88ac46091af9276a"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/client-list.json",
+      "sha256": "8aa5922986731c61b6ab7de0d7ad9129c443f0ce081aa0c5f77a15b59f53775c"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/credential-rotation.json",
+      "sha256": "54b0b7fd078aba3c7a7dfb77382e541b8fd425bdca683a1df1e7fb1f1b61a0ce"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/certificate-lifecycle.json",
+      "sha256": "0a832ccd0d977df35cf564169ac4548fc491997fafc1153159a4267d17c5533c"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/session-expiry.json",
+      "sha256": "33c26c23ed7e1d7bbc609acff68a46d5dee68084c75c2b97e36b4e5b6661e064"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/task-admission-upload.json",
+      "sha256": "067ba8104f6afdfa0847d8523001b76320ebe4398c1931d513e505575acd420b"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/task-admission-download.json",
+      "sha256": "a02b0682ec272fed1f2f85e6ae01ab9a344463e0adc0e01942ae25b1cf47a751"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/task-admission-mixed.json",
+      "sha256": "4faa83180a86431b2440b7977908b05787202857a79fddc5b7529850062800c1"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/transfer-retry.json",
+      "sha256": "5798b66ad18e17faaaeeb67da4e89e04120e7ad1b3e2fa5055439b93d68a3d38"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/conflict-fail.json",
+      "sha256": "ade0b49a75d2009dc1720c3f0d536068f06cef6f4dbf85baad39cce2c17954c6"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/conflict-overwrite.json",
+      "sha256": "87b0bf9e688b141cd3950d9051533041cfa07425fbb9aa33d89220abbf0960bc"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/conflict-skip.json",
+      "sha256": "007d7868df4ed548fa6a52feee95a145cefc2657b1b63b957bf9d46a1a64511b"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/task-items.json",
+      "sha256": "7089195f00a25ba733d0dd119bd3e529aa58b49e104386c5c5ea310ce7766aa6"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/disposition-transfer.json",
+      "sha256": "b77523d43fcc1f758ffb3fa8acbf865c21f88e2c58d943dc8611c92a5b517fa6"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/disposition-summary.json",
+      "sha256": "b12dc4e1af9df03186252ec1374ede9b63ca1c1a00f3e71992cac0bfeb2f3403"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/upload-receipt.json",
+      "sha256": "085a0336d014404187a3f26ef210f38f8c9d8c509890b44de40d962492d72316"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/completed-history.json",
+      "sha256": "ecd9a0dee89fa9324cdd1f62ca22bcc138f7b0588925dc935241da00e1cf86be"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/item-failures.json",
+      "sha256": "f565ac85644ce0c7f12d25a067fcfb09f9e57f27b75b67206357dc04136b53b7"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/conflict-fail-recovery.json",
+      "sha256": "946096a7d7799aec3a67cb3d4630d168918d46419bfdc6357df962f1983693fa"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/conflict-overwrite-recovery.json",
+      "sha256": "8c2ed8d5d0c61952b5644030f4930c691a9b93a949c03bd056761a6af83ec8c9"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/conflict-skip-recovery.json",
+      "sha256": "b490e90e1b28ea16fd9a1973e1694bd972a6cce73f3882703bd366f8dd6396c8"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/transfer.json",
+      "sha256": "b1c6566c0c27a36d012a4b61bd6e972762894f98f2e3c831308f506a7e67f39b"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/transfer-recovery.json",
+      "sha256": "ea37232eaef96f19573958cd5f68a99edd92d9cdb8133c60ab3f55371fa9b536"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/parallel-transfer.json",
+      "sha256": "a3597ad253db00555150c0c0f9113300e57815d758dd64b50f02b1e27150a3dc"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/parallel-recovery.json",
+      "sha256": "f55e57365e11da73a33b033e5819a38243edafb8146eafeb0d618398563d8877"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/parallel-isolation.json",
+      "sha256": "9a95d06847fa1915041d700f6f00e54337be0cb184d41c7af9dd1195b5afc74a"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/byte-progress.json",
+      "sha256": "144333bff8fbf550beea0e69d4338f506a2b36b939d371e7338065345bb157c4"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/transfer-faults.json",
+      "sha256": "e11e1c8346f3999af0f402e11b4f8a3251ed421b69ee197453345a60283d79c7"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/final-ack.json",
+      "sha256": "b7cc310ae83e338b59c351ed8da99f66aea275f6ced967fd345fa170e65d9783"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/final-ack-auto-retry.json",
+      "sha256": "0c475511778ae304e8004cc89918536d7a95ef094b2dbfa7c7468658ee55768e"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/overwrite-faults.json",
+      "sha256": "de76e401b687a6e22fabe1b503033b884b5232dd44719e9c9a658f8004dde541"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/overwrite-final-ack.json",
+      "sha256": "8b1ccd0fd87aafbc254ec766042aad86332078f73b2f33908ee18ea058d5601a"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/overwrite-final-ack-auto-retry.json",
+      "sha256": "ce48bcd065ad3a85b329e8ce1e062ac1674babd91d31a03d938d7a4de6431357"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/gui-process-recovery.json",
+      "sha256": "179b1b5b38b97cbb996caf247a9915b798686fb7615b33e6bd53829c018bd549"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-ubuntu-22.04/build/task-store.json",
+      "sha256": "32b55e47e29cce9f281cb9a0f3446336b36a51d040e3b35cec8bef39c19f06f9"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/parallel-failure.json",
+      "sha256": "17c52eec81ee24a9034c362546cfbdafbd148079c8529e0041f3584d30ff1bd2"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/legacy.json",
+      "sha256": "c16ff37d130a83a17292b66ccfd0f43d55aab411ed5829174b4f155f94c4869a"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/legacy-text-credit.json",
+      "sha256": "c54adfe5ecead39e1ff4ffa13d87f723b23d19b1afedea04dbfef6b4f6939840"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/legacy-timeout.json",
+      "sha256": "ebab367182df14551d7d7bc82ff6d095eb73a0b06a4f1d96822eb1fa46d947a0"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/parallel-attach.json",
+      "sha256": "17286d6eef0659bbb370cd89f84fc0a5c661513299d873fb0a7d8b2e0bfea80a"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/cli.json",
+      "sha256": "e84d9024b3cd20db3f9d60fa6a06181160cd4ae30e3a21f30916cd4cf6426020"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/crash.json",
+      "sha256": "da311383d5961b8f3b8c28eb276484b7b09e5cec1c203391322c926f39b534a5"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/windows-path.json",
+      "sha256": "62c357638a24d17580d482d6deb20029386fba5cf8f63faf561760b8be7b95a1"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/windows-signal.json",
+      "sha256": "a5814d25d3c5ef6b1a86b9f1a10a1232cad67ca542e01d73a58155494225ebb1"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/windows-overwrite-busy.json",
+      "sha256": "abfd5e79cef2a00a0e390e7fdc6d532d299f11c8f68d3bff3125d56a9e57d6ff"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/windows-private-read.json",
+      "sha256": "65137db518a4403849f6efe8ada71d53f5b18ba017ed4a92c0209e7d65ee675a"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/service.json",
+      "sha256": "704cd08e7c2e33398096cbb32a755b5dac5ab66f1f1077f9a3f28258ae28da83"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/service-accounting.json",
+      "sha256": "966cd29c1056f5bc9c359cc467ef894c29dcf6e3fd231628afe8b46028139707"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/client-accounting.json",
+      "sha256": "d08020cdc290c17a7cf1576d5b7a10445addf27e8addf9af0d5d16177775798e"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/client-list.json",
+      "sha256": "1ea0a2df6cc46bd36eb29f672765da9ef8f521583cd85ea5348134514dc05c21"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/credential-rotation.json",
+      "sha256": "126992a1b5114b2003aa9cc86eb21db7acf18f44f454d6e08b96a7961f9f7ea5"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/certificate-lifecycle.json",
+      "sha256": "da6c35244876bc9508db4034bf43f0a5a00215cf4f98628c19e2bbe0635651c1"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/session-expiry.json",
+      "sha256": "d138385c0f596a311b5224a9da2b58db55fe0dfc175e85c04d21c143b6fafe8c"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/task-admission-upload.json",
+      "sha256": "ec6d22c5035514fc909317a6fa9e039202f0bda110b8cdb6ff6eec00dc6fc0ed"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/task-admission-download.json",
+      "sha256": "0dde556a5e9887d8d3d3349903f0ea27ed757c5eb3e3cc671fb0e808cd8c51f5"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/task-admission-mixed.json",
+      "sha256": "151ee05e1f75a5f6af3934c5c3cd2ee13c0f5b59257e8c6836ddb944a86324b0"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/transfer-retry.json",
+      "sha256": "ec93229a9890e85e358dd91572ba0525ed59f915d665191c4d10c0ce75818021"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/conflict-fail.json",
+      "sha256": "4c8596e12ab568489d0dd9d228fb98a5f37c04ddb22b1498b36c439b5efabfa6"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/conflict-overwrite.json",
+      "sha256": "68a1680c926b580de2d5fdd3048f98460610b846e9dfd21ad67a028c4f0004a8"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/conflict-skip.json",
+      "sha256": "b28082b66e31104561dc9839ff8b534149d7bad361d313f1d5e690fd81a4626a"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/task-items.json",
+      "sha256": "726f8a0e8dcd80d4b98250232917929df9957b1a8cb1aa14f0593770eb5da36f"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/disposition-transfer.json",
+      "sha256": "fa65effa36c31262fa8672de1448865416b5ba996f0e480616f20d58ee29af88"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/disposition-summary.json",
+      "sha256": "4c38193503e087b56dca98409f72595956532c21b1f9896f7a1abb5a4e2993f5"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/upload-receipt.json",
+      "sha256": "b43244281785475e9bd0ab46f97c53130de8bf1a6b09c8014fac0355f98a5431"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/completed-history.json",
+      "sha256": "ac89c1089def1bf2791764c0adabc32dc7de96af22d8100f0b308e5d8f4fa29c"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/item-failures.json",
+      "sha256": "63f25d391d77c20763002b615f1b94192ec5c24459058f83a95064622672bdba"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/conflict-fail-recovery.json",
+      "sha256": "e762d14a5fe35685da7b00900678e383bbf9f08a9b972fcd11a579a236aa9586"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/conflict-overwrite-recovery.json",
+      "sha256": "3ef4d88565364edbd833903e2ae95eab2ddd2dd6367feeed6324515a36dac602"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/conflict-skip-recovery.json",
+      "sha256": "0ecba73727aaaecf87fa7f5122c7a0b36ad40bb403cf2547d45f703f5c1a9915"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/transfer.json",
+      "sha256": "463ba313ff86dfc70aad58b15890b71241a07477de723a4dbc701596ba09a168"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/transfer-recovery.json",
+      "sha256": "9614934ce7dc5a96524cce8562c028ed9e4abf504fbcb76676ecba099d891085"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/parallel-transfer.json",
+      "sha256": "d59f84f3fd822ac8e028e9f171b17d128e45ab4510d44ea8439c02fb15bf1068"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/parallel-recovery.json",
+      "sha256": "4d687b8695dd265b82cba56925f539ef266f0524560bbae25e06d9b60d89950d"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/parallel-isolation.json",
+      "sha256": "d31b278ee7c6d2a8501a3ed70f6c72388fcf1e7957c9646bd49678a8afee5935"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/byte-progress.json",
+      "sha256": "bd0add5dd0620c3a124551124f89cf840650d6d4aea28b3e030b602c40349fd7"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/transfer-faults.json",
+      "sha256": "74d5b2fed7a62ae54de82d6da35af8553a708f0c93f377307b9e1f55a92779f9"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/final-ack.json",
+      "sha256": "8d61047e45407d2792083a32fce3a94dc77466da5da0ed33f8f8dd42b097ec8f"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/final-ack-auto-retry.json",
+      "sha256": "f25f768811de51301c799e67fac21b4fc2ae31995651ede79dc6337b7dcb9ca7"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/overwrite-faults.json",
+      "sha256": "bc78fcdae45c829b2314bb92f601f6a7291233ef21c8c51795538bd972830acb"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/overwrite-final-ack.json",
+      "sha256": "0d54c3c4fbc94ea6837d3c230db8688b78eb268aafc33bf9429d8ff0702f592c"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/overwrite-final-ack-auto-retry.json",
+      "sha256": "5eda25c3cb9a1cf2f37af4044c4883bf13b707c6e1e80b2df8e144b97051d306"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/gui-process-recovery.json",
+      "sha256": "9ba15f8a0bfd6b61191fa00b0093549fa1dddcb19b53bebbbe3736c634b1bce9"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/task-store.json",
+      "sha256": "d88f0340f9659b5944242ad6e2dca4b1bf6d2d46aa6bb793f9f395754eec73bc"
+    },
+    {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/validation-windows-2022/build/secure-channel.json",
+      "sha256": "21ac6941fa0e6a9fe6562e84ef1eaf2b8a034ae97bc4b76496f44fb310f90993"
+    }
+  ],
+  "failedCases": [
+    {
+      "platform": "darwin",
+      "runner": "validation-macos-15",
+      "name": "legacy-text-credit",
+      "exitCode": 1,
+      "seconds": 1.038,
+      "report": "build/legacy-text-credit.json",
+      "reportCreated": true,
+      "passed": false,
+      "reportSha256": "3b00c758623708c6a71611c358af43820144035b4df6db59b63c8315e48c6a95"
+    }
+  ],
+  "entireRunTerminalVerified": true,
+  "allOriginalCoreAndProtocolReportsPreserved": true,
+  "allProtocolCasesPassed": false,
+  "rootCauseProvenForAllFailures": false,
+  "collectorResumedAfterZipDirectoryFilter": true,
+  "releaseQualified": false,
+  "deliveryComplete": false
+}
