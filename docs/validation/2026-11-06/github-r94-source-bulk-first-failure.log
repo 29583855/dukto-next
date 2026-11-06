@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "E:\project\dukto\.cache\push-commit-api-bulk-r94.py", line 109, in <module>
+    main()
+  File "E:\project\dukto\.cache\push-commit-api-bulk-r94.py", line 83, in main
+    tree = request(base + '/git/trees', 'POST', {'base_tree': tree, 'tree': group})['sha']
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\project\dukto\.cache\push-commit-api-bulk-r94.py", line 31, in request
+    return api['request'](*values, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".cache/github-actions-r28.py", line 57, in request
+    raise RuntimeError('GitHub API ' + str(error.code) + ': ' + error.read().decode('utf-8')[:1000]) from None
+RuntimeError: GitHub API 401: {"message":"Bad credentials","documentation_url":"https://docs.github.com/rest","status":"401"}
