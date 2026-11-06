@@ -1,0 +1,244 @@
+{
+  "date": "2026-11-06",
+  "observedUtc": "2026-11-06T08:33:54.257677+00:00",
+  "planVersion": "v0.84",
+  "productionCommit": "9b880f4217cc1fb07210fa7db8518cedbba3f677",
+  "testCommit": "9b880f4217cc1fb07210fa7db8518cedbba3f677",
+  "sourceAudit": {
+    "sourceCommit": "9b880f4217cc1fb07210fa7db8518cedbba3f677",
+    "buildInputsMatchExactGitCommit": 195,
+    "cppStandard": 14,
+    "changedCppFormatted": true,
+    "encodingAndNewlinePreserved": true,
+    "productionFilesScanned": 87,
+    "todoFixmeStubMarkerCount": 0
+  },
+  "windowsEvidence": {
+    "path": "docs/validation/2026-11-06/completed-source-r85-windows/summary.json",
+    "sha256": "89146caf7503cc733a5d364cfe3d6c4a08177ab1deb844b072e834e86323d54e"
+  },
+  "windows": {
+    "toolchains": [
+      {
+        "toolchain": "ucrt",
+        "binary": {
+          "path": "build/windows-ucrt/dukto-cli.exe",
+          "sha256": "3522f6a081497177c906fc0cc0f78186f5df3931bccdec0b2649384555d7de3a"
+        },
+        "cases": [
+          {
+            "name": "full-core",
+            "exitCode": 0,
+            "passed": true
+          },
+          {
+            "name": "completed_transfer_integration",
+            "script": {
+              "path": "tests/completed_transfer_integration.py",
+              "sha256": "7e8ff44c0d59d8954f89685c9a067f78a6016aa5378ffff46bb31227740d8547"
+            },
+            "exitCode": 0,
+            "seconds": 74.156,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/completed-source-r85-windows/ucrt/completed_transfer_integration.json",
+              "sha256": "fa91d217204c849741e1d13d1db3c58d835b4c66c67eb566635e87f8fe6d3de0"
+            }
+          },
+          {
+            "name": "upload_receipt_integration",
+            "script": {
+              "path": "tests/upload_receipt_integration.py",
+              "sha256": "b0c21a359782418fd0e442de44a554fab7db173681650316ad154b135188c9e6"
+            },
+            "exitCode": 0,
+            "seconds": 50.157,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/completed-source-r85-windows/ucrt/upload_receipt_integration.json",
+              "sha256": "2df021077d188bad8dad53f9c4f0e37378ab356fce5cc804f314e9e993176351"
+            }
+          },
+          {
+            "name": "service_accounting_integration",
+            "script": {
+              "path": "tests/service_accounting_integration.py",
+              "sha256": "4751984f60446ed0009a6d7fe04f0f06b17e0d76d2b28b309dd653881c5b619c"
+            },
+            "exitCode": 0,
+            "seconds": 24.5,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/completed-source-r85-windows/ucrt/service_accounting_integration.json",
+              "sha256": "d0e5c59b5943764746e0c11181eb51991ab7fd021373b3b4bfd4d545c7b7fe94"
+            }
+          },
+          {
+            "name": "client_accounting_integration",
+            "script": {
+              "path": "tests/client_accounting_integration.py",
+              "sha256": "1e5235203efbfc57b77e3f12238e9d0f6583ab34f1f3206d013a5dbe5767e17e"
+            },
+            "exitCode": 0,
+            "seconds": 82.187,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/completed-source-r85-windows/ucrt/client_accounting_integration.json",
+              "sha256": "d3f9084ed1a1b4ae73e9d8d2bbdb636e9965002b89f89891755bee6f3cb5ec4a"
+            }
+          },
+          {
+            "name": "disposition_summary_integration",
+            "script": {
+              "path": "tests/disposition_summary_integration.py",
+              "sha256": "cca1196197ead7d15f624649e27d673982a5c41600d11b6ba2a82492279d2228"
+            },
+            "exitCode": 0,
+            "seconds": 35.594,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/completed-source-r85-windows/ucrt/disposition_summary_integration.json",
+              "sha256": "0b19f3cc351ffa5291c51c6363eaf22243d5b4f5b561d6f787cf4c72da35cc8d"
+            }
+          }
+        ],
+        "passed": true
+      },
+      {
+        "toolchain": "msvc",
+        "binary": {
+          "path": "build/windows/Release/dukto-cli.exe",
+          "sha256": "fcc5c25669c87c7ffaa40a732c796786afde851457489a51c87fd34979e958a9"
+        },
+        "cases": [
+          {
+            "name": "full-core",
+            "exitCode": 0,
+            "passed": true
+          },
+          {
+            "name": "completed_transfer_integration",
+            "script": {
+              "path": "tests/completed_transfer_integration.py",
+              "sha256": "7e8ff44c0d59d8954f89685c9a067f78a6016aa5378ffff46bb31227740d8547"
+            },
+            "exitCode": 0,
+            "seconds": 77.0,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/completed-source-r85-windows/msvc/completed_transfer_integration.json",
+              "sha256": "902305ec1ef1853a0a23df9d6e9bb4a862ea22f153dacdd34fa143417aea5c25"
+            }
+          },
+          {
+            "name": "upload_receipt_integration",
+            "script": {
+              "path": "tests/upload_receipt_integration.py",
+              "sha256": "b0c21a359782418fd0e442de44a554fab7db173681650316ad154b135188c9e6"
+            },
+            "exitCode": 0,
+            "seconds": 51.078,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/completed-source-r85-windows/msvc/upload_receipt_integration.json",
+              "sha256": "92f9ec8a4234d9c215be925516e4f190adf4668c85e48ebe117ab0e8918b2063"
+            }
+          },
+          {
+            "name": "service_accounting_integration",
+            "script": {
+              "path": "tests/service_accounting_integration.py",
+              "sha256": "4751984f60446ed0009a6d7fe04f0f06b17e0d76d2b28b309dd653881c5b619c"
+            },
+            "exitCode": 0,
+            "seconds": 25.812,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/completed-source-r85-windows/msvc/service_accounting_integration.json",
+              "sha256": "1ac2bde21a3cd977c00dede12731873cba40060029026db1f39de462410283f3"
+            }
+          },
+          {
+            "name": "client_accounting_integration",
+            "script": {
+              "path": "tests/client_accounting_integration.py",
+              "sha256": "1e5235203efbfc57b77e3f12238e9d0f6583ab34f1f3206d013a5dbe5767e17e"
+            },
+            "exitCode": 0,
+            "seconds": 84.844,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/completed-source-r85-windows/msvc/client_accounting_integration.json",
+              "sha256": "26265b033a610b4cee661cececefc956961e079b3030e0343535597d2bd1de57"
+            }
+          },
+          {
+            "name": "disposition_summary_integration",
+            "script": {
+              "path": "tests/disposition_summary_integration.py",
+              "sha256": "cca1196197ead7d15f624649e27d673982a5c41600d11b6ba2a82492279d2228"
+            },
+            "exitCode": 0,
+            "seconds": 35.109,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/completed-source-r85-windows/msvc/disposition_summary_integration.json",
+              "sha256": "d8ac34c2fe687ffc4c1c6f6acd1715490fe19c0db57162e21c50421d0b2a4aa4"
+            }
+          }
+        ],
+        "passed": true
+      }
+    ],
+    "coreTargetsEach": 23,
+    "dispositionQtTestPassedEachIncludingLifecycleAndDataRows": 28,
+    "protocolReportsEach": 5,
+    "allOriginalReportsVerified": true
+  },
+  "runs": {
+    "native": {
+      "id": 42188307361,
+      "head_sha": "9b880f4217cc1fb07210fa7db8518cedbba3f677",
+      "status": "in_progress",
+      "conclusion": null,
+      "html_url": "https://github.com/29583855/dukto-next/actions/runs/42188307361"
+    },
+    "musl": {
+      "id": 42188379969,
+      "head_sha": "9b880f4217cc1fb07210fa7db8518cedbba3f677",
+      "status": "in_progress",
+      "conclusion": null,
+      "html_url": "https://github.com/29583855/dukto-next/actions/runs/42188379969"
+    },
+    "macosPackage": {
+      "id": 42188384590,
+      "head_sha": "9b880f4217cc1fb07210fa7db8518cedbba3f677",
+      "status": "in_progress",
+      "conclusion": null,
+      "html_url": "https://github.com/29583855/dukto-next/actions/runs/42188384590"
+    }
+  },
+  "previousR83Native171Evidence": {
+    "path": "docs/validation/2026-11-06/skip-items-r83-native-terminal/receipt.json",
+    "sha256": "6b9f63084c266230022cb2400f70febcd53b9d68c5a030c05fe042694960aff9"
+  },
+  "previousR83GlibcSelectedEvidence": {
+    "path": "docs/validation/2026-11-06/skip-items-r83c-glibc/verified-receipt.json",
+    "sha256": "27df741ae080145ae1ca1e9898a1326c325b9eb91f1fb4d70c03eeb94bc53258"
+  },
+  "previousR84Musl42Evidence": {
+    "path": "docs/validation/2026-11-06/skip-items-r84-musl-terminal/receipt.json",
+    "sha256": "4c2a14d260ef2a91a53ac81b1e442fea47cb6ee7578a37ba1c6fcc5bdd3e1c66"
+  },
+  "currentMacPackageSourceCommit": "9be53969913054abc0bf2aaec906235ebfc5ef5f",
+  "currentMacPackageEvidence": {
+    "path": "docs/validation/2026-11-06/skip-items-r84-macos-package-terminal/receipt.json",
+    "sha256": "0a8367aaeced7d5a11e8cfb24667f042d443787729dac43dbcdce768b7efb565"
+  },
+  "newMacPackagePending": true,
+  "skippedSourceHistoryPrimitiveVerified": true,
+  "publicSkipEnabled": false,
+  "uploadHistorySourceScanStillOpen": true,
+  "releaseQualified": false,
+  "deliveryComplete": false
+}
