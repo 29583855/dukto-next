@@ -1,5 +1,5 @@
 {
-  "observedUtc": "2026-11-06T13:21:13.682777+00:00",
+  "observedUtc": "2026-11-06T13:38:21.210124+00:00",
   "productionCommit": "b615d8a0e820bcf9de05d0dce546e930b27ad748",
   "testCommit": "b615d8a0e820bcf9de05d0dce546e930b27ad748",
   "packages": [
@@ -198,7 +198,7 @@
   "releaseQualified": false,
   "deliveryComplete": false,
   "planVersion": "v0.92",
-  "currentSourceStage": "R93 exact source uploaded; four native runners, Alpine and two macOS packages started",
+  "currentSourceStage": "R93 Mac package run failed on Intel overwrite recovery; R94 text view local development",
   "nativeMusl": {
     "sourceCommit": "b615d8a0e820bcf9de05d0dce546e930b27ad748",
     "productionCommit": "b615d8a0e820bcf9de05d0dce546e930b27ad748",
@@ -542,9 +542,13 @@
     "sourceCommit": "b615d8a0e820bcf9de05d0dce546e930b27ad748",
     "runId": 42224636431,
     "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42224636431",
-    "status": "in_progress",
-    "workflowConclusion": null,
-    "originalEvidenceVerified": false
+    "status": "completed",
+    "workflowConclusion": "failure",
+    "originalEvidenceVerified": false,
+    "failureEvidence": {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-macos-package-failure/receipt.json",
+      "sha256": "1f4ade3df1bb3d1508e248f7135d0b5788ec0f7cb4014978077497e3c37637b9"
+    }
   },
   "copiedDispositionIntegration": {
     "sourceCommit": "74dd5cec71fde472b940e869661d6e8533042a65",
@@ -10018,8 +10022,8 @@
       "native": {
         "id": 42213912606,
         "head_sha": "f8cf4cd7ce47eff0f2d72ad26d85ea3cb19f65e9",
-        "status": "in_progress",
-        "conclusion": null,
+        "status": "completed",
+        "conclusion": "success",
         "html_url": "https://github.com/29583855/dukto-next/actions/runs/42213912606"
       },
       "musl": {
@@ -10040,7 +10044,14 @@
     },
     "muslOriginalReportsVerified": true,
     "muslCoreTargets": 23,
-    "muslProtocolReports": 44
+    "muslProtocolReports": 44,
+    "nativeEvidence": {
+      "path": "docs/validation/2026-11-06/thread-idle-r91-native-terminal/receipt.json",
+      "sha256": "df498d2c2bd9f18067bcd4a4d03e4637f43440e5efedc2ef65b069c5c1caad15"
+    },
+    "nativeOriginalReportsVerified": true,
+    "nativeCoreTargetsEach": 23,
+    "nativeProtocolReports": 180
   },
   "verifiedR87Native": {
     "path": "docs/validation/2026-11-06/public-skip-r87-native-terminal/receipt.json",
@@ -12492,7 +12503,7 @@
     "localGlibcRemoteRoot": "/home/dukto/legacy-text-r93-glibc",
     "localGlibcSnapshotSha256": "835d6da81eb43a3c340c5acf5db8d5b54169a5e03b4a468f001db0be3f2f71ef",
     "nativeCiPending": true,
-    "newMacPackagePending": true,
+    "newMacPackagePending": false,
     "currentMacPackageSourceCommit": "8eb76cea15a49f7021867c0c6d9c1e551872d19f",
     "entireCacheAndDocumentBudgetCompleted": false,
     "releaseQualified": false,
@@ -12504,8 +12515,8 @@
       "macosPackage": {
         "id": 42224636431,
         "head_sha": "b615d8a0e820bcf9de05d0dce546e930b27ad748",
-        "status": "in_progress",
-        "conclusion": null,
+        "status": "completed",
+        "conclusion": "failure",
         "html_url": "https://github.com/29583855/dukto-next/actions/runs/42224636431"
       },
       "musl": {
@@ -12523,7 +12534,14 @@
         "html_url": "https://github.com/29583855/dukto-next/actions/runs/42224583301"
       }
     },
-    "observedUtc": "2026-11-06T13:21:13.682777+00:00"
+    "observedUtc": "2026-11-06T13:38:21.210124+00:00",
+    "newMacPackageReady": false,
+    "macosPackageFailed": true,
+    "macosFailureEvidence": {
+      "path": "docs/validation/2026-11-06/legacy-text-r93-macos-package-failure/receipt.json",
+      "sha256": "1f4ade3df1bb3d1508e248f7135d0b5788ec0f7cb4014978077497e3c37637b9"
+    },
+    "macosIntelRecoveryCauseProven": false
   },
   "nativeFullBeforeR93": {
     "sourceCommit": "8eb76cea15a49f7021867c0c6d9c1e551872d19f",
@@ -12554,5 +12572,14 @@
     "status": "completed",
     "workflowConclusion": "success",
     "originalEvidenceVerified": true
+  },
+  "verifiedR91Native": {
+    "sourceCommit": "f8cf4cd7ce47eff0f2d72ad26d85ea3cb19f65e9",
+    "evidence": {
+      "path": "docs/validation/2026-11-06/thread-idle-r91-native-terminal/receipt.json",
+      "sha256": "df498d2c2bd9f18067bcd4a4d03e4637f43440e5efedc2ef65b069c5c1caad15"
+    },
+    "coreTargetsEach": 23,
+    "protocolReports": 180
   }
 }

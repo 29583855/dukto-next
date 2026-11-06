@@ -1,0 +1,88 @@
+﻿2026-11-06T13:29:07.4146570Z ##[group]Run python -X utf8 tests/macos_package_integration.py "package-output/DuktoNext-macos-$(uname -m)-preview.tar.gz" --report build/package-runtime.json
+2026-11-06T13:29:07.4153630Z [36;1mpython -X utf8 tests/macos_package_integration.py "package-output/DuktoNext-macos-$(uname -m)-preview.tar.gz" --report build/package-runtime.json[0m
+2026-11-06T13:29:07.4535420Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-06T13:29:07.4536580Z env:
+2026-11-06T13:29:07.4537510Z   pythonLocation: /Users/runner/hostedtoolcache/Python/3.12.10/x64
+2026-11-06T13:29:07.4539140Z   PKG_CONFIG_PATH: /Users/runner/hostedtoolcache/Python/3.12.10/x64/lib/pkgconfig
+2026-11-06T13:29:07.4547900Z   Python_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/x64
+2026-11-06T13:29:07.4549600Z   Python2_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/x64
+2026-11-06T13:29:07.4551060Z   Python3_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/x64
+2026-11-06T13:29:07.4552270Z   CMAKE_PREFIX_PATH: /usr/local/opt/qt@5
+2026-11-06T13:29:07.4553660Z   OPENSSL_ROOT_DIR: /usr/local/opt/openssl@3
+2026-11-06T13:29:07.4554550Z ##[endgroup]
+2026-11-06T13:29:26.9230850Z {
+2026-11-06T13:29:26.9232350Z   "date": "2026-11-04",
+2026-11-06T13:29:26.9232950Z   "passed": true,
+2026-11-06T13:29:26.9233410Z   "checks": [
+2026-11-06T13:29:26.9233850Z     "isolated INI",
+2026-11-06T13:29:26.9234480Z     "persistent configuration used by send/receive",
+2026-11-06T13:29:26.9240880Z     "port and timeout bounds",
+2026-11-06T13:29:26.9241740Z     "bad endpoint rejection",
+2026-11-06T13:29:26.9242530Z     "discovery JSON",
+2026-11-06T13:29:26.9243250Z     "receipt query",
+2026-11-06T13:29:26.9249620Z     "UTF-8/empty stdin roundtrip",
+2026-11-06T13:29:26.9250380Z     "invalid/oversized stdin rejected",
+2026-11-06T13:29:26.9251470Z     "open stdin idle timeout"
+2026-11-06T13:29:26.9252250Z   ],
+2026-11-06T13:29:26.9257650Z   "stdinSignalCancellation": "SIGINT passed",
+2026-11-06T13:29:26.9263500Z   "receiveSignalCancellation": [
+2026-11-06T13:29:26.9270260Z     {
+2026-11-06T13:29:26.9271020Z       "activeReceive": false,
+2026-11-06T13:29:26.9271570Z       "signal": "SIGTERM",
+2026-11-06T13:29:26.9272150Z       "seconds": 0.085,
+2026-11-06T13:29:26.9273200Z       "exitCode": 7,
+2026-11-06T13:29:26.9274310Z       "jsonCancellation": true,
+2026-11-06T13:29:26.9275230Z       "temporaryCleaned": true
+2026-11-06T13:29:26.9276120Z     },
+2026-11-06T13:29:26.9277320Z     {
+2026-11-06T13:29:26.9278680Z       "activeReceive": true,
+2026-11-06T13:29:26.9279580Z       "signal": "SIGINT",
+2026-11-06T13:29:26.9280600Z       "seconds": 0.11,
+2026-11-06T13:29:26.9281930Z       "exitCode": 7,
+2026-11-06T13:29:26.9283250Z       "jsonCancellation": true,
+2026-11-06T13:29:26.9289740Z       "temporaryCleaned": true
+2026-11-06T13:29:26.9290900Z     }
+2026-11-06T13:29:26.9291720Z   ]
+2026-11-06T13:29:26.9298090Z }
+2026-11-06T13:29:49.0523460Z {
+2026-11-06T13:29:49.0525280Z   "date": "2026-11-04",
+2026-11-06T13:29:49.0527100Z   "passed": true,
+2026-11-06T13:29:49.0528730Z   "payloadSha256": "c7fd926e5662e22d94004a95c01fb3cca72733824145d2bca8df1573d58895e7",
+2026-11-06T13:29:49.0531550Z   "checks": [
+2026-11-06T13:29:49.0532680Z     "real authenticated upload and download",
+2026-11-06T13:29:49.0533950Z     "8MiB+37 bytes",
+2026-11-06T13:29:49.0535290Z     "Unicode and empty files/directories",
+2026-11-06T13:29:49.0543230Z     "35 additional files cross three bounded receive windows with per-file hashes",
+2026-11-06T13:29:49.0545060Z     "directory keep-both mapping",
+2026-11-06T13:29:49.0546720Z     "same request does not duplicate",
+2026-11-06T13:29:49.0548910Z     "changed upload content refused",
+2026-11-06T13:29:49.0551140Z     "completed retry without local manifest/log refused without new files",
+2026-11-06T13:29:49.0553130Z     "download destination rebinding refused",
+2026-11-06T13:29:49.0559310Z     "read/upload grants enforced",
+2026-11-06T13:29:49.0560720Z     "owned task list and revoked filtering",
+2026-11-06T13:29:49.0562200Z     "normal upload scan libraries reclaimed"
+2026-11-06T13:29:49.0565240Z   ],
+2026-11-06T13:29:49.0566040Z   "channelsRequested": 16,
+2026-11-06T13:29:49.0567630Z   "scope": "authenticated CLI with selected channels; GUI, restart/fault and full platform matrix require separate validation"
+2026-11-06T13:29:49.0569490Z }
+2026-11-06T13:29:49.0570080Z 
+2026-11-06T13:32:44.9211910Z Traceback (most recent call last):
+2026-11-06T13:32:44.9248440Z   File "/Users/runner/work/dukto-next/dukto-next/tests/transfer_recovery_integration.py", line 487, in <module>
+2026-11-06T13:32:44.9250410Z     main()
+2026-11-06T13:32:44.9251810Z   File "/Users/runner/work/dukto-next/dukto-next/tests/transfer_recovery_integration.py", line 360, in main
+2026-11-06T13:32:44.9253820Z     prefix = wait_checkpoint(receive_state, task, checkpoint, gate)
+2026-11-06T13:32:44.9256310Z              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-11-06T13:32:44.9258990Z   File "/Users/runner/work/dukto-next/dukto-next/tests/transfer_recovery_integration.py", line 191, in wait_checkpoint
+2026-11-06T13:32:44.9261380Z     return gate.checkpoint(confirmed, minimum)
+2026-11-06T13:32:44.9263010Z            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-11-06T13:32:44.9264700Z   File "/Users/runner/work/dukto-next/dukto-next/tests/checkpoint_gate.py", line 76, in checkpoint
+2026-11-06T13:32:44.9267250Z     raise AssertionError(("no durable checkpoint before fault", minimum, self.evidence()))
+2026-11-06T13:32:44.9277080Z AssertionError: ('no durable checkpoint before fault', 16777224, {'direction': 'upload', 'accepting': True, 'released': False, 'streams': [{'index': 0, 'limit': 131072, 'reserved': 21359, 'forwarded': 4975, 'waiting': False, 'finished': True, 'grants': 0}, {'index': 1, 'limit': 12713984, 'reserved': 11255808, 'forwarded': 11239424, 'waiting': False, 'finished': True, 'grants': 3}, {'index': 2, 'limit': 12713984, 'reserved': 8552448, 'forwarded': 8536064, 'waiting': False, 'finished': True, 'grants': 3}, {'index': 3, 'limit': 4325376, 'reserved': 180224, 'forwarded': 163840, 'waiting': False, 'finished': True, 'grants': 1}, {'index': 4, 'limit': 4325376, 'reserved': 212992, 'forwarded': 196608, 'waiting': False, 'finished': True, 'grants': 1}], 'scope': 'opaque TLS forwarding barrier; forwarded bytes include protocol overhead'})
+2026-11-06T13:32:45.7085600Z Traceback (most recent call last):
+2026-11-06T13:32:45.7087860Z   File "/Users/runner/work/dukto-next/dukto-next/tests/macos_package_integration.py", line 160, in <module>
+2026-11-06T13:32:45.7098090Z     main()
+2026-11-06T13:32:45.7101840Z   File "/Users/runner/work/dukto-next/dukto-next/tests/macos_package_integration.py", line 140, in main
+2026-11-06T13:32:45.7105500Z     assert result.returncode == 0 and destination.is_file(), (name, result.returncode)
+2026-11-06T13:32:45.7109930Z            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-11-06T13:32:45.7111420Z AssertionError: ('overwrite-recovery', 1)
+2026-11-06T13:32:45.7748470Z ##[error]Process completed with exit code 1.
