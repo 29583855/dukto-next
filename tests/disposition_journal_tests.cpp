@@ -2,6 +2,7 @@
 #include "core/error.h"
 #include "core/files.h"
 #include "core/protocol.h"
+#include "core/transferdisposition.h"
 
 #include <QCryptographicHash>
 #include <QDir>
@@ -48,6 +49,179 @@ bool alter(const QString &path, const QString &statement) {
 class DispositionJournalTests final : public QObject {
     Q_OBJECT
   private slots:
+    // 日期：2026-11-06；独立改变真实复制源、原处置和授权映射，跳过源不存在不影响历史决定。
+    void completedSourceHistory_data() {
+        QTest::addColumn<QString>("scenario");
+        for (const auto &name :
+             {"unchanged", "changed-copy", "missing-copy", "directory-is-file", "missing-empty",
+              "wrong-mapping", "cancel-read", "incomplete", "wrong-manifest", "skipped-now-file"})
+            QTest::newRow(name) << QString::fromLatin1(name);
+    }
+
+    // 日期：2026-11-06；正文分片取消且不写原件，copied损坏必须失败；sourceForCopied绝不能解析skipped。
+    void completedSourceHistory() {
+        QFETCH(QString, scenario);
+        QTemporaryDir temporary;
+        QVERIFY(temporary.isValid());
+        const auto bundle = temporary.filePath("a");
+        QVERIFY(QDir().mkdir(bundle));
+        const auto body = bundle + "/body";
+        const auto empty = bundle + "/empty";
+        const QByteArray bytes(dukto::BufferSize * 3 + 17, 'x');
+        {
+            QFile file(body);
+            QVERIFY(file.open(QIODevice::WriteOnly));
+            QCOMPARE(file.write(bytes), qint64(bytes.size()));
+        }
+        {
+            QFile file(empty);
+            QVERIFY(file.open(QIODevice::WriteOnly));
+        }
+        dukto::PrivateStore store(temporary.filePath("private"), true);
+        dukto::StrongManifest manifest(store, "manifest.sqlite", true);
+        manifest.append({1, "a", bundle, true, 0, {}});
+        manifest.append({2, "a/body", body, false, bytes.size(), sha(bytes)});
+        manifest.appendBlock(2, 0, bytes.size(), sha(bytes));
+        manifest.append({3, "a/empty", empty, false, 0, sha("")});
+        const auto skipped = temporary.filePath("z");
+        manifest.append({4, "z", skipped, true, 0, {}});
+        manifest.append({5, "z/sub", skipped + "/sub", true, 0, {}});
+        manifest.append({6, "z/sub/gone", skipped + "/sub/gone", false, 3, sha("abc")});
+        manifest.appendBlock(6, 0, 3, sha("abc"));
+        manifest.seal();
+        const auto task = QUuid::createUuid();
+        {
+            dukto::DispositionJournal journal(store, "result.sqlite", task, manifest, "skip");
+            journal.append(1, "a", "copied");
+            journal.append(2, "a/body", "copied");
+            journal.append(3, "a/empty", "copied");
+            journal.append(4, "z", "skipped", 4);
+            journal.append(5, "z/sub", "skipped", 4);
+            if (scenario != "incomplete")
+                journal.append(6, "z/sub/gone", "skipped", 4);
+        }
+        if (scenario == "changed-copy") {
+            QFile file(body);
+            QVERIFY(file.open(QIODevice::WriteOnly));
+            QCOMPARE(file.write(QByteArray(bytes.size(), 'y')), qint64(bytes.size()));
+        } else if (scenario == "missing-copy") {
+            QVERIFY(QFile::remove(body));
+        } else if (scenario == "missing-empty") {
+            QVERIFY(QFile::remove(empty));
+        } else if (scenario == "directory-is-file") {
+            QVERIFY(QDir(bundle).removeRecursively());
+            QFile file(bundle);
+            QVERIFY(file.open(QIODevice::WriteOnly));
+            QCOMPARE(file.write("other"), qint64(5));
+        } else if (scenario == "skipped-now-file") {
+            QFile file(skipped);
+            QVERIFY(file.open(QIODevice::WriteOnly));
+            QCOMPARE(file.write("foreign"), qint64(7));
+        }
+        const auto before = dukto::hashFile(temporary.filePath("private/result.sqlite"));
+        const auto sourceBefore = dukto::hashFile(temporary.filePath("private/manifest.sqlite"));
+        const auto connections = QSqlDatabase::connectionNames();
+        {
+            dukto::DispositionJournal journal(store, "result.sqlite", task, manifest, "skip", {},
+                                              true);
+            int mapped = 0, readingChecks = 0;
+            bool reading = false;
+            const auto check = [&]() {
+                // 日期：2026-11-06；仅在复制正文解析后计数，确保取消发生在固定片段重读期间。
+                if (scenario == "cancel-read" && reading && ++readingChecks == 2)
+                    throw dukto::Error(dukto::ExitCode::Cancelled, "cancel-source-read",
+                                       "completion");
+            };
+            const auto resolve = [&](const dukto::StrongEntry &entry) {
+                // 日期：2026-11-06；skipped的现有类型或消失状态都不能触发当前源解析。
+                if (entry.id > 3)
+                    throw dukto::Error(dukto::ExitCode::Integrity, "resolved-skipped-source",
+                                       "test");
+                ++mapped;
+                reading = entry.id == 2;
+                return scenario == "wrong-mapping" ? empty : entry.source;
+            };
+            bool succeeded = false;
+            try {
+                if (scenario == "wrong-manifest") {
+                    dukto::StrongManifest other(store, "other.sqlite", true);
+                    other.append({1, "other", empty, false, 0, sha("")});
+                    other.seal();
+                    dukto::verifyCompletedSource(other, journal, check, resolve);
+                } else {
+                    const auto result =
+                        dukto::verifyCompletedSource(manifest, journal, check, resolve);
+                    QCOMPARE(result["copiedBytes"], QJsonValue(QString::number(bytes.size())));
+                    QCOMPARE(result["skippedBytes"], QJsonValue("3"));
+                    QCOMPARE(result["skippedEntries"], QJsonValue("3"));
+                    QCOMPARE(mapped, 3);
+                }
+                succeeded = true;
+            } catch (const dukto::Error &error) {
+                QVERIFY2(error.message != "resolved-skipped-source", qPrintable(error.message));
+                if (scenario == "cancel-read") {
+                    QCOMPARE(error.code, dukto::ExitCode::Cancelled);
+                    QCOMPARE(readingChecks, 2);
+                } else if (scenario == "changed-copy" || scenario == "wrong-mapping" ||
+                           scenario == "wrong-manifest" || scenario == "incomplete") {
+                    QCOMPARE(error.code, dukto::ExitCode::Integrity);
+                }
+            }
+            QCOMPARE(succeeded, scenario == "unchanged" || scenario == "skipped-now-file");
+        }
+        QCOMPARE(QSqlDatabase::connectionNames(), connections);
+        QCOMPARE(dukto::hashFile(temporary.filePath("private/result.sqlite")), before);
+        QCOMPARE(dukto::hashFile(temporary.filePath("private/manifest.sqlite")), sourceBefore);
+    }
+
+    // 日期：2026-11-06；跨三页全跳过历史允许整个原目录删除；不解析任一源且反复取消不改变数据库。
+    void completedAllSkippedSourceRemoved() {
+        QTemporaryDir temporary;
+        dukto::PrivateStore store(temporary.filePath("private"), true);
+        dukto::StrongManifest manifest(store, "manifest.sqlite", true);
+        const auto removed = temporary.filePath("gone");
+        QVERIFY(QDir().mkdir(removed));
+        manifest.append({1, "gone", removed, true, 0, {}});
+        for (quint64 id = 2; id <= 206; ++id) {
+            const auto name = QString("file-%1").arg(id, 4, 10, QChar('0'));
+            manifest.append({id, "gone/" + name, removed + '/' + name, false, 0, sha("")});
+        }
+        manifest.seal();
+        const auto task = QUuid::createUuid();
+        {
+            dukto::DispositionJournal journal(store, "result.sqlite", task, manifest, "skip");
+            for (quint64 id = 1; id <= 206; ++id)
+                journal.append(id, manifest.entry(id).relative, "skipped", 1);
+        }
+        QVERIFY(QDir().rmdir(removed));
+        const auto before = dukto::hashFile(temporary.filePath("private/result.sqlite"));
+        {
+            dukto::DispositionJournal journal(store, "result.sqlite", task, manifest, "skip", {},
+                                              true);
+            const auto resolve = [](const dukto::StrongEntry &) -> QString {
+                // 日期：2026-11-06；全跳过不应访问已删除的原源路径。
+                throw dukto::Error(dukto::ExitCode::Integrity, "resolved-skipped-source", "test");
+            };
+            for (int iteration = 0; iteration < 5; ++iteration) {
+                int checks = 0;
+                const auto cancel = [&]() {
+                    // 日期：2026-11-06；在逐项历史核验中取消，不依赖源文件是否存在。
+                    if (++checks == 117)
+                        throw dukto::Error(dukto::ExitCode::Cancelled, "cancel-history",
+                                           "completion");
+                };
+                QVERIFY_EXCEPTION_THROWN(
+                    dukto::verifyCompletedSource(manifest, journal, cancel, resolve), dukto::Error);
+            }
+            const auto result = dukto::verifyCompletedSource(manifest, journal, {}, resolve);
+            QCOMPARE(result["complete"], QJsonValue(true));
+            QCOMPARE(result["skippedEntries"], QJsonValue("206"));
+            QCOMPARE(result["copiedEntries"], QJsonValue("0"));
+        }
+        QCOMPARE(dukto::hashFile(temporary.filePath("private/result.sqlite")), before);
+        QVERIFY(!QFileInfo::exists(removed));
+    }
+
     // 日期：2026-11-06；核验只读重开原日志，拒绝追加和缺库，正文与持久头字节保持不变。
     void explicitReadOnlyHistory() {
         QTemporaryDir temporary;

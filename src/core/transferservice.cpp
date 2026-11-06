@@ -7,6 +7,7 @@
 #include "shares.h"
 #include "sourcefile.h"
 #include "taskstore.h"
+#include "transferdisposition.h"
 #include "transferitems.h"
 #include "transferprogress.h"
 #include "transferscheduler.h"
@@ -135,7 +136,7 @@ QJsonObject manageTransfer(PrivateStore &store, const Principal &principal,
     return result;
 }
 
-// 日期：2026-11-06；显式进度绑定必需计量并逐项核对；历史只读核验和旧协议兼容保持。
+// 日期：2026-11-06；历史按实际copied/skipped核对，发送源只重验copied；权限和必需计量不降级。
 void serveTransfer(next::SecureChannel &channel, PrivateStore &store, const Principal &principal,
                    const std::function<Principal()> &reauthenticate, const QJsonObject &request,
                    next::Type type, quint64 correlation) {
@@ -171,7 +172,13 @@ void serveTransfer(next::SecureChannel &channel, PrivateStore &store, const Prin
     const auto relative = request["path"].toString();
     const auto access = upload ? Access::Upload : Access::Download;
     auto root = Shares(store).open(principal, share, access);
-    const auto selected = root->resolve(relative, false);
+    // 日期：2026-11-06；跳过下载历史只绑定原相对名称；活动扫描另强制解析，历史skipped不访问已删除源。
+    const auto selected =
+        !upload && conflict == ConflictPolicy::Skip
+            ? (relative.isEmpty()
+                   ? root->share().root
+                   : QDir(root->share().root).filePath(validateRelativePath(relative)))
+            : root->resolve(relative, false);
     if (upload && !QFileInfo(selected).isDir())
         throw Error(ExitCode::Config, QStringLiteral("上传目标必须为现有授权目录"), "task");
     TaskStore tasks(store, false);
@@ -291,56 +298,29 @@ void serveTransfer(next::SecureChannel &channel, PrivateStore &store, const Prin
             if (upload) {
                 DurableReceive::verifyCompleted(
                     store, "receive-" + key + ".sqlite", task.id, *manifest, selected,
-                    task.conflict, work, [&](quint64 id, const QString &target) {
-                        // 日期：2026-11-06；接收实际路径必须等于原处置名称，重命名结果不能退回原名。
+                    task.conflict, work, {},
+                    [&](quint64 id, const DurableReceive::Preparation &result) {
+                        // 日期：2026-11-06；所有实际处置都核对原名称与跳过根，不能只核对copied回调。
                         const auto item = outcomes.item(id);
-                        if (item["disposition"] != "copied" || item["path"] != target)
+                        const auto skippedRoot =
+                            result.skipped ? next::decimal(item["skippedRoot"], id) : 0;
+                        if (item["path"] != result.path ||
+                            item["disposition"] != (result.skipped ? "skipped" : "copied") ||
+                            skippedRoot != result.skippedRoot)
                             throw Error(ExitCode::Integrity, QStringLiteral("历史接收与处置不符"),
                                         "completion");
                     });
             } else {
-                const auto count = next::decimal(summary["entries"], 10000000);
                 const auto baseName = QFileInfo(selected).fileName();
-                for (quint64 id = 1; id <= count; ++id) {
-                    work();
-                    const auto entry = manifest->entry(id);
+                verifyCompletedSource(*manifest, outcomes, work, [&](const StrongEntry &entry) {
+                    // 日期：2026-11-06；只有copied需要当前授权源解析，skipped已由原持久处置证明。
                     if (entry.relative != baseName && !entry.relative.startsWith(baseName + '/'))
                         throw Error(ExitCode::Integrity, QStringLiteral("历史下载源映射不同"),
                                     "completion");
                     const auto suffix = entry.relative.mid(baseName.size());
                     const auto mapped = relative.isEmpty() ? suffix.mid(1) : relative + suffix;
-                    const auto source = root->resolve(mapped, false);
-                    if (QDir::cleanPath(entry.source) != QDir::cleanPath(source) ||
-                        outcomes.item(id)["disposition"] != "copied")
-                        throw Error(ExitCode::Integrity, QStringLiteral("历史下载路径或处置不同"),
-                                    "completion");
-                    if (entry.directory) {
-                        if (!QFileInfo(source).isDir())
-                            throw Error(ExitCode::Integrity, QStringLiteral("历史下载目录已变化"),
-                                        "completion");
-                        continue;
-                    }
-                    SourceFile input(source);
-                    if (input.device().size() != entry.bytes)
-                        throw Error(ExitCode::Integrity, QStringLiteral("历史下载源大小已变化"),
-                                    "completion");
-                    QCryptographicHash hash(QCryptographicHash::Sha256);
-                    qint64 remaining = entry.bytes;
-                    while (remaining > 0) {
-                        work();
-                        input.verify();
-                        const auto bytes = input.device().read(qMin(remaining, BufferSize));
-                        if (bytes.isEmpty())
-                            throw Error(ExitCode::Disk, QStringLiteral("历史下载源重读失败"),
-                                        "completion");
-                        hash.addData(bytes);
-                        remaining -= bytes.size();
-                    }
-                    input.verify();
-                    if (hash.result() != entry.sha256)
-                        throw Error(ExitCode::Integrity, QStringLiteral("历史下载源正文已变化"),
-                                    "completion");
-                }
+                    return root->resolve(mapped, false);
+                });
             }
             authorize();
             task = tasks.task(principal.client, task.id);
@@ -419,6 +399,10 @@ void serveTransfer(next::SecureChannel &channel, PrivateStore &store, const Prin
                     throw Error(ExitCode::Integrity, QStringLiteral("上传清单总计与创建请求不同"),
                                 "manifest");
             } else {
+                // 日期：2026-11-06；新任务必须存在且仍处于授权根；不把历史跳过的免读规则用于活动扫描。
+                if (root->resolve(relative, false) != selected)
+                    throw Error(ExitCode::Integrity, QStringLiteral("下载源解析发生变化"),
+                                "manifest");
                 manifest->scan({selected}, nullptr, work);
             }
             task = tasks.bindManifest(*lease, manifest->summary());

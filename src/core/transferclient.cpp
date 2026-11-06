@@ -4,6 +4,7 @@
 #include "files.h"
 #include "paralleltransfer.h"
 #include "service.h"
+#include "transferdisposition.h"
 #include "transferitems.h"
 #include "transferprogress.h"
 #include <QCoreApplication>
@@ -303,7 +304,7 @@ QJsonObject verifyLocalDownload(PrivateStore &local, const QUuid &id, const QStr
 }
 } // namespace
 
-// 日期：2026-11-06；按原请求计量契约发送并核对最终快照；旧请求恢复仍按接收证据。
+// 日期：2026-11-06；历史按实际处置重验复制源并恢复跳过回执；原请求计量及双端确认保持。
 QJsonObject RemoteClient::upload(const QUuid &requestId, const QString &share,
                                  const QString &relative, PrivateStore &local,
                                  StrongManifest &manifest,
@@ -403,7 +404,7 @@ QJsonObject RemoteClient::upload(const QUuid &requestId, const QString &share,
             close();
         const auto state = outcomes.summary(false, dispositionCheck);
         if (state["complete"] == QJsonValue(true))
-            return state;
+            return verifyCompletedSource(manifest, outcomes, dispositionCheck);
         if (!capabilities_.contains("task-items-v1"))
             throw Error(ExitCode::Config,
                         QStringLiteral("本地上传确认缺失，服务器不支持逐项证据恢复，请升级服务器"),
@@ -437,12 +438,16 @@ QJsonObject RemoteClient::upload(const QUuid &requestId, const QString &share,
                         throw Error(ExitCode::Integrity,
                                     QStringLiteral("上传接收证据与本地冻结条目不同"),
                                     "disposition");
-                if (item["disposition"] != "copied" ||
-                    item["confirmedBytes"] != expected["bytes"] ||
+                const bool skipped = item["disposition"] == "skipped";
+                if ((!skipped && item["disposition"] != "copied") ||
+                    (skipped && conflict != ConflictPolicy::Skip) ||
+                    item["confirmedBytes"] != (skipped ? QJsonValue("0") : expected["bytes"]) ||
                     item["target"].toString().isEmpty())
-                    throw Error(ExitCode::Integrity, QStringLiteral("上传条目尚无持久复制确认"),
+                    throw Error(ExitCode::Integrity, QStringLiteral("上传条目尚无完整持久处置"),
                                 "disposition");
-                outcomes.append(entry.id, item["target"].toString(), "copied");
+                const auto skippedRoot = skipped ? next::decimal(item["skippedRoot"], entry.id) : 0;
+                outcomes.append(entry.id, item["target"].toString(), skipped ? "skipped" : "copied",
+                                skippedRoot);
             }
             if (page["after"] != QString::number(after) ||
                 page["more"] != QJsonValue(after < count))
@@ -455,7 +460,7 @@ QJsonObject RemoteClient::upload(const QUuid &requestId, const QString &share,
                      {"message",
                       QStringLiteral("正在核对已完成上传的接收确认 %1/%2").arg(after).arg(count)}});
         } while (after < count);
-        return outcomes.summary(true, dispositionCheck);
+        return verifyCompletedSource(manifest, outcomes, dispositionCheck);
     };
     const auto historicalResult = [&](const QJsonObject &context) {
         // 日期：2026-11-06；本机缺失确认通过独立认证分页补齐，原连接保持到双方摘要确认结束。
