@@ -191,9 +191,42 @@ QString mapDestination(QSqlDatabase &database, const QString &output, const QStr
 }
 } // namespace
 
-// 日期：2026-11-04；复制请求，调用者可立即释放其配置对象。
+// 日期：2026-11-06；显式UTF-8、UTF-16、Qt JSON及最多六倍转义输出预留十倍正文和固定元数据空间。
+std::shared_ptr<BufferCredit> legacyTextCredit(qint64 bytes) {
+    if (bytes < 0 || bytes > MaxTextBytes)
+        throw Error(ExitCode::Config, QStringLiteral("文本超过 8 MiB 限制，请作为文件发送"),
+                    "scan");
+    return std::make_shared<BufferCredit>(bytes * 10 + 64 * 1024, true);
+}
+
+// 日期：2026-11-06；只移动已准备的结果和授信，不再复制或序列化文本正文。
+LegacyResult::LegacyResult(QJsonObject json, std::shared_ptr<BufferCredit> credit)
+    : credit_(std::move(credit)), json_(std::move(json)) {
+}
+
+// 日期：2026-11-06；持有新旧两份所有权直到交换结束；临时对象先析构旧JSON再归还旧令牌。
+LegacyResult &LegacyResult::operator=(LegacyResult other) {
+    credit_.swap(other.credit_);
+    json_.swap(other.json_);
+    return *this;
+}
+
+// 日期：2026-11-06；信号接收者在持有本值对象期间读取只读结果。
+const QJsonObject &LegacyResult::json() const {
+    return json_;
+}
+
+// 日期：2026-11-06；文本显示缓存和排队回调共享同一额度，不在中继或工作线程结束时提前归还。
+std::shared_ptr<BufferCredit> LegacyResult::textCredit() const {
+    return credit_;
+}
+
+// 日期：2026-11-06；发送文本在启动线程前取得授信，所有排队结果使用注册的拥有者值类型。
 LegacyJob::LegacyJob(LegacyRequest request, QObject *parent)
     : QThread(parent), request_(std::move(request)) {
+    qRegisterMetaType<dukto::LegacyResult>();
+    if (request_.textMode)
+        textCredit_ = legacyTextCredit(request_.text.size());
 }
 
 // 日期：2026-11-04；socket 与清单析构均在 run 返回前完成。
@@ -207,7 +240,7 @@ void LegacyJob::cancel() {
     cancelled_.store(true);
 }
 
-// 日期：2026-11-04；异常出口始终发送最终结果，不能吞掉错误返回成功。
+// 日期：2026-11-06；异常出口仍报告原错误；成功文本额度随结果跨线程，不随工作线程退出归还。
 void LegacyJob::run() {
     elapsed_.start();
     int code = 0;
@@ -241,7 +274,11 @@ void LegacyJob::run() {
         "rateBytesPerSecond",
         QString::number(elapsed_.elapsed() > 0 ? completedBytes * 1000.0 / elapsed_.elapsed() : 0,
                         'f', 0));
-    emit result(code, outcome);
+    // 日期：2026-11-06；输入/接收临时正文已不用；失败没有文本结果时先释放原始数据再归还额度。
+    request_.text.clear();
+    if (code)
+        textCredit_.reset();
+    emit result(code, LegacyResult(std::move(outcome), std::move(textCredit_)));
 }
 
 // 日期：2026-11-04；先完成有界扫描，确认源身份后逐条发送，进度仅代表本地发送。
@@ -411,6 +448,11 @@ QJsonObject LegacyJob::receive() {
             catalog_->append(taskId_, index + 1, name, lastPath, -1, {});
             continue;
         }
+        if (textMode) {
+            // 日期：2026-11-06；声明核验后、首个正文分配前授信；精确reserve避免append扩容临时翻倍。
+            textCredit_ = legacyTextCredit(size);
+            text.reserve(static_cast<int>(size));
+        }
         std::unique_ptr<IncomingFile> file;
         QString storageDirectory;
         if (!textMode) {
@@ -447,7 +489,7 @@ QJsonObject LegacyJob::receive() {
         }
         if (file)
             lastPath = file->commit();
-        if (textMode && QString::fromUtf8(text).toUtf8() != text)
+        if (textMode && QString::fromUtf8(text.constData(), text.size()).toUtf8() != text)
             throw Error(ExitCode::Integrity, QStringLiteral("收到的文本不是有效 UTF-8"), "receive");
         catalog_->append(taskId_, index + 1, name, lastPath, size, hash.result());
         if (progress.elapsed() >= 200 || count == 1 || index == count - 1) {
@@ -473,7 +515,7 @@ QJsonObject LegacyJob::receive() {
                        {"entries", QString::number(count)},
                        {"path", lastPath}};
     if (receivedText)
-        result.insert("text", QString::fromUtf8(text));
+        result.insert("text", QString::fromUtf8(text.constData(), text.size()));
     return result;
 }
 
@@ -482,6 +524,7 @@ LegacyListener::LegacyListener(QString output, int timeoutMs, QObject *parent,
                                const QString &catalogPath)
     : QTcpServer(parent), output_(std::move(output)), timeoutMs_(timeoutMs),
       catalogPath_(catalogPath) {
+    qRegisterMetaType<dukto::LegacyResult>();
     setMaxPendingConnections(1);
 }
 

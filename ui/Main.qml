@@ -624,6 +624,13 @@ Rectangle {
         id: textDialog
 
         objectName: "textDialog"
+        // 日期：2026-11-06；先移除QML正文，再归还控制器持有的显示授信，关闭后不缓存完整收到文本。
+        onClosed: {
+            if (textEditor.readOnly) {
+                textEditor.text = "";
+                controller.releaseReceivedText();
+            }
+        }
         title: textEditor.readOnly ? "收到的文本" : "发送文字"
         anchors.centerIn: parent
         width: root.width - 24

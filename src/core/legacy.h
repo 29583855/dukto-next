@@ -9,6 +9,32 @@
 
 namespace dukto {
 class Catalog;
+class BufferCredit;
+
+// 日期：2026-11-06；正文、校验和JSON输出共用进程数据额度；超限或繁忙在文本分配前拒绝。
+std::shared_ptr<BufferCredit> legacyTextCredit(qint64 bytes);
+
+class LegacyResult final {
+  public:
+    // 日期：2026-11-06；空结果供Qt元类型默认构造，不包含正文或额度。
+    LegacyResult() = default;
+    // 日期：2026-11-06；复制先取得同一令牌，再共享JSON；不新增额度或深拷贝正文。
+    LegacyResult(const LegacyResult &) = default;
+    // 日期：2026-11-06；交换后旧JSON和旧令牌在临时对象中一起析构，赋值不提前归还额度。
+    LegacyResult &operator=(LegacyResult other);
+    // 日期：2026-11-06；只读业务结果；调用方的跨事件保存须同时保留本值对象或textCredit。
+    const QJsonObject &json() const;
+    // 日期：2026-11-06；GUI保存显示正文时保留同一令牌，复制值对象不重复申请额度。
+    std::shared_ptr<BufferCredit> textCredit() const;
+
+  private:
+    friend class LegacyJob;
+    // 日期：2026-11-06；结果和额度组成不可拆开的排队信号值，最后一个所有者释放时归还。
+    LegacyResult(QJsonObject json, std::shared_ptr<BufferCredit> credit);
+    std::shared_ptr<BufferCredit> credit_;
+    QJsonObject json_;
+};
+
 struct LegacyRequest {
     QString host;
     quint16 port = 4644;
@@ -32,7 +58,7 @@ class LegacyJob final : public QThread {
     void cancel();
   signals:
     void event(const QJsonObject &event);
-    void result(int exitCode, const QJsonObject &result);
+    void result(int exitCode, const dukto::LegacyResult &result);
 
   protected:
     // 日期：2026-11-04；选择兼容发送/接收流程并统一报告所有异常。
@@ -47,6 +73,7 @@ class LegacyJob final : public QThread {
     std::atomic_bool cancelled_{false};
     std::unique_ptr<Catalog> catalog_;
     QString taskId_;
+    std::shared_ptr<BufferCredit> textCredit_;
     qint64 receivedBytes_ = 0;
     QElapsedTimer elapsed_;
 };
@@ -65,7 +92,7 @@ class LegacyListener final : public QTcpServer {
     bool setOutput(const QString &output);
   signals:
     void event(const QJsonObject &event);
-    void result(int exitCode, const QJsonObject &result);
+    void result(int exitCode, const dukto::LegacyResult &result);
 
   protected:
     // 日期：2026-11-04；将描述符交给工作线程，不在 GUI/监听线程阻塞读取。
@@ -78,3 +105,5 @@ class LegacyListener final : public QTcpServer {
     LegacyJob *active_ = nullptr;
 };
 } // namespace dukto
+
+Q_DECLARE_METATYPE(dukto::LegacyResult)

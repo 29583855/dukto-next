@@ -280,7 +280,8 @@ class UiTests final : public QObject {
         click(view, clipboardButton);
         QTRY_COMPARE(result.count(), 2);
         QCOMPARE(result[1][0].toInt(), 0);
-        QCOMPARE(result[1][1].toJsonObject().value("text").toString(), content);
+        QCOMPARE(result[1][1].value<dukto::LegacyResult>().json().value("text").toString(),
+                 content);
         QTRY_VERIFY(!controller.busy());
 
         // 日期：2026-11-04；从独立 TCP 发送方接收文本，再用键盘选择及鼠标点击实际复制控件。

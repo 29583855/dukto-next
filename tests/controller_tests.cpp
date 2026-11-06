@@ -1,4 +1,5 @@
 #include "app/controller.h"
+#include "core/buffercredit.h"
 #include <QApplication>
 #include <QDir>
 #include <QSignalSpy>
@@ -110,6 +111,18 @@ class ControllerTests final : public QObject {
             controller.openHistory(id);
             QCOMPARE(text.count(), 2);
             QCOMPARE(text[1][0].toString(), content);
+            QTRY_VERIFY(!controller.busy());
+            const auto displayed = dukto::BufferCredit::usage()["dataUsed"].toString().toLongLong();
+            QVERIFY(displayed >= content.toUtf8().size() * 10 + 64 * 1024);
+            {
+                dukto::BufferCredit saturated(120 * 1024 * 1024 - displayed, true);
+                controller.sendText("127.0.0.1", port, "must-refuse-before-start");
+                QVERIFY(!controller.busy());
+                QVERIFY(controller.status().contains(QStringLiteral("授信")));
+            }
+            controller.releaseReceivedText();
+            controller.releaseReceivedText();
+            QCOMPARE(dukto::BufferCredit::usage()["dataUsed"].toString(), QString("0"));
             controller.setThemeColor("#0078d4");
             QTRY_VERIFY(!controller.busy());
         }

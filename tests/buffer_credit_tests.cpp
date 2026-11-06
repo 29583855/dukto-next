@@ -22,6 +22,97 @@
 class BufferCreditTests final : public QObject {
     Q_OBJECT
   private slots:
+
+    // 日期：2026-11-06；结果仍排队或由接收者保留时，工作线程退出及复制/删除中间值都不能提前归还。
+    void legacyTextResultKeepsCreditUntilLastOwner() {
+        QTemporaryDir root;
+        dukto::LegacyListener listener(root.path(), 3000, nullptr,
+                                       root.filePath("receipts.sqlite"));
+        QVERIFY(listener.listen(QHostAddress::LocalHost, 0));
+        QSignalSpy results(&listener, &dukto::LegacyListener::result);
+        const QByteArray body(1024 * 1024, 'x');
+        const auto charge = qint64(body.size()) * 10 + 64 * 1024;
+        for (int attempt = 0; attempt < 2; ++attempt) {
+            QTcpSocket client;
+            client.connectToHost(QHostAddress::LocalHost, listener.serverPort());
+            QVERIFY(client.waitForConnected(2000));
+            QByteArray frame(16, '\0');
+            qToLittleEndian<qint64>(1, reinterpret_cast<uchar *>(frame.data()));
+            qToLittleEndian<qint64>(body.size(), reinterpret_cast<uchar *>(frame.data() + 8));
+            frame.append("___DUKTO___TEXT___\0", 19);
+            QByteArray size(8, '\0');
+            qToLittleEndian<qint64>(body.size(), reinterpret_cast<uchar *>(size.data()));
+            frame += size + body;
+            QCOMPARE(client.write(frame), qint64(frame.size()));
+            client.flush();
+            QTRY_COMPARE_WITH_TIMEOUT(results.size(), attempt + 1, 5000);
+            QTRY_VERIFY_WITH_TIMEOUT(listener.setOutput(root.path()), 3000);
+            QCOMPARE(results.last()[0].toInt(), 0);
+            const auto owned = results.last()[1].value<dukto::LegacyResult>();
+            QCOMPARE(owned.json()["text"].toString().toUtf8(), body);
+            QVERIFY(owned.textCredit());
+            QCOMPARE(dukto::BufferCredit::usage()["dataUsed"].toString(),
+                     QString::number(charge * (attempt + 1)));
+        }
+        auto last = results[0][1].value<dukto::LegacyResult>();
+        results.clear();
+        QCOMPARE(dukto::BufferCredit::usage()["dataUsed"].toString(), QString::number(charge));
+        last = dukto::LegacyResult();
+        QCOMPARE(dukto::BufferCredit::usage()["used"].toString(), QString("0"));
+    }
+
+    // 日期：2026-11-06；文本发送准入在启动线程前，满额保持原数据/计数且不能绕用控制保留额。
+    void legacyTextSenderRejectsBeforeThreadStart() {
+        dukto::BufferCredit saturated(120 * 1024 * 1024, true);
+        dukto::LegacyRequest request;
+        request.host = "127.0.0.1";
+        request.textMode = true;
+        request.text = "text-must-not-be-sent";
+        bool rejected = false;
+        try {
+            dukto::LegacyJob job(request);
+        } catch (const dukto::Error &error) {
+            rejected = error.code == dukto::ExitCode::Permission && error.stage == "budget";
+        }
+        QVERIFY(rejected);
+        QCOMPARE(request.text, QByteArray("text-must-not-be-sent"));
+        QCOMPARE(dukto::BufferCredit::usage()["dataUsed"].toString(),
+                 QString::number(120 * 1024 * 1024));
+    }
+
+    // 日期：2026-11-06；声明的文本在首个正文分配前因共享额度拒绝，错误结果不保留无正文的授信。
+    void legacyTextReceiverRejectsBeforeBody() {
+        QTemporaryDir root;
+        dukto::LegacyListener listener(root.path(), 3000, nullptr,
+                                       root.filePath("receipts.sqlite"));
+        QVERIFY(listener.listen(QHostAddress::LocalHost, 0));
+        QSignalSpy results(&listener, &dukto::LegacyListener::result);
+        {
+            dukto::BufferCredit saturated(110 * 1024 * 1024, true);
+            QTcpSocket client;
+            client.connectToHost(QHostAddress::LocalHost, listener.serverPort());
+            QVERIFY(client.waitForConnected(2000));
+            QByteArray header(16, '\0');
+            qToLittleEndian<qint64>(1, reinterpret_cast<uchar *>(header.data()));
+            qToLittleEndian<qint64>(2 * 1024 * 1024, reinterpret_cast<uchar *>(header.data() + 8));
+            header.append("___DUKTO___TEXT___\0", 19);
+            QByteArray size(8, '\0');
+            qToLittleEndian<qint64>(2 * 1024 * 1024, reinterpret_cast<uchar *>(size.data()));
+            header += size;
+            QCOMPARE(client.write(header), qint64(header.size()));
+            client.flush();
+            QTRY_COMPARE_WITH_TIMEOUT(results.size(), 1, 4000);
+            QTRY_VERIFY_WITH_TIMEOUT(listener.setOutput(root.path()), 3000);
+            QCOMPARE(results[0][0].toInt(), 4);
+            const auto result = results[0][1].value<dukto::LegacyResult>();
+            QCOMPARE(result.json()["stage"].toString(), QString("budget"));
+            QVERIFY(!result.json().contains("text"));
+            QVERIFY(!result.textCredit());
+            QCOMPARE(dukto::BufferCredit::usage()["dataUsed"].toString(),
+                     QString::number(110 * 1024 * 1024));
+        }
+        QCOMPARE(dukto::BufferCredit::usage()["used"].toString(), QString("0"));
+    }
     // 日期：2026-11-06；真实源和R6临时文件共享32额度；饱和不创建目录，私有状态仍可读，失败归还。
     void dataFilesShareAdmissionAndKeepPrivateReads() {
         QTemporaryDir root;
@@ -130,7 +221,8 @@ class BufferCreditTests final : public QObject {
             QTRY_COMPARE_WITH_TIMEOUT(results.size(), 1, 3000);
             QVERIFY(job.wait(3000));
             QCOMPARE(results[0][0].toInt(), 4);
-            QCOMPARE(results[0][1].toJsonObject()["stage"].toString(), QString("budget"));
+            QCOMPARE(results[0][1].value<dukto::LegacyResult>().json()["stage"].toString(),
+                     QString("budget"));
             QCOMPARE(dukto::BufferCredit::usage()["dataUsed"].toString(),
                      QString::number(120 * 1024 * 1024));
             QCOMPARE(dukto::BufferCredit::usage()["controlUsed"].toString(), QString("0"));
@@ -174,7 +266,8 @@ class BufferCreditTests final : public QObject {
                 QTRY_VERIFY_WITH_TIMEOUT(client.state() == QAbstractSocket::UnconnectedState, 3000);
                 QTRY_VERIFY_WITH_TIMEOUT(listener.setOutput(temporary.path()), 3000);
                 QCOMPARE(results.last()[0].toInt(), 4);
-                QCOMPARE(results.last()[1].toJsonObject()["stage"].toString(), QString("budget"));
+                QCOMPARE(results.last()[1].value<dukto::LegacyResult>().json()["stage"].toString(),
+                         QString("budget"));
                 QCOMPARE(dukto::BufferCredit::usage()["dataUsed"].toString(),
                          QString::number(qint64(occupiedMiB) * 1024 * 1024));
                 auto names = QSqlDatabase::connectionNames();

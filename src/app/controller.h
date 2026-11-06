@@ -101,6 +101,8 @@ class Controller final : public QObject {
     Q_INVOKABLE void sendClipboard(const QString &host, int port);
     // 日期：2026-11-04；用户显式复制收到的文本。
     Q_INVOKABLE void copyText(const QString &text);
+    // 日期：2026-11-06；只在QML清空只读文本后释放显示正文额度，关闭窗口和取消均可调用。
+    Q_INVOKABLE void releaseReceivedText();
     // 日期：2026-11-04；隐藏主窗口后捕获屏幕，保存为任务临时 JPEG 并发送。
     Q_INVOKABLE void sendScreenshot(const QString &host, int port);
     // 日期：2026-11-04；从 QML DropArea 提取本地文件，不接受远程 URL。
@@ -134,7 +136,7 @@ class Controller final : public QObject {
     // 日期：2026-11-04；根据工作线程事件更新界面，不在主线程读取文件正文。
     void onEvent(const QJsonObject &event);
     // 日期：2026-11-04；持久化真实完成结果并刷新最近记录。
-    void onResult(int code, const QJsonObject &result);
+    void onResult(int code, const dukto::LegacyResult &result);
     // 日期：2026-11-04；从数据库重新加载一页历史，限制内存模型规模。
     void loadHistory();
     // 日期：2026-11-04；在端口转换前统一验证地址，错误直接反馈给界面。
@@ -155,6 +157,7 @@ class Controller final : public QObject {
     dukto::LegacyJob *sender_ = nullptr;
     QSqlDatabase historyDatabase_;
     QVariantList history_;
+    std::shared_ptr<dukto::BufferCredit> displayedTextCredit_;
     QString status_;
     double progress_ = 0;
     bool receiving_ = false;

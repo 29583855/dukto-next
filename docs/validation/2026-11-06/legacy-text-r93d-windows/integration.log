@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "E:\project\dukto\tests\legacy_text_credit_integration.py", line 177, in <module>
+    main()
+  File "E:\project\dukto\tests\legacy_text_credit_integration.py", line 166, in main
+    report["cases"].append(roundtrip(args.executable, root, name, payload))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\project\dukto\tests\legacy_text_credit_integration.py", line 89, in roundtrip
+    assert sender.wait(timeout=30) == 0, (case / "send.jsonl").read_bytes()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: b'{"code":2,"event":"error","eventVersion":1,"message":"\xe6\x96\x87\xe6\x9c\xac\xe5\xbf\x85\xe9\xa1\xbb\xe6\x98\xaf\xe6\x9c\x89\xe6\x95\x88 UTF-8\xef\xbc\x8c\xe4\xb8\x94\xe4\xb8\x8d\xe8\xb6\x85\xe8\xbf\x87 8 MiB","stage":"read"}\r\n'

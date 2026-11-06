@@ -75,7 +75,7 @@ Controller::Controller(quint16 port, QObject *parent, const QString &storageDire
     connect(listener_, &dukto::LegacyListener::event, this, &Controller::onEvent);
     // 日期：2026-11-04；发送结果不能清除同时进行的接收状态。
     connect(listener_, &dukto::LegacyListener::result, this,
-            [this](int code, const QJsonObject &result) {
+            [this](int code, const dukto::LegacyResult &result) {
                 receiving_ = false;
                 onResult(code, result);
             });
@@ -419,7 +419,13 @@ void Controller::start(dukto::LegacyRequest request) {
         emit stateChanged();
         return;
     }
-    sender_ = new dukto::LegacyJob(std::move(request), this);
+    try {
+        sender_ = new dukto::LegacyJob(std::move(request), this);
+    } catch (const dukto::Error &error) {
+        status_ = error.message;
+        emit stateChanged();
+        return;
+    }
     connect(sender_, &dukto::LegacyJob::event, this, &Controller::onEvent);
     connect(sender_, &dukto::LegacyJob::result, this, &Controller::onResult);
     // 日期：2026-11-04；线程退出后才归还任务槽位及截图临时目录。
@@ -479,8 +485,9 @@ void Controller::onEvent(const QJsonObject &event) {
     emit stateChanged();
 }
 
-// 日期：2026-11-04；历史与文本在同一事务提交，数据库失败不能留下无法打开的半条记录。
-void Controller::onResult(int code, const QJsonObject &result) {
+// 日期：2026-11-06；结果值持有正文额度直到历史写入与显示接管完成，数据库失败也不提前释放显示正文。
+void Controller::onResult(int code, const dukto::LegacyResult &ownedResult) {
+    const auto &result = ownedResult.json();
     status_ = code ? result.value("message").toString()
                    : (result.value("stage") == "sent" ? result.value("message").toString()
                                                       : QStringLiteral("接收完成"));
@@ -538,8 +545,12 @@ void Controller::onResult(int code, const QJsonObject &result) {
             status_ += QStringLiteral("；历史保存失败：") + failure;
         }
         loadHistory();
-        if (result.contains("text"))
+        if (result.contains("text")) {
+            // 日期：2026-11-06；旧显示令牌留到同步QML替换完成后，避免替换间隙有正文却已归还额度。
+            auto previous = std::move(displayedTextCredit_);
+            displayedTextCredit_ = ownedResult.textCredit();
             emit textReceived(result.value("text").toString());
+        }
     }
     emit stateChanged();
 }
@@ -566,7 +577,12 @@ void Controller::loadHistory() {
     emit historyChanged();
 }
 
-// 日期：2026-11-04；记录已删除或数据库失败时提供反馈，仅按需加载一条最多 8 MiB 文本。
+// 日期：2026-11-06；界面先清空正文再调用；多次关闭不会重复归还共享令牌。
+void Controller::releaseReceivedText() {
+    displayedTextCredit_.reset();
+}
+
+// 日期：2026-11-06；按需打开历史文本前核对UTF-8长度并授信，旧显示在新文本替换完成前仍有额度。
 void Controller::openHistory(const QString &id) {
     QSqlQuery query(historyDatabase_);
     query.prepare("SELECT catalog, task, entries FROM history_receipts WHERE record=?");
@@ -585,16 +601,30 @@ void Controller::openHistory(const QString &id) {
     }
     query.prepare(
         "SELECT path, EXISTS(SELECT 1 FROM text_history WHERE record=history.rowid), (SELECT "
-        "content FROM text_history WHERE record=history.rowid) FROM history WHERE rowid=?");
+        "length(CAST(content AS BLOB)) FROM text_history WHERE record=history.rowid) FROM history "
+        "WHERE rowid=?");
     query.addBindValue(id);
     if (!query.exec() || !query.next()) {
         status_ = QStringLiteral("历史记录不存在或不可读取");
         emit stateChanged();
         return;
     }
-    if (query.value(1).toBool())
-        emit textReceived(query.value(2).toString());
-    else if (!query.value(0).toString().isEmpty())
+    if (query.value(1).toBool()) {
+        try {
+            auto credit = dukto::legacyTextCredit(query.value(2).toLongLong());
+            query.prepare("SELECT content FROM text_history WHERE record=?");
+            query.addBindValue(id);
+            if (!query.exec() || !query.next())
+                throw dukto::Error(dukto::ExitCode::Disk, QStringLiteral("历史文本读取失败"),
+                                   "history");
+            auto previous = std::move(displayedTextCredit_);
+            displayedTextCredit_ = std::move(credit);
+            emit textReceived(query.value(0).toString());
+        } catch (const dukto::Error &error) {
+            status_ = error.message;
+            emit stateChanged();
+        }
+    } else if (!query.value(0).toString().isEmpty())
         openPath(query.value(0).toString());
     else {
         status_ = QStringLiteral("此发送记录没有可打开的接收文件");

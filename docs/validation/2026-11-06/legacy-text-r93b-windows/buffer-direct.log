@@ -1,0 +1,26 @@
+********* Start testing of BufferCreditTests *********
+Config: Using QtTest library 5.15.19, Qt 5.15.19 (x86_64-little_endian-llp64 shared (dynamic) release build; by GCC 16.1.0), windows 11
+PASS   : BufferCreditTests::initTestCase()
+FAIL!  : BufferCreditTests::legacyTextResultKeepsCreditUntilLastOwner() Compared values are not the same
+   Actual   (results.last()[0].toInt()): 2
+   Expected (0)                        : 0
+E:/project/dukto/tests/buffer_credit_tests.cpp(50) : failure location
+PASS   : BufferCreditTests::legacyTextSenderRejectsBeforeThreadStart()
+FAIL!  : BufferCreditTests::legacyTextReceiverRejectsBeforeBody() Compared values are not the same
+   Actual   (results[0][0].toInt()): 3
+   Expected (4)                    : 4
+E:/project/dukto/tests/buffer_credit_tests.cpp(106) : failure location
+PASS   : BufferCreditTests::dataFilesShareAdmissionAndKeepPrivateReads()
+PASS   : BufferCreditTests::concurrentDataFileAdmission()
+PASS   : BufferCreditTests::legacySenderRespectsSharedSaturation()
+PASS   : BufferCreditTests::legacyReceiverSaturation(socket)
+PASS   : BufferCreditTests::legacyReceiverSaturation(catalog)
+PASS   : BufferCreditTests::legacyReceiverSaturation(mapping)
+PASS   : BufferCreditTests::legacyReceiveCountsMappingAndReleasesOnCancel()
+PASS   : BufferCreditTests::saturatedServiceClosesUnclaimedSockets()
+PASS   : BufferCreditTests::classificationAndReservationOrder()
+PASS   : BufferCreditTests::reservationAndUnwind()
+PASS   : BufferCreditTests::concurrentAdmission()
+PASS   : BufferCreditTests::cleanupTestCase()
+Totals: 14 passed, 2 failed, 0 skipped, 0 blacklisted, 8269ms
+********* Finished testing of BufferCreditTests *********

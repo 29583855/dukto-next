@@ -23,9 +23,48 @@
 #include <QTextStream>
 #include <QTimer>
 #include <csignal>
+#include <cstdio>
 
 namespace {
 volatile std::sig_atomic_t interrupted = 0;
+bool outputFailed = false;
+
+// 日期：2026-11-06；输出设备失败只报告一次并请求退出；顶层确保不被后续成功退出码覆盖。
+void outputFailure() {
+    if (!outputFailed)
+        std::fputs("Dukto: cannot write standard output\n", stderr);
+    outputFailed = true;
+    QCoreApplication::exit(static_cast<int>(dukto::ExitCode::Disk));
+}
+
+// 日期：2026-11-06；直接写已编码字节，不建立整份UTF-16副本；失败后停止后续输出。
+void writeOutput(const char *bytes, size_t count) {
+    if (!outputFailed && std::fwrite(bytes, 1, count, stdout) != count)
+        outputFailure();
+}
+
+// 日期：2026-11-06；保留完整text字段，Qt按最多4096个UTF-16码元转义；代理对留在同一段。
+void outputTextJson(const QJsonObject &event) {
+    auto header = event;
+    const auto text = header.take("text").toString();
+    auto prefix = QJsonDocument(header).toJson(QJsonDocument::Compact);
+    prefix.chop(1);
+    if (!header.isEmpty())
+        prefix.append(',');
+    prefix.append("\"text\":\"");
+    writeOutput(prefix.constData(), static_cast<size_t>(prefix.size()));
+    for (int offset = 0; offset < text.size() && !outputFailed;) {
+        int count = qMin(4096, text.size() - offset);
+        if (offset + count < text.size() && text[offset + count - 1].isHighSurrogate() &&
+            text[offset + count].isLowSurrogate())
+            --count;
+        const auto encoded =
+            QJsonDocument(QJsonArray{text.mid(offset, count)}).toJson(QJsonDocument::Compact);
+        writeOutput(encoded.constData() + 2, static_cast<size_t>(encoded.size() - 4));
+        offset += count;
+    }
+    writeOutput("\"}", 2);
+}
 
 // 日期：2026-11-04；信号处理器只写标记，不调用非信号安全的 Qt 或磁盘接口。
 void interruptHandler(int) {
@@ -38,15 +77,26 @@ void printText(const QString &text) {
     stream.setCodec("UTF-8");
     stream << text;
     stream.flush();
+    if (stream.status() != QTextStream::Ok)
+        outputFailure();
 }
 
-// 日期：2026-11-05；JSON 模式逐行输出事件，日志不混入标准输出。
+// 日期：2026-11-06；JSON直接写已编码UTF-8，避免六倍转义的大文本再次解码成整份UTF-16临时字符串。
 void output(const QJsonObject &event, bool json) {
+    if (json) {
+        if (event.value("text").isString())
+            outputTextJson(event);
+        else {
+            const auto bytes = QJsonDocument(event).toJson(QJsonDocument::Compact);
+            writeOutput(bytes.constData(), static_cast<size_t>(bytes.size()));
+        }
+        if (!outputFailed && (std::fputc('\n', stdout) == EOF || std::fflush(stdout) != 0))
+            outputFailure();
+        return;
+    }
     QTextStream stream(stdout);
     stream.setCodec("UTF-8");
-    if (json)
-        stream << QJsonDocument(event).toJson(QJsonDocument::Compact) << '\n';
-    else if (event.value("event") == "devices") {
+    if (event.value("event") == "devices") {
         const auto peers = event.value("peers").toArray();
         if (peers.isEmpty())
             stream << QStringLiteral("未发现设备；可使用 --to 指定地址\n");
@@ -140,6 +190,8 @@ void output(const QJsonObject &event, bool json) {
                << event.value("message").toString() << ' ' << event.value("path").toString() << ' '
                << event.value("bytes").toString() << '\n';
     stream.flush();
+    if (stream.status() != QTextStream::Ok)
+        outputFailure();
 }
 
 // 日期：2026-11-04；独立 CLI 自查运行依赖，不启动图形会话或自动更改配置。
@@ -163,7 +215,7 @@ int doctor(bool json) {
 } // namespace
 
 // 日期：2026-11-05；三平台控制台入口严格核对传输策略，解析或传输失败返回明确非零退出码。
-int main(int argc, char **argv) {
+int runApplication(int argc, char **argv) {
     QCoreApplication app(argc, argv);
     QCoreApplication::setApplicationName("dukto-cli");
     QCoreApplication::setOrganizationName("DuktoNext");
@@ -421,8 +473,8 @@ int main(int argc, char **argv) {
                              [json](const QJsonObject &event) { output(event, json); });
             // 日期：2026-11-04；仅 --once 模式在一个批次后退出，服务模式继续监听。
             QObject::connect(&listener, &dukto::LegacyListener::result, &app,
-                             [&app, &parser, json](int code, const QJsonObject &event) {
-                                 output(event, json);
+                             [&app, &parser, json](int code, const dukto::LegacyResult &event) {
+                                 output(event.json(), json);
                                  if (parser.isSet("once"))
                                      app.exit(code);
                              });
@@ -477,18 +529,19 @@ int main(int argc, char **argv) {
                 source.verify();
             }
             if (request.text.size() > dukto::MaxTextBytes ||
-                QString::fromUtf8(request.text).toUtf8() != request.text)
+                QString::fromUtf8(request.text.constData(), request.text.size()).toUtf8() !=
+                    request.text)
                 throw dukto::Error(dukto::ExitCode::Config,
                                    QStringLiteral("文本必须是有效 UTF-8，且不超过 8 MiB"), "read");
         }
-        dukto::LegacyJob job(request);
+        dukto::LegacyJob job(std::move(request));
         // 日期：2026-11-04；只在主线程打印，保持 JSON 行完整。
         QObject::connect(&job, &dukto::LegacyJob::event, &app,
                          [json](const QJsonObject &event) { output(event, json); });
         // 日期：2026-11-04；发送结果统一转换为进程退出码。
         QObject::connect(&job, &dukto::LegacyJob::result, &app,
-                         [&app, json](int code, const QJsonObject &event) {
-                             output(event, json);
+                         [&app, json](int code, const dukto::LegacyResult &event) {
+                             output(event.json(), json);
                              app.exit(code);
                          });
         // 日期：2026-11-04；工作线程在阻塞等待期间仍能及时取消。
@@ -507,4 +560,10 @@ int main(int argc, char **argv) {
                json);
         return 1;
     }
+}
+
+// 日期：2026-11-06；所有同步命令及事件循环结束后统一保留真实输出失败，不能返回成功。
+int main(int argc, char **argv) {
+    const auto code = runApplication(argc, argv);
+    return outputFailed ? static_cast<int>(dukto::ExitCode::Disk) : code;
 }

@@ -27,6 +27,8 @@ def commands(build):
 
     add("parallel-failure", "parallel_failure_integration")
     add("legacy", "legacy_integration")
+    # 日期：2026-11-06；最大文本与JSON/Unicode边界运行真实CLI，复用既有内存门槛。
+    add("legacy-text-credit", "legacy_text_credit_integration")
     add("legacy-timeout", "legacy_timeout_integration")
     add("parallel-attach", "parallel_attach_integration")
     add("cli", "cli_contracts")
