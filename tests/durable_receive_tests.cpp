@@ -1,7 +1,9 @@
 #include "core/durablereceive.h"
 #include "core/error.h"
+#include "core/filecredit.h"
 #include "core/files.h"
 #include "core/protocol.h"
+#include "core/sourcefile.h"
 #include "core/transferitems.h"
 #include <QJsonDocument>
 
@@ -14,6 +16,7 @@
 #include <QtTest>
 #include <cstdio>
 #include <cstdlib>
+#include <vector>
 #ifdef Q_OS_WIN
 #ifndef NOMINMAX
 #define NOMINMAX
@@ -151,6 +154,65 @@ int crashWorker(const QString &root, const QString &mode) {
 class DurableReceiveTests final : public QObject {
     Q_OBJECT
   private slots:
+    // 日期：2026-11-06；默认改名和覆盖都必须在32数据文件边界继续传输、提交和关闭。
+    void sharedDataFileBudget_data() {
+        QTest::addColumn<bool>("overwrite");
+        QTest::newRow("rename") << false;
+        QTest::newRow("overwrite") << true;
+    }
+
+    // 日期：2026-11-06；满额拒绝在创建临时文件前发生；释放一个名额后同日志恢复并在满额下完成。
+    void sharedDataFileBudget() {
+        QFETCH(bool, overwrite);
+        QTemporaryDir root;
+        fixture(root.path());
+        if (overwrite) {
+            QFile original(root.filePath("output/sample.bin"));
+            QVERIFY(original.open(QIODevice::WriteOnly));
+            dukto::writeAll(original, "old-target");
+        }
+        dukto::PrivateStore store(root.filePath("private"));
+        dukto::StrongManifest manifest(store, "source.sqlite", false);
+        {
+            dukto::DurableReceive receiver(
+                store, "receive.sqlite", Task, manifest, root.filePath("output"),
+                overwrite ? dukto::ConflictPolicy::Overwrite : dukto::ConflictPolicy::Rename);
+            std::vector<std::unique_ptr<dukto::SourceFile>> sources;
+            for (int index = 0; index < 32; ++index)
+                sources.emplace_back(new dukto::SourceFile(root.filePath("sample.bin")));
+            bool rejected = false;
+            try {
+                receiver.open(1, "sample.bin");
+            } catch (const dukto::Error &error) {
+                rejected =
+                    error.code == dukto::ExitCode::Permission && error.stage == "file-budget";
+            }
+            QVERIFY(rejected);
+            QCOMPARE(dukto::DataFileCredit::usage()["used"].toInt(), 32);
+            QCOMPARE(QDir(root.filePath("output"))
+                         .entryList({"*.part"}, QDir::Files | QDir::Hidden)
+                         .size(),
+                     0);
+            if (overwrite) {
+                QFile original(root.filePath("output/sample.bin"));
+                QVERIFY(original.open(QIODevice::ReadOnly));
+                QCOMPARE(original.readAll(), QByteArray("old-target"));
+            } else {
+                QVERIFY(!QFileInfo::exists(root.filePath("output/sample.bin")));
+            }
+            sources.pop_back();
+            QCOMPARE(receiver.open(1, "sample.bin"), quint64(0));
+            QCOMPARE(dukto::DataFileCredit::usage()["used"].toInt(), 32);
+            transmit(receiver, 0);
+            QCOMPARE(receiver.finish(), QString("sample.bin"));
+            QCOMPARE(dukto::DataFileCredit::usage()["used"].toInt(), 32);
+            receiver.closeCurrent();
+            QCOMPARE(dukto::DataFileCredit::usage()["used"].toInt(), 31);
+            QCOMPARE(dukto::hashFile(root.filePath("output/sample.bin")), manifest.entry(1).sha256);
+        }
+        QCOMPARE(dukto::DataFileCredit::usage()["used"].toInt(), 0);
+    }
+
     // 日期：2026-11-06；核验以原接收日志和原生对象为准，不接受同名、同长度或同内容的外部替换。
     void completedReadOnlyVerification() {
         QTemporaryDir root;

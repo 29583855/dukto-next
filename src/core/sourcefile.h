@@ -1,5 +1,6 @@
 #pragma once
 
+#include "filecredit.h"
 #include "nativecommit.h"
 #include <QFile>
 #include <memory>
@@ -27,6 +28,7 @@ class SourceFile final {
   private:
     // 日期：2026-11-05；普通文件和路径身份始终验证，内容元数据只在严格源读取时要求稳定。
     void verifyIdentity(bool contents) const;
+    std::unique_ptr<DataFileCredit> credit_;
 #ifdef Q_OS_WIN
     std::unique_ptr<NativeDirectoryLock> parent_;
 #else

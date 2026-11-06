@@ -30,6 +30,7 @@ add_library(dukto-core
     src/core/protocol.cpp
     src/core/securechannel.cpp
     src/core/buffercredit.cpp
+    src/core/filecredit.cpp
     src/core/sqlitecache.cpp
     src/core/privatestore.cpp
     src/core/identity.cpp

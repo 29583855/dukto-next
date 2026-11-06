@@ -8,6 +8,8 @@
 #include <memory>
 #ifdef Q_OS_WIN
 #include <vector>
+#else
+#include <sys/stat.h>
 #endif
 
 namespace dukto {
@@ -47,6 +49,8 @@ class PosixDirectory final {
     QByteArray identity() const;
     // 日期：2026-11-04；相对固定父目录打开普通源文件，不跟随最后分量链接，也不阻塞在 FIFO。
     int openRead(const QString &name) const;
+    // 日期：2026-11-06；相对固定父目录核验普通文件元数据，不跟随链接、不额外打开数据文件。
+    struct stat fileInformation(const QString &name) const;
     // 日期：2026-11-04；持久接收以独占创建或不跟随链接方式重开普通文件，不隐式截断已有数据。
     int openUpdate(const QString &name, bool create) const;
     // 日期：2026-11-04；发布名称后同步固定父目录，失败报告提交持久性未知。

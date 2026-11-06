@@ -1,7 +1,10 @@
 #include "core/buffercredit.h"
 #include "core/error.h"
+#include "core/filecredit.h"
+#include "core/files.h"
 #include "core/legacy.h"
 #include "core/service.h"
+#include "core/sourcefile.h"
 #include <QCryptographicHash>
 #include <QDir>
 #include <QFileInfo>
@@ -14,10 +17,106 @@
 #include <QtTest>
 #include <atomic>
 #include <memory>
+#include <vector>
 
 class BufferCreditTests final : public QObject {
     Q_OBJECT
   private slots:
+    // 日期：2026-11-06；真实源和R6临时文件共享32额度；饱和不创建目录，私有状态仍可读，失败归还。
+    void dataFilesShareAdmissionAndKeepPrivateReads() {
+        QTemporaryDir root;
+        QVERIFY(root.isValid());
+        const auto path = root.filePath("source.bin");
+        QFile fixture(path);
+        QVERIFY(fixture.open(QIODevice::WriteOnly));
+        QCOMPARE(fixture.write("source"), qint64(6));
+        fixture.close();
+        dukto::PrivateStore store(root.filePath("private"), true);
+        store.write("config.json", "private-config");
+        {
+            std::vector<std::unique_ptr<dukto::SourceFile>> sources;
+            std::vector<std::unique_ptr<dukto::IncomingFile>> incoming;
+            for (int index = 0; index < 16; ++index) {
+                sources.emplace_back(new dukto::SourceFile(path));
+                incoming.emplace_back(new dukto::IncomingFile(root.filePath("target.bin")));
+            }
+            QCOMPARE(dukto::DataFileCredit::usage()["used"].toInt(), 32);
+            bool rejected = false;
+            try {
+                dukto::SourceFile overflow(root.filePath("missing/source.bin"));
+            } catch (const dukto::Error &error) {
+                rejected =
+                    error.code == dukto::ExitCode::Permission && error.stage == "file-budget";
+            }
+            QVERIFY(rejected);
+            QVERIFY_EXCEPTION_THROWN(
+                dukto::IncomingFile overflow(root.filePath("missing/target.bin")), dukto::Error);
+            QVERIFY(!QFileInfo::exists(root.filePath("missing")));
+            QCOMPARE(store.read("config.json"), QByteArray("private-config"));
+            for (const auto &source : sources) {
+                source->verify();
+                source->verifyObject();
+            }
+#ifdef Q_OS_WIN
+            QVERIFY_EXCEPTION_THROWN(
+                dukto::replaceReceivedFile(path, root.filePath("replacement.bin"), "expected-id"),
+                dukto::Error);
+            QVERIFY(!QFileInfo::exists(root.filePath("replacement.bin")));
+#endif
+            QCOMPARE(dukto::DataFileCredit::usage()["used"].toInt(), 32);
+            incoming.pop_back();
+            QCOMPARE(dukto::DataFileCredit::usage()["used"].toInt(), 31);
+            // 日期：2026-11-06；已取得令牌后真实打开失败也必须精确归还，不能吃掉最后一个名额。
+            QVERIFY_EXCEPTION_THROWN(dukto::SourceFile missing(root.filePath("absent.bin")),
+                                     dukto::Error);
+            QCOMPARE(dukto::DataFileCredit::usage()["used"].toInt(), 31);
+            dukto::SourceFile reused(path);
+            QCOMPARE(reused.device().readAll(), QByteArray("source"));
+            QCOMPARE(dukto::DataFileCredit::usage()["used"].toInt(), 32);
+        }
+        QCOMPARE(dukto::DataFileCredit::usage()["used"].toInt(), 0);
+        QCOMPARE(QDir(root.path()).entryList({"*.part"}, QDir::Files | QDir::Hidden).size(), 0);
+        QCOMPARE(dukto::hashFile(path),
+                 QCryptographicHash::hash("source", QCryptographicHash::Sha256));
+    }
+
+    // 日期：2026-11-06；64线程同时竞争且持有到全部准入完成，验证32上限及异常归还而不依赖执行顺序。
+    void concurrentDataFileAdmission() {
+        QSemaphore arrived, release;
+        std::atomic_int admitted{0}, rejected{0};
+        QList<QThread *> workers;
+        for (int index = 0; index < 64; ++index) {
+            // 日期：2026-11-06；所有成功令牌保持到主线程观察，异常分类另记，线程不调用QtTest断言。
+            auto worker = QThread::create([&]() {
+                std::unique_ptr<dukto::DataFileCredit> credit;
+                try {
+                    credit.reset(new dukto::DataFileCredit);
+                    ++admitted;
+                } catch (const dukto::Error &error) {
+                    if (error.code == dukto::ExitCode::Permission && error.stage == "file-budget")
+                        ++rejected;
+                }
+                arrived.release();
+                release.acquire();
+            });
+            workers.append(worker);
+            worker->start();
+        }
+        const bool ready = arrived.tryAcquire(64, 10000);
+        const auto usage = dukto::DataFileCredit::usage();
+        release.release(64);
+        for (auto worker : workers) {
+            worker->wait();
+            delete worker;
+        }
+        QVERIFY(ready);
+        QCOMPARE(admitted.load(), 32);
+        QCOMPARE(rejected.load(), 32);
+        QCOMPARE(usage["used"].toInt(), 32);
+        QCOMPARE(usage["peak"].toInt(), 32);
+        QCOMPARE(dukto::DataFileCredit::usage()["used"].toInt(), 0);
+    }
+
     // 日期：2026-11-06；R6发送在扫描和连接前取得共享数据额度，满额拒绝不占控制保留额。
     void legacySenderRespectsSharedSaturation() {
         {

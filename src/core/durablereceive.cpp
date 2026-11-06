@@ -157,15 +157,10 @@ class ReceiveFile final {
         if (identity() != identity_)
             throw Error(ExitCode::Integrity, QStringLiteral("持久接收文件身份已变化"), "receive");
 #ifndef Q_OS_WIN
-        const auto descriptor = parent_->openRead(QFileInfo(path_).fileName());
-        QByteArray observed;
-        try {
-            observed = nativeIdentity(descriptor);
-        } catch (...) {
-            ::close(descriptor);
-            throw;
-        }
-        ::close(descriptor);
+        // 日期：2026-11-06；核验已持有对象与路径绑定时不再打开第二个数据文件。
+        const auto info = parent_->fileInformation(QFileInfo(path_).fileName());
+        const auto observed = QByteArray::number(static_cast<qulonglong>(info.st_dev)) + ':' +
+                              QByteArray::number(static_cast<qulonglong>(info.st_ino));
         if (observed != identity_)
             throw Error(ExitCode::Integrity, QStringLiteral("持久接收文件路径已被替换"), "receive");
 #endif
@@ -188,6 +183,7 @@ class ReceiveFile final {
     }
 
   private:
+    DataFileCredit credit_;
     QString path_;
 #ifdef Q_OS_WIN
     std::unique_ptr<NativeDirectoryLock> parent_;

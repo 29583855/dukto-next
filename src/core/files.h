@@ -1,5 +1,6 @@
 #pragma once
 
+#include "filecredit.h"
 #include "nativecommit.h"
 #include <QElapsedTimer>
 #include <QFile>
@@ -73,6 +74,7 @@ class IncomingFile final {
     QString commit();
 
   private:
+    DataFileCredit credit_;
     QString destination_;
 #ifdef Q_OS_WIN
     std::unique_ptr<NativeDirectoryLock> directoryLock_;

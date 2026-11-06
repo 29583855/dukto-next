@@ -1,5 +1,6 @@
 #include "nativecommit.h"
 #include "error.h"
+#include "filecredit.h"
 
 #include <QCryptographicHash>
 #include <QDir>
@@ -272,6 +273,24 @@ int PosixDirectory::openRead(const QString &name) const {
     return file;
 }
 
+// 日期：2026-11-06；先验证父目录及单层名字，再用不跟随链接的fstatat核验；目录遍历描述符仍独立有界。
+struct stat PosixDirectory::fileInformation(const QString &name) const {
+    if (name.isEmpty() || name == "." || name == ".." || name.contains('/') ||
+        name.contains(QChar::Null))
+        throw Error(ExitCode::Permission, QStringLiteral("无效的源文件分量"), "read");
+    verify();
+    const auto encoded = QFile::encodeName(name);
+    struct stat info;
+    if (::fstatat(descriptor_, encoded.constData(), &info, AT_SYMLINK_NOFOLLOW) != 0)
+        throw Error(ExitCode::Disk,
+                    QStringLiteral("无法核对文件路径属性：") +
+                        QString::fromLocal8Bit(std::strerror(errno)),
+                    "read");
+    if (!S_ISREG(info.st_mode))
+        throw Error(ExitCode::Permission, QStringLiteral("源文件不是普通文件"), "read");
+    return info;
+}
+
 // 日期：2026-11-04；接收检查点只能写普通文件，O_EXCL 防覆盖，恢复时不使用 O_TRUNC。
 int PosixDirectory::openUpdate(const QString &name, bool create) const {
     if (name.isEmpty() || name == "." || name == ".." || name.contains('/') ||
@@ -495,6 +514,8 @@ void replaceReceivedFile(const QString &source, const QString &destination,
         expectedIdentity.isEmpty())
         throw Error(ExitCode::Config, QStringLiteral("覆盖必须绑定同目录的不同名称及已验身份"),
                     "commit");
+    // 日期：2026-11-06；源固定句柄具备正文读取权，先占数据文件额度；属性探针不占正文额度。
+    DataFileCredit credit;
     NativeDirectoryLock parent(toInfo.absolutePath(), false);
     const auto from = nativeLongPath(source);
     const auto to = nativeLongPath(destination);

@@ -352,6 +352,45 @@ class CoreTests final : public QObject {
         QVERIFY_EXCEPTION_THROWN(source.verify(), dukto::Error);
     }
 #ifndef Q_OS_WIN
+    // 日期：2026-11-06；元数据核验不跟随最后链接，非法名字不能越出固定父目录。
+    void posixFileInformationRejectsUnsafeNames() {
+        QTemporaryDir root;
+        QVERIFY(root.isValid());
+        QFile ordinary(root.filePath("ordinary"));
+        QVERIFY(ordinary.open(QIODevice::WriteOnly));
+        QCOMPARE(ordinary.write("ordinary"), qint64(8));
+        ordinary.close();
+        dukto::PosixDirectory directory(root.path(), false);
+        const auto observed = directory.fileInformation("ordinary");
+        struct stat expected;
+        QVERIFY(::lstat(QFile::encodeName(root.filePath("ordinary")).constData(), &expected) == 0);
+        QCOMPARE(qulonglong(observed.st_ino), qulonglong(expected.st_ino));
+        QCOMPARE(qulonglong(observed.st_dev), qulonglong(expected.st_dev));
+        QCOMPARE(qlonglong(observed.st_size), qlonglong(8));
+        for (const auto &name :
+             {QString(), QString("."), QString(".."), QString("../ordinary"),
+              QString("ordinary/child"), QString("/ordinary"), QString(1, QChar::Null)})
+            QVERIFY_EXCEPTION_THROWN(directory.fileInformation(name), dukto::Error);
+        QVERIFY(::symlink("ordinary", QFile::encodeName(root.filePath("link")).constData()) == 0);
+        QVERIFY(::mkfifo(QFile::encodeName(root.filePath("fifo")).constData(), 0600) == 0);
+        QVERIFY(QDir().mkdir(root.filePath("child")));
+        for (const auto &name : {"link", "fifo", "child", "absent"})
+            QVERIFY_EXCEPTION_THROWN(directory.fileInformation(name), dukto::Error);
+        const auto moved = root.path() + "-moved";
+        QVERIFY(QDir().rename(root.path(), moved));
+        QVERIFY(QDir().mkdir(root.path()));
+        bool rejected = false;
+        try {
+            directory.fileInformation("ordinary");
+        } catch (const dukto::Error &error) {
+            rejected = error.code == dukto::ExitCode::Permission && error.stage == "path";
+        }
+        // 日期：2026-11-06；先恢复夹具目录再断言，避免测试失败留下临时目录。
+        QVERIFY(QDir().rmdir(root.path()));
+        QVERIFY(QDir().rename(moved, root.path()));
+        QVERIFY(rejected);
+    }
+
     // 日期：2026-11-04；最后分量/父目录链接均拒绝，FIFO
     // 不能阻塞线程；父目录替换不重定向原句柄读取。
     void posixSafeSourcePaths() {

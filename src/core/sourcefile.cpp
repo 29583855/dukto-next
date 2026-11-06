@@ -19,6 +19,27 @@
 
 namespace dukto {
 namespace {
+#ifndef Q_OS_WIN
+// 日期：2026-11-06；已打开对象和固定目录路径使用完全相同的POSIX身份及内容时间字段。
+QByteArray fileIdentity(const struct stat &info, bool contents) {
+    if (!S_ISREG(info.st_mode))
+        throw Error(ExitCode::Permission, QStringLiteral("源文件不是普通文件"), "read");
+    auto result = QByteArray::number(static_cast<qulonglong>(info.st_dev)) + ':' +
+                  QByteArray::number(static_cast<qulonglong>(info.st_ino)) + ':';
+    if (!contents)
+        return result;
+    result += QByteArray::number(static_cast<qlonglong>(info.st_size)) + ':';
+#ifdef Q_OS_MACOS
+    for (const auto &time : {info.st_mtimespec, info.st_ctimespec})
+#else
+    for (const auto &time : {info.st_mtim, info.st_ctim})
+#endif
+        result += QByteArray::number(static_cast<qlonglong>(time.tv_sec)) + ':' +
+                  QByteArray::number(static_cast<qlonglong>(time.tv_nsec)) + ':';
+    return result;
+}
+#endif
+
 // 日期：2026-11-04；只作进程内身份比较，明确取字段，避免填充字节导致不确定的变化判断。
 QByteArray fileIdentity(int descriptor, bool contents = true) {
     QByteArray result;
@@ -42,20 +63,7 @@ QByteArray fileIdentity(int descriptor, bool contents = true) {
     struct stat info;
     if (::fstat(descriptor, &info) != 0)
         throw Error(ExitCode::Disk, QStringLiteral("无法读取源文件原生属性"), "read");
-    if (!S_ISREG(info.st_mode))
-        throw Error(ExitCode::Permission, QStringLiteral("源文件不是普通文件"), "read");
-    result = QByteArray::number(static_cast<qulonglong>(info.st_dev)) + ':' +
-             QByteArray::number(static_cast<qulonglong>(info.st_ino)) + ':';
-    if (!contents)
-        return result;
-    result += QByteArray::number(static_cast<qlonglong>(info.st_size)) + ':';
-#ifdef Q_OS_MACOS
-    for (const auto &time : {info.st_mtimespec, info.st_ctimespec})
-#else
-    for (const auto &time : {info.st_mtim, info.st_ctim})
-#endif
-        result += QByteArray::number(static_cast<qlonglong>(time.tv_sec)) + ':' +
-                  QByteArray::number(static_cast<qlonglong>(time.tv_nsec)) + ':';
+    return fileIdentity(info, contents);
 #endif
     return result;
 }
@@ -63,6 +71,9 @@ QByteArray fileIdentity(int descriptor, bool contents = true) {
 
 // 日期：2026-11-06；Windows私有状态原子改配可能短暂持有DELETE句柄；只对错误32有界重试，源文件默认立即拒绝。
 SourceFile::SourceFile(const QString &path, OpenPolicy policy) {
+    // 日期：2026-11-06；数据源在目录和文件打开前申请；私有状态保留控制路径，不消耗数据文件额度。
+    if (policy == OpenPolicy::Immediate)
+        credit_.reset(new DataFileCredit);
     const QFileInfo info(path);
     int descriptor = -1;
 #ifdef Q_OS_WIN
@@ -146,15 +157,8 @@ void SourceFile::verifyIdentity(bool contents) const {
     if (fileIdentity(file_.handle(), contents) != expected)
         throw Error(ExitCode::Integrity, QStringLiteral("读取期间源文件已变化"), "read");
 #ifndef Q_OS_WIN
-    const int current = parent_->openRead(name_);
-    QByteArray observed;
-    try {
-        observed = fileIdentity(current, contents);
-    } catch (...) {
-        ::close(current);
-        throw;
-    }
-    ::close(current);
+    // 日期：2026-11-06；父目录/普通类型/路径身份仍重验，消除核验时额外的数据文件打开。
+    const auto observed = fileIdentity(parent_->fileInformation(name_), contents);
     if (observed != expected)
         throw Error(ExitCode::Integrity, QStringLiteral("源文件路径在读取期间已被替换"), "read");
 #endif
