@@ -1,0 +1,21 @@
+[0/1] Re-running CMake...
+-- Configuring done (0.1s)
+-- Generating done (0.3s)
+-- Build files have been written to: E:/project/dukto/build/windows-ucrt
+[1/11] Automatic MOC for target dukto-core
+[2/10] Building CXX object CMakeFiles/dukto-core.dir/src/core/tcplistener.cpp.obj
+In file included from E:/project/dukto/src/core/tcplistener.cpp:6:
+E:/project/dukto/.tools/msys64/ucrt64/include/winsock2.h:15:2: warning: #warning Please include winsock2.h before windows.h [-Wcpp]
+   15 | #warning Please include winsock2.h before windows.h
+      |  ^~~~~~~
+E:/project/dukto/src/core/tcplistener.cpp: In function 'DWORD dukto::{anonymous}::overlappingListeners(const QHostAddress&, quint16, ULONG, int&)':
+E:/project/dukto/src/core/tcplistener.cpp:79:55: warning: comparison of integer expressions of different signedness: 'const DWORD' {aka 'const long unsigned int'} and 'int' [-Wsign-compare]
+   79 |                                    row.dwLocalScopeId == QNetworkInterface::interfaceIndexFromName(
+      |                                    ~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   80 |                                                              address.scopeId()));
+      |                                                              ~~~~~~~~~~~~~~~~~~
+[3/10] Linking CXX static library libdukto-core.a
+[4/10] Automatic MOC for target core-tests
+[5/9] Automatic MOC for target ui-tests
+[6/8] Linking CXX executable core-tests.exe
+[7/8] Linking CXX executable ui-tests.exe

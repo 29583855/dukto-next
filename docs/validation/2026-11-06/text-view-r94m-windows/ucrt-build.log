@@ -1,0 +1,11 @@
+[1/6] Automatic MOC for target dukto-core
+[2/5] Building CXX object CMakeFiles/dukto-core.dir/src/core/tcplistener.cpp.obj
+E:/project/dukto/src/core/tcplistener.cpp: In function 'DWORD dukto::{anonymous}::overlappingListeners(const QHostAddress&, quint16, ULONG, int&)':
+E:/project/dukto/src/core/tcplistener.cpp:81:55: warning: comparison of integer expressions of different signedness: 'const DWORD' {aka 'const long unsigned int'} and 'int' [-Wsign-compare]
+   81 |                                    row.dwLocalScopeId == QNetworkInterface::interfaceIndexFromName(
+      |                                    ~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   82 |                                                              address.scopeId()));
+      |                                                              ~~~~~~~~~~~~~~~~~~
+[3/5] Linking CXX static library libdukto-core.a
+[4/5] Linking CXX executable core-tests.exe
+[5/5] Linking CXX executable ui-tests.exe

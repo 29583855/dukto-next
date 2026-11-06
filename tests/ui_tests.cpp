@@ -1,4 +1,5 @@
 #include "app/controller.h"
+#include "core/buffercredit.h"
 #include "core/files.h"
 #include <QApplication>
 #include <QClipboard>
@@ -13,11 +14,13 @@
 #include <QQmlContext>
 #include <QQmlEngine>
 #include <QQuickItem>
+#include <QQuickTextDocument>
 #include <QQuickWidget>
 #include <QQuickWindow>
 #include <QRawFont>
 #include <QSignalSpy>
 #include <QTemporaryDir>
+#include <QTextDocument>
 #include <QTextLayout>
 #include <QtEndian>
 #include <QtTest>
@@ -180,6 +183,158 @@ class UiTests final : public QObject {
         click(view, findItem(content, "serverBackButton"));
         QTRY_VERIFY(!panel->property("visible").toBool());
         QCOMPARE(warnings.count(), 0);
+    }
+
+    // 日期：2026-11-06；小量段落即检出原布局放大，最大正文分别覆盖大量换行、长单行及Unicode边界。
+    void receivedLargeTextThroughQml_data() {
+        QTest::addColumn<QByteArray>("payload");
+        QTest::newRow("paragraph-boundary") << QByteArray(2049, '\n');
+        QTest::newRow("maximum-paragraphs") << QByteArray(8 * 1024 * 1024, '\n');
+        QTest::newRow("maximum-single-line") << QByteArray(8 * 1024 * 1024, 'x');
+        auto unicode = QString(16383, 'x') + QString::fromUtf8("🚀") + QString(16383, 'y') +
+                       QString::fromUtf8("🚀中文\r\n");
+        unicode += QChar(0);
+        unicode += QChar(0x2029);
+        QTest::newRow("unicode-boundaries") << unicode.toUtf8();
+    }
+
+    // 日期：2026-11-06；真实R6入站触发生产QML，有限布局、翻页、尾页、复制全文与历史重开必须一起通过。
+    void receivedLargeTextThroughQml() {
+        QFETCH(QByteArray, payload);
+        QTemporaryDir temporary;
+        QVERIFY(temporary.isValid());
+        QSettings::setDefaultFormat(QSettings::IniFormat);
+        QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, temporary.path());
+        const auto output = temporary.filePath("output");
+        QVERIFY(QDir().mkpath(output));
+        QSettings settings(QSettings::IniFormat, QSettings::UserScope, "DuktoNext", "Desktop");
+        settings.setValue("output", output);
+        settings.setValue("termsAccepted", true);
+        settings.sync();
+        QTcpServer reservation;
+        QVERIFY(reservation.listen(QHostAddress::LocalHost, 0));
+        const auto port = reservation.serverPort();
+        reservation.close();
+        Controller controller(port, nullptr, temporary.filePath("state"));
+        controller.acceptTerms();
+        QQuickWidget view;
+        view.setResizeMode(QQuickWidget::SizeRootObjectToView);
+        view.resize(430, 700);
+        view.rootContext()->setContextProperty("controller", &controller);
+        view.rootContext()->setContextProperty("applicationVersion", DUKTO_VERSION);
+        view.setSource(QUrl("qrc:/ui/Main.qml"));
+        QCOMPARE(view.status(), QQuickWidget::Ready);
+        view.show();
+        auto root = view.rootObject();
+        QVERIFY(root);
+        auto dialog = root->findChild<QObject *>("textDialog");
+        auto editor = root->findChild<QQuickItem *>("textEditor");
+        QVERIFY(dialog && editor);
+        auto listener = controller.findChild<dukto::LegacyListener *>();
+        QVERIFY(listener);
+        QJsonArray events;
+        connect(listener, &dukto::LegacyListener::event, &view,
+                [&events](const QJsonObject &event) { events.append(event); });
+        connect(listener, &dukto::LegacyListener::result, &view,
+                [&events](int code, const dukto::LegacyResult &result) {
+                    const auto &value = result.json();
+                    events.append(QJsonObject{{"event", value["event"]},
+                                              {"exitCode", code},
+                                              {"message", value["message"]}});
+                });
+        QTcpSocket sender;
+        sender.connectToHost(QHostAddress::LocalHost, port);
+        QVERIFY(sender.waitForConnected(2000));
+        QByteArray header(16, '\0');
+        qToLittleEndian<qint64>(1, reinterpret_cast<uchar *>(header.data()));
+        qToLittleEndian<qint64>(payload.size(), reinterpret_cast<uchar *>(header.data() + 8));
+        header.append("___DUKTO___TEXT___\0", 19);
+        QByteArray size(8, '\0');
+        qToLittleEndian<qint64>(payload.size(), reinterpret_cast<uchar *>(size.data()));
+        QCOMPARE(sender.write(header + size + payload),
+                 qint64(header.size() + size.size() + payload.size()));
+        sender.flush();
+        // 日期：2026-11-06；保留原15秒期限，失败时区分收包、持久化与弹窗动画状态。
+        const auto diagnostics = [&]() {
+            return QJsonDocument(
+                       QJsonObject{
+                           {"status", controller.status()},
+                           {"dialogVisible", dialog->property("visible").toBool()},
+                           {"dialogOpened", dialog->property("opened").toBool()},
+                           {"pageCount", controller.property("receivedTextPageCount").toInt()},
+                           {"historyCount", controller.history().size()},
+                           {"senderState", sender.state()},
+                           {"senderPendingBytes", QString::number(sender.bytesToWrite())},
+                           {"senderError", sender.errorString()},
+                           {"viewVisible", view.isVisible()},
+                           {"windowExposed", view.quickWindow()->isExposed()},
+                           {"events", events}})
+                .toJson(QJsonDocument::Compact);
+        };
+        QTRY_VERIFY2_WITH_TIMEOUT(dialog->property("opened").toBool(), diagnostics().constData(),
+                                  15000);
+        QVERIFY(!view.grabFramebuffer().isNull());
+        auto document = editor->property("textDocument").value<QQuickTextDocument *>();
+        QVERIFY(document && document->textDocument());
+        const auto firstBlocks = document->textDocument()->blockCount();
+        QVERIFY2(firstBlocks <= 513,
+                 qPrintable(QString("Unbounded document paragraphs: %1").arg(firstBlocks)));
+        QVERIFY(editor->property("text").toString().size() <= 16384);
+        QVERIFY(controller.property("receivedTextPaged").toBool());
+        auto next = findItem(view.quickWindow()->contentItem(), "textNextPageButton");
+        auto previous = findItem(view.quickWindow()->contentItem(), "textPreviousPageButton");
+        QVERIFY(next && previous);
+        QVERIFY(!previous->isEnabled());
+        const auto first = controller.property("receivedTextPage").toString();
+        click(view, next);
+        QTRY_VERIFY(controller.property("receivedTextHasPrevious").toBool());
+        QVERIFY(document->textDocument()->blockCount() <= 513);
+        click(view, previous);
+        QCOMPARE(controller.property("receivedTextPage").toString(), first);
+        const int pages = controller.property("receivedTextPageCount").toInt();
+        QVERIFY(pages > 1);
+        QVERIFY(QMetaObject::invokeMethod(&controller, "changeReceivedTextPage",
+                                          Q_ARG(int, pages - 1)));
+        QVERIFY(!controller.property("receivedTextHasNext").toBool());
+        QVERIFY(!next->isEnabled());
+        QVERIFY(document->textDocument()->blockCount() <= 513);
+        QVERIFY(editor->property("text").toString().size() <= 16384);
+        QVERIFY(editor->property("selectedText").toString().isEmpty());
+        click(view, root->findChild<QQuickItem *>("copyTextButton"));
+        const auto original = QString::fromUtf8(payload.constData(), payload.size());
+        QCOMPARE(QApplication::clipboard()->text(), original);
+        const auto history = controller.history();
+        QCOMPARE(history.size(), 1);
+        const auto id = history[0].toMap()["id"].toString();
+        QVERIFY(!id.isEmpty());
+        QVERIFY(QMetaObject::invokeMethod(dialog, "close"));
+        QTRY_VERIFY(!dialog->property("visible").toBool());
+        QTRY_VERIFY(controller.property("receivedTextPage").toString().isEmpty());
+        controller.openHistory(id);
+        QTRY_VERIFY(dialog->property("opened").toBool());
+        QCOMPARE(controller.property("receivedTextPage").toString(), first);
+        QVERIFY(document->textDocument()->blockCount() <= 513);
+        click(view, root->findChild<QQuickItem *>("copyTextButton"));
+        QCOMPARE(QApplication::clipboard()->text(), original);
+        QVERIFY(QMetaObject::invokeMethod(dialog, "close"));
+        QTRY_VERIFY(!dialog->property("visible").toBool());
+        QTRY_COMPARE(dukto::BufferCredit::usage()["dataUsed"].toString(), QString("0"));
+        QApplication::clipboard()->clear();
+        const auto name =
+            QString("text-preview-%1.json").arg(QString::fromLatin1(QTest::currentDataTag()));
+        QFile evidence(name);
+        QVERIFY(evidence.open(QIODevice::WriteOnly));
+        const QJsonObject result{{"payloadBytes", payload.size()},
+                                 {"firstPageBlocks", firstBlocks},
+                                 {"pageCount", pages},
+                                 {"maximumPageCharacters", 16384},
+                                 {"maximumPageBreaks", 512},
+                                 {"clipboardFullTextVerified", true},
+                                 {"historyReopenVerified", true},
+                                 {"creditReleased", true},
+                                 {"passed", true}};
+        const auto bytes = QJsonDocument(result).toJson();
+        QCOMPARE(evidence.write(bytes), qint64(bytes.size()));
     }
 
     // 日期：2026-11-04；通过生产 QML 实测混合拖放、剪贴板发送及收到文本的选区/全文复制。

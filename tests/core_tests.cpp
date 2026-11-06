@@ -7,6 +7,7 @@
 #include "core/manifest.h"
 #include "core/privatestore.h"
 #include "core/sourcefile.h"
+#include "core/tcplistener.h"
 
 #include <QDir>
 #include <QFile>
@@ -34,9 +35,102 @@
 #include <unistd.h>
 #endif
 
+Q_DECLARE_METATYPE(QHostAddress)
+
 class CoreTests final : public QObject {
     Q_OBJECT
   private slots:
+    // 日期：2026-11-06；Windows旧Qt允许IPv4头像与双栈传输复用端口；两种先后顺序均须拒绝。
+    void exclusiveTcpBinding_data() {
+        QTest::addColumn<QHostAddress>("firstAddress");
+        QTest::addColumn<QHostAddress>("secondAddress");
+        QTest::addColumn<bool>("firstUsesQt");
+        for (bool firstQt : {false, true}) {
+            const auto prefix = firstQt ? QByteArray("qt-first-") : QByteArray("exclusive-first-");
+            QTest::newRow((prefix + "ipv4-then-dual").constData())
+                << QHostAddress(QHostAddress::AnyIPv4) << QHostAddress(QHostAddress::Any)
+                << firstQt;
+            QTest::newRow((prefix + "dual-then-ipv4").constData())
+                << QHostAddress(QHostAddress::Any) << QHostAddress(QHostAddress::AnyIPv4)
+                << firstQt;
+            QTest::newRow((prefix + "ipv4-wildcard-then-specific").constData())
+                << QHostAddress(QHostAddress::AnyIPv4) << QHostAddress(QHostAddress::LocalHost)
+                << firstQt;
+            QTest::newRow((prefix + "ipv6-same").constData())
+                << QHostAddress(QHostAddress::LocalHostIPv6)
+                << QHostAddress(QHostAddress::LocalHostIPv6) << firstQt;
+        }
+    }
+
+    // 日期：2026-11-06；拒绝后来者不影响原监听；关闭原监听后同地址端口可重新使用。
+    void exclusiveTcpBinding() {
+        QFETCH(QHostAddress, firstAddress);
+        QFETCH(QHostAddress, secondAddress);
+        QFETCH(bool, firstUsesQt);
+        QTcpServer qtServer;
+        dukto::TcpListener exclusiveServer;
+        const bool firstBound = firstUsesQt ? qtServer.listen(firstAddress, 0)
+                                            : exclusiveServer.listen(firstAddress, 0);
+        QVERIFY(firstBound);
+        QTcpServer *first = firstUsesQt ? &qtServer : &exclusiveServer;
+        const auto port = first->serverPort();
+        QVERIFY(port != 0);
+        dukto::TcpListener second;
+        QVERIFY2(!second.listen(secondAddress, port),
+                 "two protocols acquired an overlapping TCP port");
+        QVERIFY(!second.isListening());
+        QVERIFY(!second.errorString().isEmpty());
+        // 日期：2026-11-06；Windows外部旧Qt后来跨地址族复用是已留档系统边界；同族保护仍须通过。
+        const bool crossFamilyShared = firstAddress.protocol() == QAbstractSocket::IPv4Protocol &&
+                                       secondAddress == QHostAddress::Any;
+        if (!firstUsesQt && !crossFamilyShared) {
+            QTcpServer shared;
+            QVERIFY2(!shared.listen(secondAddress, port),
+                     "a same-family Qt shared listener bypassed the exclusive port");
+        }
+        QTcpSocket client;
+        const auto loopback = firstAddress.protocol() == QAbstractSocket::IPv6Protocol
+                                  ? QHostAddress::LocalHostIPv6
+                                  : QHostAddress::LocalHost;
+        client.connectToHost(loopback, port);
+        QVERIFY(client.waitForConnected(2000));
+        QTRY_VERIFY(first->hasPendingConnections());
+        QScopedPointer<QTcpSocket> peer(first->nextPendingConnection());
+        QVERIFY(peer);
+        const QByteArray payload("original protocol remains reachable");
+        QCOMPARE(client.write(payload), qint64(payload.size()));
+        client.flush();
+        QTRY_COMPARE(peer->bytesAvailable(), qint64(payload.size()));
+        QCOMPARE(peer->readAll(), payload);
+        client.abort();
+        peer->abort();
+        peer.reset();
+        first->close();
+        QVERIFY2(second.listen(secondAddress, port), qPrintable(second.errorString()));
+        QCOMPARE(second.serverPort(), port);
+    }
+
+    // 日期：2026-11-06；显式IPv6监听不占用IPv4，双栈监听仍能同时接收两个地址族。
+    void tcpAddressFamilies() {
+        dukto::TcpListener ipv6;
+        QVERIFY2(ipv6.listen(QHostAddress::AnyIPv6), qPrintable(ipv6.errorString()));
+        dukto::TcpListener ipv4;
+        QVERIFY2(ipv4.listen(QHostAddress::AnyIPv4, ipv6.serverPort()),
+                 qPrintable(ipv4.errorString()));
+        dukto::TcpListener dual;
+        QVERIFY2(dual.listen(), qPrintable(dual.errorString()));
+        for (const auto address : {QHostAddress::LocalHost, QHostAddress::LocalHostIPv6}) {
+            QTcpSocket client;
+            client.connectToHost(address, dual.serverPort());
+            QVERIFY(client.waitForConnected(2000));
+            QTRY_VERIFY(dual.hasPendingConnections());
+            QScopedPointer<QTcpSocket> accepted(dual.nextPendingConnection());
+            QVERIFY(accepted);
+            client.abort();
+            accepted->abort();
+        }
+    }
+
     // 日期：2026-11-04；状态根和文件实际核验原生权限，更新原子可读且非法键/超量读取明确拒绝。
     void privateStoreContracts() {
         QTemporaryDir temporary;

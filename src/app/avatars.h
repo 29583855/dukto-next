@@ -1,11 +1,11 @@
 #pragma once
 
+#include "core/tcplistener.h"
 #include <QJsonArray>
 #include <QMap>
 #include <QNetworkAccessManager>
 #include <QObject>
 #include <QStringList>
-#include <QTcpServer>
 
 // 日期：2026-11-04；头像仅属于桌面展示，不将图像依赖引入独立 CLI 核心。
 class Avatars final : public QObject {
@@ -45,7 +45,7 @@ class Avatars final : public QObject {
     // 日期：2026-11-04；提供有请求/连接/时间上限的兼容头像 HTTP 端点。
     void accept();
     QNetworkAccessManager network_;
-    QTcpServer server_;
+    dukto::TcpListener server_;
     QMap<QString, Entry> entries_;
     QStringList queue_;
     QByteArray local_;

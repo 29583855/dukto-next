@@ -13,6 +13,7 @@
 #include <QTemporaryDir>
 #include <QUrl>
 #include <QVariantList>
+#include <QVector>
 
 class Controller final : public QObject {
     Q_OBJECT
@@ -35,6 +36,14 @@ class Controller final : public QObject {
     Q_PROPERTY(bool batchHasNext READ batchHasNext NOTIFY batchChanged)
     Q_PROPERTY(QString localAvatar READ localAvatar NOTIFY peersChanged)
     Q_PROPERTY(QObject *server READ server CONSTANT)
+    Q_PROPERTY(QString receivedTextPage READ receivedTextPage NOTIFY receivedTextPageChanged)
+    Q_PROPERTY(
+        QString receivedTextPosition READ receivedTextPosition NOTIFY receivedTextPageChanged)
+    Q_PROPERTY(
+        bool receivedTextHasPrevious READ receivedTextHasPrevious NOTIFY receivedTextPageChanged)
+    Q_PROPERTY(bool receivedTextHasNext READ receivedTextHasNext NOTIFY receivedTextPageChanged)
+    Q_PROPERTY(bool receivedTextPaged READ receivedTextPaged NOTIFY receivedTextPageChanged)
+    Q_PROPERTY(int receivedTextPageCount READ receivedTextPageCount NOTIFY receivedTextPageChanged)
   public:
     // 日期：2026-11-04；初始化设置、历史数据库及旧版发现/接收入口。
     Controller(quint16 port, QObject *parent = nullptr,
@@ -103,6 +112,22 @@ class Controller final : public QObject {
     Q_INVOKABLE void copyText(const QString &text);
     // 日期：2026-11-06；只在QML清空只读文本后释放显示正文额度，关闭窗口和取消均可调用。
     Q_INVOKABLE void releaseReceivedText();
+    // 日期：2026-11-06；每页至多16384码元/512换行，不把完整正文交给Qt文档布局。
+    QString receivedTextPage() const;
+    // 日期：2026-11-06；面向用户返回当前页/总页数，完整内容始终可翻阅和复制。
+    QString receivedTextPosition() const;
+    // 日期：2026-11-06；当前页有前一页时允许后退。
+    bool receivedTextHasPrevious() const;
+    // 日期：2026-11-06；当前页有后一页时允许前进。
+    bool receivedTextHasNext() const;
+    // 日期：2026-11-06；仅多页正文显示分页导航，普通短文本保持原排版。
+    bool receivedTextPaged() const;
+    // 日期：2026-11-06；实际显示页数，不含结束位置哨兵；关闭后为0。
+    int receivedTextPageCount() const;
+    // 日期：2026-11-06；按相对页偏移移动，越界请求拒绝且不改变当前文本。
+    Q_INVOKABLE void changeReceivedTextPage(int delta);
+    // 日期：2026-11-06；有选区复制本页选区，否则复制完整原文，包含未显示的所有页。
+    Q_INVOKABLE void copyReceivedText(const QString &selection = QString());
     // 日期：2026-11-04；隐藏主窗口后捕获屏幕，保存为任务临时 JPEG 并发送。
     Q_INVOKABLE void sendScreenshot(const QString &host, int port);
     // 日期：2026-11-04；从 QML DropArea 提取本地文件，不接受远程 URL。
@@ -126,6 +151,8 @@ class Controller final : public QObject {
     void peersChanged();
     void historyChanged();
     void textReceived(const QString &text);
+    void receivedTextOpened();
+    void receivedTextPageChanged();
     void captureVisibility(bool visible);
     void batchChanged();
     void batchOpened();
@@ -139,6 +166,8 @@ class Controller final : public QObject {
     void onResult(int code, const dukto::LegacyResult &result);
     // 日期：2026-11-04；从数据库重新加载一页历史，限制内存模型规模。
     void loadHistory();
+    // 日期：2026-11-06；扫描有界正文建立分页位置，不拆Unicode代理对；接管共享额度后同步通知显示。
+    void displayReceivedText(QString text, std::shared_ptr<dukto::BufferCredit> credit);
     // 日期：2026-11-04；在端口转换前统一验证地址，错误直接反馈给界面。
     bool prepareRequest(dukto::LegacyRequest &request, const QString &host, int port);
     QSettings settings_;
@@ -158,6 +187,9 @@ class Controller final : public QObject {
     QSqlDatabase historyDatabase_;
     QVariantList history_;
     std::shared_ptr<dukto::BufferCredit> displayedTextCredit_;
+    QString displayedText_;
+    QVector<int> displayedTextPages_;
+    int displayedTextPage_ = 0;
     QString status_;
     double progress_ = 0;
     bool receiving_ = false;

@@ -1,8 +1,8 @@
 #pragma once
 
+#include "tcplistener.h"
 #include <QElapsedTimer>
 #include <QJsonObject>
-#include <QTcpServer>
 #include <QThread>
 #include <atomic>
 #include <memory>
@@ -78,7 +78,7 @@ class LegacyJob final : public QThread {
     QElapsedTimer elapsed_;
 };
 
-class LegacyListener final : public QTcpServer {
+class LegacyListener final : public TcpListener {
     Q_OBJECT
   public:
     // 日期：2026-11-04；使用显式接收目录与有限活动任务数。

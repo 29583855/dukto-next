@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="0" failures="2" tests="4" name="CoreTests">
+  <properties>
+    <property value="5.15.19" name="QTestVersion"/>
+    <property value="5.15.19" name="QtVersion"/>
+    <property value="Qt 5.15.19 (x86_64&#x002D;little_endian&#x002D;llp64 shared (dynamic) release build; by GCC 16.1.0)" name="QtBuild"/>
+  </properties>
+  <testcase result="pass" name="initTestCase"/>
+  <testcase result="fail" name="exclusiveTcpBinding">
+    <failure tag="qt&#x002D;first&#x002D;dual&#x002D;then&#x002D;ipv4" message="&apos;!second.listen(secondAddress, port)&apos; returned FALSE. (two protocols acquired an overlapping TCP port)" result="fail"/>
+    <failure tag="qt&#x002D;first&#x002D;ipv4&#x002D;wildcard&#x002D;then&#x002D;specific" message="&apos;!second.listen(secondAddress, port)&apos; returned FALSE. (two protocols acquired an overlapping TCP port)" result="fail"/>
+  </testcase>
+  <testcase result="pass" name="tcpAddressFamilies"/>
+  <testcase result="pass" name="cleanupTestCase"/>
+  <system-err/>
+</testsuite>

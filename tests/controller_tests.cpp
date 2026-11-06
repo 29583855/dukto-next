@@ -63,6 +63,92 @@ class ControllerTests final : public QObject {
         }
     }
 #endif
+    // 日期：2026-11-06；完整遍历最大换行/单行正文和代理对边界，不以第一页正常代替完整内容。
+    void largeTextPagingKeepsAllContent_data() {
+        QTest::addColumn<QByteArray>("payload");
+        QTest::newRow("maximum-paragraphs") << QByteArray(8 * 1024 * 1024, '\n');
+        QTest::newRow("maximum-single-line") << QByteArray(8 * 1024 * 1024, 'x');
+        auto unicode = QString(16383, 'x') + QString::fromUtf8("🚀") + QString(16383, 'y') +
+                       QString::fromUtf8("🚀中文\r\n");
+        unicode += QChar(0);
+        unicode += QChar(0x2029);
+        QTest::newRow("unicode-boundaries") << unicode.toUtf8();
+    }
+
+    // 日期：2026-11-06；从独立R6帧接收后逐页拼回全部正文，关闭/重开同一历史仍得到一致内容。
+    void largeTextPagingKeepsAllContent() {
+        QFETCH(QByteArray, payload);
+        QTemporaryDir temporary;
+        QVERIFY(temporary.isValid());
+        QSettings::setDefaultFormat(QSettings::IniFormat);
+        QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, temporary.path());
+        QSettings settings(QSettings::IniFormat, QSettings::UserScope, "DuktoNext", "Desktop");
+        settings.setValue("output", temporary.path());
+        settings.sync();
+        QTcpServer reservation;
+        QVERIFY(reservation.listen(QHostAddress::LocalHost, 0));
+        const auto port = reservation.serverPort();
+        reservation.close();
+        Controller controller(port, nullptr, temporary.filePath("state"));
+        QSignalSpy opened(&controller, &Controller::receivedTextOpened);
+        QTcpSocket sender;
+        sender.connectToHost(QHostAddress::LocalHost, port);
+        QVERIFY(sender.waitForConnected(2000));
+        QByteArray header(16, '\0');
+        qToLittleEndian<qint64>(1, reinterpret_cast<uchar *>(header.data()));
+        qToLittleEndian<qint64>(payload.size(), reinterpret_cast<uchar *>(header.data() + 8));
+        header.append("___DUKTO___TEXT___\0", 19);
+        QByteArray size(8, '\0');
+        qToLittleEndian<qint64>(payload.size(), reinterpret_cast<uchar *>(size.data()));
+        QCOMPARE(sender.write(header + size + payload),
+                 qint64(header.size() + size.size() + payload.size()));
+        sender.flush();
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 15000);
+        const auto original = QString::fromUtf8(payload.constData(), payload.size());
+        const auto id = controller.history()[0].toMap()["id"].toString();
+        QVERIFY(!id.isEmpty());
+        for (int attempt = 0; attempt < 2; ++attempt) {
+            QString assembled;
+            assembled.reserve(original.size());
+            int pages = 0;
+            for (;;) {
+                const auto page = controller.receivedTextPage();
+                QVERIFY(page.size() <= 16384);
+                int breaks = 0;
+                for (const auto ch : page)
+                    if (ch == '\r' || ch == '\n' || ch.unicode() == 0x2028 ||
+                        ch.unicode() == 0x2029)
+                        ++breaks;
+                QVERIFY(breaks <= 512);
+                if (!page.isEmpty()) {
+                    QVERIFY(!page.front().isLowSurrogate());
+                    QVERIFY(!page.back().isHighSurrogate());
+                }
+                assembled += page;
+                ++pages;
+                if (!controller.receivedTextHasNext())
+                    break;
+                controller.changeReceivedTextPage(1);
+            }
+            QCOMPARE(pages, controller.receivedTextPageCount());
+            QCOMPARE(assembled, original);
+            QCOMPARE(assembled.toUtf8(), payload);
+            const auto position = controller.receivedTextPosition();
+            controller.changeReceivedTextPage(2147483647);
+            QCOMPARE(controller.receivedTextPosition(), position);
+            controller.changeReceivedTextPage(-2147483647);
+            QCOMPARE(controller.receivedTextPosition(), position);
+            controller.releaseReceivedText();
+            QCOMPARE(controller.receivedTextPageCount(), 0);
+            QCOMPARE(controller.receivedTextPage(), QString());
+            QTRY_COMPARE(dukto::BufferCredit::usage()["dataUsed"].toString(), QString("0"));
+            if (attempt == 0) {
+                controller.openHistory(id);
+                QCOMPARE(opened.count(), 2);
+            }
+        }
+    }
+
     // 日期：2026-11-04；所有设置和历史使用独立临时目录，不能改变真实用户配置。
     void textHistorySurvivesRestart() {
         QTemporaryDir temporary;

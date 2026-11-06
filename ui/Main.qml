@@ -658,10 +658,37 @@ Rectangle {
             }
 
             RowLayout {
+                visible: textEditor.readOnly && controller.receivedTextPaged
+                Layout.fillWidth: true
                 Button {
-                    text: "复制"
+                    objectName: "textPreviousPageButton"
+                    text: "上一页"
+                    enabled: controller.receivedTextHasPrevious
+                    onClicked: controller.changeReceivedTextPage(-1)
+                }
+                Label {
+                    text: controller.receivedTextPosition
+                    Layout.fillWidth: true
+                    horizontalAlignment: Text.AlignHCenter
+                }
+                Button {
+                    objectName: "textNextPageButton"
+                    text: "下一页"
+                    enabled: controller.receivedTextHasNext
+                    onClicked: controller.changeReceivedTextPage(1)
+                }
+            }
+
+            RowLayout {
+                Button {
+                    text: textEditor.readOnly && !textEditor.selectedText.length ? "复制全文" : "复制"
                     objectName: "copyTextButton"
-                    onClicked: controller.copyText(textEditor.selectedText.length ? textEditor.selectedText : textEditor.text)
+                    onClicked: {
+                        if (textEditor.readOnly)
+                            controller.copyReceivedText(textEditor.selectedText);
+                        else
+                            controller.copyText(textEditor.selectedText.length ? textEditor.selectedText : textEditor.text);
+                    }
                 }
 
                 Button {
@@ -931,11 +958,17 @@ Rectangle {
             batchDialog.open();
         }
 
-        // 日期：2026-11-04；收到文本时使用只读页面展示，复制由用户显式操作。
-        function onTextReceived(text) {
+        // 日期：2026-11-06；只向文档布局交一页，完整正文由控制器保存；翻页不会截断复制全文。
+        function onReceivedTextOpened() {
             textEditor.readOnly = true;
-            textEditor.text = text;
+            textEditor.text = controller.receivedTextPage;
             textDialog.open();
+        }
+
+        // 日期：2026-11-06；新接收、历史打开和翻页共用同一有界文档，编辑发送文本不受该通知覆盖。
+        function onReceivedTextPageChanged() {
+            if (textEditor.readOnly)
+                textEditor.text = controller.receivedTextPage;
         }
 
         target: controller

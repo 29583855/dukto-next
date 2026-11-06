@@ -1,0 +1,9 @@
+[1/4] Automatic MOC for target ui-tests
+[2/3] Building CXX object CMakeFiles/ui-tests.dir/tests/ui_tests.cpp.obj
+FAILED: [code=1] CMakeFiles/ui-tests.dir/tests/ui_tests.cpp.obj 
+E:\project\dukto\.tools\msys64\ucrt64\bin\g++.exe -DDUKTO_VERSION=\"0.1.0\" -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_QMLMODELS_LIB -DQT_QML_LIB -DQT_QUICKWIDGETS_LIB -DQT_QUICK_LIB -DQT_SQL_LIB -DQT_TESTCASE_BUILDDIR=\"E:/project/dukto/build/windows-ucrt\" -DQT_TESTLIB_LIB -DQT_WIDGETS_LIB -IE:/project/dukto/build/windows-ucrt -IE:/project/dukto -IE:/project/dukto/build/windows-ucrt/ui-tests_autogen/include -IE:/project/dukto/src -isystem E:/project/dukto/.tools/msys64/ucrt64/include/QtCore -isystem E:/project/dukto/.tools/msys64/ucrt64/share/qt5/mkspecs/win32-g++ -isystem E:/project/dukto/.tools/msys64/ucrt64/include/QtNetwork -isystem E:/project/dukto/.tools/msys64/ucrt64/include/QtSql -isystem E:/project/dukto/.tools/msys64/ucrt64/include/QtQuickWidgets -isystem E:/project/dukto/.tools/msys64/ucrt64/include/QtQuick -isystem E:/project/dukto/.tools/msys64/ucrt64/include/QtQmlModels -isystem E:/project/dukto/.tools/msys64/ucrt64/include/QtQml -isystem E:/project/dukto/.tools/msys64/ucrt64/include/QtGui -isystem E:/project/dukto/.tools/msys64/ucrt64/include/QtWidgets -isystem E:/project/dukto/.tools/msys64/ucrt64/include/QtTest -O3 -DNDEBUG -std=c++14 -Wall -Wextra -Wpedantic -MD -MT CMakeFiles/ui-tests.dir/tests/ui_tests.cpp.obj -MF CMakeFiles\ui-tests.dir\tests\ui_tests.cpp.obj.d -o CMakeFiles/ui-tests.dir/tests/ui_tests.cpp.obj -c E:/project/dukto/tests/ui_tests.cpp
+E:/project/dukto/tests/ui_tests.cpp: In lambda function:
+E:/project/dukto/tests/ui_tests.cpp:240:41: error: 'const class dukto::LegacyResult' has no member named 'value'
+  240 |                     auto value = result.value();
+      |                                         ^~~~~
+ninja: build stopped: subcommand failed.

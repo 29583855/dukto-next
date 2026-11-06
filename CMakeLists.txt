@@ -59,6 +59,7 @@ add_library(dukto-core
     src/core/transferaccounting.cpp
     src/core/manifest.cpp
     src/core/legacy.cpp
+    src/core/tcplistener.cpp
     src/core/discovery.cpp
     src/core/endpoint.cpp
     src/core/updates.cpp
@@ -68,7 +69,7 @@ target_include_directories(dukto-core PUBLIC src)
 target_link_libraries(dukto-core PUBLIC Qt5::Core Qt5::Network Qt5::Sql)
 target_link_libraries(dukto-core PRIVATE OpenSSL::Crypto)
 if(WIN32)
-    target_link_libraries(dukto-core PRIVATE advapi32)
+    target_link_libraries(dukto-core PRIVATE advapi32 ws2_32 iphlpapi)
 endif()
 target_compile_definitions(dukto-core PUBLIC DUKTO_VERSION="${PROJECT_VERSION}")
 
@@ -168,7 +169,7 @@ if(DUKTO_BUILD_TESTS)
         set_tests_properties(controller-tests PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
         add_executable(avatars-tests tests/avatars_tests.cpp src/app/avatars.cpp)
         target_include_directories(avatars-tests PRIVATE src)
-        target_link_libraries(avatars-tests PRIVATE Qt5::Gui Qt5::Network Qt5::Test)
+        target_link_libraries(avatars-tests PRIVATE dukto-core Qt5::Gui Qt5::Network Qt5::Test)
         dukto_add_qt_test(avatars-tests)
         add_executable(ui-tests tests/ui_tests.cpp src/app/controller.cpp src/app/avatars.cpp src/app/serverpanel.cpp resources/app.qrc)
         target_link_libraries(ui-tests PRIVATE dukto-core Qt5::QuickWidgets Qt5::Quick Qt5::Qml Qt5::Widgets Qt5::Test)

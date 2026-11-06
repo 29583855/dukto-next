@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="0" failures="1" tests="3" name="UiTests">
+  <properties>
+    <property value="5.15.2" name="QTestVersion"/>
+    <property value="5.15.2" name="QtVersion"/>
+    <property value="Qt 5.15.2 (x86_64&#x002D;little_endian&#x002D;llp64 shared (dynamic) release build; by MSVC 2019)" name="QtBuild"/>
+  </properties>
+  <testcase result="pass" name="initTestCase"/>
+  <testcase result="fail" name="receivedLargeTextThroughQml">
+    <failure tag="paragraph&#x002D;boundary" message="&apos;dialog&#x002D;&gt;property(&quot;opened&quot;).toBool()&apos; returned FALSE. ({&quot;dialogOpened&quot;:false,&quot;dialogVisible&quot;:false,&quot;events&quot;:[],&quot;historyCount&quot;:0,&quot;pageCount&quot;:0,&quot;senderError&quot;:&quot;The remote host closed the connection&quot;,&quot;senderPendingBytes&quot;:&quot;0&quot;,&quot;senderState&quot;:0,&quot;status&quot;:&quot;就绪 · 接收端口 64799 · 头像端口不可用，使用默认图标&quot;,&quot;viewVisible&quot;:true,&quot;windowExposed&quot;:false})" result="fail"/>
+  </testcase>
+  <testcase result="pass" name="cleanupTestCase"/>
+  <system-err/>
+</testsuite>

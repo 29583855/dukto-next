@@ -519,10 +519,10 @@ QJsonObject LegacyJob::receive() {
     return result;
 }
 
-// 日期：2026-11-04；兼容接收保留原版单活动连接约定。
+// 日期：2026-11-06；兼容接收保留原版单活动连接约定，端口使用共用独占监听适配器。
 LegacyListener::LegacyListener(QString output, int timeoutMs, QObject *parent,
                                const QString &catalogPath)
-    : QTcpServer(parent), output_(std::move(output)), timeoutMs_(timeoutMs),
+    : TcpListener(parent), output_(std::move(output)), timeoutMs_(timeoutMs),
       catalogPath_(catalogPath) {
     qRegisterMetaType<dukto::LegacyResult>();
     setMaxPendingConnections(1);

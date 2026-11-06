@@ -1160,7 +1160,7 @@
   "textContentTruncated": false,
   "firstFixtureFailureRetained": "docs/validation/2026-11-06/legacy-text-r93b-windows",
   "firstMaximumTextProductionFailureRetained": "docs/validation/2026-11-06/legacy-text-r93d-windows",
-  "localGlibcPending": true,
+  "localGlibcPending": false,
   "localGlibcRemoteRoot": "/home/dukto/legacy-text-r93-glibc",
   "localGlibcSnapshotSha256": "835d6da81eb43a3c340c5acf5db8d5b54169a5e03b4a468f001db0be3f2f71ef",
   "nativeCiPending": true,
@@ -1183,8 +1183,8 @@
     "musl": {
       "id": 42224632538,
       "head_sha": "b615d8a0e820bcf9de05d0dce546e930b27ad748",
-      "status": "in_progress",
-      "conclusion": null,
+      "status": "completed",
+      "conclusion": "success",
       "html_url": "https://github.com/29583855/dukto-next/actions/runs/42224632538"
     },
     "native": {
@@ -1202,5 +1202,25 @@
     "path": "docs/validation/2026-11-06/legacy-text-r93-macos-package-failure/receipt.json",
     "sha256": "1f4ade3df1bb3d1508e248f7135d0b5788ec0f7cb4014978077497e3c37637b9"
   },
-  "macosIntelRecoveryCauseProven": false
+  "macosIntelRecoveryCauseProven": false,
+  "muslOriginalReportsVerified": true,
+  "muslCoreTargetsEach": 23,
+  "muslProtocolReports": 45,
+  "muslEvidence": {
+    "path": "docs/validation/2026-11-06/legacy-text-r93-musl-terminal/receipt.json",
+    "sha256": "8d7c376c79d6bfa31cdb61f1efa06492b3945c8f3da362754498cb88964b5093"
+  },
+  "localGlibcOriginalReportsVerified": true,
+  "localGlibcEvidence": {
+    "path": "docs/validation/2026-11-06/legacy-text-r93-glibc-musl/verified-receipt.json",
+    "sha256": "619a3369092edfca309f67aadee841fec301f851b443c6a3114a1f5dec0d92c1"
+  },
+  "localGlibcCoreTargets": 23,
+  "localGlibcSelectedReports": 3,
+  "nativeArmJobFailed": true,
+  "nativeArmFailureEvidence": {
+    "path": "docs/validation/2026-11-06/legacy-text-r93-native-arm-job-failure/receipt.json",
+    "sha256": "f4c88dbd7f597064001ddfe86c390f54c9bd032696629a2c3ca4e259742b1a65"
+  },
+  "nativeArmFailureCase": "legacy-text-credit empty-case sender memory sample missing"
 }

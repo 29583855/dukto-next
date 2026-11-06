@@ -1,0 +1,22 @@
+[0/1] Re-running CMake...
+-- Configuring done (0.3s)
+-- Generating done (0.5s)
+-- Build files have been written to: E:/project/dukto/build/windows-ucrt
+[1/22] Automatic MOC for target dukto-core
+[2/22] Building CXX object CMakeFiles/dukto-core.dir/dukto-core_autogen/mocs_compilation.cpp.obj
+[3/22] Building CXX object CMakeFiles/dukto-core.dir/src/core/transferoperation.cpp.obj
+[4/22] Building CXX object CMakeFiles/dukto-core.dir/src/core/uploadmanifest.cpp.obj
+[5/22] Building CXX object CMakeFiles/dukto-core.dir/src/core/service.cpp.obj
+[6/22] Building CXX object CMakeFiles/dukto-core.dir/src/core/paralleltransfer.cpp.obj
+[7/22] Building CXX object CMakeFiles/dukto-core.dir/src/core/transferclient.cpp.obj
+[8/22] Building CXX object CMakeFiles/dukto-core.dir/src/core/legacy.cpp.obj
+[9/22] Building CXX object CMakeFiles/dukto-core.dir/src/core/tcplistener.cpp.obj
+FAILED: [code=1] CMakeFiles/dukto-core.dir/src/core/tcplistener.cpp.obj 
+E:\project\dukto\.tools\msys64\ucrt64\bin\g++.exe -DDUKTO_VERSION=\"0.1.0\" -DQT_CORE_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_SQL_LIB -IE:/project/dukto/build/windows-ucrt -IE:/project/dukto -IE:/project/dukto/build/windows-ucrt/dukto-core_autogen/include -IE:/project/dukto/src -isystem E:/project/dukto/.tools/msys64/ucrt64/include/QtCore -isystem E:/project/dukto/.tools/msys64/ucrt64/share/qt5/mkspecs/win32-g++ -isystem E:/project/dukto/.tools/msys64/ucrt64/include/QtNetwork -isystem E:/project/dukto/.tools/msys64/ucrt64/include/QtSql -O3 -DNDEBUG -std=c++14 -Wall -Wextra -Wpedantic -MD -MT CMakeFiles/dukto-core.dir/src/core/tcplistener.cpp.obj -MF CMakeFiles\dukto-core.dir\src\core\tcplistener.cpp.obj.d -o CMakeFiles/dukto-core.dir/src/core/tcplistener.cpp.obj -c E:/project/dukto/src/core/tcplistener.cpp
+E:/project/dukto/src/core/tcplistener.cpp:136:2: error: expected '}' at end of input
+  136 | }
+      |  ^
+E:/project/dukto/src/core/tcplistener.cpp:14:17: note: to match this '{'
+   14 | namespace dukto {
+      |                 ^
+ninja: build stopped: subcommand failed.

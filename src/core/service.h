@@ -4,8 +4,8 @@
 #include "files.h"
 #include "identity.h"
 #include "securechannel.h"
+#include "tcplistener.h"
 #include <QSet>
-#include <QTcpServer>
 #include <QThread>
 #include <atomic>
 
@@ -125,7 +125,7 @@ class ServiceWorker final : public QThread {
     std::atomic_bool cancelled_{false};
 };
 
-class ServiceListener final : public QTcpServer {
+class ServiceListener final : public TcpListener {
     Q_OBJECT
   public:
     // 日期：2026-11-04；只加载已有身份；最多 32 个 TLS 连接，其中数据会话合计不超过 16 通道。

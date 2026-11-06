@@ -1,0 +1,16 @@
+[1/12] Automatic MOC for target controller-tests
+[2/12] Automatic MOC for target ui-tests
+[3/12] Automatic RCC for resources/app.qrc
+[4/12] Building CXX object CMakeFiles/controller-tests.dir/controller-tests_autogen/mocs_compilation.cpp.obj
+[5/12] Building CXX object CMakeFiles/controller-tests.dir/src/app/controller.cpp.obj
+FAILED: [code=1] CMakeFiles/controller-tests.dir/src/app/controller.cpp.obj 
+E:\project\dukto\.tools\msys64\ucrt64\bin\g++.exe -DDUKTO_VERSION=\"0.1.0\" -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_SQL_LIB -DQT_TESTCASE_BUILDDIR=\"E:/project/dukto/build/windows-ucrt\" -DQT_TESTLIB_LIB -DQT_WIDGETS_LIB -IE:/project/dukto/build/windows-ucrt -IE:/project/dukto -IE:/project/dukto/build/windows-ucrt/controller-tests_autogen/include -IE:/project/dukto/src -isystem E:/project/dukto/.tools/msys64/ucrt64/include/QtCore -isystem E:/project/dukto/.tools/msys64/ucrt64/share/qt5/mkspecs/win32-g++ -isystem E:/project/dukto/.tools/msys64/ucrt64/include/QtNetwork -isystem E:/project/dukto/.tools/msys64/ucrt64/include/QtSql -isystem E:/project/dukto/.tools/msys64/ucrt64/include/QtWidgets -isystem E:/project/dukto/.tools/msys64/ucrt64/include/QtGui -isystem E:/project/dukto/.tools/msys64/ucrt64/include/QtTest -O3 -DNDEBUG -std=c++14 -Wall -Wextra -Wpedantic -MD -MT CMakeFiles/controller-tests.dir/src/app/controller.cpp.obj -MF CMakeFiles\controller-tests.dir\src\app\controller.cpp.obj.d -o CMakeFiles/controller-tests.dir/src/app/controller.cpp.obj -c E:/project/dukto/src/app/controller.cpp
+E:/project/dukto/src/app/controller.cpp: In member function 'void Controller::displayReceivedText(QString, std::shared_ptr<dukto::BufferCredit>)':
+E:/project/dukto/src/app/controller.cpp:649:48: error: 'class QCharRef' has no member named 'isHighSurrogate'
+  649 |         if (end < text.size() && text[end - 1].isHighSurrogate() && text[end].isLowSurrogate())
+      |                                                ^~~~~~~~~~~~~~~
+E:/project/dukto/src/app/controller.cpp:649:79: error: 'class QCharRef' has no member named 'isLowSurrogate'
+  649 |         if (end < text.size() && text[end - 1].isHighSurrogate() && text[end].isLowSurrogate())
+      |                                                                               ^~~~~~~~~~~~~~
+[6/12] Building CXX object CMakeFiles/controller-tests.dir/tests/controller_tests.cpp.obj
+ninja: build stopped: subcommand failed.

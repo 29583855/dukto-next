@@ -546,10 +546,7 @@ void Controller::onResult(int code, const dukto::LegacyResult &ownedResult) {
         }
         loadHistory();
         if (result.contains("text")) {
-            // 日期：2026-11-06；旧显示令牌留到同步QML替换完成后，避免替换间隙有正文却已归还额度。
-            auto previous = std::move(displayedTextCredit_);
-            displayedTextCredit_ = ownedResult.textCredit();
-            emit textReceived(result.value("text").toString());
+            displayReceivedText(result.value("text").toString(), ownedResult.textCredit());
         }
     }
     emit stateChanged();
@@ -577,9 +574,97 @@ void Controller::loadHistory() {
     emit historyChanged();
 }
 
-// 日期：2026-11-06；界面先清空正文再调用；多次关闭不会重复归还共享令牌。
+// 日期：2026-11-06；界面先清空正文再调用；先销毁完整正文和页索引，再归还共享令牌。
 void Controller::releaseReceivedText() {
+    displayedText_.clear();
+    displayedTextPages_.clear();
+    displayedTextPage_ = 0;
+    emit receivedTextPageChanged();
     displayedTextCredit_.reset();
+}
+
+// 日期：2026-11-06；只生成当前页的有界字符串；空正文和关闭后的页面均返回空串。
+QString Controller::receivedTextPage() const {
+    if (displayedTextPages_.isEmpty())
+        return {};
+    const int begin = displayedTextPages_[displayedTextPage_];
+    return displayedText_.mid(begin, displayedTextPages_[displayedTextPage_ + 1] - begin);
+}
+
+// 日期：2026-11-06；页码不涉及编码细节，普通短文本不显示分页导航。
+QString Controller::receivedTextPosition() const {
+    return displayedTextPages_.isEmpty() ? QString()
+                                         : QStringLiteral("第 %1 / %2 页")
+                                               .arg(displayedTextPage_ + 1)
+                                               .arg(displayedTextPages_.size() - 1);
+}
+
+// 日期：2026-11-06；是否能够后退由已校验的当前索引决定。
+bool Controller::receivedTextHasPrevious() const {
+    return displayedTextPage_ > 0;
+}
+
+// 日期：2026-11-06；尾页哨兵不作为实际显示页。
+bool Controller::receivedTextHasNext() const {
+    return displayedTextPage_ + 2 < displayedTextPages_.size();
+}
+
+// 日期：2026-11-06；至少两个显示页才需要额外导航控件。
+bool Controller::receivedTextPaged() const {
+    return displayedTextPages_.size() > 2;
+}
+
+// 日期：2026-11-06；返回实际页数，空正文仍占一页，关闭后不保留页面。
+int Controller::receivedTextPageCount() const {
+    return qMax(0, displayedTextPages_.size() - 1);
+}
+
+// 日期：2026-11-06；扩大类型后检查页码，避免极端QML入参溢出或跳出索引。
+void Controller::changeReceivedTextPage(int delta) {
+    const auto page = qint64(displayedTextPage_) + delta;
+    if (page < 0 || page + 1 >= displayedTextPages_.size())
+        return;
+    displayedTextPage_ = static_cast<int>(page);
+    emit receivedTextPageChanged();
+}
+
+// 日期：2026-11-06；复制保持原正文而非QTextDocument规范化/分页后的字符串，不丢失NUL或换行。
+void Controller::copyReceivedText(const QString &selection) {
+    copyText(selection.isEmpty() ? displayedText_ : selection);
+}
+
+// 日期：2026-11-06；同时限制字符和段落；位置索引最多约16385项，全部正文仍受8MiB协议和共享额度约束。
+void Controller::displayReceivedText(QString text, std::shared_ptr<dukto::BufferCredit> credit) {
+    QVector<int> pages;
+    pages.append(0);
+    for (int begin = 0; begin < text.size();) {
+        int end = begin;
+        int breaks = 0;
+        while (end < text.size() && end - begin < 16384) {
+            const auto value = text[end++].unicode();
+            if ((value == '\r' || value == '\n' || value == 0x2028 || value == 0x2029) &&
+                ++breaks == 512)
+                break;
+        }
+        if (end < text.size() && text.at(end - 1).isHighSurrogate() &&
+            text.at(end).isLowSurrogate())
+            --end;
+        pages.append(end);
+        begin = end;
+    }
+    if (text.isEmpty())
+        pages.append(0);
+    auto previousCredit = std::move(displayedTextCredit_);
+    auto previousText = std::move(displayedText_);
+    auto previousPages = std::move(displayedTextPages_);
+    displayedTextCredit_ = std::move(credit);
+    displayedText_ = std::move(text);
+    displayedTextPages_ = std::move(pages);
+    displayedTextPage_ = 0;
+    emit receivedTextPageChanged();
+    emit receivedTextOpened();
+    // 日期：2026-11-06；保留C++完成通知兼容性；QML只监听无正文通知，避免建立完整JS/文档副本。
+    emit textReceived(displayedText_);
 }
 
 // 日期：2026-11-06；按需打开历史文本前核对UTF-8长度并授信，旧显示在新文本替换完成前仍有额度。
@@ -617,9 +702,7 @@ void Controller::openHistory(const QString &id) {
             if (!query.exec() || !query.next())
                 throw dukto::Error(dukto::ExitCode::Disk, QStringLiteral("历史文本读取失败"),
                                    "history");
-            auto previous = std::move(displayedTextCredit_);
-            displayedTextCredit_ = std::move(credit);
-            emit textReceived(query.value(0).toString());
+            displayReceivedText(query.value(0).toString(), std::move(credit));
         } catch (const dukto::Error &error) {
             status_ = error.message;
             emit stateChanged();

@@ -29,6 +29,8 @@ def commands(build):
     add("legacy", "legacy_integration")
     # 日期：2026-11-06；最大文本与JSON/Unicode边界运行真实CLI，复用既有内存门槛。
     add("legacy-text-credit", "legacy_text_credit_integration")
+    # 日期：2026-11-06；最大文本GUI接收/翻页/复制/历史重开必须满足实际进程内存门槛。
+    add("text-preview", "text_preview_integration", executable=str(binary / ("ui-tests" + suffix)))
     add("legacy-timeout", "legacy_timeout_integration")
     add("parallel-attach", "parallel_attach_integration")
     add("cli", "cli_contracts")

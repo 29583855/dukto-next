@@ -637,9 +637,9 @@ void ServiceWorker::run() {
     }
 }
 
-// 日期：2026-11-05；启动前核对已有身份与会话策略，损坏策略不能静默回到宽松默认值。
+// 日期：2026-11-06；独占端口启动前核对已有身份与会话策略，损坏策略不能静默放宽。
 ServiceListener::ServiceListener(const QString &state, int timeoutMs, QObject *parent)
-    : QTcpServer(parent), state_(state), timeoutMs_(timeoutMs) {
+    : TcpListener(parent), state_(state), timeoutMs_(timeoutMs) {
     if (timeoutMs < 100 || timeoutMs > 3600000)
         throw Error(ExitCode::Config, QStringLiteral("服务连接超时无效"), "service");
     PrivateStore store(state);
