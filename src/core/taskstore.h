@@ -28,7 +28,8 @@ struct TransferTask {
     int error = 0;
     QString message;
     ConflictPolicy conflict = ConflictPolicy::Rename;
-    // 日期：2026-11-04；公开结果不含本地根、凭据或源绝对路径，64 位值使用字符串。
+    QJsonObject accounting = {};
+    // 日期：2026-11-06；公开结果可包含显式计量，不含本地根/凭据/源绝对路径，64位值使用字符串。
     QJsonObject publicInfo() const;
 };
 
@@ -51,20 +52,20 @@ class TaskLease final {
 
 class TaskStore final {
   public:
-    // 日期：2026-11-04；在受保护根中打开有界持久任务库，各线程使用独立 SQLite 连接。
+    // 日期：2026-11-06；受保护根内原子迁移固定计量列，各线程使用独立且有界的SQLite连接。
     explicit TaskStore(PrivateStore &store, bool control = true);
     // 日期：2026-11-04；先关闭本线程连接再移除 Qt 注册项，不隐式删除未完成任务。
     ~TaskStore();
     TaskStore(const TaskStore &) = delete;
     TaskStore &operator=(const TaskStore &) = delete;
-    // 日期：2026-11-05；请求摘要绑定冲突策略；默认保留旧规范值，相同请求更改策略明确拒绝。
+    // 日期：2026-11-06；显式列名创建兼容迁移；请求摘要仍绑定原策略，相同请求更改策略拒绝。
     TransferTask create(const QUuid &owner, const QUuid &request, const QString &direction,
                         const QString &share, const QString &relative, const QString &root,
                         const QByteArray &uploadManifest = {},
                         ConflictPolicy conflict = ConflictPolicy::Rename);
     // 日期：2026-11-04；任务查询强制所属主体，不能通过猜测其他任务 UUID 取得状态或路径。
     TransferTask task(const QUuid &owner, const QUuid &id) const;
-    // 日期：2026-11-04；按主体和稳定插入序号分页，双重限制 100 条及控制报文字节，不加载全部任务。
+    // 日期：2026-11-06；按主体及稳定rowid分页，计量列参与帧预算；最多100条，不加载全部任务。
     QJsonObject page(const QUuid &owner, quint64 after = 0) const;
     // 日期：2026-11-04；只有一个线程/进程持有执行所有权，重复连接不能同时写同一任务。
     std::unique_ptr<TaskLease> acquire(const QUuid &owner, const QUuid &id) const;
@@ -72,16 +73,19 @@ class TaskStore final {
     std::unique_ptr<TaskLease> tryAcquire(const QUuid &owner, const QUuid &id) const;
     // 日期：2026-11-04；强清单完全冻结后绑定总计；重复确认返回同一绑定，不重新创建任务。
     TransferTask bindManifest(const TaskLease &lease, const QJsonObject &summary);
-    // 日期：2026-11-04；状态/进度更新按修订号比较交换，完成只允许从提交阶段并且字节完整。
+    // 日期：2026-11-06；状态/进度按修订比较；显式计量须字节及条目完整，checking清零重新核验。
     TransferTask advance(const TaskLease &lease, quint64 revision, const QString &state,
                          qint64 processed, int error = 0, const QString &message = QString());
+    // 日期：2026-11-06；持有租约且修订匹配时原子保存固定计量，拒绝回退、非法处置或停止中更新。
+    TransferTask recordAccounting(const TaskLease &lease, quint64 revision,
+                                  const QJsonObject &snapshot);
     // 日期：2026-11-04；外部控制只持久请求暂停/取消；工作者到安全点后才能确认实际状态。
     TransferTask requestStop(const QUuid &owner, const QUuid &id, bool pause);
 
   private:
     // 日期：2026-11-04；执行方必须持有本任务/主体的跨进程所有权，不以连接序号代替任务锁。
     void verifyLease(const TaskLease &lease) const;
-    // 日期：2026-11-04；数据库事务内更新一条已核对记录；受影响行必须恰好一条。
+    // 日期：2026-11-06；事务内同时更新计量及状态，受影响行必须恰好一条。
     void save(const TransferTask &task) const;
     PrivateStore &store_;
     QString connection_;

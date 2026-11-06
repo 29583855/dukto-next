@@ -4,6 +4,7 @@
 #include "files.h"
 #include "protocol.h"
 #include "strongmanifest.h"
+#include "transferaccounting.h"
 
 #include <QCryptographicHash>
 #include <QDateTime>
@@ -20,7 +21,7 @@
 namespace dukto {
 namespace {
 const QString Columns = "id,owner,request,spec,state,desired,revision,manifest,total,entries,"
-                        "processed,error,message,requesthash";
+                        "processed,error,message,requesthash,accounting";
 
 // 日期：2026-11-05；保留5秒初始化预算，以10ms短轮询避免多进程共享指数退避长期错过已释放的锁。
 void lockInitialization(QLockFile &lock) {
@@ -119,7 +120,32 @@ bool permitted(const QString &before, const QString &after) {
     return false;
 }
 
-// 日期：2026-11-05；严格区分旧保留双方与版本二失败/覆盖策略，损坏或未知策略一律拒绝。
+// 日期：2026-11-06；计量必须绑定任务总计及策略；旧复制策略不能出现跳过或丢弃结果。
+TransferAccounting checkedAccounting(const TransferTask &task, const QJsonObject &snapshot) {
+    if (task.manifest.size() != 32 || task.entries <= 0)
+        throw Error(ExitCode::Integrity, QStringLiteral("任务计量尚未绑定强清单"), "task");
+    TransferAccounting meter(task.total, static_cast<quint64>(task.entries));
+    meter.accept(snapshot);
+    if (task.conflict != ConflictPolicy::Skip &&
+        (snapshot["skippedBytes"] != "0" || snapshot["discardedBytes"] != "0" ||
+         snapshot["skippedFiles"] != "0" || snapshot["skippedDirectories"] != "0"))
+        throw Error(ExitCode::Integrity, QStringLiteral("任务策略不允许跳过处置计量"), "task");
+    return meter;
+}
+
+// 日期：2026-11-06；总字节到达不代表条目已提交；显式计量必须归结全部空文件及目录后才进入终阶段。
+bool accountingComplete(const TransferTask &task) {
+    if (task.accounting.isEmpty())
+        return true;
+    const auto &value = task.accounting;
+    return value["copiedFiles"].toString().toULongLong() +
+               value["copiedDirectories"].toString().toULongLong() +
+               value["skippedFiles"].toString().toULongLong() +
+               value["skippedDirectories"].toString().toULongLong() ==
+           static_cast<quint64>(task.entries);
+}
+
+// 日期：2026-11-06；旧策略规范保持，新增计量列重新核对守恒、任务处理量及完成条目数量。
 TransferTask row(const QSqlQuery &query) {
     const auto encoded = query.value(3).toByteArray();
     const auto spec = next::parseControl(encoded);
@@ -156,6 +182,16 @@ TransferTask row(const QSqlQuery &query) {
         (result.state == "completed" &&
          (result.manifest.isEmpty() || !result.entries || result.processed != result.total)))
         throw Error(ExitCode::Integrity, QStringLiteral("持久任务记录已损坏"), "task");
+    const auto accounting = query.value(14).toByteArray();
+    if (!accounting.isEmpty()) {
+        result.accounting = next::parseControl(accounting);
+        const auto meter = checkedAccounting(result, result.accounting);
+        if (meter.handled() != result.processed ||
+            ((result.state == "verifying" || result.state == "committing" ||
+              result.state == "completed") &&
+             !accountingComplete(result)))
+            throw Error(ExitCode::Integrity, QStringLiteral("持久任务计量与状态不同"), "task");
+    }
     validateShareName(result.share);
     if (!result.relative.isEmpty())
         validateRelativePath(result.relative);
@@ -163,7 +199,7 @@ TransferTask row(const QSqlQuery &query) {
 }
 } // namespace
 
-// 日期：2026-11-05；非默认策略显式返回供恢复核对，旧任务公开格式保持兼容且不输出本地根。
+// 日期：2026-11-06；旧任务公开格式保持；已计量任务另列复制/跳过/实际接收，均不输出本地根。
 QJsonObject TransferTask::publicInfo() const {
     QJsonObject result{{"taskId", id.toString(QUuid::WithoutBraces)},
                        {"requestId", request.toString(QUuid::WithoutBraces)},
@@ -181,6 +217,16 @@ QJsonObject TransferTask::publicInfo() const {
                        {"message", message}};
     if (conflict != ConflictPolicy::Rename)
         result["conflict"] = conflictPolicyName(conflict);
+    if (!accounting.isEmpty()) {
+        for (const auto &key :
+             QStringList{"copiedBytes", "skippedBytes", "discardedBytes", "copiedFiles",
+                         "copiedDirectories", "skippedFiles", "skippedDirectories"})
+            result[key] = accounting[key];
+        result["receivedBytes"] = accounting["bytes"];
+        result["confirmedBytes"] = accounting["confirmed"];
+        result["restoredBytes"] = accounting["restored"];
+        result["handledBytes"] = QString::number(processed);
+    }
     return result;
 }
 
@@ -194,7 +240,7 @@ TaskLease::TaskLease(QUuid task, QUuid owner, const QString &path)
 // 日期：2026-11-04；QLockFile 归还所有权；进程崩溃后的锁依原生进程身份判定，不按任务年龄删除。
 TaskLease::~TaskLease() = default;
 
-// 日期：2026-11-05；身份状态根先安全创建空数据库，SQLite 日志继承受限文件权限。
+// 日期：2026-11-06；身份状态根创建任务库，版本一原子迁移至固定计量列，旧记录及修订保持。
 TaskStore::TaskStore(PrivateStore &store, bool control)
     : store_(store), connection_(QUuid::createUuid().toString()), cacheCredit_(1024, control) {
     // 日期：2026-11-04；同进程线程先串行初始化，避免 Windows 锁文件探测句柄与解锁删除竞争。
@@ -221,8 +267,10 @@ TaskStore::TaskStore(PrivateStore &store, bool control)
         execute(database_, "PRAGMA journal_size_limit=8388608");
         execute(database_, "PRAGMA synchronous=FULL");
         QSqlQuery version(database_);
-        if (!version.exec("PRAGMA user_version") || !version.next() || version.value(0).toInt() > 1)
+        if (!version.exec("PRAGMA user_version") || !version.next() ||
+            version.value(0).toInt() < 0 || version.value(0).toInt() > 2)
             throw Error(ExitCode::Config, QStringLiteral("任务库版本不受支持"), "task");
+        const auto schema = version.value(0).toInt();
         version.finish();
         Transaction transaction(database_);
         execute(database_, "CREATE TABLE IF NOT EXISTS tasks(id TEXT PRIMARY KEY, owner TEXT NOT "
@@ -233,7 +281,9 @@ TaskStore::TaskStore(PrivateStore &store, bool control)
                            "NULL, processed INTEGER NOT NULL, error INTEGER NOT NULL, "
                            "message TEXT NOT NULL, updated TEXT NOT NULL, UNIQUE(owner,request))");
         execute(database_, "CREATE INDEX IF NOT EXISTS tasks_owner ON tasks(owner)");
-        execute(database_, "PRAGMA user_version=1");
+        if (schema < 2)
+            execute(database_, "ALTER TABLE tasks ADD COLUMN accounting BLOB NOT NULL DEFAULT X''");
+        execute(database_, "PRAGMA user_version=2");
         transaction.commit();
     } catch (...) {
         database_.close();
@@ -250,7 +300,7 @@ TaskStore::~TaskStore() {
     QSqlDatabase::removeDatabase(connection_);
 }
 
-// 日期：2026-11-05；仅已开放策略可创建任务；非默认使用版本二，默认旧摘要保持，并发数可调整。
+// 日期：2026-11-06；仅已开放策略可创建任务，显式列名兼容架构迁移；旧创建摘要及幂等键保持。
 TransferTask TaskStore::create(const QUuid &owner, const QUuid &request, const QString &direction,
                                const QString &share, const QString &relative, const QString &root,
                                const QByteArray &uploadManifest, ConflictPolicy conflict) {
@@ -301,7 +351,9 @@ TransferTask TaskStore::create(const QUuid &owner, const QUuid &request, const Q
     count.finish();
     const auto id = QUuid::createUuid();
     QSqlQuery insert(database_);
-    insert.prepare("INSERT INTO tasks VALUES(?,?,?,?,?,'scanning','',1,?,0,0,0,0,'',?)");
+    insert.prepare("INSERT INTO tasks(id,owner,request,requesthash,spec,state,desired,revision,"
+                   "manifest,total,entries,processed,error,message,updated) "
+                   "VALUES(?,?,?,?,?,'scanning','',1,?,0,0,0,0,'',?)");
     insert.addBindValue(uuid(id));
     insert.addBindValue(ownerId);
     insert.addBindValue(requestId);
@@ -336,7 +388,7 @@ std::unique_ptr<TaskLease> TaskStore::acquire(const QUuid &owner, const QUuid &i
     return lease;
 }
 
-// 日期：2026-11-04；游标仅是当前主体的顺序边界；每条仍由查询所属条件和记录完整性约束。
+// 日期：2026-11-06；分页游标使用固定rowid列，增加计量列后仍按所属主体及控制帧预算返回。
 QJsonObject TaskStore::page(const QUuid &owner, quint64 after) const {
     if (after > static_cast<quint64>(std::numeric_limits<qint64>::max()))
         throw Error(ExitCode::Config, QStringLiteral("任务分页序号无效"), "task");
@@ -359,7 +411,7 @@ QJsonObject TaskStore::page(const QUuid &owner, quint64 after) const {
         }
         entries.append(task);
         bytes += size;
-        last = query.value(14).toULongLong();
+        last = query.value(15).toULongLong();
     }
     return {{"tasks", entries}, {"after", QString::number(last)}, {"more", more}};
 }
@@ -381,14 +433,14 @@ void TaskStore::verifyLease(const TaskLease &lease) const {
         throw Error(ExitCode::Permission, QStringLiteral("任务执行所有权无效"), "task");
 }
 
-// 日期：2026-11-04；更新规范计数和修订号，私有根路径始终留在原创建 spec 中。
+// 日期：2026-11-06；状态、修订及固定计量一起更新，私有根始终留在原创建spec中。
 void TaskStore::save(const TransferTask &task) const {
     if (task.revision >= static_cast<quint64>(std::numeric_limits<qint64>::max()))
         throw Error(ExitCode::Integrity, QStringLiteral("任务修订号已耗尽"), "task");
     QSqlQuery update(database_);
     update.prepare("UPDATE tasks SET "
                    "state=?,desired=?,revision=?,manifest=?,total=?,entries=?,processed=?,error=?,"
-                   "message=?,updated=? WHERE id=? AND owner=?");
+                   "message=?,updated=?,accounting=? WHERE id=? AND owner=?");
     update.addBindValue(task.state);
     update.addBindValue(task.desired.isNull() ? QString("") : task.desired);
     update.addBindValue(static_cast<qlonglong>(task.revision));
@@ -399,6 +451,8 @@ void TaskStore::save(const TransferTask &task) const {
     update.addBindValue(task.error);
     update.addBindValue(task.message.isNull() ? QString("") : task.message);
     update.addBindValue(QDateTime::currentDateTimeUtc().toString(Qt::ISODate));
+    update.addBindValue(task.accounting.isEmpty() ? QByteArray("")
+                                                  : next::encodeControl(task.accounting));
     update.addBindValue(uuid(task.id));
     update.addBindValue(uuid(task.owner));
     checked(update);
@@ -446,7 +500,7 @@ TransferTask TaskStore::bindManifest(const TaskLease &lease, const QJsonObject &
     return current;
 }
 
-// 日期：2026-11-05；禁止绑定清单后重扫；提交中结果未知必须核对证据，不能归为普通失败。
+// 日期：2026-11-06；显式计量任务禁止独立篡改逻辑进度，全部条目归结后才可提交；checking清零重验。
 TransferTask TaskStore::advance(const TaskLease &lease, quint64 revision, const QString &state,
                                 qint64 processed, int error, const QString &message) {
     verifyLease(lease);
@@ -468,12 +522,49 @@ TransferTask TaskStore::advance(const TaskLease &lease, quint64 revision, const 
         (current.desired == "pause" &&
          (state == "transferring" || state == "verifying" || state == "committing")))
         throw Error(ExitCode::Config, QStringLiteral("任务状态转换、进度或停止请求冲突"), "task");
+    if (!current.accounting.isEmpty()) {
+        if (state == "checking") {
+            if (processed != 0)
+                throw Error(ExitCode::Config, QStringLiteral("重新核验必须清零本轮计量"), "task");
+            current.accounting = {};
+        } else if (processed != current.processed ||
+                   ((state == "verifying" || state == "committing" || state == "completed") &&
+                    !accountingComplete(current))) {
+            throw Error(ExitCode::Config, QStringLiteral("任务进度须与已持久处置计量一致"), "task");
+        }
+    }
     current.state = state;
     current.processed = processed;
     current.error = error;
     current.message = message;
     if (state == "checking" || terminal(state))
         current.desired.clear();
+    ++current.revision;
+    save(current);
+    transaction.commit();
+    return current;
+}
+
+// 日期：2026-11-06；固定快照与逻辑处理量在同一FULL同步事务更新，失败保留旧修订和进度。
+TransferTask TaskStore::recordAccounting(const TaskLease &lease, quint64 revision,
+                                         const QJsonObject &snapshot) {
+    verifyLease(lease);
+    Transaction transaction(database_);
+    auto current = task(lease.owner_, lease.task_);
+    if (current.revision != revision || current.state != "transferring" ||
+        !current.desired.isEmpty())
+        throw Error(ExitCode::Config, QStringLiteral("当前任务修订、状态或停止请求不允许更新计量"),
+                    "task");
+    auto meter = checkedAccounting(
+        current, current.accounting.isEmpty()
+                     ? TransferAccounting(current.total, current.entries).snapshot()
+                     : current.accounting);
+    meter.accept(snapshot);
+    checkedAccounting(current, snapshot);
+    if (meter.handled() < current.processed)
+        throw Error(ExitCode::Integrity, QStringLiteral("任务逻辑处理进度不能回退"), "task");
+    current.accounting = snapshot;
+    current.processed = meter.handled();
     ++current.revision;
     save(current);
     transaction.commit();
