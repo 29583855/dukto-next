@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="0" failures="1" tests="4" name="UiTests">
+  <properties>
+    <property value="5.15.2" name="QTestVersion"/>
+    <property value="5.15.2" name="QtVersion"/>
+    <property value="Qt 5.15.2 (x86_64&#x002D;little_endian&#x002D;llp64 shared (dynamic) release build; by MSVC 2019)" name="QtBuild"/>
+  </properties>
+  <testcase result="pass" name="initTestCase"/>
+  <testcase result="pass" name="serverEntryThroughMainQml"/>
+  <testcase result="fail" name="cancelThenTransferAgainThroughQml">
+    <failure tag="send" message="QTestLib: This test case check (&quot;(((peer&#x002D;&gt;state()) == (QAbstractSocket::UnconnectedState)))&quot;) failed because the requested timeout (5000 ms) was too short, 6450 ms would have been sufficient this time." result="fail"/>
+  </testcase>
+  <testcase result="pass" name="cleanupTestCase"/>
+  <system-err/>
+</testsuite>

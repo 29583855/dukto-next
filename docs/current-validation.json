@@ -1,5 +1,5 @@
 {
-  "observedUtc": "2026-11-06T23:19:14.013714+00:00",
+  "observedUtc": "2026-11-06T23:35:10.899089+00:00",
   "productionCommit": "ed4f5cf08c96f04671e49e5138eda8ce1790ead3",
   "testCommit": "ed4f5cf08c96f04671e49e5138eda8ce1790ead3",
   "packages": [
@@ -214,7 +214,7 @@
   "releaseQualified": false,
   "deliveryComplete": false,
   "planVersion": "v0.103",
-  "currentSourceStage": "R103 bounded local diagnostics/export and explicit paired capabilities; Windows qualified subset; new native CI pending publication",
+  "currentSourceStage": "R103 exact Mac compilation and four-runner core/diagnostic GUI methods verified; real native CLI doctor/protocol and entire delivery pending",
   "nativeMusl": {
     "sourceCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
     "productionCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
@@ -17580,7 +17580,7 @@
       "sha256": "872c369563c6beb92b4421968bdf88a82f6621aae9bcad048f3a3fe316c7c56a"
     }
   },
-  "currentSourceCommit": "c1325b0b33ff4df116449c1e1c00d5b27a1a125c",
+  "currentSourceCommit": "cd92c43f301e5a60584b7896a450247855f0bdfd",
   "productionImplementationUnchangedFrom": "88f33b2c83f2950307c362fb64c693f7e9e5929d",
   "nativeRegressionGuardR98": {
     "date": "2026-11-07",
@@ -19613,7 +19613,7 @@
       "sha256": "4e925961855239abe68898110d7e27d2d842a6676373cc2ab724a1f18d5af3a0"
     }
   },
-  "currentGuiSourceCommitPending": true,
+  "currentGuiSourceCommitPending": false,
   "coreProductionCommit": "88f33b2c83f2950307c362fb64c693f7e9e5929d",
   "linuxPreviewR98": {
     "sourceCommit": "b2e4659b347c65eef24c8e568e07e96a2d6ff2d7",
@@ -20335,20 +20335,24 @@
   "cancelFixtureR102": {
     "manifest": {
       "path": "docs/ci-verification-20261107-r102.json",
-      "sha256": "baf30a079170719b2f7f017b53cd8d7eb99523a79aba3dc4452c5992c216191a"
+      "sha256": "4d5a6c3d1526e425e08552bcc46c01e32d67d3d12d51e96a06baec778ac21a75"
     },
     "windowsEvidence": {
       "path": "docs/validation/2026-11-07/cancel-r102-qualified/verified-receipt.json",
       "sha256": "de69846f3ae34458cef204b55e2c299ef7bb52ed53d0c34c961f67eddcd3fbb3"
     },
-    "independentUbuntuComparisonPending": true,
+    "independentUbuntuComparisonPending": false,
     "nativeCIPending": true,
     "wholeF18Qualified": false,
     "nativeEvidence": {
       "path": "docs/validation/2026-11-07/cancel-r102-native-core/receipt.json",
       "sha256": "cec16ea51785c197131d3188ba7ffbf9394df646eb1ec5b589a10debcb3f6f9b"
     },
-    "nativeCoreAndCancellationSubsetQualified": true
+    "nativeCoreAndCancellationSubsetQualified": true,
+    "independentUbuntuComparison": {
+      "path": "docs/validation/2026-11-07/cancel-r102-glibc/verified-receipt.json",
+      "sha256": "08379c0c878ff456c29fbf90bc2ca11ab9e23bf866db9b7cb10f01d927facd24"
+    }
   },
   "macOSCompilationR102": {
     "sourceCommit": "c1325b0b33ff4df116449c1e1c00d5b27a1a125c",
@@ -20426,7 +20430,7 @@
   "diagnosticsR103": {
     "manifest": {
       "path": "docs/ci-verification-20261107-r103.json",
-      "sha256": "dc0deaa62fef8d5c4f6a99881641a33ecaac10f53ef0a10e98d52379f6a4716a"
+      "sha256": "e44215a55d9cc279f47ad1f670f24ab12ce4b08d73144ff7257b4382af742561"
     },
     "windowsEvidence": {
       "path": "docs/validation/2026-11-07/diagnostics-r103-qualified/verified-receipt.json",
@@ -20434,6 +20438,95 @@
     },
     "macLinuxNativePending": true,
     "nativeSaveDialogVerified": false,
-    "entireR10Qualified": false
+    "entireR10Qualified": false,
+    "nativeCoreEvidence": {
+      "path": "docs/validation/2026-11-07/diagnostics-r103-native-core/receipt.json",
+      "sha256": "5ebd9219bdd8797f5197dcc73be457e5301161132751d0da933b9de2c58de346"
+    },
+    "macOSCompilationEvidence": {
+      "path": "docs/validation/2026-11-07/diagnostics-r103-macos-compiled/receipt.json",
+      "sha256": "db992f0e3e5d4d409e26538810e38df60aa4df8217a718ab1d9e8a35e7cc4ceb"
+    },
+    "nativeCoreQualified": true,
+    "realNativeCliDoctorPending": true
+  },
+  "macOSCompilationR103": {
+    "sourceCommit": "cd92c43f301e5a60584b7896a450247855f0bdfd",
+    "packages": [
+      {
+        "sourceCommit": "cd92c43f301e5a60584b7896a450247855f0bdfd",
+        "architecture": "arm64",
+        "artifactId": 13548786324,
+        "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42311369310/artifacts/13548786324",
+        "artifactSha256": "fcb6e83259b3fed622da0bacdfb8859099e5b8b4abffff3df29d78dd38f59f3f",
+        "archive": "DuktoNext-macos-ARM64-compiled.tar.gz",
+        "sha256": "f19fe9714db4aba9f5579f5504af26b95f830ee03ab974210a9a38f08e0adfb7",
+        "binaries": [
+          {
+            "path": "dukto-cli",
+            "sha256": "bde7bf76d4c8e2d6a14bbe9c2595d520246aaf9409b493065bb6b67ac6679def",
+            "architecture": "arm64",
+            "executable": true
+          },
+          {
+            "path": "dukto-gui.app/Contents/MacOS/dukto-gui",
+            "sha256": "9e24f67e679e223e2799d81189065c8a2a7d9bb71ccc0a5ca5ec3e3052e3ae7b",
+            "architecture": "arm64",
+            "executable": true
+          }
+        ],
+        "compileStepsPassed": true,
+        "dependenciesDeployed": false
+      },
+      {
+        "sourceCommit": "cd92c43f301e5a60584b7896a450247855f0bdfd",
+        "architecture": "x86_64",
+        "artifactId": 13547644596,
+        "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42311369310/artifacts/13547644596",
+        "artifactSha256": "c5e18b81dcb931f7a937efa6c5397c53739f3941539546e316c2364bd412c4ee",
+        "archive": "DuktoNext-macos-X64-compiled.tar.gz",
+        "sha256": "1f6a12a3b2aee1c264b66b6f4dd99727a817d4091ca0c6193c31f96b117abbd6",
+        "binaries": [
+          {
+            "path": "dukto-cli",
+            "sha256": "910a0cca19ddb5b05c99905366e522361c2b6636221ada4e6db397405aa97f42",
+            "architecture": "x86_64",
+            "executable": true
+          },
+          {
+            "path": "dukto-gui.app/Contents/MacOS/dukto-gui",
+            "sha256": "6baaee4fb3d60a4d23bedb65297b72c26bac2ece2d42b9d6e115eef9d9118f60",
+            "architecture": "x86_64",
+            "executable": true
+          }
+        ],
+        "compileStepsPassed": true,
+        "dependenciesDeployed": false
+      }
+    ],
+    "evidence": {
+      "path": "docs/validation/2026-11-07/diagnostics-r103-macos-compiled/receipt.json",
+      "sha256": "db992f0e3e5d4d409e26538810e38df60aa4df8217a718ab1d9e8a35e7cc4ceb"
+    },
+    "dependenciesDeployed": false
+  },
+  "nativeCoreR103": {
+    "sourceCommit": "cd92c43f301e5a60584b7896a450247855f0bdfd",
+    "evidence": {
+      "path": "docs/validation/2026-11-07/diagnostics-r103-native-core/receipt.json",
+      "sha256": "5ebd9219bdd8797f5197dcc73be457e5301161132751d0da933b9de2c58de346"
+    },
+    "coreTargetsEach": 23,
+    "qtReportsVerified": 88,
+    "newDiagnosticMethodsVerified": true,
+    "fullProtocolQualified": false
+  },
+  "independentUbuntuR102": {
+    "path": "docs/validation/2026-11-07/cancel-r102-glibc/verified-receipt.json",
+    "sha256": "08379c0c878ff456c29fbf90bc2ca11ab9e23bf866db9b7cb10f01d927facd24"
+  },
+  "originalR101TerminalFailureAndProtocolSubset": {
+    "path": "docs/validation/2026-11-07/cancel-r101-native-terminal/verified-subsets.json",
+    "sha256": "3346dc8d8ba564d6cb7964ad949f08e0a0b8d8e37158295e9221046dd80e9444"
   }
 }

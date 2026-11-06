@@ -1,0 +1,165 @@
+{
+  "date": "2026-11-06T22:07:35.101259+00:00",
+  "passed": false,
+  "sourceCommit": "1f82d5d3b9ae36e77ee98da942c2fc5369310c7a",
+  "executableSha256": "8bb5e24967b6bfbab3e7f9e6a7153e31dd01fa1e26e9c6c27dd51bedc988c04a",
+  "nativePlatform": "cocoa",
+  "cases": [
+    {
+      "name": "native",
+      "platform": "cocoa",
+      "scaleFactor": "1",
+      "passed": false,
+      "nativeSelectorGuard": {
+        "exitCode": 2,
+        "passed": true
+      },
+      "exitCode": 1,
+      "stdout": "",
+      "stderr": "",
+      "error": "Traceback (most recent call last):\n  File \"/Users/runner/work/dukto-next/dukto-next/tests/main_window_navigation_integration.py\", line 61, in main\n    assert result.returncode == 0 and not result.stderr, entry\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: {'name': 'native', 'platform': 'cocoa', 'scaleFactor': '1', 'passed': False, 'nativeSelectorGuard': {'exitCode': 2, 'passed': True}, 'exitCode': 1, 'stdout': '', 'stderr': ''}\n"
+    },
+    {
+      "name": "offscreen-150",
+      "platform": "offscreen",
+      "scaleFactor": "1.5",
+      "passed": true,
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "verifiedCancellationRows": [
+        "send",
+        "receive-header",
+        "receive-partial"
+      ],
+      "frames": [
+        {
+          "chineseGlyphCoverage": {
+            "fontFamilies": [
+              ".AppleSimplifiedChineseFont"
+            ],
+            "glyphCount": 28,
+            "missingGlyphs": 0,
+            "passed": true,
+            "sample": "服务器连接与文件任务本机共享返回下载上传设备最近关于设置"
+          },
+          "devicePixelRatio": 1.5,
+          "logicalSize": [
+            360,
+            560
+          ],
+          "pixels": [
+            540,
+            840
+          ],
+          "platform": "offscreen",
+          "popupInstances": 1,
+          "requestedSize": [
+            360,
+            560
+          ],
+          "pngSha256": "702333b7a6a19383593cec973d812fdb930c0c8e6a485bec870cde17b098aeec"
+        },
+        {
+          "chineseGlyphCoverage": {
+            "fontFamilies": [
+              ".AppleSimplifiedChineseFont"
+            ],
+            "glyphCount": 28,
+            "missingGlyphs": 0,
+            "passed": true,
+            "sample": "服务器连接与文件任务本机共享返回下载上传设备最近关于设置"
+          },
+          "devicePixelRatio": 1.5,
+          "logicalSize": [
+            430,
+            700
+          ],
+          "pixels": [
+            645,
+            1050
+          ],
+          "platform": "offscreen",
+          "popupInstances": 1,
+          "requestedSize": [
+            430,
+            700
+          ],
+          "pngSha256": "984b59aea067a8cc8a1a2e0cd1fab5b3c62de0c9cc5764657b4dfb5667955e2e"
+        }
+      ]
+    },
+    {
+      "name": "offscreen-200",
+      "platform": "offscreen",
+      "scaleFactor": "2",
+      "passed": true,
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "verifiedCancellationRows": [
+        "send",
+        "receive-header",
+        "receive-partial"
+      ],
+      "frames": [
+        {
+          "chineseGlyphCoverage": {
+            "fontFamilies": [
+              ".AppleSimplifiedChineseFont"
+            ],
+            "glyphCount": 28,
+            "missingGlyphs": 0,
+            "passed": true,
+            "sample": "服务器连接与文件任务本机共享返回下载上传设备最近关于设置"
+          },
+          "devicePixelRatio": 2,
+          "logicalSize": [
+            360,
+            560
+          ],
+          "pixels": [
+            720,
+            1120
+          ],
+          "platform": "offscreen",
+          "popupInstances": 1,
+          "requestedSize": [
+            360,
+            560
+          ],
+          "pngSha256": "7b8757e0cb7729263985a6ecdc5fc614d203801cfa034ff5bdc70c0a0cf51362"
+        },
+        {
+          "chineseGlyphCoverage": {
+            "fontFamilies": [
+              ".AppleSimplifiedChineseFont"
+            ],
+            "glyphCount": 28,
+            "missingGlyphs": 0,
+            "passed": true,
+            "sample": "服务器连接与文件任务本机共享返回下载上传设备最近关于设置"
+          },
+          "devicePixelRatio": 2,
+          "logicalSize": [
+            430,
+            700
+          ],
+          "pixels": [
+            860,
+            1400
+          ],
+          "platform": "offscreen",
+          "popupInstances": 1,
+          "requestedSize": [
+            430,
+            700
+          ],
+          "pngSha256": "9313f12eaa77825b10c89676492f88b229e9b023867850df2fbd438809bb6c95"
+        }
+      ]
+    }
+  ],
+  "scope": "production Main.qml native server entry and send/header/partial-body cancellation clicks; every cancellation checks cleanup, credit return and later same-instance bidirectional content; compact/default layout and isolated high-DPI scenes; native selector rejects clipboard test slots before execution; packaged GUI/native choosers and complete R6 remain separate",
+  "binaryUnchanged": true
+}

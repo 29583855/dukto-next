@@ -15,7 +15,18 @@
 
 解压ZIP后用tar保留权限和框架链接，启动方式见下方示例。当前是adhoc开发预览；Developer ID、公证、干净系统、最低系统、完整GUI/选择器、第三方源码独立重建及正式发行继续验收。完整协议和长期按各自真实终态收验。
 
-## R102最新编译产物（2026-11-07）
+## R103最新编译产物（2026-11-07）
+
+精确源码cd92c43f301e5a60584b7896a450247855f0bdfd已公开；[原生CI 42311369310](https://github.com/29583855/dukto-next/actions/runs/42311369310)的Apple Silicon/Intel编译、归档及上传成功。两份GUI/独立CLI的GitHub附件/内部tar摘要、源码、Mach-O架构、执行位及许可已逐件核验。
+
+| 架构 | 编译产物 | 内部tar.gz SHA-256 |
+| --- | --- | --- |
+| arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42311369310/artifacts/13548786324) | f19fe9714db4aba9f5579f5504af26b95f830ee03ab974210a9a38f08e0adfb7 |
+| x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42311369310/artifacts/13547644596) | 1f6a12a3b2aee1c264b66b6f4dd99727a817d4091ca0c6193c31f96b117abbd6 |
+
+[R103编译回执](validation/2026-11-07/diagnostics-r103-macos-compiled/receipt.json)。归档需要匹配Qt5/OpenSSL依赖，CI自行下载安装；含依赖预览仍为顶部R100。四runner各23核心/88份Qt原报告已验，含新增诊断核心及GUI方法，两条精确Darwin预期失败保留。[核心回执](validation/2026-11-07/diagnostics-r103-native-core/receipt.json)。完整协议、真实CLI诊断原生专项、保存选择器及整个R10仍待验。
+
+## R102编译记录（2026-11-07）
 
 精确源码`c1325b0b33ff4df116449c1e1c00d5b27a1a125c`已公开；[原生CI 42304553041](https://github.com/29583855/dukto-next/actions/runs/42304553041)的Apple Silicon/Intel原生编译、归档及附件上传均成功。两份GUI/独立CLI已取回，官方附件摘要、内部tar摘要、源码、Mach-O架构、执行权限及许可逐件核验。
 

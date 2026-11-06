@@ -1,0 +1,45 @@
+{
+  "date": "2026-11-06T22:10:52.077457+00:00",
+  "passed": false,
+  "sourceCommit": "1f82d5d3b9ae36e77ee98da942c2fc5369310c7a",
+  "executableSha256": "0a6803c7ae5e72aaa0f219c7615f318f4629d7e53227227a400e2139463a28e2",
+  "nativePlatform": "windows",
+  "cases": [
+    {
+      "name": "native",
+      "platform": "windows",
+      "scaleFactor": "1",
+      "passed": false,
+      "nativeSelectorGuard": {
+        "exitCode": 2,
+        "passed": true
+      },
+      "exitCode": 1,
+      "stdout": "",
+      "stderr": "",
+      "error": "Traceback (most recent call last):\n  File \"D:\\a\\dukto-next\\dukto-next\\tests\\main_window_navigation_integration.py\", line 61, in main\n    assert result.returncode == 0 and not result.stderr, entry\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: {'name': 'native', 'platform': 'windows', 'scaleFactor': '1', 'passed': False, 'nativeSelectorGuard': {'exitCode': 2, 'passed': True}, 'exitCode': 1, 'stdout': '', 'stderr': ''}\n"
+    },
+    {
+      "name": "offscreen-150",
+      "platform": "offscreen",
+      "scaleFactor": "1.5",
+      "passed": false,
+      "exitCode": 1,
+      "stdout": "",
+      "stderr": "",
+      "error": "Traceback (most recent call last):\n  File \"D:\\a\\dukto-next\\dukto-next\\tests\\main_window_navigation_integration.py\", line 61, in main\n    assert result.returncode == 0 and not result.stderr, entry\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: {'name': 'offscreen-150', 'platform': 'offscreen', 'scaleFactor': '1.5', 'passed': False, 'exitCode': 1, 'stdout': '', 'stderr': ''}\n"
+    },
+    {
+      "name": "offscreen-200",
+      "platform": "offscreen",
+      "scaleFactor": "2",
+      "passed": false,
+      "exitCode": 1,
+      "stdout": "",
+      "stderr": "",
+      "error": "Traceback (most recent call last):\n  File \"D:\\a\\dukto-next\\dukto-next\\tests\\main_window_navigation_integration.py\", line 61, in main\n    assert result.returncode == 0 and not result.stderr, entry\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: {'name': 'offscreen-200', 'platform': 'offscreen', 'scaleFactor': '2', 'passed': False, 'exitCode': 1, 'stdout': '', 'stderr': ''}\n"
+    }
+  ],
+  "scope": "production Main.qml native server entry and send/header/partial-body cancellation clicks; every cancellation checks cleanup, credit return and later same-instance bidirectional content; compact/default layout and isolated high-DPI scenes; native selector rejects clipboard test slots before execution; packaged GUI/native choosers and complete R6 remain separate",
+  "binaryUnchanged": true
+}
