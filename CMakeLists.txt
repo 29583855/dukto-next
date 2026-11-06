@@ -54,6 +54,7 @@ add_library(dukto-core
     src/core/transferservice.cpp
     src/core/transferclient.cpp
     src/core/transferprogress.cpp
+    src/core/transferaccounting.cpp
     src/core/manifest.cpp
     src/core/legacy.cpp
     src/core/discovery.cpp
@@ -122,6 +123,9 @@ if(DUKTO_BUILD_TESTS)
     add_executable(disposition-journal-tests tests/disposition_journal_tests.cpp)
     target_link_libraries(disposition-journal-tests PRIVATE dukto-core Qt5::Test)
     dukto_add_qt_test(disposition-journal-tests)
+    add_executable(transfer-accounting-tests tests/transfer_accounting_tests.cpp)
+    target_link_libraries(transfer-accounting-tests PRIVATE dukto-core Qt5::Test)
+    dukto_add_qt_test(transfer-accounting-tests)
     add_executable(task-store-tests tests/task_store_tests.cpp)
     target_link_libraries(task-store-tests PRIVATE dukto-core Qt5::Test)
     dukto_add_qt_test(task-store-tests)

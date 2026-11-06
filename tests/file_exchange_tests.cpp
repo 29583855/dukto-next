@@ -25,6 +25,27 @@ namespace {
 const QUuid Task("354dfd1f-b3a9-4779-b4a7-44b54c75d9d5");
 constexpr qint64 Bytes = 8 * 1024 * 1024 + 37;
 
+// 日期：2026-11-06；计量与独立处置摘要及已知晚期竞争字节交叉核对，不能用总字节冒充复制。
+bool consistentDispositionProgress(const QJsonObject &progress, const QJsonObject &summary,
+                                   qint64 discarded) {
+    const auto total = summary["totalBytes"].toString().toLongLong();
+    const auto skipped = summary["skippedBytes"].toString().toLongLong();
+    for (const auto &key : QStringList{"copiedBytes", "skippedBytes", "copiedFiles",
+                                       "copiedDirectories", "skippedFiles", "skippedDirectories"})
+        if (progress[key] != summary[key])
+            return false;
+    return progress["event"] == "byte-progress" && progress["bytes"] == QString::number(total) &&
+           progress["handledBytes"] == QString::number(total) &&
+           progress["total"] == QString::number(total) &&
+           progress["entries"] == summary["totalEntries"] &&
+           progress["receivedBytes"] == QString::number(total - skipped + discarded) &&
+           progress["confirmedBytes"] == progress["receivedBytes"] &&
+           progress["discardedBytes"] == QString::number(discarded) &&
+           progress["restoredBytes"] == "0" &&
+           (total != skipped || discarded ||
+            (progress["bytesPerSecond"] == QJsonValue(0.0) && progress["etaSeconds"].isNull()));
+}
+
 class ExchangeServer final : public QTcpServer {
   public:
     std::function<void(qintptr)> operation;
@@ -119,6 +140,15 @@ int parallelDispositionServer(const QString &directory) {
             journal.append(entry.id, result.path, result.skipped ? "skipped" : "copied",
                            result.skippedRoot);
         };
+        QJsonObject progress;
+        dukto::TransferProgress meter(
+            peer, 2, task, hash, manifest.summary()["bytes"].toString().toLongLong(), !download,
+            true,
+            [&](const QJsonObject &value) {
+                // 日期：2026-11-06；只保留最后一份固定快照，不随帧数或文件数增长。
+                progress = value;
+            },
+            true, manifest.summary()["entries"].toString().toULongLong());
         if (download) {
             data->sendTree(peer, manifest, 2, {}, completed, true);
         } else {
@@ -138,10 +168,11 @@ int parallelDispositionServer(const QString &directory) {
                         lateCreated = true;
                     }
                 },
-                completed, nullptr, true);
+                completed, &meter, true);
             store.write("parallel-late.json",
                         dukto::next::encodeControl({{"created", lateCreated}}));
         }
+        store.write("parallel-progress.json", dukto::next::encodeControl(progress));
         store.write("parallel-result.json", dukto::next::encodeControl(journal.summary()));
         const auto close = peer.read();
         if (close.header.type != dukto::next::Type::Close || close.header.correlation != 3)
@@ -893,6 +924,15 @@ class FileExchangeTests final : public QObject {
             journal.append(entry.id, result.path, result.skipped ? "skipped" : "copied",
                            result.skippedRoot);
         };
+        QJsonObject progress;
+        dukto::TransferProgress meter(
+            channel, 2, task.id, sourceHash, source.summary()["bytes"].toString().toLongLong(),
+            download, true,
+            [&](const QJsonObject &value) {
+                // 日期：2026-11-06；客户端同样只持有一份固定快照，和独立服务器交叉核对。
+                progress = value;
+            },
+            true, source.summary()["entries"].toString().toULongLong());
         if (download) {
             dukto::DurableReceive receiver(clientStore, "receive.sqlite", task.id, source, output,
                                            dukto::ConflictPolicy::Skip);
@@ -905,7 +945,7 @@ class FileExchangeTests final : public QObject {
                         lateCreated = true;
                     }
                 },
-                completed, nullptr, true);
+                completed, &meter, true);
             receiverSummary = journal.summary();
         } else {
             data.sendTree(channel, source, 2, {}, completed, true);
@@ -927,6 +967,13 @@ class FileExchangeTests final : public QObject {
                     .toBool();
         }
         QCOMPARE(senderSummary, receiverSummary);
+        const auto remoteProgress =
+            dukto::next::parseControl(serviceStore.read("parallel-progress.json"));
+        const qint64 discarded = scenario == 2 ? contents.size() : 0;
+        QVERIFY2(consistentDispositionProgress(progress, senderSummary, discarded),
+                 QJsonDocument(progress).toJson(QJsonDocument::Compact).constData());
+        QVERIFY2(consistentDispositionProgress(remoteProgress, senderSummary, discarded),
+                 QJsonDocument(remoteProgress).toJson(QJsonDocument::Compact).constData());
         const auto expectedCopied = scenario == 0   ? 17
                                     : scenario == 1 ? 0
                                     : scenario == 2 ? 33
@@ -1005,11 +1052,21 @@ class FileExchangeTests final : public QObject {
         QJsonObject senderSummary;
         QJsonObject receiverSummary;
         bool lateCreated = false;
+        QJsonObject senderProgress;
+        QJsonObject receiverProgress;
         const auto send = [&](dukto::next::SecureChannel &channel, dukto::PrivateStore &store) {
             // 日期：2026-11-06；每个线程重新打开自己的只读清单及结果日志，禁止跨线程SQLite连接。
             dukto::StrongManifest manifest(store, "manifest.sqlite", false);
             dukto::DispositionJournal journal(store, "send.sqlite", Task, manifest, "skip");
             dukto::sendStrongManifest(channel, Task, manifest, 1);
+            dukto::TransferProgress meter(
+                channel, 2, Task, hash, manifest.summary()["bytes"].toString().toLongLong(), false,
+                true,
+                [&](const QJsonObject &value) {
+                    // 日期：2026-11-06；发送端只采纳经过生产观察者验证的远端计量。
+                    senderProgress = value;
+                },
+                true, manifest.summary()["entries"].toString().toULongLong());
             dukto::sendStrongTree(
                 channel, Task, manifest, 2, {},
                 [&](const dukto::StrongEntry &entry,
@@ -1029,6 +1086,14 @@ class FileExchangeTests final : public QObject {
                                            dukto::ConflictPolicy::Skip);
             dukto::DispositionJournal journal(store, "receive-outcome.sqlite", Task, manifest,
                                               "skip");
+            dukto::TransferProgress meter(
+                channel, 2, Task, hash, manifest.summary()["bytes"].toString().toLongLong(), true,
+                true,
+                [&](const QJsonObject &value) {
+                    // 日期：2026-11-06；接收端回调与真实最终持久处置独立交叉核对。
+                    receiverProgress = value;
+                },
+                true, manifest.summary()["entries"].toString().toULongLong());
             dukto::receiveStrongTree(
                 channel, Task, manifest, receiver, 2,
                 [&]() {
@@ -1044,7 +1109,7 @@ class FileExchangeTests final : public QObject {
                     journal.append(entry.id, result.path, result.skipped ? "skipped" : "copied",
                                    result.skippedRoot);
                 },
-                nullptr, true);
+                &meter, true);
             receiverSummary = journal.summary();
         };
         ExchangeServer server;
@@ -1077,6 +1142,11 @@ class FileExchangeTests final : public QObject {
         QVERIFY(server.done());
         QVERIFY2(server.error.isEmpty(), qPrintable(server.error));
         QCOMPARE(senderSummary, receiverSummary);
+        const qint64 discarded = scenario == 2 ? contents.size() : 0;
+        QVERIFY2(consistentDispositionProgress(senderProgress, senderSummary, discarded),
+                 QJsonDocument(senderProgress).toJson(QJsonDocument::Compact).constData());
+        QVERIFY2(consistentDispositionProgress(receiverProgress, senderSummary, discarded),
+                 QJsonDocument(receiverProgress).toJson(QJsonDocument::Compact).constData());
         const auto expectedCopied = scenario == 0   ? contents.size()
                                     : scenario == 3 ? contents.size() * 3
                                                     : 0;
@@ -1298,10 +1368,35 @@ class FileExchangeTests final : public QObject {
     // 日期：2026-11-05；不可信进度不能越权、回退、换清单或在未协商阶段被当作普通心跳。
     void rejectedProgress_data() {
         QTest::addColumn<int>("attack");
-        const char *names[] = {"task",           "manifest",          "correlation", "regression",
-                               "over-confirmed", "extra-field",       "numeric",     "total",
-                               "unnegotiated",   "restore-regression"};
-        for (int index = 0; index < 10; ++index)
+        const char *names[] = {"task",
+                               "manifest",
+                               "correlation",
+                               "regression",
+                               "over-confirmed",
+                               "extra-field",
+                               "numeric",
+                               "total",
+                               "unnegotiated",
+                               "restore-regression",
+                               "disposition-missing",
+                               "disposition-extra",
+                               "copied-over-confirmed",
+                               "skip-over-total",
+                               "discard-over-skip",
+                               "disposition-over-count",
+                               "copied-without-files",
+                               "premature-final-count",
+                               "skip-leading-zero",
+                               "skip-numeric",
+                               "skip-reclassification",
+                               "copy-reclassification",
+                               "discard-reclassification",
+                               "received-skip-overlap",
+                               "restore-old-body-extended",
+                               "unnegotiated-extended",
+                               "legacy-in-extended",
+                               "unknown-instead-of-counter"};
+        for (int index = 0; index < int(sizeof(names) / sizeof(names[0])); ++index)
             QTest::newRow(names[index]) << index;
     }
 
@@ -1312,12 +1407,21 @@ class FileExchangeTests final : public QObject {
         dukto::PrivateStore store(temporary.filePath("identity"), true);
         const auto service = dukto::initializeIdentity(store, {"127.0.0.1"});
         const QByteArray manifest(32, 'x');
-        const QJsonObject initial{{"taskId", Task.toString(QUuid::WithoutBraces)},
-                                  {"manifest", QString::fromLatin1(manifest.toHex())},
-                                  {"bytes", "16"},
-                                  {"confirmed", "8"},
-                                  {"restored", "0"},
-                                  {"total", "32"}};
+        QJsonObject initial{{"taskId", Task.toString(QUuid::WithoutBraces)},
+                            {"manifest", QString::fromLatin1(manifest.toHex())},
+                            {"bytes", "16"},
+                            {"confirmed", "8"},
+                            {"restored", "0"},
+                            {"total", "32"}};
+        if (attack >= 10 && attack != 26) {
+            initial["copiedBytes"] = "4";
+            initial["skippedBytes"] = "4";
+            initial["discardedBytes"] = "2";
+            initial["copiedFiles"] = "1";
+            initial["copiedDirectories"] = "0";
+            initial["skippedFiles"] = "1";
+            initial["skippedDirectories"] = "0";
+        }
         ExchangeServer server;
         server.operation = [&](qintptr descriptor) {
             // 日期：2026-11-05；对端只发送测试自有内容，不绕过生产帧编码和 TLS。
@@ -1341,6 +1445,40 @@ class FileExchangeTests final : public QObject {
                 invalid["total"] = "33";
             if (attack == 9)
                 invalid["restored"] = "4";
+            if (attack == 10)
+                invalid.remove("skippedBytes");
+            if (attack == 11)
+                invalid["unknown"] = "0";
+            if (attack == 12)
+                invalid["copiedBytes"] = "7";
+            if (attack == 13)
+                invalid["skippedBytes"] = "33";
+            if (attack == 14)
+                invalid["discardedBytes"] = "5";
+            if (attack == 15)
+                invalid["skippedDirectories"] = "8";
+            if (attack == 16)
+                invalid["copiedFiles"] = "0";
+            if (attack == 17)
+                invalid["copiedDirectories"] = "6";
+            if (attack == 18)
+                invalid["skippedBytes"] = "04";
+            if (attack == 19)
+                invalid["skippedBytes"] = 4;
+            if (attack == 20)
+                invalid["skippedBytes"] = "5";
+            if (attack == 21)
+                invalid["copiedBytes"] = "5";
+            if (attack == 22)
+                invalid["discardedBytes"] = "3";
+            if (attack == 23)
+                invalid["bytes"] = "32";
+            if (attack == 24)
+                invalid["restored"] = "1";
+            if (attack == 27) {
+                invalid.remove("skippedDirectories");
+                invalid["hidden"] = "0";
+            }
             peer.write(dukto::next::Type::Progress, attack == 2 ? 2 : 1, invalid);
             peer.write(dukto::next::Type::Closed, 1, {});
         };
@@ -1350,11 +1488,13 @@ class FileExchangeTests final : public QObject {
                           QSslConfiguration::defaultConfiguration(),
                           service.certificate.digest(QCryptographicHash::Sha256));
         int accepted = 0;
-        dukto::TransferProgress progress(channel, 1, Task, manifest, 32, false, attack != 8,
-                                         [&](const QJsonObject &) {
-                                             // 日期：2026-11-05；错误快照不得进入使用者回调。
-                                             ++accepted;
-                                         });
+        dukto::TransferProgress progress(
+            channel, 1, Task, manifest, 32, false, attack != 8,
+            [&](const QJsonObject &) {
+                // 日期：2026-11-05；错误快照不得进入使用者回调。
+                ++accepted;
+            },
+            attack >= 10 && attack != 25, 8);
         bool rejected = false;
         try {
             channel.read();
@@ -1362,7 +1502,7 @@ class FileExchangeTests final : public QObject {
             rejected = error.stage == "progress" || error.stage == "protocol";
         }
         QVERIFY(rejected);
-        QCOMPARE(accepted, attack == 8 ? 0 : 1);
+        QCOMPARE(accepted, attack == 8 || attack == 25 || attack == 26 ? 0 : 1);
         QVERIFY(server.done());
     }
 

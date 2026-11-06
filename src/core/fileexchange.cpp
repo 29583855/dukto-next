@@ -253,7 +253,7 @@ void sendStrongTree(
     }
 }
 
-// 日期：2026-11-05；子文件始终进入本任务已预约父目录，目录/文件完成事件逐项报告。
+// 日期：2026-11-06；子文件进入已预约父目录；每项归结真实处置，最终确认前发布完整计量。
 void receiveStrongTree(
     next::SecureChannel &channel, const QUuid &task, StrongManifest &manifest,
     DurableReceive &receiver, quint64 correlation, const std::function<void()> &check,
@@ -278,6 +278,8 @@ void receiveStrongTree(
             result = receiver.prepareDisposition(id, work);
             if (result.skipped && !dispositions)
                 throw Error(ExitCode::Config, QStringLiteral("未协商显式跳过处置"), "disposition");
+            if (progress)
+                progress->settled(entry, result.skipped, false);
             object["path"] = result.path;
             if (dispositions)
                 addTransferDisposition(object, result, true);
@@ -399,7 +401,7 @@ QString sendStrongFile(next::SecureChannel &channel, const QUuid &task, StrongMa
     return result.path;
 }
 
-// 日期：2026-11-05；只有完整块落盘同步后发送块确认；最终独占提交和日志同步后发送文件完成。
+// 日期：2026-11-06；块同步后确认；准备跳过不接收正文，晚期跳过另计丢弃，最终持久后才完成。
 QString receiveStrongFile(next::SecureChannel &channel, const QUuid &task, StrongManifest &manifest,
                           DurableReceive &receiver, quint64 file, const QString &destination,
                           quint64 correlation, const std::function<void()> &check,
@@ -426,13 +428,17 @@ QString receiveStrongFile(next::SecureChannel &channel, const QUuid &task, Stron
     ready["bytes"] = QString::number(opened.disposition.skipped ? 0 : receiver.confirmed());
     if (dispositions)
         addTransferDisposition(ready, opened.disposition, false);
+    const auto entry = manifest.entry(file);
+    if (opened.disposition.skipped && progress) {
+        progress->settled(entry, true, false);
+        progress->publish(file == next::decimal(manifest.summary()["entries"], 10000000));
+    }
     channel.write(next::Type::Attached, correlation, ready);
     if (opened.disposition.skipped) {
         if (outcome)
             *outcome = opened.disposition;
         return opened.disposition.path;
     }
-    const auto entry = manifest.entry(file);
     const auto blocks = static_cast<quint64>(entry.bytes / StrongBlockBytes +
                                              (entry.bytes % StrongBlockBytes != 0));
     for (quint64 block = 0; block < blocks; ++block) {
@@ -465,6 +471,8 @@ QString receiveStrongFile(next::SecureChannel &channel, const QUuid &task, Stron
     const auto result = receiver.finishDisposition(work);
     if (result.skipped && !dispositions)
         throw Error(ExitCode::Config, QStringLiteral("未协商最终跳过处置"), "disposition");
+    if (progress)
+        progress->settled(entry, result.skipped, true);
     auto completed = object;
     completed["path"] = result.path;
     if (dispositions)

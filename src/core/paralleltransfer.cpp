@@ -754,7 +754,7 @@ void ParallelTransfer::sendTree(
     transferFailure(*state_, control, correlation, std::current_exception());
 }
 
-// 日期：2026-11-05；单一日志执行者轮转接收；冲突/磁盘/完整性异常先发布根因，再取消数据线程。
+// 日期：2026-11-06；单一日志执行者轮转接收并逐项计量；最终处置与正文流量分开，异常保留根因。
 void ParallelTransfer::receiveTree(
     next::SecureChannel &control, StrongManifest &manifest, DurableReceive &receiver,
     quint64 correlation, const std::function<void()> &check,
@@ -891,13 +891,16 @@ void ParallelTransfer::receiveTree(
         }
         for (auto &item : window) {
             // 日期：2026-11-04；窗口所有块均已确认才做长全摘要，其他通道此时空闲心跳而非阻塞写入。
-            if (!item.entry.directory && !item.disposition.skipped) {
+            const bool receivedBody = !item.entry.directory && !item.disposition.skipped;
+            if (receivedBody) {
                 receiver.activate(item.entry.id);
                 item.disposition = receiver.finishDisposition(work);
                 receiver.closeCurrent();
             }
             if (item.disposition.skipped && !dispositions)
                 throw Error(ExitCode::Config, QStringLiteral("未协商并行最终跳过"), "disposition");
+            if (progress)
+                progress->settled(item.entry, item.disposition.skipped, receivedBody);
             if (item.entry.id == count) {
                 closeLanes();
                 if (progress)
