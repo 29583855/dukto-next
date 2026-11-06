@@ -1,0 +1,86 @@
+{
+  "date": "2026-11-06",
+  "observedUtc": "2026-11-06T04:26:39.093113+00:00",
+  "planVersion": "v0.78",
+  "productionCommit": "9ac5ca7a18874a52207bedd7cb440c4867a5bcdf",
+  "testCommit": "9ac5ca7a18874a52207bedd7cb440c4867a5bcdf",
+  "windows": {
+    "coreTargetsEach": 22,
+    "taskStoreCasesEachIncludingLifecycle": 39,
+    "accountingCasesEachIncludingLifecycle": 32,
+    "exchangeCasesEachIncludingLifecycle": 208,
+    "sourceInputsMatchExactGitCommit": 178,
+    "localEvidence": {
+      "path": "docs/validation/2026-11-06/client-history-r80-local-verified.json",
+      "sha256": "6486ea3839733638e2d7b355ec2ff54aab3bf118340c91a8429d0253b77b5142"
+    },
+    "publicProtocolReports": 14,
+    "publicEvidence": {
+      "path": "docs/validation/2026-11-06/client-history-r80-public-verified.json",
+      "sha256": "64fc8535b391874b1e1ad71c808a5fcb174aacfe7dfd747f127770a56ca5ad4a"
+    },
+    "clientReadOnlyAttacksEach": 30,
+    "legacyDispositionMigrationsEach": 6
+  },
+  "sourceAudit": {
+    "path": "docs/validation/2026-11-06/client-history-r80-final-source-audit.json",
+    "sha256": "85d49a9bed5ecb0a1c462b31eeb88b638ee8c0d2f98500ed7c3866fccc1781dd"
+  },
+  "regressionBeforeFix": {
+    "path": "docs/validation/2026-11-06/client-history-r80-baseline-regression/receipt.json",
+    "sha256": "0b42356d3ab49cfd44a5ba6326f720759232e334f1252f58054f017c29cf5645"
+  },
+  "firstCompatibilityFailureRetained": true,
+  "compatibilityExplanation": "Old copied-mode derived disposition migration remains allowed; original receive/manifest and targets are verified without rewriting.",
+  "runs": {
+    "native": {
+      "id": 42162347218,
+      "head_sha": "9ac5ca7a18874a52207bedd7cb440c4867a5bcdf",
+      "status": "in_progress",
+      "conclusion": null,
+      "html_url": "https://github.com/29583855/dukto-next/actions/runs/42162347218"
+    },
+    "musl": {
+      "id": 42162370743,
+      "head_sha": "9ac5ca7a18874a52207bedd7cb440c4867a5bcdf",
+      "status": "in_progress",
+      "conclusion": null,
+      "html_url": "https://github.com/29583855/dukto-next/actions/runs/42162370743"
+    },
+    "macosPackage": {
+      "id": 42162374097,
+      "head_sha": "9ac5ca7a18874a52207bedd7cb440c4867a5bcdf",
+      "status": "in_progress",
+      "conclusion": null,
+      "html_url": "https://github.com/29583855/dukto-next/actions/runs/42162374097"
+    }
+  },
+  "previousEvidence": [
+    {
+      "path": "docs/validation/2026-11-06/accounting-contract-r79-five-native-cores-verified.json",
+      "sha256": "4b127978d26825ce0e29cb5eb4229889cb5ec732037c95d90f8e3428471c873c"
+    },
+    {
+      "path": "docs/validation/2026-11-06/accounting-contract-r79-native-protocol-progress-r80-verified.json",
+      "sha256": "d5a636c490af7e52413dc08020e5ebb39bca96491796c4fa8c56057a92d0692c"
+    },
+    {
+      "path": "docs/validation/2026-11-06/accounting-contract-r79-musl-protocols-terminal-verified.json",
+      "sha256": "63434fe1a65b95b149282d079309626bf4b34054eed1821632aedade39f88b1c"
+    },
+    {
+      "path": "docs/validation/2026-11-06/disposition-accounting-r77-protocols-terminal-r80-verified.json",
+      "sha256": "73bb2cc20eb53f6184f9f9fc87f415500da8d54987847c71767db5c88199ddb1"
+    }
+  ],
+  "currentMacPackageSourceCommit": "5ebbdbc7c2cc40c22c051e840e46a778b7408b70",
+  "currentMacPackageEvidence": {
+    "path": "docs/validation/2026-11-06/task-accounting-r78-macos-package-terminal/receipt.json",
+    "sha256": "bdb41b182afd8601b7b6c2e2eeaf236647df6f8b3c28c5b502ddbb2eefec2a10"
+  },
+  "newMacPackagePending": true,
+  "publicSkipEnabled": false,
+  "publicAccountingConnected": false,
+  "releaseQualified": false,
+  "deliveryComplete": false
+}
