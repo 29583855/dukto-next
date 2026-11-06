@@ -2,6 +2,7 @@
 #include "error.h"
 #include "files.h"
 #include "protocol.h"
+#include "receiveskipproof.h"
 #include "sourcefile.h"
 
 #include <QDir>
@@ -376,8 +377,9 @@ DurableReceive::DurableReceive(PrivateStore &store, const QString &name, const Q
 void DurableReceive::verifyCompleted(
     PrivateStore &store, const QString &name, const QUuid &task, StrongManifest &manifest,
     const QString &root, ConflictPolicy conflict, const std::function<void()> &check,
-    const std::function<void(quint64, const QString &)> &verified) {
-    if (task.isNull() || !QDir::isAbsolutePath(root) || conflict == ConflictPolicy::Skip)
+    const std::function<void(quint64, const QString &)> &verified,
+    const std::function<void(quint64, const Preparation &)> &dispositionVerified) {
+    if (task.isNull() || !QDir::isAbsolutePath(root))
         throw Error(ExitCode::Config, QStringLiteral("完成核验任务、目录或策略无效"), "completion");
 #ifdef Q_OS_WIN
     NativeDirectoryLock held(root, false);
@@ -400,11 +402,13 @@ void DurableReceive::verifyCompleted(
     };
     checkpoint();
     CompletedSnapshot snapshot(store, name);
-    QJsonObject expectedBinding{{"version", conflict == ConflictPolicy::Rename ? 1 : 2},
-                                {"task", task.toString(QUuid::WithoutBraces)},
-                                {"manifest", manifest.summary()["sha256"]},
-                                {"root", QDir::cleanPath(root)},
-                                {"rootIdentity", QString::fromLatin1(rootIdentity)}};
+    const bool skip = conflict == ConflictPolicy::Skip;
+    QJsonObject expectedBinding{
+        {"version", skip ? 4 : (conflict == ConflictPolicy::Rename ? 1 : 2)},
+        {"task", task.toString(QUuid::WithoutBraces)},
+        {"manifest", manifest.summary()["sha256"]},
+        {"root", QDir::cleanPath(root)},
+        {"rootIdentity", QString::fromLatin1(rootIdentity)}};
     if (conflict != ConflictPolicy::Rename)
         expectedBinding["conflict"] = conflictPolicyName(conflict);
     QSqlQuery binding(snapshot.database());
@@ -415,10 +419,40 @@ void DurableReceive::verifyCompleted(
         throw Error(ExitCode::Integrity, QStringLiteral("完成接收绑定不同"), "completion");
     binding.finish();
     const auto count = next::decimal(manifest.summary()["entries"], 10000000);
+    quint64 files = 0;
     quint64 directories = 0;
+    quint64 finals = 0;
+    ReceiveSkipProof skipProof(snapshot.database(), manifest, true);
     for (quint64 id = 1; id <= count; ++id) {
         checkpoint();
         const auto entry = manifest.entry(id);
+        if (skip) {
+            const auto decision = skipProof.decision(id);
+            if (decision["action"] == "skip") {
+                const auto final = skipProof.finalDecision(id);
+                if (!final.isEmpty()) {
+                    ++finals;
+                    QSqlQuery cleanup(snapshot.database());
+                    cleanup.prepare("SELECT cleaned FROM skip_final WHERE id=?");
+                    cleanup.addBindValue(static_cast<qlonglong>(id));
+                    readCompleted(cleanup);
+                    if (!cleanup.next() || cleanup.value(0).toString() != "1")
+                        throw Error(ExitCode::Integrity, QStringLiteral("最终跳过尚未完成持久清理"),
+                                    "completion");
+                    if (!final["temporary"].toString().isEmpty()) {
+                        if (entry.directory)
+                            ++directories;
+                        else
+                            ++files;
+                    }
+                }
+                checkpoint();
+                if (dispositionVerified)
+                    dispositionVerified(
+                        id, {entry.relative, true, next::decimal(decision["skippedRoot"], id)});
+                continue;
+            }
+        }
         QSqlQuery query(snapshot.database());
         query.prepare(
             entry.directory
@@ -459,7 +493,8 @@ void DurableReceive::verifyCompleted(
         const auto original =
             (parent.isEmpty() ? QString() : parent + '/') + QFileInfo(entry.relative).fileName();
         if (spec != next::encodeControl({{"entry", entry.publicInfo()}, {"path", original}}) ||
-            QFileInfo(target).path() != QFileInfo(original).path())
+            QFileInfo(target).path() != QFileInfo(original).path() ||
+            (skip && target != entry.relative))
             throw Error(ExitCode::Integrity, QStringLiteral("完成项清单或目标映射不同"),
                         "completion");
         const auto path = resolveInside(root, target, false);
@@ -473,6 +508,7 @@ void DurableReceive::verifyCompleted(
                 throw Error(ExitCode::Integrity, QStringLiteral("已完成目录被替换"), "completion");
             ++directories;
         } else {
+            ++files;
             SourceFile source(path);
             if (nativeIdentity(source.device().handle()) != native ||
                 source.device().size() != entry.bytes)
@@ -494,13 +530,26 @@ void DurableReceive::verifyCompleted(
                 throw Error(ExitCode::Integrity, QStringLiteral("已完成文件正文已变化"),
                             "completion");
         }
+        checkpoint();
         if (verified)
             verified(id, target);
+        if (dispositionVerified)
+            dispositionVerified(id, {target, false, 0});
+    }
+    if (skip) {
+        QSqlQuery decisions(snapshot.database());
+        decisions.prepare(
+            "SELECT (SELECT COUNT(*) FROM skip_decisions),(SELECT COUNT(*) FROM skip_final)");
+        readCompleted(decisions);
+        if (!decisions.next() || decisions.value(0).toULongLong() != count ||
+            decisions.value(1).toULongLong() != finals)
+            throw Error(ExitCode::Integrity, QStringLiteral("完成跳过存在额外或缺失决定"),
+                        "completion");
     }
     QSqlQuery totals(snapshot.database());
     totals.prepare("SELECT (SELECT COUNT(*) FROM files),(SELECT COUNT(*) FROM directories)");
     readCompleted(totals);
-    if (!totals.next() || totals.value(0).toULongLong() != count - directories ||
+    if (!totals.next() || totals.value(0).toULongLong() != files ||
         totals.value(1).toULongLong() != directories)
         throw Error(ExitCode::Integrity, QStringLiteral("完成接收存在额外或缺失项"), "completion");
     checkpoint();

@@ -1,6 +1,7 @@
 #include "durablereceive.h"
 #include "error.h"
 #include "protocol.h"
+#include "receiveskipproof.h"
 #include "sourcefile.h"
 
 #include <QFileInfo>
@@ -17,16 +18,19 @@ bool validNative(const QString &value, bool empty) {
 }
 } // namespace
 
-// 日期：2026-11-05；只读取有界规范记录并核对原准备及接收意图，不能凭文件名获得清理权限。
-QJsonObject DurableReceive::finalSkipDecision(quint64 file) const {
+// 日期：2026-11-06；共用有界记录核对原准备及接收意图，完成核验不得凭此执行清理。
+QJsonObject ReceiveSkipProof::finalDecision(quint64 file) const {
     if (!finalSkipsEnabled_)
         return {};
     QSqlQuery query(database_);
     query.prepare("SELECT substr(spec,1,65537),cleaned FROM skip_final WHERE id=?");
     query.addBindValue(static_cast<qlonglong>(file));
     execute(query);
-    if (!query.next())
+    if (!query.next()) {
+        if (query.lastError().isValid())
+            throw Error(ExitCode::Integrity, QStringLiteral("最终跳过证据读取失败"), "receive");
         return {};
+    }
     const auto bytes = query.value(0).toByteArray();
     const auto cleaned = query.value(1).toString();
     const auto entry = manifest_.entry(file);
@@ -56,12 +60,12 @@ QJsonObject DurableReceive::finalSkipDecision(quint64 file) const {
     if (!query.next() || query.value(0).toByteArray() != next::encodeControl(original))
         throw Error(ExitCode::Integrity, QStringLiteral("最终跳过缺少原接收准备决定"), "receive");
     query.finish();
-    query.prepare(
-        entry.directory
-            ? "SELECT substr(spec,1,65537),substr(temporary,1,4097),"
-              "substr(target,1,4097),substr(native,1,513),state FROM directories WHERE id=?"
-            : "SELECT substr(spec,1,65537),substr(temporary,1,4097),"
-              "substr(target,1,4097),substr(native,1,513),state FROM files WHERE id=?");
+    query.prepare(entry.directory ? "SELECT substr(spec,1,65537),substr(temporary,1,4097),"
+                                    "substr(target,1,4097),substr(native,1,513),substr(state,1,33) "
+                                    "FROM directories WHERE id=?"
+                                  : "SELECT substr(spec,1,65537),substr(temporary,1,4097),"
+                                    "substr(target,1,4097),substr(native,1,513),substr(state,1,33) "
+                                    "FROM files WHERE id=?");
     query.addBindValue(static_cast<qlonglong>(file));
     execute(query);
     const bool found = query.next();
@@ -89,10 +93,15 @@ QJsonObject DurableReceive::finalSkipDecision(quint64 file) const {
     return value;
 }
 
-// 日期：2026-11-05；历史准备不可变，最终记录仅把合法receive改为自身根skip。
-QJsonObject DurableReceive::applyFinalSkip(const StrongEntry &entry,
-                                           const QJsonObject &decision) const {
-    const auto final = finalSkipDecision(entry.id);
+// 日期：2026-11-06；原接收执行者与只读核验使用同样的最终决定证明。
+QJsonObject DurableReceive::finalSkipDecision(quint64 file) const {
+    return ReceiveSkipProof(database_, manifest_, finalSkipsEnabled_).finalDecision(file);
+}
+
+// 日期：2026-11-06；历史准备不可变，共用最终证据仅把合法receive改为自身根skip。
+QJsonObject ReceiveSkipProof::applyFinal(const StrongEntry &entry,
+                                         const QJsonObject &decision) const {
+    const auto final = finalDecision(entry.id);
     if (final.isEmpty())
         return decision;
     if (decision["action"] != "receive")

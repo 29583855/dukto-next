@@ -22,18 +22,19 @@ class DurableReceive final {
                    const std::function<void()> &check = {});
     // 日期：2026-11-04；关闭接收句柄与 SQLite 连接，保留临时数据和已同步检查点用于恢复。
     ~DurableReceive();
-    // 日期：2026-11-06；只读重验完整接收日志、原生身份和当前正文；证据缺失绝不补建。
-    static void verifyCompleted(PrivateStore &store, const QString &name, const QUuid &task,
-                                StrongManifest &manifest, const QString &root,
-                                ConflictPolicy conflict, const std::function<void()> &check = {},
-                                const std::function<void(quint64, const QString &)> &verified = {});
-    DurableReceive(const DurableReceive &) = delete;
-    DurableReceive &operator=(const DurableReceive &) = delete;
     struct Preparation {
         QString path;
         bool skipped = false;
         quint64 skippedRoot = 0;
     };
+    // 日期：2026-11-06；只读重验copied正文；skipped只证明原决定；verified仅回调copied，显式处置回调覆盖两者。
+    static void verifyCompleted(
+        PrivateStore &store, const QString &name, const QUuid &task, StrongManifest &manifest,
+        const QString &root, ConflictPolicy conflict, const std::function<void()> &check = {},
+        const std::function<void(quint64, const QString &)> &verified = {},
+        const std::function<void(quint64, const Preparation &)> &dispositionVerified = {});
+    DurableReceive(const DurableReceive &) = delete;
+    DurableReceive &operator=(const DurableReceive &) = delete;
     struct Opened {
         Preparation disposition;
         quint64 nextBlock = 0;
@@ -91,8 +92,6 @@ class DurableReceive final {
     void resolveFailure(quint64 file);
     // 日期：2026-11-05；规范读取最终跳过，核对原准备与临时项证据；不从当前目标推断历史。
     QJsonObject finalSkipDecision(quint64 file) const;
-    // 日期：2026-11-05；将最终跳过覆盖到有效处置，原receive准备记录保持不可变。
-    QJsonObject applyFinalSkip(const StrongEntry &entry, const QJsonObject &decision) const;
     // 日期：2026-11-05；安全同类型目标与预约保持到FULL提交，随后按原生身份清理自有临时项。
     Preparation commitLateSkip(quint64 file, const QString &temporary, const QByteArray &native,
                                const std::function<void()> &check);

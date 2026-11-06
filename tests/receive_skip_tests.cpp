@@ -152,9 +152,214 @@ int crash(const QString &root) {
 }
 } // namespace
 
+namespace {
+// 日期：2026-11-06；独立真实接收生成混合历史，删除全部跳过目标后才交给只读验收。
+void completedFixture(dukto::PrivateStore &store, dukto::StrongManifest &manifest,
+                      const QString &output) {
+    if (!QDir().mkpath(output + "/tree"))
+        throw dukto::Error(dukto::ExitCode::Disk, "mkdir fixture", "test");
+    write(output + "/old.bin", "original");
+    write(output + "/tree/keep", "external");
+    manifest.append({1, "copied.bin", "", false, 3, sha("abc")});
+    manifest.appendBlock(1, 0, 3, sha("abc"));
+    manifest.append({2, "old.bin", "", false, 3, sha("abc")});
+    manifest.appendBlock(2, 0, 3, sha("abc"));
+    manifest.append({3, "tree", "", true, 0, {}});
+    manifest.append({4, "tree/missing", "", false, 3, sha("abc")});
+    manifest.appendBlock(4, 0, 3, sha("abc"));
+    manifest.append({5, "z-late.bin", "", false, 3, sha("abc")});
+    manifest.appendBlock(5, 0, 3, sha("abc"));
+    manifest.seal();
+    {
+        dukto::DurableReceive receiver(store, "receive.sqlite", Task, manifest, output,
+                                       dukto::ConflictPolicy::Skip);
+        receiver.prepareDisposition(1);
+        receiver.openDisposition(1, "copied.bin");
+        receiver.write(0, 0, "abc");
+        if (receiver.finishDisposition().skipped)
+            throw dukto::Error(dukto::ExitCode::Integrity, "unexpected skip", "test");
+        receiver.closeCurrent();
+        for (quint64 id = 2; id <= 4; ++id)
+            if (!receiver.prepareDisposition(id).skipped)
+                throw dukto::Error(dukto::ExitCode::Integrity, "missing skip", "test");
+        receiver.prepareDisposition(5);
+        receiver.openDisposition(5, "z-late.bin");
+        receiver.write(0, 0, "abc");
+        write(output + "/z-late.bin", "late outside");
+        if (!receiver.finishDisposition().skipped)
+            throw dukto::Error(dukto::ExitCode::Integrity, "missing late skip", "test");
+    }
+    if (!QFile::remove(output + "/old.bin") || !QFile::remove(output + "/z-late.bin") ||
+        !QDir(output + "/tree").removeRecursively())
+        throw dukto::Error(dukto::ExitCode::Disk, "remove fixture", "test");
+}
+} // namespace
+
 class ReceiveSkipTests final : public QObject {
     Q_OBJECT
   private slots:
+    // 日期：2026-11-06；已删跳过目标仍保留原决定；旧copied回调不能收到跳过项或伪造正文确认。
+    void completedReadOnlyHistory() {
+        QTemporaryDir temporary;
+        const auto output = temporary.filePath("output");
+        dukto::PrivateStore store(temporary.filePath("private"), true);
+        dukto::StrongManifest manifest(store, "source.sqlite", true);
+        completedFixture(store, manifest, output);
+        const auto journal = temporary.filePath("private/receive.sqlite");
+        const auto before = dukto::hashFile(journal);
+        QList<quint64> copied;
+        QList<quint64> skipped;
+        dukto::DispositionJournal outcome(store, "outcome.sqlite", Task, manifest, "skip");
+        dukto::DurableReceive::verifyCompleted(
+            store, "receive.sqlite", Task, manifest, output, dukto::ConflictPolicy::Skip, {},
+            [&](quint64 id, const QString &path) {
+                // 日期：2026-11-06；原接口只通知已重读正文的copied，不能把skip交给旧调用者。
+                copied.append(id);
+                QCOMPARE(path, QString("copied.bin"));
+            },
+            [&](quint64 id, const dukto::DurableReceive::Preparation &value) {
+                // 日期：2026-11-06；逐项结果可以直接重验持久摘要，跳过逻辑字节与复制字节分开。
+                if (value.skipped)
+                    skipped.append(id);
+                outcome.append(id, value.path, value.skipped ? "skipped" : "copied",
+                               value.skippedRoot);
+            });
+        QCOMPARE(copied, QList<quint64>{1});
+        QCOMPARE(skipped, (QList<quint64>{2, 3, 4, 5}));
+        QCOMPARE(outcome.summary()["copiedBytes"].toString(), QString("3"));
+        QCOMPARE(outcome.summary()["skippedBytes"].toString(), QString("9"));
+        QCOMPARE(dukto::hashFile(journal), before);
+        QVERIFY(!QFileInfo::exists(output + "/tree"));
+        QVERIFY(!QFileInfo::exists(output + "/old.bin"));
+        QVERIFY(!QFileInfo::exists(output + "/z-late.bin"));
+        write(output + "/copied.bin", "xyz");
+        QVERIFY_EXCEPTION_THROWN(
+            dukto::DurableReceive::verifyCompleted(store, "receive.sqlite", Task, manifest, output,
+                                                   dukto::ConflictPolicy::Skip),
+            dukto::Error);
+        write(output + "/copied.bin", "abc");
+        dukto::DurableReceive::verifyCompleted(store, "receive.sqlite", Task, manifest, output,
+                                               dukto::ConflictPolicy::Skip);
+        QVERIFY(QFile::rename(output + "/copied.bin", output + "/saved.bin"));
+        QVERIFY(QFile::copy(output + "/saved.bin", output + "/copied.bin"));
+        QVERIFY_EXCEPTION_THROWN(
+            dukto::DurableReceive::verifyCompleted(store, "receive.sqlite", Task, manifest, output,
+                                                   dukto::ConflictPolicy::Skip),
+            dukto::Error);
+        QCOMPARE(dukto::hashFile(journal), before);
+    }
+
+    // 日期：2026-11-06；每行独立损坏自有日志，覆盖遗漏、伪造、继承与清理边界，不能靠总数声称完成。
+    void completedDamagedHistory_data() {
+        QTest::addColumn<QString>("sql");
+        QTest::newRow("missing-binding") << "DELETE FROM binding";
+        QTest::newRow("legacy-version") << "UPDATE binding SET spec=CAST(replace(CAST(spec AS "
+                                           "TEXT),'\"version\":4','\"version\":3') AS BLOB)";
+        QTest::newRow("missing-decision") << "DELETE FROM skip_decisions WHERE id=2";
+        QTest::newRow("extra-decision")
+            << "INSERT INTO skip_decisions SELECT 6,'extra',spec FROM skip_decisions WHERE id=2";
+        QTest::newRow("child-root")
+            << "UPDATE skip_decisions SET spec=CAST(replace(CAST(spec AS "
+               "TEXT),'\"skippedRoot\":\"3\"','\"skippedRoot\":\"4\"') AS BLOB) WHERE id=4";
+        QTest::newRow("missing-final") << "DELETE FROM skip_final";
+        QTest::newRow("pending-cleanup") << "UPDATE skip_final SET cleaned=0";
+        QTest::newRow("extra-final")
+            << "INSERT INTO skip_final SELECT 6,spec,cleaned FROM skip_final";
+        QTest::newRow("final-wrong-entry") << "UPDATE skip_final SET spec=CAST(replace(CAST(spec "
+                                              "AS TEXT),'z-late.bin','other.bin') AS BLOB)";
+        QTest::newRow("final-missing-intent") << "DELETE FROM files WHERE id=5";
+        QTest::newRow("copied-not-complete") << "UPDATE files SET state='receiving' WHERE id=1";
+        QTest::newRow("copied-wrong-bytes") << "UPDATE files SET confirmed=2 WHERE id=1";
+        QTest::newRow("copied-wrong-target") << "UPDATE files SET target='other.bin' WHERE id=1";
+        QTest::newRow("extra-copied")
+            << "INSERT INTO files SELECT 2,spec,temporary,target,native,state,confirmed FROM files "
+               "WHERE id=1";
+        QTest::newRow("missing-table") << "DROP TABLE skip_final";
+    }
+
+    // 日期：2026-11-06；只读核验拒绝所有损坏且原坏库字节不变，不自动迁移、补记录或执行清理。
+    void completedDamagedHistory() {
+        QFETCH(QString, sql);
+        QTemporaryDir temporary;
+        const auto output = temporary.filePath("output");
+        dukto::PrivateStore store(temporary.filePath("private"), true);
+        dukto::StrongManifest manifest(store, "source.sqlite", true);
+        completedFixture(store, manifest, output);
+        const auto journal = temporary.filePath("private/receive.sqlite");
+        QVERIFY(alter(journal, sql));
+        const auto before = dukto::hashFile(journal);
+        const auto connections = QSqlDatabase::connectionNames().size();
+        QVERIFY_EXCEPTION_THROWN(
+            dukto::DurableReceive::verifyCompleted(store, "receive.sqlite", Task, manifest, output,
+                                                   dukto::ConflictPolicy::Skip),
+            dukto::Error);
+        QCOMPARE(dukto::hashFile(journal), before);
+        QCOMPARE(QSqlDatabase::connectionNames().size(), connections);
+        QCOMPARE(dukto::hashFile(output + "/copied.bin"), sha("abc"));
+        QVERIFY(!QFileInfo::exists(output + "/z-late.bin"));
+    }
+
+    // 日期：2026-11-06；全跳过不接收或重读正文；缺库不能重建，循环取消后连接和日志保持不变。
+    void completedAllSkippedAndCancellation() {
+        QTemporaryDir temporary;
+        const auto output = temporary.filePath("output");
+        QVERIFY(QDir().mkdir(output));
+        write(output + "/file", "outside");
+        dukto::PrivateStore store(temporary.filePath("private"), true);
+        dukto::StrongManifest manifest(store, "source.sqlite", true);
+        manifest.append({1, "file", "", false, 3, sha("abc")});
+        manifest.appendBlock(1, 0, 3, sha("abc"));
+        manifest.seal();
+        {
+            dukto::DurableReceive receiver(store, "receive.sqlite", Task, manifest, output,
+                                           dukto::ConflictPolicy::Skip);
+            QVERIFY(receiver.prepareDisposition(1).skipped);
+        }
+        QVERIFY(QFile::remove(output + "/file"));
+        const auto journal = temporary.filePath("private/receive.sqlite");
+        const auto before = dukto::hashFile(journal);
+        int copied = 0;
+        int skipped = 0;
+        dukto::DurableReceive::verifyCompleted(
+            store, "receive.sqlite", Task, manifest, output, dukto::ConflictPolicy::Skip, {},
+            [&](quint64, const QString &) {
+                // 日期：2026-11-06；全跳过不得调用旧正文已验证回调。
+                ++copied;
+            },
+            [&](quint64 id, const dukto::DurableReceive::Preparation &value) {
+                // 日期：2026-11-06；没有当前目标也必须返回原始跳过根。
+                QCOMPARE(id, quint64(1));
+                QVERIFY(value.skipped);
+                QCOMPARE(value.skippedRoot, quint64(1));
+                ++skipped;
+            });
+        QCOMPARE(copied, 0);
+        QCOMPARE(skipped, 1);
+        const auto connections = QSqlDatabase::connectionNames().size();
+        for (int attempt = 0; attempt < 8; ++attempt) {
+            int checks = 0;
+            QVERIFY_EXCEPTION_THROWN(dukto::DurableReceive::verifyCompleted(
+                                         store, "receive.sqlite", Task, manifest, output,
+                                         dukto::ConflictPolicy::Skip,
+                                         [&]() {
+                                             // 日期：2026-11-06；在固定快照建立并进入逐项核验后取消。
+                                             if (++checks == 3)
+                                                 throw dukto::Error(dukto::ExitCode::Cancelled,
+                                                                    "cancel fixture", "test");
+                                         }),
+                                     dukto::Error);
+        }
+        QCOMPARE(QSqlDatabase::connectionNames().size(), connections);
+        QCOMPARE(dukto::hashFile(journal), before);
+        QVERIFY(QFile::rename(journal, journal + ".hidden"));
+        QVERIFY_EXCEPTION_THROWN(
+            dukto::DurableReceive::verifyCompleted(store, "receive.sqlite", Task, manifest, output,
+                                                   dukto::ConflictPolicy::Skip),
+            dukto::Error);
+        QVERIFY(!QFileInfo::exists(journal));
+        QCOMPARE(dukto::hashFile(journal + ".hidden"), before);
+    }
+
     // 日期：2026-11-05；真实创建/提交新正文，已有原件及目录后代保持；跳过项不能打开正文或冒充确认字节。
     void mixedTreeAndRestart() {
         QTemporaryDir temporary;
@@ -217,6 +422,8 @@ class ReceiveSkipTests final : public QObject {
         QVERIFY(!QFileInfo::exists(output + "/b-existing"));
         QVERIFY(!QFileInfo::exists(output + "/z-existing.bin"));
         QCOMPARE(dukto::hashFile(output + "/a-new/fresh.bin"), sha("abc"));
+        dukto::DurableReceive::verifyCompleted(store, "receive.sqlite", Task, manifest, output,
+                                               dukto::ConflictPolicy::Skip);
     }
 
     // 日期：2026-11-05；断电式退出后删除原目标，恢复仍返回原跳过且不创建临时正文。
@@ -345,6 +552,8 @@ class ReceiveSkipTests final : public QObject {
         QVERIFY(restored.openDisposition(1, "file").disposition.skipped);
         QVERIFY(!QFileInfo::exists(output + "/file"));
         QVERIFY(parts(output).isEmpty());
+        dukto::DurableReceive::verifyCompleted(store, "receive.sqlite", Task, manifest, output,
+                                               dukto::ConflictPolicy::Skip);
     }
 
     // 日期：2026-11-05；目录发布前产生同名目录，整子树继承最终根且不遍历/创建后代。
@@ -392,6 +601,8 @@ class ReceiveSkipTests final : public QObject {
         for (quint64 file = 1; file <= 3; ++file)
             QCOMPARE(restored.prepareDisposition(file).skippedRoot, quint64(1));
         QVERIFY(!QFileInfo::exists(output + "/tree"));
+        dukto::DurableReceive::verifyCompleted(store, "receive.sqlite", Task, manifest, output,
+                                               dukto::ConflictPolicy::Skip);
     }
 
     // 日期：2026-11-05；三个退出点分别验证最终提交/清理幂等与自身已发布结果不误判skip。

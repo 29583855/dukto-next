@@ -1,6 +1,7 @@
 #include "durablereceive.h"
 #include "error.h"
 #include "protocol.h"
+#include "receiveskipproof.h"
 #include "sourcefile.h"
 
 #include <QFileInfo>
@@ -30,17 +31,17 @@ QJsonObject checkedDecision(const StrongEntry &entry, const QByteArray &source,
 }
 } // namespace
 
-// 日期：2026-11-05；按唯一源索引核对父项及连续前置关系，不递归驻留整棵目录树。
-QJsonObject DurableReceive::skipDecision(quint64 file) const {
+// 日期：2026-11-06；活动接收及只读快照共用父项和连续前置验证，不递归驻留目录树。
+QJsonObject ReceiveSkipProof::decision(quint64 file) const {
     const auto entry = manifest_.entry(file);
     QSqlQuery query(database_);
     query.prepare("SELECT substr(CAST(source AS BLOB),1,4097),substr(spec,1,65537) "
                   "FROM skip_decisions WHERE id=?");
     query.addBindValue(static_cast<qlonglong>(file));
     execute(query);
-    if (!query.next())
+    if (!query.next() || query.lastError().isValid())
         throw Error(ExitCode::Integrity, QStringLiteral("清单项目缺少持久接收决定"), "receive");
-    const auto value = applyFinalSkip(
+    const auto value = applyFinal(
         entry, checkedDecision(entry, query.value(0).toByteArray(), query.value(1).toByteArray()));
     const bool skipped = value["action"] == "skip";
     const auto root = next::decimal(value["skippedRoot"], file);
@@ -60,8 +61,8 @@ QJsonObject DurableReceive::skipDecision(quint64 file) const {
     const auto parentId = query.value(0).toULongLong();
     const auto parentEntry = manifest_.entry(parentId);
     const auto parent =
-        applyFinalSkip(parentEntry, checkedDecision(parentEntry, query.value(1).toByteArray(),
-                                                    query.value(2).toByteArray()));
+        applyFinal(parentEntry, checkedDecision(parentEntry, query.value(1).toByteArray(),
+                                                query.value(2).toByteArray()));
     const bool parentSkipped = parent["action"] == "skip";
     const auto parentRoot = next::decimal(parent["skippedRoot"], parentId);
     if (!parentEntry.directory || parentEntry.relative != entry.relative.left(slash) ||
@@ -70,6 +71,17 @@ QJsonObject DurableReceive::skipDecision(quint64 file) const {
         (!parentSkipped && skipped && root != file))
         throw Error(ExitCode::Integrity, QStringLiteral("接收决定的子树跳过关系损坏"), "receive");
     return value;
+}
+
+// 日期：2026-11-06；快照与活动接收共用同一套规范校验，避免两种历史解释分叉。
+QJsonObject DurableReceive::skipDecision(quint64 file) const {
+    return ReceiveSkipProof(database_, manifest_, finalSkipsEnabled_).decision(file);
+}
+
+// 日期：2026-11-06；数据库执行失败不能被解释为缺少可选最终记录。
+void ReceiveSkipProof::execute(QSqlQuery &query) const {
+    if (!query.exec())
+        throw Error(ExitCode::Integrity, QStringLiteral("跳过证据架构或查询无效"), "receive");
 }
 
 // 日期：2026-11-05；已有决定逐页重验且不访问目标树，删除或替换旧目标不能改写历史跳过决定。
