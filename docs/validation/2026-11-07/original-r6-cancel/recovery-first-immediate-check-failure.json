@@ -1,0 +1,11 @@
+{
+  "date": "2026-11-07",
+  "case": "original-receive-recovery",
+  "fixtureExitCode": 1,
+  "assertion": "target.read_bytes() == payload",
+  "sourceSha256": "4271d9144d126c23132d8f886e7a466667fa09f4d8d8ba9fbf9897a6356bda7e",
+  "cause": "Fixture only waited for pathname existence; the first content read preceded final file flush",
+  "originalFailureRetained": true,
+  "productFailureClaimed": false,
+  "sameFileNotResent": true
+}
