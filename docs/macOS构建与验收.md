@@ -342,3 +342,5 @@ v0.72复查补记（2026-11-06）：同一Intel原始包SHA 7a24f9d01d6fda443fce
 v0.72核心终验补记（2026-11-06）：测试234a5d2在Windows、Ubuntu、Apple Silicon和Intel四runner均通过各21项核心、190文件交换用例。全部JUnit实际用例结果和八条故障边界逐原件核验：磁盘5、权限4、明确取消7，异常/篡改/普通确认拒绝保持；busy仍受原2000ms总预算。Qt5把64条阶段qinfo计入JUnit errors计数，已逐条确认其为夹具信息注释，实际failure/error节点为零。Mac夹具休眠饿死TLS事件的问题已解决；首次2秒和5秒失败原件保留，完整协议仍在执行。[四平台原件核验](validation/2026-11-06/terminal-fixture-r73-pump-native/verified-summary.json)。
 
 v0.73/r74补记（2026-11-06）：当前生产cf37197增加只读skip完成核验，双Windows已验；新四runner42144847843包含Apple Silicon及Intel原生Qt5/C++14构建与运行，结果待实际原件。原dab42135946545已经终态failure：四平台163协议报告全通过，但Windows核心20/21和两Mac初次夹具失败保留；后续234核心四平台21/190已验。现有d973下载包不含cf变更，Intel候选包首次检查点失败根因尚未解决。[本轮回执](ci-verification-20261106-r74.json)。
+
+r75原生终态补记（2026-11-06）：234a5d2完整四runner已终态failure；四套核心各21/190通过，协议162/163，唯一失败是Intel凭据轮换的活动传输停止分类/状态断言，原业务报告缺失。d879f77只增加测试诊断，双Windows各12检查通过，双Mac原门槛专项42146188465待原件。生产cf37197及现有d973预览入口保持其原范围；首次包检查点失败根因仍开着。[诊断回执](ci-verification-20261106-r75.json)。

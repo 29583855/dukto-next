@@ -1,7 +1,7 @@
 {
-  "observedUtc": "2026-11-06T01:37:48.410215+00:00",
+  "observedUtc": "2026-11-06T01:49:23.880649+00:00",
   "productionCommit": "cf37197ee68468c070833f639311370b63589fef",
-  "testCommit": "cf37197ee68468c070833f639311370b63589fef",
+  "testCommit": "d879f77135c429af666c8684c17403fae67b1290",
   "packages": [
     {
       "architecture": "x86_64",
@@ -191,7 +191,7 @@
   "releaseQualified": false,
   "deliveryComplete": false,
   "planVersion": "v0.73",
-  "currentSourceStage": "cf completed skip read-only history dual Windows verified; current native suites pending; first Windows concurrent commit and Intel original checkpoint failure causes open",
+  "currentSourceStage": "cf skip completed history Windows verified; d879 bounded diagnostics; first Windows commit, Intel credential stop and Intel package checkpoint causes open",
   "nativeMusl": {
     "sourceCommit": "cf37197ee68468c070833f639311370b63589fef",
     "runId": 42144898471,
@@ -601,7 +601,7 @@
       "sourceCommit": "31f3db3bfb5a8bf70b6217afd50df3284e27934c"
     }
   ],
-  "publicVerificationReceipt": "docs/ci-verification-20261106-r74.json",
+  "publicVerificationReceipt": "docs/ci-verification-20261106-r75.json",
   "lastVerifiedCopiedFull": {
     "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42065923177",
     "sourceCommit": "74dd5cec71fde472b940e869661d6e8533042a65",
@@ -1488,12 +1488,12 @@
     "sourceCommit": "234a5d2debbd4ca38573c959f93e1f81f0729f39",
     "runId": 42139150179,
     "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42139150179",
-    "status": "in_progress",
-    "workflowConclusion": null,
+    "status": "completed",
+    "workflowConclusion": "failure",
     "productionCommit": "dab7c0e25585504f9ea38bd5cff5c61e51efe9f9",
     "expectedCoreTargetsEach": 21,
     "expectedProtocolCasesTotal": 163,
-    "fullProtocolPending": true,
+    "fullProtocolPending": false,
     "allProtocolReportHashesVerified": false,
     "originalEvidenceVerified": false,
     "coreTargetsEach": 21,
@@ -1503,7 +1503,23 @@
       "path": "docs/validation/2026-11-06/terminal-fixture-r73-pump-native/verified-summary.json",
       "sha256": "503bb608a7f144943c5bb59281e76367695a60ced8f5ad051974ac764b29fe3a"
     },
-    "originalCoreEvidenceVerified": true
+    "originalCoreEvidenceVerified": true,
+    "verifiedPassedProtocolReports": 162,
+    "allAvailableProtocolHashesVerified": true,
+    "evidence": {
+      "path": "docs/validation/2026-11-06/terminal-fixture-r73-pump-native/terminal-verified-r75.json",
+      "sha256": "e0877effeb379873d43d5e8c8e4de7039b9d26254e4f1f68e89387530f4d66a4"
+    },
+    "failures": [
+      {
+        "runner": "macos-15-intel",
+        "case": "credential-rotation",
+        "exitCode": 1,
+        "reportCreated": false,
+        "actualStopErrorAndTaskStateAvailable": false,
+        "causeResolved": false
+      }
+    ]
   },
   "previousNativeMuslR74": {
     "sourceCommit": "dab7c0e25585504f9ea38bd5cff5c61e51efe9f9",
@@ -1613,6 +1629,111 @@
     "nativeCurrentSourcePending": true,
     "publicSkipEnabled": false,
     "existingPreviewPackagesUpdated": false,
+    "releaseQualified": false,
+    "deliveryComplete": false
+  },
+  "failureDiagnosticsR75": {
+    "date": "2026-11-06",
+    "observedUtc": "2026-11-06T01:49:23.880649+00:00",
+    "planVersion": "v0.73",
+    "productionCommit": "cf37197ee68468c070833f639311370b63589fef",
+    "testCommit": "d879f77135c429af666c8684c17403fae67b1290",
+    "productionInputsUnchangedByDiagnostics": true,
+    "previousNativeR73": {
+      "testCommit": "234a5d2debbd4ca38573c959f93e1f81f0729f39",
+      "run": {
+        "id": 42139150179,
+        "head_sha": "234a5d2debbd4ca38573c959f93e1f81f0729f39",
+        "html_url": "https://github.com/29583855/dukto-next/actions/runs/42139150179",
+        "status": "completed",
+        "conclusion": "failure"
+      },
+      "coreTargetsEach": 21,
+      "fileExchangeCasesEachIncludingLifecycle": 190,
+      "passedReports": 162,
+      "expectedReports": 163,
+      "failures": [
+        {
+          "runner": "macos-15-intel",
+          "case": "credential-rotation",
+          "exitCode": 1,
+          "reportCreated": false,
+          "actualStopErrorAndTaskStateAvailable": false,
+          "causeResolved": false
+        }
+      ],
+      "allSuccessfulOriginalReportHashesVerified": true,
+      "evidence": {
+        "path": "docs/validation/2026-11-06/terminal-fixture-r73-pump-native/terminal-verified-r75.json",
+        "sha256": "e0877effeb379873d43d5e8c8e4de7039b9d26254e4f1f68e89387530f4d66a4"
+      }
+    },
+    "localConcurrentCommitDiagnostic": {
+      "toolchains": 2,
+      "roundsEach": 64,
+      "workersPerRound": 8,
+      "individualCommits": 1024,
+      "allRoundLogAndXmlHashesVerified": true,
+      "passed": true,
+      "evidence": {
+        "path": "docs/validation/2026-11-06/concurrent-commit-r75-windows/summary.json",
+        "sha256": "481b8dbd59f397a280adb2358449ee26d1e45718a0efd88cbefd3628ba3dff1f"
+      },
+      "originalFailureCauseResolved": false
+    },
+    "localRotationDiagnostic": {
+      "toolchains": 2,
+      "checksEach": 12,
+      "uploadAndDownloadPassed": true,
+      "originalErrorCodesAndTimingUnchanged": true,
+      "evidence": {
+        "path": "docs/validation/2026-11-06/rotation-stop-r75-windows/summary.json",
+        "sha256": "47b8cb033979ad3be92f52beb561eca737727aa49150bea8300bcb997535a593"
+      },
+      "originalIntelFailureCauseResolved": false
+    },
+    "sourceAudit": {
+      "files": 184,
+      "findings": 0,
+      "cxx14AndFormattingPassed": true,
+      "evidence": {
+        "path": "docs/validation/2026-11-06/concurrent-and-rotation-r75-source-audit.json",
+        "sha256": "8e8914f9714c59a7253d7bc79be72508023a6109d3551febf99ac12dd22901d1"
+      }
+    },
+    "runs": {
+      "concurrentCommit": {
+        "sourceCommit": "d879f77135c429af666c8684c17403fae67b1290",
+        "runId": 42146184618,
+        "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42146184618",
+        "status": "in_progress",
+        "workflowConclusion": null
+      },
+      "credentialRotation": {
+        "sourceCommit": "d879f77135c429af666c8684c17403fae67b1290",
+        "runId": 42146188465,
+        "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42146188465",
+        "status": "in_progress",
+        "workflowConclusion": null
+      },
+      "nativeCurrent": {
+        "sourceCommit": "cf37197ee68468c070833f639311370b63589fef",
+        "runId": 42144847843,
+        "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42144847843",
+        "status": "in_progress",
+        "workflowConclusion": null
+      },
+      "muslCurrent": {
+        "sourceCommit": "cf37197ee68468c070833f639311370b63589fef",
+        "runId": 42144898471,
+        "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42144898471",
+        "status": "in_progress",
+        "workflowConclusion": null
+      }
+    },
+    "intelPackageFirstCheckpointCauseResolved": false,
+    "firstFailuresRetained": true,
+    "publicSkipEnabled": false,
     "releaseQualified": false,
     "deliveryComplete": false
   }

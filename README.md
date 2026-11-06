@@ -6,7 +6,7 @@
 
 当前已建立 C++14 共用核心、Qt Quick 2 桌面端和独立 CLI。Windows 已验证与原版文件/目录/文本双向互传、超过 4 GiB、10 万文件、100 轮接收，以及首次说明/设置/截图/单实例和有界头像模块。完整原版交互、服务器、多线程、恢复和跨平台验收继续按计划推进。原版目录保留用于对照。
 
-公开仓库为[29583855/dukto-next](https://github.com/29583855/dukto-next)。最新生产[cf37197](https://github.com/29583855/dukto-next/commit/cf37197ee68468c070833f639311370b63589fef)增加跳过历史只读核验，双Windows各21核心/50跳过/190文件交换及三相关协议已验；新三平台原生CI执行中。原dab全量163份协议通过，但Windows首次并发提交和两Mac首次夹具失败的原记录保留；Intel包首次检查点失败根因仍继续定位。当前[Mac下载入口](docs/macOS独立预览包.md)保持已验d973da1双架构预览。完整项目及公开skip接线继续，见[本轮回执](docs/ci-verification-20261106-r74.json)、[主计划](开发计划与进度.md)及[当前索引](docs/current-validation.json)。
+公开仓库为[29583855/dukto-next](https://github.com/29583855/dukto-next)。最新生产[cf37197](https://github.com/29583855/dukto-next/commit/cf37197ee68468c070833f639311370b63589fef)增加跳过历史只读核验，双Windows各21核心/50跳过/190文件交换及三相关协议已验；新三平台原生CI执行中。原dab全量163份协议通过，但Windows首次并发提交和两Mac首次夹具失败的原记录保留；Intel包首次检查点失败根因仍继续定位。当前[Mac下载入口](docs/macOS独立预览包.md)保持已验d973da1双架构预览。234完整原生终态为四核心通过、协议162/163，Intel凭据轮换失败；d879f77诊断保留原门槛并已启动。完整项目及公开skip接线继续，见[最新诊断回执](docs/ci-verification-20261106-r75.json)和[实现回执](docs/ci-verification-20261106-r74.json)、[主计划](开发计划与进度.md)及[当前索引](docs/current-validation.json)。
 
 新增[b9d9b78上传发送端确认](docs/decisions/0022-上传发送端持久处置与证据恢复.md)已通过本机专项；原CI终态failure保留：四平台临时库glob误判，另Windows并发隔离空闲线程5/基线3的原因未确认。旧运行不再视为进行中，完整历史见主计划v0.64。
 

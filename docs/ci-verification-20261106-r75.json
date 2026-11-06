@@ -1,0 +1,105 @@
+{
+  "date": "2026-11-06",
+  "observedUtc": "2026-11-06T01:49:23.880649+00:00",
+  "planVersion": "v0.73",
+  "productionCommit": "cf37197ee68468c070833f639311370b63589fef",
+  "testCommit": "d879f77135c429af666c8684c17403fae67b1290",
+  "productionInputsUnchangedByDiagnostics": true,
+  "previousNativeR73": {
+    "testCommit": "234a5d2debbd4ca38573c959f93e1f81f0729f39",
+    "run": {
+      "id": 42139150179,
+      "head_sha": "234a5d2debbd4ca38573c959f93e1f81f0729f39",
+      "html_url": "https://github.com/29583855/dukto-next/actions/runs/42139150179",
+      "status": "completed",
+      "conclusion": "failure"
+    },
+    "coreTargetsEach": 21,
+    "fileExchangeCasesEachIncludingLifecycle": 190,
+    "passedReports": 162,
+    "expectedReports": 163,
+    "failures": [
+      {
+        "runner": "macos-15-intel",
+        "case": "credential-rotation",
+        "exitCode": 1,
+        "reportCreated": false,
+        "actualStopErrorAndTaskStateAvailable": false,
+        "causeResolved": false
+      }
+    ],
+    "allSuccessfulOriginalReportHashesVerified": true,
+    "evidence": {
+      "path": "docs/validation/2026-11-06/terminal-fixture-r73-pump-native/terminal-verified-r75.json",
+      "sha256": "e0877effeb379873d43d5e8c8e4de7039b9d26254e4f1f68e89387530f4d66a4"
+    }
+  },
+  "localConcurrentCommitDiagnostic": {
+    "toolchains": 2,
+    "roundsEach": 64,
+    "workersPerRound": 8,
+    "individualCommits": 1024,
+    "allRoundLogAndXmlHashesVerified": true,
+    "passed": true,
+    "evidence": {
+      "path": "docs/validation/2026-11-06/concurrent-commit-r75-windows/summary.json",
+      "sha256": "481b8dbd59f397a280adb2358449ee26d1e45718a0efd88cbefd3628ba3dff1f"
+    },
+    "originalFailureCauseResolved": false
+  },
+  "localRotationDiagnostic": {
+    "toolchains": 2,
+    "checksEach": 12,
+    "uploadAndDownloadPassed": true,
+    "originalErrorCodesAndTimingUnchanged": true,
+    "evidence": {
+      "path": "docs/validation/2026-11-06/rotation-stop-r75-windows/summary.json",
+      "sha256": "47b8cb033979ad3be92f52beb561eca737727aa49150bea8300bcb997535a593"
+    },
+    "originalIntelFailureCauseResolved": false
+  },
+  "sourceAudit": {
+    "files": 184,
+    "findings": 0,
+    "cxx14AndFormattingPassed": true,
+    "evidence": {
+      "path": "docs/validation/2026-11-06/concurrent-and-rotation-r75-source-audit.json",
+      "sha256": "8e8914f9714c59a7253d7bc79be72508023a6109d3551febf99ac12dd22901d1"
+    }
+  },
+  "runs": {
+    "concurrentCommit": {
+      "sourceCommit": "d879f77135c429af666c8684c17403fae67b1290",
+      "runId": 42146184618,
+      "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42146184618",
+      "status": "in_progress",
+      "workflowConclusion": null
+    },
+    "credentialRotation": {
+      "sourceCommit": "d879f77135c429af666c8684c17403fae67b1290",
+      "runId": 42146188465,
+      "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42146188465",
+      "status": "in_progress",
+      "workflowConclusion": null
+    },
+    "nativeCurrent": {
+      "sourceCommit": "cf37197ee68468c070833f639311370b63589fef",
+      "runId": 42144847843,
+      "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42144847843",
+      "status": "in_progress",
+      "workflowConclusion": null
+    },
+    "muslCurrent": {
+      "sourceCommit": "cf37197ee68468c070833f639311370b63589fef",
+      "runId": 42144898471,
+      "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42144898471",
+      "status": "in_progress",
+      "workflowConclusion": null
+    }
+  },
+  "intelPackageFirstCheckpointCauseResolved": false,
+  "firstFailuresRetained": true,
+  "publicSkipEnabled": false,
+  "releaseQualified": false,
+  "deliveryComplete": false
+}
