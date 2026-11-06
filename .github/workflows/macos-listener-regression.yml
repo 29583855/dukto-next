@@ -25,15 +25,25 @@ jobs:
           python -m pip install psutil
           # 日期：2026-11-07；原多地址UDP用例依赖第二回环地址，与完整原生工作流使用同一夹具。
           sudo ifconfig lo0 alias 127.0.0.2
-      # 日期：2026-11-06；原文件交换/监听断言与时限保持；CI只剥离精确的新Darwin预期失败块再逐字节比较。
-      - name: Verify original failed assertions remain unchanged
+      # 日期：2026-11-07；退出夹具绑定已审阅R97全集；监听仍剥离精确Darwin块后与R94逐字节比较。
+      - name: Verify approved exit fixture and unchanged original binding assertions
         shell: bash
         run: |
-          git fetch --no-tags origin dec40621cce2d223e46b343e0d3d345a67b80523
-          git diff --exit-code dec40621cce2d223e46b343e0d3d345a67b80523 -- tests/file_exchange_tests.cpp
+          mkdir -p evidence
+          printf '%s\n' "$GITHUB_SHA" > evidence/source-commit.txt
+          sw_vers > evidence/environment.log
+          uname -m >> evidence/environment.log
+          qmake -query >> evidence/environment.log
+          git fetch --no-tags origin dec40621cce2d223e46b343e0d3d345a67b80523 38f2384524bfdefa2ffefcc4c737224185a53266
+          git diff --exit-code 38f2384524bfdefa2ffefcc4c737224185a53266 -- tests/file_exchange_tests.cpp | tee evidence/approved-exit-fixture-diff.log
           python - <<'PY'
           from pathlib import Path
           import subprocess
+          exit_test = Path('tests/file_exchange_tests.cpp').read_text('utf-8-sig')
+          assert 'return process.state() == QProcess::NotRunning || process.waitForFinished(timeoutMs);' in exit_test
+          assert exit_test.count('QVERIFY(waitForStartedChildExit(server, 10000));') == 1
+          assert 'QCOMPARE(server.exitStatus(), QProcess::NormalExit);' in exit_test
+          assert 'QVERIFY2(server.exitCode() == 0, server.readAllStandardError().constData());' in exit_test
           old = subprocess.check_output(['git', 'show', 'dec40621cce2d223e46b343e0d3d345a67b80523:tests/core_tests.cpp']).decode('utf-8-sig').replace('\r\n', '\n')
           new = Path('tests/core_tests.cpp').read_text('utf-8-sig')
           boundary = '#ifdef Q_OS_MACOS\n            // 日期：2026-11-07；双架构原生探针证实关闭复用也允许后来Qt通配/具体地址共享；原断言明确XFAIL。\n            if (firstAddress == QHostAddress::AnyIPv4 && secondAddress == QHostAddress::LocalHost)\n                QEXPECT_FAIL("exclusive-first-ipv4-wildcard-then-specific",\n                             "Darwin permits later Qt wildcard/specific sharing even with "\n                             "SO_REUSEADDR disabled; kernel exclusivity is not qualified",\n                             Continue);\n#endif\n'
@@ -44,11 +54,6 @@ jobs:
           new_end = '    // 日期：2026-11-06；服务主动正常关闭'
           assert old[old.index(start):old.index(old_end)].rstrip() == new[new.index(start):new.index(new_end)].rstrip()
           PY
-          mkdir -p evidence
-          printf '%s\n' "$GITHUB_SHA" > evidence/source-commit.txt
-          sw_vers > evidence/environment.log
-          uname -m >> evidence/environment.log
-          qmake -query >> evidence/environment.log
       - name: Compile complete original application and tests
         id: compile
         shell: bash

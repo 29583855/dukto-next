@@ -1,4 +1,4 @@
-"""日期：2026-11-06；原样重复Mac并行退出用例，慢子进程退出前采集原生堆栈，不改变原十秒断言。"""
+"""日期：2026-11-07；重复已审阅Mac并行退出夹具，慢子进程退出前采集堆栈，保留原十秒期限。"""
 import argparse
 import json
 from pathlib import Path
@@ -85,7 +85,7 @@ def attempt(binary, output, number):
             "passed": process.returncode == 0 and xml_passed and not expired}
 
 
-# 日期：2026-11-06；原失败测试保持逐字节不变；重复成功只说明本轮未复现，不宣称超时根因已修复。
+# 日期：2026-11-07；使用当前已审阅退出夹具；保持原十秒期限，重复成功不概括为历史根因全部修复。
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("binary", type=Path)
