@@ -45,6 +45,7 @@ QJsonArray capabilities(bool dispositionProgress = false) {
                       "byte-progress-v1",
                       "conflict-fail-v1",
                       "conflict-overwrite-v1",
+                      "conflict-skip-v1",
                       "task-items-v1",
                       "task-item-failures-v1",
                       "disposition-summary-v1"};
@@ -479,6 +480,9 @@ void ServiceWorker::run() {
         const auto first = channel.read();
         correlation = first.header.correlation;
         hello(first);
+        const auto peerCapabilities = next::parseControl(first.payload)["capabilities"].toArray();
+        const bool peerSkip = peerCapabilities.contains("conflict-skip-v1") &&
+                              peerCapabilities.contains("byte-progress-v1");
         const bool peerDisposition =
             next::parseControl(first.payload)["capabilities"].toArray().contains(
                 "disposition-summary-v1");
@@ -553,6 +557,14 @@ void ServiceWorker::run() {
                 if (request.contains("dispositionProgress") && !peerAccounting)
                     throw Error(ExitCode::Config, QStringLiteral("对端未协商处置进度能力"),
                                 "progress");
+                // 日期：2026-11-06；跳过必须在本连接声明全部依赖能力，并携带必需字段；创建前拒绝降级。
+                if (request["conflict"] == "skip" &&
+                    (!peerSkip || !peerDisposition || !peerAccounting ||
+                     request["byteProgress"] != QJsonValue(true) ||
+                     request["dispositionSummary"] != QJsonValue(true) ||
+                     request["dispositionProgress"] != QJsonValue(true)))
+                    throw Error(ExitCode::Config, QStringLiteral("跳过同名文件需要双方完整协商"),
+                                "conflict");
                 serveTransfer(channel, store, account, reauthenticate, request, frame.header.type,
                               correlation);
                 continue;

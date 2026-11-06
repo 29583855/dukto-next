@@ -381,7 +381,7 @@ def main():
                                       "negotiation": negotiations,
                                       "executableSha256": digest(Path(executable)), "scriptSha256": digest(Path(__file__)),
                                       "scope": "single-channel owned TLS relay attacks; 1/4/16 ordinary flows in disposition-transfer",
-                                      "publicSkipEnabled": False}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+                                      "publicSkipEnabled": True}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
 if __name__ == "__main__":

@@ -90,8 +90,12 @@ bool bindAccounting(PrivateStore &local, const QString &name, const QJsonObject 
     const auto newBytes = next::encodeControl(explicitBinding);
     if (local.exists(name)) {
         const auto saved = local.read(name);
-        if (saved == oldBytes)
+        if (saved == oldBytes) {
+            if (conflict == ConflictPolicy::Skip)
+                throw Error(ExitCode::Integrity, QStringLiteral("跳过请求缺少原必需计量契约"),
+                            stage);
             return false;
+        }
         if (saved != newBytes)
             throw Error(ExitCode::Integrity, QStringLiteral("请求已绑定其他目标、内容或计量契约"),
                         stage);
@@ -100,6 +104,8 @@ bool bindAccounting(PrivateStore &local, const QString &name, const QJsonObject 
                         QStringLiteral("服务器缺少原请求必需计量能力，请升级服务器"), "progress");
         return true;
     }
+    if (conflict == ConflictPolicy::Skip && !capable)
+        throw Error(ExitCode::Config, QStringLiteral("跳过策略需要完整处置计量能力"), "conflict");
     local.write(name, capable ? newBytes : oldBytes);
     return capable;
 }
@@ -312,8 +318,15 @@ QJsonObject RemoteClient::upload(const QUuid &requestId, const QString &share,
                                  int channels, ConflictPolicy conflict) {
     checkedChannels(QString::number(channels));
     checkedConflictPolicy(conflictPolicyName(conflict));
+    // 日期：2026-11-06；skip独立协商逐项处置，其余策略保持已有交换契约。
+    const bool dispositions = conflict == ConflictPolicy::Skip;
     if ((conflict == ConflictPolicy::Fail && !capabilities_.contains("conflict-fail-v1")) ||
-        (conflict == ConflictPolicy::Overwrite && !capabilities_.contains("conflict-overwrite-v1")))
+        (conflict == ConflictPolicy::Overwrite &&
+         !capabilities_.contains("conflict-overwrite-v1")) ||
+        (conflict == ConflictPolicy::Skip && (!capabilities_.contains("conflict-skip-v1") ||
+                                              !capabilities_.contains("disposition-summary-v1") ||
+                                              !capabilities_.contains("disposition-progress-v1") ||
+                                              !capabilities_.contains("byte-progress-v1"))))
         throw Error(ExitCode::Config, QStringLiteral("服务器未协商所选冲突策略能力"), "conflict");
     if (requestId.isNull())
         throw Error(ExitCode::Config, QStringLiteral("上传请求UUID无效"), "transfer");
@@ -527,7 +540,7 @@ QJsonObject RemoteClient::upload(const QUuid &requestId, const QString &share,
         const auto ticket = control(channel_, correlation_, next::Type::ChannelTicket);
         ParallelTransfer data(
             ticket, id, QByteArray::fromHex(manifest.summary()["sha256"].toString().toLatin1()),
-            false);
+            false, dispositions);
         actual = data.lanes();
         if (actual > channels || (admittedChannels && actual != admittedChannels))
             throw Error(ExitCode::Integrity, QStringLiteral("服务器通道数超过请求值"), "parallel");
@@ -536,9 +549,9 @@ QJsonObject RemoteClient::upload(const QUuid &requestId, const QString &share,
                       {"state", "transferring"},
                       {"channels", QString::number(actual)}});
         data.startClients(profile_, timeoutMs_, &manifest);
-        data.sendTree(channel_, manifest, correlation_, {}, completed);
+        data.sendTree(channel_, manifest, correlation_, {}, completed, dispositions);
     } else {
-        sendStrongTree(channel_, id, manifest, correlation_, {}, completed);
+        sendStrongTree(channel_, id, manifest, correlation_, {}, completed, dispositions);
     }
     // 日期：2026-11-06；逐项接收确认必须完整，字节发送结束不能代替处置完整性。
     confirmingDisposition = true;
@@ -632,8 +645,15 @@ QJsonObject RemoteClient::download(const QUuid &requestId, const QString &share,
                                    int channels, ConflictPolicy conflict) {
     checkedChannels(QString::number(channels));
     checkedConflictPolicy(conflictPolicyName(conflict));
+    // 日期：2026-11-06；skip独立协商逐项处置，其余策略保持已有交换契约。
+    const bool dispositions = conflict == ConflictPolicy::Skip;
     if ((conflict == ConflictPolicy::Fail && !capabilities_.contains("conflict-fail-v1")) ||
-        (conflict == ConflictPolicy::Overwrite && !capabilities_.contains("conflict-overwrite-v1")))
+        (conflict == ConflictPolicy::Overwrite &&
+         !capabilities_.contains("conflict-overwrite-v1")) ||
+        (conflict == ConflictPolicy::Skip && (!capabilities_.contains("conflict-skip-v1") ||
+                                              !capabilities_.contains("disposition-summary-v1") ||
+                                              !capabilities_.contains("disposition-progress-v1") ||
+                                              !capabilities_.contains("byte-progress-v1"))))
         throw Error(ExitCode::Config, QStringLiteral("服务器未协商所选冲突策略能力"), "conflict");
     if (!QFileInfo(destination).isDir())
         throw Error(ExitCode::Config, QStringLiteral("下载目标目录必须已存在"), "transfer");
@@ -768,7 +788,7 @@ QJsonObject RemoteClient::download(const QUuid &requestId, const QString &share,
     const auto completed = [&](const StrongEntry &entry,
                                const DurableReceive::Preparation &result) {
         const auto &path = result.path;
-        // 日期：2026-11-06；当前公开策略均为copied；最终skip须先完成协议协商。
+        // 日期：2026-11-06；最终处置按实际复制或跳过持久化，跳过目录保留整棵子树的根身份。
         outcomes.append(entry.id, path, result.skipped ? "skipped" : "copied", result.skippedRoot);
         // 日期：2026-11-04；事件逐条输出，十万文件不会累积成内存中的结果数组。
         if (progress)
@@ -785,7 +805,7 @@ QJsonObject RemoteClient::download(const QUuid &requestId, const QString &share,
     int actual = 1;
     if (channels > 1) {
         const auto ticket = control(channel_, correlation_, next::Type::ChannelTicket);
-        ParallelTransfer data(ticket, id, expected, true);
+        ParallelTransfer data(ticket, id, expected, true, dispositions);
         actual = data.lanes();
         if (actual > channels || (admittedChannels && actual != admittedChannels))
             throw Error(ExitCode::Integrity, QStringLiteral("服务器通道数超过请求值"), "parallel");
@@ -794,9 +814,11 @@ QJsonObject RemoteClient::download(const QUuid &requestId, const QString &share,
                       {"state", "transferring"},
                       {"channels", QString::number(actual)}});
         data.startClients(profile_, timeoutMs_);
-        data.receiveTree(channel_, manifest, receiver, correlation_, {}, completed, &meter);
+        data.receiveTree(channel_, manifest, receiver, correlation_, {}, completed, &meter,
+                         dispositions);
     } else {
-        receiveStrongTree(channel_, id, manifest, receiver, correlation_, {}, completed, &meter);
+        receiveStrongTree(channel_, id, manifest, receiver, correlation_, {}, completed, &meter,
+                          dispositions);
     }
     // 日期：2026-11-06；本地全部处置完整且匹配冻结清单，才接受远端任务完成为本次成功。
     confirmingDisposition = true;

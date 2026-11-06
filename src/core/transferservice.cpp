@@ -148,10 +148,13 @@ void serveTransfer(next::SecureChannel &channel, PrivateStore &store, const Prin
     const bool peerDisposition = request.contains("dispositionSummary");
     const bool dispositionProgress = request.contains("dispositionProgress");
     if (explicitConflict && request["conflict"] != QJsonValue("fail") &&
-        request["conflict"] != QJsonValue("overwrite"))
+        request["conflict"] != QJsonValue("overwrite") && request["conflict"] != QJsonValue("skip"))
         throw Error(ExitCode::Config, QStringLiteral("未协商或未知的冲突策略"), "conflict");
     const auto conflict = explicitConflict ? checkedConflictPolicy(request["conflict"].toString())
                                            : ConflictPolicy::Rename;
+    const bool dispositions = conflict == ConflictPolicy::Skip;
+    if (dispositions && (!byteProgress || !peerDisposition || !dispositionProgress))
+        throw Error(ExitCode::Config, QStringLiteral("跳过策略不能使用旧处置或旧计量"), "conflict");
     const int channels = parallel ? checkedChannels(request["channels"]) : 1;
     if ((!upload && type != next::Type::CreateDownload) ||
         request.size() != (upload ? 4 : 3) + (parallel ? 1 : 0) + (byteProgress ? 1 : 0) +
@@ -438,7 +441,8 @@ void serveTransfer(next::SecureChannel &channel, PrivateStore &store, const Prin
         if (parallel) {
             // 日期：2026-11-04；清单交换完再发短期票据，十万项清单不能消耗数据连接加入期限。
             data = ParallelTransfer::createServer(store.directory(), principal.client, task.id,
-                                                  *manifest, upload, admission->lanes(), admission);
+                                                  *manifest, upload, admission->lanes(), admission,
+                                                  dispositions);
             channel.write(next::Type::ChannelTicket, correlation, data->ticket());
         }
         // 日期：2026-11-06；单/多通道实际完成按清单顺序持久化，未完成或失败项不能补成copied。
@@ -480,7 +484,7 @@ void serveTransfer(next::SecureChannel &channel, PrivateStore &store, const Prin
         const auto completed = [&](const StrongEntry &entry,
                                    const DurableReceive::Preparation &result) {
             const auto &path = result.path;
-            // 日期：2026-11-06；当前公开三种策略均为copied；skip仍拒绝，后续须协商显式处置。
+            // 日期：2026-11-06；仅记接收端最终copied/skipped；跳过根随记录持久化，不能冒充复制。
             outcomes.append(entry.id, path, result.skipped ? "skipped" : "copied",
                             result.skippedRoot);
             // 日期：2026-11-05；文件完成与跨文件已确认块取较大值，避免多文件窗口完成时进度回退。
@@ -493,15 +497,16 @@ void serveTransfer(next::SecureChannel &channel, PrivateStore &store, const Prin
                                     selected, task.conflict);
             if (data)
                 data->receiveTree(channel, *manifest, receiver, correlation, work, completed,
-                                  &meter);
+                                  &meter, dispositions);
             else
                 receiveStrongTree(channel, task.id, *manifest, receiver, correlation, work,
-                                  completed, &meter);
+                                  completed, &meter, dispositions);
         } else {
             if (data)
-                data->sendTree(channel, *manifest, correlation, work, completed);
+                data->sendTree(channel, *manifest, correlation, work, completed, dispositions);
             else
-                sendStrongTree(channel, task.id, *manifest, correlation, work, completed);
+                sendStrongTree(channel, task.id, *manifest, correlation, work, completed,
+                               dispositions);
         }
         // 日期：2026-11-06；最终任务状态之前完整重验，不能用字节进度相等代替逐项完成。
         confirming = peerDisposition;

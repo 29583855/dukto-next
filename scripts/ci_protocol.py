@@ -52,6 +52,8 @@ def commands(build):
     add("transfer-retry", "transfer_retry_integration")
     add("conflict-fail", "conflict_fail_integration")
     add("conflict-overwrite", "conflict_overwrite_integration")
+    # 日期：2026-11-06；公开skip双向/跨页/历史/协商/迟到冲突必须在每种原生环境实际执行。
+    add("conflict-skip", "conflict_skip_integration")
     add("task-items", "task_items_integration")
     # 日期：2026-11-06；真实双向/多通道和失败前缀核验自动处置，不能以独立日志单测代替接线。
     add("disposition-transfer", "disposition_transfer_integration")
@@ -65,6 +67,7 @@ def commands(build):
                 "--checkpoint-percent", "50")
     add("conflict-fail-recovery", "transfer_recovery_integration", "--on-conflict", "fail", *recovery)
     add("conflict-overwrite-recovery", "transfer_recovery_integration", "--on-conflict", "overwrite", *recovery)
+    add("conflict-skip-recovery", "transfer_recovery_integration", "--on-conflict", "skip", *recovery)
     add("transfer", "transfer_integration")
     add("transfer-recovery", "transfer_recovery_integration")
     add("parallel-transfer", "parallel_transfer_integration")

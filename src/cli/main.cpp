@@ -199,8 +199,9 @@ int main(int argc, char **argv) {
           QStringLiteral("新版上传/下载/继续的总时限：1..604800 秒，含扫描与排队"), "seconds",
           "86400"},
          {"on-conflict",
-          QStringLiteral("新版上传/下载冲突策略：rename（默认保留双方）、fail 或 "
-                         "overwrite（原子替换普通文件）；恢复沿用原策略"),
+          QStringLiteral(
+              "新版上传/下载冲突策略：rename（默认保留双方）、fail 或 "
+              "overwrite（原子替换普通文件）、skip（保留同名目标，目录整棵跳过）；恢复沿用原策略"),
           "policy", "rename"},
          {"threads", QStringLiteral("新版上传/下载/继续的数据通道数：1/2/4/8/16"), "count", "1"},
          {"duration", QStringLiteral("设备发现持续秒数（1–3600）"), "seconds", "3"},

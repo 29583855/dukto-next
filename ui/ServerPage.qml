@@ -15,12 +15,15 @@ Rectangle {
         const identity = panel.identity;
         if (!identity.certificateStatus)
             return "读取身份后查看证书期限";
+
         const status = identity.certificateStatus === "expired" ? "已过期" : identity.certificateStatus === "not-yet-valid" ? "尚未生效" : identity.expiringSoon ? "30天内到期" : "有效";
         let message = "证书：" + status + " · 到期 " + identity.expiresUtc;
         if (identity.restartRequired)
             message += "\n磁盘证书已更新，请重新启动所有使用此状态目录的服务。";
+
         if (identity.activeCertificateError)
             message += "\n无法核对运行身份：" + identity.activeCertificateError;
+
         return message;
     }
 
@@ -45,11 +48,11 @@ Rectangle {
         return names[state] || state || "尚无任务";
     }
 
-    // 日期：2026-11-05；批次目标、并发、冲突与重试选项共用核心，恢复沿用任务中持久保存的策略。
+    // 日期：2026-11-06；四种冲突策略、并发和重试共用核心；跳过选项明确映射，恢复沿用原任务策略。
     function remoteOptions() {
         return {
             "channels": channelCount.currentText,
-            "conflict": conflictPolicy.currentIndex === 1 ? "fail" : (conflictPolicy.currentIndex === 2 ? "overwrite" : "rename"),
+            "conflict": conflictPolicy.currentIndex === 1 ? "fail" : (conflictPolicy.currentIndex === 2 ? "overwrite" : (conflictPolicy.currentIndex === 3 ? "skip" : "rename")),
             "retries": retryCount.currentText,
             "deadlineSeconds": deadlineSeconds.text,
             "profile": profile.text,
@@ -66,16 +69,31 @@ Rectangle {
     function failureText(item) {
         if (!item.lastFailure)
             return "";
+
         const failure = item.lastFailure;
-        const phases = {"prepare": "准备目标", "open": "打开或恢复", "write": "接收与校验", "finish": "最终提交"};
-        const causes = {"receive": "接收失败", "write": "写入失败", "read": "读取失败", "path": "路径不安全或不可用", "commit": "提交或结果校验失败", "conflict": "目标名称冲突", "storage": "存储不足或不可用"};
+        const phases = {
+            "prepare": "准备目标",
+            "open": "打开或恢复",
+            "write": "接收与校验",
+            "finish": "最终提交"
+        };
+        const causes = {
+            "receive": "接收失败",
+            "write": "写入失败",
+            "read": "读取失败",
+            "path": "路径不安全或不可用",
+            "commit": "提交或结果校验失败",
+            "conflict": "目标名称冲突",
+            "storage": "存储不足或不可用"
+        };
         return "\n" + (failure.resolved ? "先前失败已恢复" : "本项最近失败") + " · " + phases[failure.phase] + " · " + causes[failure.stage] + "（" + failure.code + "）";
     }
 
-    // 日期：2026-11-05；用户可读的逐项处置；历史检查点不等于此刻重新校验文件。
+    // 日期：2026-11-06；明确区分复制与保留原目标的跳过；历史检查点不等于此刻重验文件。
     function dispositionText(value) {
         const names = {
             "copied": "已复制并提交",
+            "skipped": "已跳过，保留原目标",
             "not-executed": "尚无接收记录",
             "planned": "准备中",
             "receiving": "接收中",
@@ -311,6 +329,7 @@ Rectangle {
 
                     CheckBox {
                         id: showCertificateMigration
+
                         objectName: "serverTrustExpand"
                         text: "服务器证书变更 / 资料指纹迁移"
                     }
@@ -319,20 +338,26 @@ Rectangle {
                         visible: showCertificateMigration.checked
                         Layout.fillWidth: true
                         title: "核对证书后更新当前资料"
+
                         ColumnLayout {
                             width: parent.width
+
                             Label {
                                 text: "先从服务器管理员处核对新旧指纹。此操作保留原目标、配对身份和任务，连接验证成功后才保存。"
                                 textFormat: Text.PlainText
                                 wrapMode: Text.Wrap
                                 Layout.fillWidth: true
                             }
+
                             Button {
                                 objectName: "serverProfileInfoButton"
                                 text: "读取当前资料指纹"
                                 enabled: !panel.busy
-                                onClicked: panel.execute("profile-info", {"profile": profile.text})
+                                onClicked: panel.execute("profile-info", {
+                                    "profile": profile.text
+                                })
                             }
+
                             TextArea {
                                 text: panel.outcome.event === "profile-info" && panel.outcome.profile === profile.text ? panel.outcome.fingerprint : ""
                                 readOnly: true
@@ -341,25 +366,32 @@ Rectangle {
                                 wrapMode: TextEdit.WrapAnywhere
                                 Layout.fillWidth: true
                             }
+
                             TextField {
                                 id: previousFingerprint
+
                                 objectName: "serverOldFingerprint"
                                 placeholderText: "已核对的旧指纹（64位）"
                                 maximumLength: 64
                                 Layout.fillWidth: true
                             }
+
                             TextField {
                                 id: replacementFingerprint
+
                                 objectName: "serverNewFingerprint"
                                 placeholderText: "已核对的新指纹（64位）"
                                 maximumLength: 64
                                 Layout.fillWidth: true
                             }
+
                             CheckBox {
                                 id: trustConfirmed
+
                                 objectName: "serverTrustConfirmed"
                                 text: "已通过可信渠道核对新旧指纹"
                             }
+
                             Button {
                                 objectName: "serverTrustButton"
                                 text: "验证并更新资料指纹"
@@ -371,7 +403,9 @@ Rectangle {
                                     "fingerprint": replacementFingerprint.text
                                 })
                             }
+
                         }
+
                     }
 
                     TextField {
@@ -522,13 +556,13 @@ Rectangle {
                                 id: conflictPolicy
 
                                 objectName: "serverConflictPolicy"
-                                model: ["保留双方（自动重命名）", "遇到冲突停止", "覆盖同名普通文件"]
+                                model: ["保留双方（自动重命名）", "遇到冲突停止", "覆盖同名普通文件", "跳过同名文件或目录"]
                                 enabled: !panel.busy
                                 Layout.fillWidth: true
                             }
 
                             Label {
-                                text: conflictPolicy.currentIndex === 2 ? "完整校验后替换同名普通文件；目录合并并保留无关文件。恢复沿用原策略。" : "恢复始终沿用原任务策略；先前已完成的文件会保留。"
+                                text: conflictPolicy.currentIndex === 3 ? "保留已有同名目标；目录重名时跳过整棵子树，不合并。类型冲突或不安全路径仍报错。恢复沿用原策略，双方均须支持。" : (conflictPolicy.currentIndex === 2 ? "完整校验后替换同名普通文件；目录合并并保留无关文件。恢复沿用原策略。" : "恢复始终沿用原任务策略；先前已完成的文件会保留。")
                                 textFormat: Text.PlainText
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
@@ -719,7 +753,7 @@ Rectangle {
 
                     Label {
                         objectName: "serverTaskConflictPolicy"
-                        text: "任务冲突策略：" + (panel.task.conflict === "fail" ? "遇到冲突停止" : (panel.task.conflict === "overwrite" ? "覆盖同名普通文件" : "保留双方（自动重命名）"))
+                        text: "任务冲突策略：" + (panel.task.conflict === "fail" ? "遇到冲突停止" : (panel.task.conflict === "overwrite" ? "覆盖同名普通文件" : (panel.task.conflict === "skip" ? "跳过同名文件或目录" : "保留双方（自动重命名）")))
                         visible: !!panel.task.taskId
                         textFormat: Text.PlainText
                         wrapMode: Text.WordWrap
@@ -736,8 +770,10 @@ Rectangle {
                         indeterminate: panel.busy && panel.task.state !== "completed" && Number(panel.task.total || 0) === 0
                     }
 
+                    // 日期：2026-11-06；已处理包含跳过，实际接收和确认落盘单列，避免虚报复制量。
                     Label {
-                        text: "已接收：" + (panel.task.receivedBytes || panel.task.bytes || "0") + " / " + (panel.task.total || "0") + " B\n已校验落盘：" + (panel.task.bytes || "0") + " B；恢复：" + (panel.task.restoredBytes || "0") + " B"
+                        objectName: "serverTransferAccounting"
+                        text: "已接收：" + (panel.task.receivedBytes || panel.task.bytes || "0") + " / " + (panel.task.total || "0") + " B\n已校验落盘：" + (panel.task.confirmedBytes || panel.task.bytes || "0") + " B；恢复：" + (panel.task.restoredBytes || "0") + " B" + (panel.task.accountingVersion === 1 ? "\n已处理：" + (panel.task.handledBytes || panel.task.bytes || "0") + " B；复制：" + (panel.task.copiedBytes || "0") + " B；跳过：" + (panel.task.skippedBytes || "0") + " B\n已复制文件/目录：" + (panel.task.copiedFiles || "0") + "/" + (panel.task.copiedDirectories || "0") + "；跳过文件/目录：" + (panel.task.skippedFiles || "0") + "/" + (panel.task.skippedDirectories || "0") + "；跳过前已接收并丢弃：" + (panel.task.discardedBytes || "0") + " B" : "")
                         textFormat: Text.PlainText
                         wrapMode: Text.WrapAnywhere
                         Layout.fillWidth: true
@@ -959,6 +995,7 @@ Rectangle {
 
                     CheckBox {
                         id: showCertificateRenewal
+
                         objectName: "serverRenewExpand"
                         text: "证书续期"
                     }
@@ -967,34 +1004,43 @@ Rectangle {
                         visible: showCertificateRenewal.checked
                         title: "保留服务器身份并续期"
                         Layout.fillWidth: true
+
                         ColumnLayout {
                             width: parent.width
+
                             Label {
                                 text: "续期会更换证书和私钥，保留服务器UUID、授权和任务。现有服务继续使用旧证书，重启后采用新证书；随后在各客户端迁移资料指纹。"
                                 textFormat: Text.PlainText
                                 wrapMode: Text.Wrap
                                 Layout.fillWidth: true
                             }
+
                             TextField {
                                 id: renewalNames
+
                                 objectName: "serverRenewNames"
                                 placeholderText: "新IP/主机名，留空保留原名称"
                                 maximumLength: 4096
                                 Layout.fillWidth: true
                             }
+
                             TextField {
                                 id: certificateDays
+
                                 objectName: "serverCertificateDays"
                                 text: "365"
                                 placeholderText: "有效期1..825天"
                                 maximumLength: 3
                                 Layout.fillWidth: true
                             }
+
                             CheckBox {
                                 id: renewalConfirmed
+
                                 objectName: "serverRenewConfirmed"
                                 text: "已核对指纹并了解后续步骤"
                             }
+
                             Button {
                                 objectName: "serverRenewButton"
                                 text: "续期并保存新证书"
@@ -1009,7 +1055,9 @@ Rectangle {
                                     renewalConfirmed.checked = false;
                                 }
                             }
+
                         }
+
                     }
 
                     RowLayout {

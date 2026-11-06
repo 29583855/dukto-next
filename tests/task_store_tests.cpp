@@ -137,7 +137,11 @@ class TaskStoreTests final : public QObject {
                 tasks.create(owner, request, "download", "docs", "file", root.path(), {}, conflict),
                 dukto::Error);
             if (conflict == dukto::ConflictPolicy::Skip) {
-                QVERIFY_EXCEPTION_THROWN(dukto::checkedConflictPolicy("skip"), dukto::Error);
+                // 日期：2026-11-06；公开解析接受skip，但没有必需计量的新任务仍须拒绝。
+                QCOMPARE(dukto::checkedConflictPolicy("skip"), dukto::ConflictPolicy::Skip);
+                QVERIFY_EXCEPTION_THROWN(tasks.create(owner, QUuid::createUuid(), "download",
+                                                      "docs", "file", root.path(), {}, conflict),
+                                         dukto::Error);
             } else {
                 const auto legacyRequest = QUuid::createUuid();
                 tasks.create(owner, legacyRequest, "download", "docs", "file", root.path(), {},

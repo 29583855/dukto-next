@@ -326,8 +326,10 @@ TransferTask TaskStore::create(const QUuid &owner, const QUuid &request, const Q
         (direction == "upload" && uploadManifest.size() != 32) ||
         (direction == "download" && !uploadManifest.isEmpty()))
         throw Error(ExitCode::Config, QStringLiteral("任务创建参数或上传内容身份无效"), "task");
-    if (!dispositionAccounting || conflict != ConflictPolicy::Skip)
-        checkedConflictPolicy(conflictPolicyName(conflict));
+    checkedConflictPolicy(conflictPolicyName(conflict));
+    // 日期：2026-11-06；公开skip仍禁止创建无必需计量的旧任务，重试也不得降级。
+    if (conflict == ConflictPolicy::Skip && !dispositionAccounting)
+        throw Error(ExitCode::Config, QStringLiteral("跳过任务必须使用完整处置计量"), "conflict");
     QJsonObject creation{{"version", dispositionAccounting                ? 3
                                      : conflict == ConflictPolicy::Rename ? 1
                                                                           : 2},

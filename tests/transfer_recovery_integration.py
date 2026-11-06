@@ -236,7 +236,7 @@ def main():
     parser.add_argument("executable")
     parser.add_argument("--report", required=True)
     parser.add_argument("--threads", type=int, default=1)
-    parser.add_argument("--on-conflict", choices=("rename", "fail", "overwrite"), default="rename")
+    parser.add_argument("--on-conflict", choices=("rename", "fail", "overwrite", "skip"), default="rename")
     # 日期：2026-11-05；实际部署包运行原 EXE 保持 DLL 相邻，开发验证默认仍使用独立副本。
     parser.add_argument("--in-place", action="store_true")
     parser.add_argument("--resume-threads", type=int)

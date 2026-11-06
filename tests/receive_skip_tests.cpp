@@ -488,7 +488,7 @@ class ReceiveSkipTests final : public QObject {
         }
         QVERIFY(receiver.prepareDisposition(1).skipped);
         QCOMPARE(dukto::hashFile(output + "/file"), sha("original"));
-        QVERIFY_EXCEPTION_THROWN(dukto::checkedConflictPolicy("skip"), dukto::Error);
+        QCOMPARE(dukto::checkedConflictPolicy("skip"), dukto::ConflictPolicy::Skip);
     }
 
     // 日期：2026-11-05；准备接收后并发出现目标，最终跳过持久化且原件保持；已收字节不冒充copied。

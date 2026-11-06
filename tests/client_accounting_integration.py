@@ -281,7 +281,7 @@ def main():
             assert not service.stderr.read()
     args.report.parent.mkdir(parents=True, exist_ok=True)
     args.report.write_text(json.dumps({"date": "2026-11-06", "passed": True, "cases": cases,
-        "legacyCompatibility": legacy, "attacks": refused, "publicSkipEnabled": False,
+        "legacyCompatibility": legacy, "attacks": refused, "publicSkipEnabled": True,
         "executableSha256": digest(Path(executable)), "scriptSha256": digest(Path(__file__)),
         "scope": "production client mandatory accounting; persisted request binding; independent owned TLS relay mutations"},
         ensure_ascii=False, indent=2) + "\n", "utf-8")

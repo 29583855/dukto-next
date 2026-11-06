@@ -437,7 +437,12 @@ int runServiceCommand(const QCommandLineParser &parser, const QStringList &argum
         });
         result["eventVersion"] = 1;
         result["event"] = "transfer-completed";
-        result["message"] = QStringLiteral("任务全部文件已确认完成");
+        // 日期：2026-11-06；逻辑完成不代表全部复制，显式显示跳过字节，原JSON计量完整保留。
+        result["message"] =
+            result.value("accountingVersion") == QJsonValue(1)
+                ? QStringLiteral("任务已确认：复制 %1 B，跳过 %2 B")
+                      .arg(result["copiedBytes"].toString(), result["skippedBytes"].toString())
+                : QStringLiteral("任务全部文件已确认完成");
         output(result);
         return 0;
     }

@@ -448,7 +448,7 @@ def progress_attacks(port, profile, server, service, root, source, summary, entr
     return cases
 
 
-# 日期：2026-11-06；拒绝未协商/错误模式/缺依赖/额外字段且不建任务，公共skip仍拒绝。
+# 日期：2026-11-06；拒绝未协商/错误模式/缺依赖/额外字段且不建任务，未协商skip仍拒绝。
 def negotiation(port, profile, server, path):
     cases = []
     base = {"share": "data", "path": path, "byteProgress": True, "dispositionSummary": True,
@@ -522,7 +522,7 @@ def main():
     args.report.parent.mkdir(parents=True, exist_ok=True)
     args.report.write_text(json.dumps({"date": "2026-11-06", "passed": True, "cases": cases,
         "negotiation": refused, "progressAttacks": attacks,
-        "ordinaryClientRequiredAccounting": True, "publicSkipEnabled": False,
+        "ordinaryClientRequiredAccounting": True, "publicSkipEnabled": True,
         "executableSha256": digest(Path(executable)), "scriptSha256": digest(Path(__file__)),
         "scope": "single TLS independent client; service required accounting and historical replay"},
         ensure_ascii=False, indent=2) + "\n", "utf-8")

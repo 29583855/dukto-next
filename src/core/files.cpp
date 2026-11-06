@@ -18,7 +18,7 @@
 #endif
 
 namespace dukto {
-// 日期：2026-11-05；已开放的保留双方、失败与覆盖共用严格解码，其他策略返回参数错误。
+// 日期：2026-11-06；四种公开策略共用严格解码，skip的必需能力由创建和客户端入口检查。
 ConflictPolicy checkedConflictPolicy(const QString &value) {
     if (value == "rename")
         return ConflictPolicy::Rename;
@@ -26,7 +26,9 @@ ConflictPolicy checkedConflictPolicy(const QString &value) {
         return ConflictPolicy::Fail;
     if (value == "overwrite")
         return ConflictPolicy::Overwrite;
-    throw Error(ExitCode::Config, QStringLiteral("冲突策略当前支持 rename、fail 或 overwrite"),
+    if (value == "skip")
+        return ConflictPolicy::Skip;
+    throw Error(ExitCode::Config, QStringLiteral("冲突策略支持 rename、fail、overwrite 或 skip"),
                 "arguments");
 }
 

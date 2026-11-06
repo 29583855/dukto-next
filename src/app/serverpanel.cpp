@@ -484,8 +484,9 @@ void ServerPanel::accept(const QJsonObject &event, int code) {
         for (auto item = event.begin(); item != event.end(); ++item)
             task_[item.key()] = item.value();
         if (event["state"] == "completed") {
-            // 日期：2026-11-05；单槽可能合并掉最后进度快照，最终持久确认仍须让接收数字与完成总量一致。
-            task_["receivedBytes"] = event.value("bytes");
+            // 日期：2026-11-06；新计量已有实际接收量，不能用包含跳过的逻辑完成量覆盖。
+            if (!event.contains("receivedBytes"))
+                task_["receivedBytes"] = event.value("bytes");
             task_["bytesPerSecond"] = 0;
             task_["etaSeconds"] = 0;
         }

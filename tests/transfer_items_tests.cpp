@@ -71,7 +71,7 @@ void changeSpec(QSqlDatabase database, const QString &table, quint64 id,
     execute(database, "UPDATE " + table + " SET spec=?" + (binding ? "" : " WHERE id=?"), values);
 }
 
-// 日期：2026-11-06；任务身份直接绑定已冻结清单，测试不依赖尚未开放的公开skip参数。
+// 日期：2026-11-06；任务身份直接绑定已冻结清单，测试不依赖公开客户端参数。
 dukto::TransferTask task(dukto::StrongManifest &manifest, const QString &state = "completed") {
     dukto::TransferTask value;
     value.id = Task;

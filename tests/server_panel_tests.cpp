@@ -81,6 +81,114 @@ class SlowTestProxy final : public QTcpServer {
 class ServerPanelTests final : public QObject {
     Q_OBJECT
   private slots:
+    // 日期：2026-11-06；真实QML选择skip并激活下载，验证全跳过计量、逐项文案及源删除后的面板重建恢复。
+    void publicSkipQml() {
+        QTemporaryDir temporary;
+        const auto shared = temporary.filePath("shared");
+        const auto output = temporary.filePath("output");
+        QVERIFY(QDir().mkpath(shared + "/目录"));
+        QVERIFY(QDir().mkpath(output + "/目录"));
+        QFile source(shared + "/目录/file.bin");
+        QVERIFY(source.open(QIODevice::WriteOnly));
+        QCOMPARE(source.write("source"), qint64(6));
+        source.close();
+        QFile original(output + "/目录/保留.txt");
+        QVERIFY(original.open(QIODevice::WriteOnly));
+        QCOMPARE(original.write("original"), qint64(8));
+        original.close();
+        const auto preserved = dukto::hashFile(original.fileName());
+        ServerPanel server(temporary.filePath("server"));
+        server.execute("init", {{"names", "127.0.0.1"}});
+        QTRY_VERIFY_WITH_TIMEOUT(!server.busy(), 30000);
+        const auto fingerprint = server.identity()["fingerprint"];
+        const QVariantMap rights{{"share", "data"},
+                                 {"path", shared},
+                                 {"upload", true},
+                                 {"download", true},
+                                 {"browse", true}};
+        server.execute("share-add", rights);
+        QTRY_VERIFY_WITH_TIMEOUT(!server.busy(), 30000);
+        server.execute("pairing", rights);
+        QTRY_VERIFY_WITH_TIMEOUT(!server.busy(), 30000);
+        const auto credential = server.outcome()["credentialFile"];
+        QTcpServer reservation;
+        QVERIFY(reservation.listen(QHostAddress::LocalHost, 0));
+        const auto port = reservation.serverPort();
+        reservation.close();
+        server.setServing(true, "127.0.0.1", port);
+        QVERIFY(server.serving());
+        const auto clientPath = temporary.filePath("client");
+        QString task;
+        {
+            ServerPanel client(clientPath);
+            client.execute("pair", {{"target", QString("127.0.0.1:%1").arg(port)},
+                                    {"fingerprint", fingerprint},
+                                    {"credentialFile", credential}});
+            QTRY_VERIFY_WITH_TIMEOUT(!client.busy(), 30000);
+            QVERIFY(!client.outcome()["client"].toString().isEmpty());
+            QQuickWidget view;
+            view.setResizeMode(QQuickWidget::SizeRootObjectToView);
+            view.resize(460, 800);
+            QSignalSpy warnings(view.engine(), &QQmlEngine::warnings);
+            QQmlComponent component(view.engine(), QUrl("qrc:/ui/ServerPage.qml"));
+            auto root = component.createWithInitialProperties(
+                {{"panel", QVariant::fromValue<QObject *>(&client)}});
+            QVERIFY2(root, qPrintable(component.errorString()));
+            view.setContent(QUrl("qrc:/ui/ServerPage.qml"), &component, root);
+            view.show();
+            auto policy = root->findChild<QObject *>("serverConflictPolicy");
+            QVERIFY(policy && policy->property("count").toInt() == 4);
+            policy->setProperty("currentIndex", 3);
+            root->findChild<QObject *>("serverShare")->setProperty("text", "data");
+            root->findChild<QObject *>("serverRemotePath")
+                ->setProperty("text", QStringLiteral("目录"));
+            root->findChild<QObject *>("serverOutput")->setProperty("text", output);
+            root->findChild<QObject *>("serverChannelCount")->setProperty("currentIndex", 2);
+            // 日期：2026-11-06；生产按钮的QML处理器读取实际控件选项，不能用测试直接传入skip绕过映射。
+            auto button = root->findChild<QObject *>("serverDownloadButton");
+            QVERIFY(button && button->property("enabled").toBool());
+            QVERIFY(QMetaObject::invokeMethod(button, "clicked"));
+            QTRY_VERIFY_WITH_TIMEOUT(!client.busy(), 30000);
+            QCOMPARE(client.task()["state"].toString(), QString("completed"));
+            QCOMPARE(client.task()["conflict"].toString(), QString("skip"));
+            QCOMPARE(client.task()["receivedBytes"].toString(), QString("0"));
+            QCOMPARE(client.task()["confirmedBytes"].toString(), QString("0"));
+            QCOMPARE(client.task()["copiedBytes"].toString(), QString("0"));
+            QCOMPARE(client.task()["skippedBytes"].toString(), QString("6"));
+            QCOMPARE(client.task()["skippedFiles"].toString(), QString("1"));
+            QCOMPARE(client.task()["skippedDirectories"].toString(), QString("1"));
+            task = client.task()["taskId"].toString();
+            auto label = root->findChild<QObject *>("serverTransferAccounting");
+            QVERIFY(label);
+            QVERIFY(label->property("text").toString().contains(QStringLiteral("跳过：6 B")));
+            QVERIFY(label->property("text").toString().contains(QStringLiteral("已校验落盘：0 B")));
+            QCOMPARE(root->findChild<QObject *>("serverByteProgress")->property("value").toDouble(),
+                     1.0);
+            QVERIFY(!QFile::exists(output + "/目录/file.bin"));
+            QCOMPARE(dukto::hashFile(original.fileName()), preserved);
+            client.execute("task-items", {{"taskId", task}, {"after", "0"}});
+            QTRY_VERIFY_WITH_TIMEOUT(!client.controlBusy(), 30000);
+            const auto entries = client.itemPage()["entries"].toList();
+            QCOMPARE(entries.size(), 2);
+            for (const auto &entry : entries)
+                QCOMPARE(entry.toMap()["disposition"].toString(), QString("skipped"));
+            QVERIFY(warnings.isEmpty());
+        }
+        QVERIFY(QDir(shared + "/目录").removeRecursively());
+        {
+            ServerPanel restarted(clientPath);
+            restarted.execute("resume", {{"taskId", task}, {"channels", "16"}, {"output", output}});
+            QTRY_VERIFY_WITH_TIMEOUT(!restarted.busy(), 30000);
+            QVERIFY2(restarted.task()["state"].toString() == "completed",
+                     qPrintable(restarted.status()));
+            QCOMPARE(restarted.task()["taskId"].toString(), task);
+            QCOMPARE(restarted.task()["receivedBytes"].toString(), QString("0"));
+            QCOMPARE(restarted.task()["skippedBytes"].toString(), QString("6"));
+        }
+        QCOMPARE(dukto::hashFile(original.fileName()), preserved);
+        server.setServing(false, "127.0.0.1", port);
+    }
+
     // 日期：2026-11-06；真实TLS上传后重建GUI面板，继续原请求不重扫新增项，复制源变化仍拒绝。
     void uploadManifestAcrossPanelRestart() {
         QTemporaryDir temporary;

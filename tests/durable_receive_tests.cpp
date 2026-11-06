@@ -464,13 +464,14 @@ class DurableReceiveTests final : public QObject {
             dukto::Error);
     }
 
-    // 日期：2026-11-05；未知值不能隐式保留双方，未开放的跳过仍明确报参数错误。
+    // 日期：2026-11-06；四种公开策略严格解析；大小写及未知值不能隐式改变原选择。
     void conflictPolicyStrictDecode() {
         QVERIFY(dukto::checkedConflictPolicy("rename") == dukto::ConflictPolicy::Rename);
         QVERIFY(dukto::checkedConflictPolicy("fail") == dukto::ConflictPolicy::Fail);
         QVERIFY(dukto::checkedConflictPolicy("overwrite") == dukto::ConflictPolicy::Overwrite);
+        QCOMPARE(dukto::checkedConflictPolicy("skip"), dukto::ConflictPolicy::Skip);
         QCOMPARE(dukto::conflictPolicyName(dukto::ConflictPolicy::Overwrite), QString("overwrite"));
-        for (const auto &text : QStringList{"", "Fail", "skip", "Overwrite", "keep-both"})
+        for (const auto &text : QStringList{"", "Fail", "Skip", "Overwrite", "keep-both"})
             QVERIFY_EXCEPTION_THROWN(dukto::checkedConflictPolicy(text), dukto::Error);
         QVERIFY_EXCEPTION_THROWN(dukto::conflictPolicyName(static_cast<dukto::ConflictPolicy>(99)),
                                  dukto::Error);
