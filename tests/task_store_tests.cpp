@@ -2,6 +2,7 @@
 #include "core/protocol.h"
 #include "core/strongmanifest.h"
 #include "core/taskstore.h"
+#include "core/transferaccounting.h"
 
 #include <QSqlQuery>
 #include <QTemporaryDir>
@@ -100,6 +101,196 @@ QJsonObject initialAccounting() {
 class TaskStoreTests final : public QObject {
     Q_OBJECT
   private slots:
+
+    // 日期：2026-11-06；四种内部处置都需绑定同一版本三计量契约，默认公开解析器仍拒绝skip。
+    void accountingContract_data() {
+        QTest::addColumn<QString>("policy");
+        for (const auto &name : QStringList{"rename", "fail", "overwrite", "skip"})
+            QTest::newRow(qPrintable(name)) << name;
+    }
+
+    // 日期：2026-11-06；创建摘要绑定计量模式，完成后重开可核对；零字节目录仍须明确归结。
+    void accountingContract() {
+        QFETCH(QString, policy);
+        const auto conflict =
+            policy == "skip" ? dukto::ConflictPolicy::Skip : dukto::checkedConflictPolicy(policy);
+        QTemporaryDir root;
+        dukto::PrivateStore store(root.filePath("private"), true);
+        const auto owner = QUuid::createUuid();
+        const auto request = QUuid::createUuid();
+        QUuid id;
+        QJsonObject completed;
+        {
+            dukto::TaskStore tasks(store);
+            auto task = tasks.create(owner, request, "download", "docs", "file", root.path(), {},
+                                     conflict, true);
+            id = task.id;
+            QVERIFY(task.accountingRequired);
+            QVERIFY(task.accounting.isEmpty());
+            QCOMPARE(task.publicInfo()["accountingVersion"], QJsonValue(1));
+            QCOMPARE(tasks
+                         .create(owner, request, "download", "docs", "file", root.path(), {},
+                                 conflict, true)
+                         .id,
+                     id);
+            QVERIFY_EXCEPTION_THROWN(
+                tasks.create(owner, request, "download", "docs", "file", root.path(), {}, conflict),
+                dukto::Error);
+            if (conflict == dukto::ConflictPolicy::Skip) {
+                QVERIFY_EXCEPTION_THROWN(dukto::checkedConflictPolicy("skip"), dukto::Error);
+            } else {
+                const auto legacyRequest = QUuid::createUuid();
+                tasks.create(owner, legacyRequest, "download", "docs", "file", root.path(), {},
+                             conflict);
+                QVERIFY_EXCEPTION_THROWN(tasks.create(owner, legacyRequest, "download", "docs",
+                                                      "file", root.path(), {}, conflict, true),
+                                         dukto::Error);
+            }
+            auto lease = tasks.acquire(owner, id);
+            task = tasks.bindManifest(*lease, summary(QByteArray(32, 'x')));
+            QVERIFY(!task.accounting.isEmpty());
+            QCOMPARE(task.accounting["bytes"], QJsonValue("0"));
+            task = tasks.advance(*lease, task.revision, "transferring", 0);
+            QVERIFY_EXCEPTION_THROWN(tasks.advance(*lease, task.revision, "transferring", 1),
+                                     dukto::Error);
+            QVERIFY_EXCEPTION_THROWN(tasks.advance(*lease, task.revision, "verifying", 3),
+                                     dukto::Error);
+            auto snapshot = initialAccounting();
+            if (conflict == dukto::ConflictPolicy::Skip) {
+                snapshot["bytes"] = "0";
+                snapshot["confirmed"] = "0";
+                snapshot["skippedBytes"] = "3";
+                snapshot["skippedFiles"] = "1";
+            } else {
+                snapshot["bytes"] = "3";
+                snapshot["confirmed"] = "3";
+                snapshot["copiedBytes"] = "3";
+                snapshot["copiedFiles"] = "1";
+            }
+            task = tasks.recordAccounting(*lease, task.revision, snapshot);
+            QCOMPARE(task.processed, qint64(3));
+            QVERIFY_EXCEPTION_THROWN(tasks.advance(*lease, task.revision, "verifying", 3),
+                                     dukto::Error);
+            snapshot[conflict == dukto::ConflictPolicy::Skip ? "skippedDirectories"
+                                                             : "copiedDirectories"] = "1";
+            task = tasks.recordAccounting(*lease, task.revision, snapshot);
+            task = tasks.advance(*lease, task.revision, "verifying", 3);
+            task = tasks.advance(*lease, task.revision, "committing", 3);
+            task = tasks.advance(*lease, task.revision, "completed", 3);
+            completed = task.publicInfo();
+            QCOMPARE(completed["copiedBytes"],
+                     QJsonValue(conflict == dukto::ConflictPolicy::Skip ? "0" : "3"));
+            QCOMPARE(completed["skippedBytes"],
+                     QJsonValue(conflict == dukto::ConflictPolicy::Skip ? "3" : "0"));
+            QCOMPARE(completed["receivedBytes"],
+                     QJsonValue(conflict == dukto::ConflictPolicy::Skip ? "0" : "3"));
+            QCOMPARE(completed["handledBytes"], QJsonValue("3"));
+        }
+        dukto::TaskStore reopened(store);
+        QCOMPARE(reopened.task(owner, id).publicInfo(), completed);
+        QCOMPARE(
+            reopened
+                .create(owner, request, "download", "docs", "file", root.path(), {}, conflict, true)
+                .publicInfo(),
+            completed);
+    }
+
+    // 日期：2026-11-06；暂停后的checking保留必需零快照，不能清空成可降级的旧任务格式。
+    void requiredAccountingReset() {
+        QTemporaryDir root;
+        dukto::PrivateStore store(root.filePath("private"), true);
+        dukto::TaskStore tasks(store);
+        const auto owner = QUuid::createUuid();
+        auto task = tasks.create(owner, QUuid::createUuid(), "download", "docs", "file",
+                                 root.path(), {}, dukto::ConflictPolicy::Skip, true);
+        auto lease = tasks.acquire(owner, task.id);
+        task = tasks.bindManifest(*lease, summary(QByteArray(32, 'x')));
+        task = tasks.advance(*lease, task.revision, "transferring", 0);
+        auto snapshot = initialAccounting();
+        snapshot["bytes"] = "0";
+        snapshot["confirmed"] = "0";
+        snapshot["skippedBytes"] = "3";
+        snapshot["skippedFiles"] = "1";
+        task = tasks.recordAccounting(*lease, task.revision, snapshot);
+        task = tasks.requestStop(owner, task.id, true);
+        task = tasks.advance(*lease, task.revision, "pausing", 3);
+        task = tasks.advance(*lease, task.revision, "paused", 3);
+        task = tasks.advance(*lease, task.revision, "checking", 0);
+        QVERIFY(task.accountingRequired);
+        QCOMPARE(task.accounting, dukto::TransferAccounting(3, 2).snapshot());
+        task = tasks.advance(*lease, task.revision, "transferring", 0);
+        QVERIFY_EXCEPTION_THROWN(tasks.advance(*lease, task.revision, "verifying", 3),
+                                 dukto::Error);
+        task = tasks.recordAccounting(*lease, task.revision, snapshot);
+        QCOMPARE(task.publicInfo()["copiedBytes"], QJsonValue("0"));
+        QCOMPARE(task.publicInfo()["receivedBytes"], QJsonValue("0"));
+    }
+
+    // 日期：2026-11-06；显式任务必需计量被删除、伪造或未绑定就出现时拒绝查询及翻页。
+    void damagedContract_data() {
+        QTest::addColumn<int>("attack");
+        const char *names[] = {"missing-bound",
+                               "unbound-accounting",
+                               "missing-progress-contract",
+                               "unknown-progress-contract",
+                               "extra-contract-field",
+                               "unknown-policy"};
+        for (int i = 0; i < int(sizeof(names) / sizeof(names[0])); ++i)
+            QTest::newRow(names[i]) << i;
+    }
+
+    // 日期：2026-11-06；重算损坏参数摘要以单独测试版本契约，不能只因hash不匹配而形成假阳性。
+    void damagedContract() {
+        QFETCH(int, attack);
+        QTemporaryDir root;
+        dukto::PrivateStore store(root.filePath("private"), true);
+        const auto owner = QUuid::createUuid();
+        QUuid id;
+        {
+            dukto::TaskStore tasks(store);
+            auto task = tasks.create(owner, QUuid::createUuid(), "download", "docs", "file",
+                                     root.path(), {}, dukto::ConflictPolicy::Skip, true);
+            id = task.id;
+            if (attack != 1) {
+                auto lease = tasks.acquire(owner, id);
+                tasks.bindManifest(*lease, summary(QByteArray(32, 'x')));
+            }
+        }
+        withDatabase(store, [&](QSqlDatabase database) {
+            // 日期：2026-11-06；只修改自有SQLite样本并重算参数摘要，严格验证契约自身字段。
+            QSqlQuery query(database);
+            if (attack == 0) {
+                QVERIFY(query.exec("UPDATE tasks SET accounting=X''"));
+                return;
+            }
+            if (attack == 1) {
+                query.prepare("UPDATE tasks SET accounting=?");
+                query.addBindValue(dukto::next::encodeControl(initialAccounting()));
+                QVERIFY(query.exec());
+                return;
+            }
+            QVERIFY(query.exec("SELECT spec FROM tasks"));
+            QVERIFY(query.next());
+            auto spec = dukto::next::parseControl(query.value(0).toByteArray());
+            query.finish();
+            if (attack == 2)
+                spec.remove("progress");
+            if (attack == 3)
+                spec["progress"] = "unknown";
+            if (attack == 4)
+                spec["unknown"] = true;
+            if (attack == 5)
+                spec["conflict"] = "unknown";
+            const auto bytes = dukto::next::encodeControl(spec);
+            query.prepare("UPDATE tasks SET spec=?,requesthash=?");
+            query.addBindValue(bytes);
+            query.addBindValue(QCryptographicHash::hash(bytes, QCryptographicHash::Sha256));
+            QVERIFY(query.exec());
+        });
+        dukto::TaskStore reopened(store);
+        QVERIFY_EXCEPTION_THROWN(reopened.task(owner, id), dukto::Error);
+        QVERIFY_EXCEPTION_THROWN(reopened.page(owner), dukto::Error);
+    }
 
     // 日期：2026-11-06；真实旧架构升级后任务身份、摘要、修订和完成结果逐字段保持，新增任务仍可分页。
     void versionOneMigration() {

@@ -136,7 +136,7 @@ TransferAccounting checkedAccounting(const TransferTask &task, const QJsonObject
 // 日期：2026-11-06；总字节到达不代表条目已提交；显式计量必须归结全部空文件及目录后才进入终阶段。
 bool accountingComplete(const TransferTask &task) {
     if (task.accounting.isEmpty())
-        return true;
+        return !task.accountingRequired;
     const auto &value = task.accounting;
     return value["copiedFiles"].toString().toULongLong() +
                value["copiedDirectories"].toString().toULongLong() +
@@ -145,14 +145,17 @@ bool accountingComplete(const TransferTask &task) {
            static_cast<quint64>(task.entries);
 }
 
-// 日期：2026-11-06；旧策略规范保持，新增计量列重新核对守恒、任务处理量及完成条目数量。
+// 日期：2026-11-06；旧规范保持；版本三任务必须具备绑定计量，丢失或降级证据一律拒绝。
 TransferTask row(const QSqlQuery &query) {
     const auto encoded = query.value(3).toByteArray();
     const auto spec = next::parseControl(encoded);
     const bool keepBoth = spec["version"] == 1 && spec["conflict"] == "keep-both";
     const bool failConflict = spec["version"] == 2 && spec["conflict"] == "fail";
     const bool overwriteConflict = spec["version"] == 2 && spec["conflict"] == "overwrite";
-    if ((!keepBoth && !failConflict && !overwriteConflict) ||
+    const bool explicitAccounting =
+        spec["version"] == 3 && spec.size() == 8 && spec["progress"] == "disposition-v1" &&
+        QStringList{"rename", "fail", "overwrite", "skip"}.contains(spec["conflict"].toString());
+    if ((!keepBoth && !failConflict && !overwriteConflict && !explicitAccounting) ||
         query.value(13).toByteArray() !=
             QCryptographicHash::hash(encoded, QCryptographicHash::Sha256))
         throw Error(ExitCode::Integrity, QStringLiteral("任务创建参数摘要已损坏"), "task");
@@ -164,8 +167,10 @@ TransferTask row(const QSqlQuery &query) {
                         query.value(7).toByteArray(),     query.value(8).toLongLong(),
                         query.value(9).toLongLong(),      query.value(10).toLongLong(),
                         query.value(11).toInt(),          query.value(12).toString()};
-    result.conflict =
-        keepBoth ? ConflictPolicy::Rename : checkedConflictPolicy(spec["conflict"].toString());
+    result.accountingRequired = explicitAccounting;
+    result.conflict = explicitAccounting && spec["conflict"] == "skip" ? ConflictPolicy::Skip
+                      : keepBoth ? ConflictPolicy::Rename
+                                 : checkedConflictPolicy(spec["conflict"].toString());
     const QStringList states{"scanning",  "queued",    "transferring", "pausing",   "paused",
                              "checking",  "verifying", "committing",   "completed", "cancelling",
                              "cancelled", "failed",    "interrupted"};
@@ -183,6 +188,9 @@ TransferTask row(const QSqlQuery &query) {
          (result.manifest.isEmpty() || !result.entries || result.processed != result.total)))
         throw Error(ExitCode::Integrity, QStringLiteral("持久任务记录已损坏"), "task");
     const auto accounting = query.value(14).toByteArray();
+    if (result.accountingRequired && ((result.manifest.isEmpty() && !accounting.isEmpty()) ||
+                                      (!result.manifest.isEmpty() && accounting.isEmpty())))
+        throw Error(ExitCode::Integrity, QStringLiteral("任务必需计量证据缺失或未绑定"), "task");
     if (!accounting.isEmpty()) {
         result.accounting = next::parseControl(accounting);
         const auto meter = checkedAccounting(result, result.accounting);
@@ -199,7 +207,7 @@ TransferTask row(const QSqlQuery &query) {
 }
 } // namespace
 
-// 日期：2026-11-06；旧任务公开格式保持；已计量任务另列复制/跳过/实际接收，均不输出本地根。
+// 日期：2026-11-06；旧格式保持；版本三另列计量版本及实际复制/跳过/接收，不输出本地根。
 QJsonObject TransferTask::publicInfo() const {
     QJsonObject result{{"taskId", id.toString(QUuid::WithoutBraces)},
                        {"requestId", request.toString(QUuid::WithoutBraces)},
@@ -217,6 +225,8 @@ QJsonObject TransferTask::publicInfo() const {
                        {"message", message}};
     if (conflict != ConflictPolicy::Rename)
         result["conflict"] = conflictPolicyName(conflict);
+    if (accountingRequired)
+        result["accountingVersion"] = 1;
     if (!accounting.isEmpty()) {
         for (const auto &key :
              QStringList{"copiedBytes", "skippedBytes", "discardedBytes", "copiedFiles",
@@ -300,10 +310,11 @@ TaskStore::~TaskStore() {
     QSqlDatabase::removeDatabase(connection_);
 }
 
-// 日期：2026-11-06；仅已开放策略可创建任务，显式列名兼容架构迁移；旧创建摘要及幂等键保持。
+// 日期：2026-11-06；内部显式处置任务绑定版本三与计量契约，默认仍拒绝skip且保持旧幂等规范。
 TransferTask TaskStore::create(const QUuid &owner, const QUuid &request, const QString &direction,
                                const QString &share, const QString &relative, const QString &root,
-                               const QByteArray &uploadManifest, ConflictPolicy conflict) {
+                               const QByteArray &uploadManifest, ConflictPolicy conflict,
+                               bool dispositionAccounting) {
     const auto ownerId = uuid(owner);
     const auto requestId = uuid(request);
     validateShareName(share);
@@ -313,16 +324,22 @@ TransferTask TaskStore::create(const QUuid &owner, const QUuid &request, const Q
         (direction == "upload" && uploadManifest.size() != 32) ||
         (direction == "download" && !uploadManifest.isEmpty()))
         throw Error(ExitCode::Config, QStringLiteral("任务创建参数或上传内容身份无效"), "task");
-    checkedConflictPolicy(conflictPolicyName(conflict));
-    const auto spec = next::encodeControl(
-        {{"version", conflict == ConflictPolicy::Rename ? 1 : 2},
-         {"direction", direction},
-         {"share", share},
-         {"path", relative},
-         {"root", QDir::cleanPath(root)},
-         {"uploadManifest", QString::fromLatin1(uploadManifest.toHex())},
-         {"conflict",
-          conflict == ConflictPolicy::Rename ? "keep-both" : conflictPolicyName(conflict)}});
+    if (!dispositionAccounting || conflict != ConflictPolicy::Skip)
+        checkedConflictPolicy(conflictPolicyName(conflict));
+    QJsonObject creation{{"version", dispositionAccounting                ? 3
+                                     : conflict == ConflictPolicy::Rename ? 1
+                                                                          : 2},
+                         {"direction", direction},
+                         {"share", share},
+                         {"path", relative},
+                         {"root", QDir::cleanPath(root)},
+                         {"uploadManifest", QString::fromLatin1(uploadManifest.toHex())},
+                         {"conflict", !dispositionAccounting && conflict == ConflictPolicy::Rename
+                                          ? "keep-both"
+                                          : conflictPolicyName(conflict)}};
+    if (dispositionAccounting)
+        creation["progress"] = "disposition-v1";
+    const auto spec = next::encodeControl(creation);
     const auto hash = QCryptographicHash::hash(spec, QCryptographicHash::Sha256);
     Transaction transaction(database_);
     QSqlQuery previous(database_);
@@ -460,7 +477,7 @@ void TaskStore::save(const TransferTask &task) const {
         throw Error(ExitCode::Integrity, QStringLiteral("任务更新未持久应用"), "task");
 }
 
-// 日期：2026-11-04；上传还须与创建时强身份一致，下载首次扫描绑定后确认重试不重新扫描。
+// 日期：2026-11-06；首次绑定强清单时为版本三初始化必需零计量，上传仍校验创建时身份。
 TransferTask TaskStore::bindManifest(const TaskLease &lease, const QJsonObject &summary) {
     verifyLease(lease);
     const auto sha = QByteArray::fromHex(summary["sha256"].toString().toLatin1());
@@ -492,6 +509,9 @@ TransferTask TaskStore::bindManifest(const TaskLease &lease, const QJsonObject &
         current.manifest = sha;
         current.total = total;
         current.entries = entries;
+        if (current.accountingRequired)
+            current.accounting =
+                TransferAccounting(total, static_cast<quint64>(entries)).snapshot();
         current.state = "queued";
         ++current.revision;
         save(current);
@@ -500,7 +520,7 @@ TransferTask TaskStore::bindManifest(const TaskLease &lease, const QJsonObject &
     return current;
 }
 
-// 日期：2026-11-06；显式计量任务禁止独立篡改逻辑进度，全部条目归结后才可提交；checking清零重验。
+// 日期：2026-11-06；显式任务禁止数字进度绕过计量；checking将必需快照归零，全部条目归结才可提交。
 TransferTask TaskStore::advance(const TaskLease &lease, quint64 revision, const QString &state,
                                 qint64 processed, int error, const QString &message) {
     verifyLease(lease);
@@ -526,7 +546,9 @@ TransferTask TaskStore::advance(const TaskLease &lease, quint64 revision, const 
         if (state == "checking") {
             if (processed != 0)
                 throw Error(ExitCode::Config, QStringLiteral("重新核验必须清零本轮计量"), "task");
-            current.accounting = {};
+            current.accounting = current.accountingRequired
+                                     ? TransferAccounting(current.total, current.entries).snapshot()
+                                     : QJsonObject{};
         } else if (processed != current.processed ||
                    ((state == "verifying" || state == "committing" || state == "completed") &&
                     !accountingComplete(current))) {

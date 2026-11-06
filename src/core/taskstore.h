@@ -29,6 +29,7 @@ struct TransferTask {
     QString message;
     ConflictPolicy conflict = ConflictPolicy::Rename;
     QJsonObject accounting = {};
+    bool accountingRequired = false;
     // 日期：2026-11-06；公开结果可包含显式计量，不含本地根/凭据/源绝对路径，64位值使用字符串。
     QJsonObject publicInfo() const;
 };
@@ -58,11 +59,12 @@ class TaskStore final {
     ~TaskStore();
     TaskStore(const TaskStore &) = delete;
     TaskStore &operator=(const TaskStore &) = delete;
-    // 日期：2026-11-06；显式列名创建兼容迁移；请求摘要仍绑定原策略，相同请求更改策略拒绝。
+    // 日期：2026-11-06；默认保持旧规范；内部显式处置任务使用版本三绑定必需计量，不开放公共skip解析器。
     TransferTask create(const QUuid &owner, const QUuid &request, const QString &direction,
                         const QString &share, const QString &relative, const QString &root,
                         const QByteArray &uploadManifest = {},
-                        ConflictPolicy conflict = ConflictPolicy::Rename);
+                        ConflictPolicy conflict = ConflictPolicy::Rename,
+                        bool dispositionAccounting = false);
     // 日期：2026-11-04；任务查询强制所属主体，不能通过猜测其他任务 UUID 取得状态或路径。
     TransferTask task(const QUuid &owner, const QUuid &id) const;
     // 日期：2026-11-06；按主体及稳定rowid分页，计量列参与帧预算；最多100条，不加载全部任务。
