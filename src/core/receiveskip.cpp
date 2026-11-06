@@ -33,7 +33,7 @@ QJsonObject checkedDecision(const StrongEntry &entry, const QByteArray &source,
 
 // 日期：2026-11-06；活动接收及只读快照共用父项和连续前置验证，不递归驻留目录树。
 QJsonObject ReceiveSkipProof::decision(quint64 file) const {
-    const auto entry = manifest_.entry(file);
+    const auto entry = entry_(file);
     QSqlQuery query(database_);
     query.prepare("SELECT substr(CAST(source AS BLOB),1,4097),substr(spec,1,65537) "
                   "FROM skip_decisions WHERE id=?");
@@ -59,7 +59,7 @@ QJsonObject ReceiveSkipProof::decision(quint64 file) const {
     if (!query.next() || query.value(0).toLongLong() <= 0 || query.value(0).toULongLong() >= file)
         throw Error(ExitCode::Integrity, QStringLiteral("接收决定缺少前置父目录"), "receive");
     const auto parentId = query.value(0).toULongLong();
-    const auto parentEntry = manifest_.entry(parentId);
+    const auto parentEntry = entry_(parentId);
     const auto parent =
         applyFinal(parentEntry, checkedDecision(parentEntry, query.value(1).toByteArray(),
                                                 query.value(2).toByteArray()));

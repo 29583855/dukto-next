@@ -33,7 +33,7 @@ QJsonObject ReceiveSkipProof::finalDecision(quint64 file) const {
     }
     const auto bytes = query.value(0).toByteArray();
     const auto cleaned = query.value(1).toString();
-    const auto entry = manifest_.entry(file);
+    const auto entry = entry_(file);
     const auto value = next::parseControl(bytes);
     const auto temporary = value["temporary"].toString();
     const auto native = value["temporaryNative"].toString();

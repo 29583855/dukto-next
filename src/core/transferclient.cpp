@@ -605,22 +605,9 @@ QJsonObject RemoteClient::items(const QUuid &id, PrivateStore &local, quint64 af
     for (const auto &value : result["entries"].toArray()) {
         const auto entry = value.toObject();
         const auto sequence = next::decimal(entry["id"], task.entries);
-        const auto bytes = next::decimal(entry["bytes"], std::numeric_limits<qint64>::max());
-        const auto confirmed = next::decimal(entry["confirmedBytes"], bytes);
-        const auto hash = QByteArray::fromHex(entry["sha256"].toString().toLatin1());
-        if (sequence != previous + 1 ||
-            !QStringList{"not-executed", "planned", "receiving", "committing", "copied"}.contains(
-                entry["disposition"].toString()) ||
-            (entry["type"] != "file" && entry["type"] != "directory") ||
-            !entry["target"].isString() ||
-            (entry["type"] == "directory" ? bytes || confirmed || !hash.isEmpty()
-                                          : hash.size() != 32) ||
-            entry["sha256"] != QString::fromLatin1(hash.toHex()) ||
-            (entry["disposition"] == "copied" && confirmed != bytes))
-            throw Error(ExitCode::Integrity, QStringLiteral("逐项查询条目无效"), "items");
-        validateRelativePath(entry["path"].toString());
-        if (!entry["target"].toString().isEmpty())
-            validateRelativePath(entry["target"].toString());
+        if (sequence != previous + 1)
+            throw Error(ExitCode::Integrity, QStringLiteral("逐项查询序号不连续"), "items");
+        validateTransferItem(entry, task.conflict, sequence);
         if (failureFields || entry.contains("lastFailure"))
             validateItemFailure(entry, result["failureEvidenceAvailable"].toBool());
         previous = sequence;
