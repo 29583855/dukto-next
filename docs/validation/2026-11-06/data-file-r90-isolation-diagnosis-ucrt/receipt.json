@@ -1,0 +1,37 @@
+{
+  "sourceCommit": "effd3115e95e696077a13038f3bb0616362eac5d",
+  "binarySha256": "9f35cb9c3d66a1fc44d825b51bbe1a693bdacc0986ac454cbf6c11db171a4184",
+  "originalTest": {
+    "path": "tests/parallel_isolation_integration.py",
+    "sha256": "69b635ad132eb96f63d9ef86e4a7305c8c5dd1700490fe036ec59b10000ad4a8"
+  },
+  "diagnosticDriver": {
+    "path": "docs/validation/2026-11-06/data-file-r90-isolation-diagnosis-ucrt/diagnostic-driver.py",
+    "sha256": "beda6aac2d4e5092bdc15a0bc59d14bb9e6dd480b82747d794f35fef09d865cb"
+  },
+  "observations": {
+    "path": "docs/validation/2026-11-06/data-file-r90-isolation-diagnosis-ucrt/diagnosis.json",
+    "sha256": "cb2c9d8e0491e164c4bcd64e1e60988233c527666c39b8e676e92f78adcd9db5"
+  },
+  "originalAssertionsUnchanged": true,
+  "diagnosticOriginalTestPassed": true,
+  "initialThreads": 6,
+  "peakThreads": 7,
+  "finalThreads": 5,
+  "additionalThreadStarts": [
+    {
+      "id": 47380,
+      "startModule": "ntdll.dll",
+      "moduleOffset": "0x24990"
+    },
+    {
+      "id": 41028,
+      "startModule": "ntdll.dll",
+      "moduleOffset": "0x24990"
+    }
+  ],
+  "platform": "Windows-11-10.0.26200-SP0",
+  "ntdllSha256": "651ac9041af8e6b5ebd331d53163244c0a27d36d1433f0f15cac1f28c5f2e82c",
+  "originalFailedInstanceRootCauseProven": false,
+  "firstFailureRetained": true
+}
