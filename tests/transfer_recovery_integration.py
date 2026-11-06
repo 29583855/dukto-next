@@ -2,6 +2,7 @@
 
 import argparse
 from contextlib import closing
+from collections import deque
 import json
 import math
 import os
@@ -119,6 +120,7 @@ class TransferProcess:
     # 日期：2026-11-04；异步逐行读取客户端事件，避免管道占满，也不在内存积累数据正文。
     def __init__(self, executable, state, arguments):
         self.events = queue.Queue()
+        self.recent = deque(maxlen=32)
         self.process = subprocess.Popen([executable, *arguments, "--state-directory", str(state), "--json"],
                                         stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
         self.reader = threading.Thread(target=self.read, daemon=True)
@@ -127,7 +129,9 @@ class TransferProcess:
     # 日期：2026-11-04；测试样本仅少量事件，结束哨兵允许明确判断进程提前退出。
     def read(self):
         for line in self.process.stdout:
-            self.events.put(json.loads(line))
+            event = json.loads(line)
+            self.recent.append(event)
+            self.events.put(event)
         self.events.put(None)
 
     # 日期：2026-11-05；就绪等待独立于暂停时限；慢 CPU 的强清单扫描允许调用方显式增加预算，超时保留有界诊断。
@@ -143,6 +147,15 @@ class TransferProcess:
             recent = (recent + [event])[-16:]
             if event.get("state") == "transferring":
                 return event["taskId"]
+
+    # 日期：2026-11-06；活动进程不阻塞读取stderr；退出后只保留最后32个事件及8KiB错误。
+    def diagnostics(self):
+        code = self.process.poll()
+        error = None
+        if code is not None:
+            self.reader.join(3)
+            error = self.process.stderr.read(8192)
+        return {"exitCode": code, "lastEvents": list(self.recent.copy()), "stderr": error}
 
     # 日期：2026-11-04；强制退出只作用于本测试创建的客户端，并验证没有伪造批次完成事件。
     def finish(self, kill=False):
@@ -194,6 +207,27 @@ def wait_state(executable, state, task, expected):
             return result
         time.sleep(0.05)
     raise AssertionError(result)
+
+
+# 日期：2026-11-06；诊断只读接收库，最多32行及固定字段；异常不能覆盖原始恢复失败。
+def receive_diagnostics(state, task):
+    if state is None or task is None:
+        return None
+    log = state / f"receive-{task}.sqlite"
+    if not log.is_file():
+        return {"available": False}
+    try:
+        with closing(sqlite3.connect(f"{log.as_uri()}?mode=ro", uri=True, timeout=0.1)) as database:
+            database.row_factory = sqlite3.Row
+            columns = [row[1] for row in database.execute("PRAGMA table_info(files)")]
+            selected = [name for name in ("id", "file", "path", "relative", "target", "bytes", "confirmed", "state", "status")
+                        if name in columns]
+            if not selected:
+                return {"available": True, "columns": columns[:32]}
+            rows = database.execute("SELECT " + ",".join(selected) + " FROM files LIMIT 32").fetchall()
+            return {"available": True, "files": [dict(row) for row in rows]}
+    except sqlite3.Error as error:
+        return {"available": True, "error": str(error)[:1024]}
 
 
 # 日期：2026-11-05；隔离真实故障与恢复，服务输出持续排空，不能让测试管道伪造管理连接超时。
@@ -257,6 +291,7 @@ def main():
         process = None
         active = None
         server_outputs = []
+        direction = fault = task = receive_state = gate = None
 
         # 日期：2026-11-05；重启沿用身份/目录/端口，监听后持续读取故障关闭事件并保持有界内存。
         def start_server():
@@ -401,6 +436,26 @@ def main():
             run(executable, root / "other", ["task", "--task", task], 4)
             run(executable, server_state, ["serve", "grant", "--client", paired["client"], "--share", "data", "--allow-browse"])
             run(executable, client_state, ["task", "--task", task], 4)
+        except BaseException as error:
+            # 日期：2026-11-06；原件和接收日志在临时目录清理前核验，不把密文额度冒充持久字节。
+            diagnostic = {
+                "date": "2026-11-06", "passed": False, "assertion": repr(error),
+                "direction": direction, "fault": fault, "taskId": task,
+                "conflictPolicy": args.on_conflict, "channelsRequested": args.threads,
+                "checkpointBytesRequired": checkpoint, "checkpointPercentRequested": args.checkpoint_percent,
+                "resumeBudgetSeconds": args.resume_timeout, "readyBudgetSeconds": args.ready_timeout,
+                "completedCases": cases, "binarySha256": binary_sha, "scriptSha256": script_sha,
+                "client": active.diagnostics() if active else None,
+                "serviceExitCode": process.poll() if process else None,
+                "serviceLastEvents": [list(output.recent.copy()) for output in server_outputs[-2:]],
+                "receive": receive_diagnostics(receive_state, task),
+                "checkpointBarrier": gate.evidence() if gate else None,
+            }
+            failure = Path(args.report).with_name(Path(args.report).stem + "-failure.json")
+            failure.parent.mkdir(parents=True, exist_ok=True)
+            with failure.open("x", encoding="utf-8") as output:
+                output.write(json.dumps(diagnostic, ensure_ascii=False, indent=2) + "\n")
+            raise
         finally:
             try:
                 if active and active.process.poll() is None:
