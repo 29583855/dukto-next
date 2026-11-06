@@ -1,7 +1,7 @@
 {
-  "observedUtc": "2026-11-06T19:45:01.455246+00:00",
-  "productionCommit": "a316e4a4f947ac9a53aa6dd4477eb5b8e2a7fb38",
-  "testCommit": "a316e4a4f947ac9a53aa6dd4477eb5b8e2a7fb38",
+  "observedUtc": "2026-11-06T19:58:23.209480+00:00",
+  "productionCommit": "ed4f5cf08c96f04671e49e5138eda8ce1790ead3",
+  "testCommit": "ed4f5cf08c96f04671e49e5138eda8ce1790ead3",
   "packages": [
     {
       "applicationSourceFiles": 329,
@@ -224,7 +224,7 @@
   "releaseQualified": false,
   "deliveryComplete": false,
   "planVersion": "v0.100",
-  "currentSourceStage": "R100 clipboard availability cache qualified on Windows; R98 independent Ubuntu clean build verified; full native latest GUI and delivery remain pending",
+  "currentSourceStage": "R100 published; both macOS GUI/CLI compilation outputs verified; complete native regression pending; independent R98 Ubuntu soak started after 20 rounds",
   "nativeMusl": {
     "sourceCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
     "productionCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
@@ -17576,7 +17576,7 @@
       "sha256": "872c369563c6beb92b4421968bdf88a82f6621aae9bcad048f3a3fe316c7c56a"
     }
   },
-  "currentSourceCommit": "b2e4659b347c65eef24c8e568e07e96a2d6ff2d7",
+  "currentSourceCommit": "ed4f5cf08c96f04671e49e5138eda8ce1790ead3",
   "productionImplementationUnchangedFrom": "88f33b2c83f2950307c362fb64c693f7e9e5929d",
   "nativeRegressionGuardR98": {
     "date": "2026-11-07",
@@ -19601,7 +19601,7 @@
       "sha256": "2d47b3a4c961cc33620e3cf78912ff078accd2c3445cdd41cabb39cf8d4ca377"
     }
   },
-  "currentGuiSourceCommitPending": true,
+  "currentGuiSourceCommitPending": false,
   "coreProductionCommit": "88f33b2c83f2950307c362fb64c693f7e9e5929d",
   "linuxPreviewR98": {
     "sourceCommit": "b2e4659b347c65eef24c8e568e07e96a2d6ff2d7",
@@ -19742,13 +19742,97 @@
   "clipboardAvailabilityR100": {
     "manifest": {
       "path": "docs/ci-verification-20261107-r100.json",
-      "sha256": "48100f84f9f5eeec42b87ede53f5a4eb91e557a610941856395633dc6820f782"
+      "sha256": "7dec3e7f5c8b805b1cab6e7f57a5e42495349eb93119a43c27fccc36f36fed55"
     },
     "windowsEvidence": {
       "path": "docs/validation/2026-11-07/clipboard-r100-qualified/verified-receipt.json",
       "sha256": "aac1c6076566ff296d2a466df80056858bf7b7a67ff3fc4ec7cc135816247438"
     },
     "nativeCIPending": true,
-    "fullClipboardBudgetQualified": false
+    "fullClipboardBudgetQualified": false,
+    "sourceCommit": "ed4f5cf08c96f04671e49e5138eda8ce1790ead3",
+    "nativeRun": {
+      "id": 42282812778,
+      "head_sha": "ed4f5cf08c96f04671e49e5138eda8ce1790ead3",
+      "status": "in_progress",
+      "conclusion": null,
+      "html_url": "https://github.com/29583855/dukto-next/actions/runs/42282812778"
+    }
+  },
+  "previousProductionBeforeR100": {
+    "productionCommit": "a316e4a4f947ac9a53aa6dd4477eb5b8e2a7fb38",
+    "testCommit": "a316e4a4f947ac9a53aa6dd4477eb5b8e2a7fb38"
+  },
+  "macOSCompilationR100": {
+    "sourceCommit": "ed4f5cf08c96f04671e49e5138eda8ce1790ead3",
+    "packages": [
+      {
+        "sourceCommit": "ed4f5cf08c96f04671e49e5138eda8ce1790ead3",
+        "architecture": "arm64",
+        "artifactId": 13535778206,
+        "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42282812778/artifacts/13535778206",
+        "artifactSha256": "f0679fefc3c3976fdaf13160f63e2fb086937eb20fa5c15ca979a4201dc9de57",
+        "archive": "DuktoNext-macos-ARM64-compiled.tar.gz",
+        "sha256": "8fd9b4755c9da1d1f725377f3c1b68fc933d7639068816319af262984238864a",
+        "binaries": [
+          {
+            "path": "dukto-cli",
+            "sha256": "bd5293c38bb49e336a3dbd3ee020c8d0b3afb08f895e189955cbfe70721f8eb2",
+            "architecture": "arm64",
+            "executable": true
+          },
+          {
+            "path": "dukto-gui.app/Contents/MacOS/dukto-gui",
+            "sha256": "72cbb0c696150808d562ccfbfe6de19a7576ea88cbfefc17af40aa24fae74483",
+            "architecture": "arm64",
+            "executable": true
+          }
+        ],
+        "compileStepsPassed": true,
+        "dependenciesDeployed": false
+      },
+      {
+        "sourceCommit": "ed4f5cf08c96f04671e49e5138eda8ce1790ead3",
+        "architecture": "x86_64",
+        "artifactId": 13535669142,
+        "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42282812778/artifacts/13535669142",
+        "artifactSha256": "267e6f62801597ddb38095ee16b7eafffe5f023f0d0771cf8c1f6803a4f27eff",
+        "archive": "DuktoNext-macos-X64-compiled.tar.gz",
+        "sha256": "c4b5b318fa17b67385645fa74f581ba3cd1bb5818394be58396e0bef3a02e960",
+        "binaries": [
+          {
+            "path": "dukto-cli",
+            "sha256": "caa4cd33a32a341ecec7b65cc69564ec31411d7f29c1a33b8d9574f9bb21762d",
+            "architecture": "x86_64",
+            "executable": true
+          },
+          {
+            "path": "dukto-gui.app/Contents/MacOS/dukto-gui",
+            "sha256": "cd3a47338ac7af6527f2d5b9c5bf4345944b8ffb327d4daa1f37c914356f45ff",
+            "architecture": "x86_64",
+            "executable": true
+          }
+        ],
+        "compileStepsPassed": true,
+        "dependenciesDeployed": false
+      }
+    ],
+    "evidence": {
+      "path": "docs/validation/2026-11-07/clipboard-r100-macos-compiled/receipt.json",
+      "sha256": "3df6e0a0a5e2ad532a93788fb50b38f82c66b6e14419edff5edc9c4a7e6ab18c"
+    },
+    "matchingQt5OpenSSLRequired": true,
+    "deployedPreviewSourceUnchanged": true
+  },
+  "currentLinuxLong": {
+    "sourceCommit": "b2e4659b347c65eef24c8e568e07e96a2d6ff2d7",
+    "binarySha256": "816b549fd5c34be611e9e1f669e54ab8a2c224ace1206cc3b314adcceb9d2412",
+    "shortRoundsPassed": 20,
+    "durationRequestedSeconds": 86400,
+    "terminalPending": true,
+    "evidence": {
+      "path": "docs/validation/2026-11-07/linux-r98-stability-launch/receipt.json",
+      "sha256": "d29beaa0291ca0a222c9ca6a805a32e693e7ea89162d3f4df0b092891753fe35"
+    }
   }
 }

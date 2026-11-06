@@ -2,7 +2,18 @@
 
 更新日期：2026-11-07。当前可下载包源码为`88f33b2c83f2950307c362fb64c693f7e9e5929d`（R96），采用C++14、Qt5和CMake。Apple Silicon与Intel均包含GUI和可独立运行的CLI；Qt5/OpenSSL运行依赖已随包部署。
 
-## R99最新编译产物（2026-11-07）
+## R100最新编译产物（2026-11-07）
+
+精确源码`ed4f5cf08c96f04671e49e5138eda8ce1790ead3`已上传公开仓库；[四平台CI 42282812778](https://github.com/29583855/dukto-next/actions/runs/42282812778)已自动启动，Apple Silicon与Intel的实际编译、归档和附件上传步骤均成功。两份GUI/独立CLI归档的GitHub摘要、内部tar摘要、源码提交、Mach-O架构及执行权限已逐件核验。
+
+| 架构 | 最新编译产物 |
+| --- | --- |
+| Apple Silicon / arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42282812778/artifacts/13535778206) |
+| Intel / x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42282812778/artifacts/13535669142) |
+
+[R100编译原件回执](validation/2026-11-07/clipboard-r100-macos-compiled/receipt.json)绑定实际GUI和CLI摘要。这些归档需要匹配的Qt5/OpenSSL运行依赖；下方含依赖预览包保持已验R96。R100完整原生回归仍待终态和原件收验，编译成功不授予整轮测试或正式发布资格。
+
+## R99编译记录（2026-11-07）
 
 精确源码`a316e4a4f947ac9a53aa6dd4477eb5b8e2a7fb38`已上传；[原生CI 42276738981](https://github.com/29583855/dukto-next/actions/runs/42276738981)的ARM64、Intel编译步骤均成功。两份实际归档、源码提交、Mach-O架构和执行权限已核验，包含GUI与独立CLI。
 
