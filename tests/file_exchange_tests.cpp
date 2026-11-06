@@ -85,6 +85,11 @@ class ExchangeServer final : public QTcpServer {
     QThread *worker_ = nullptr;
 };
 
+// 日期：2026-11-07；调用方已确认启动；Qt对提前退出返回false，因此先查状态，仍运行才按原期限等待。
+bool waitForStartedChildExit(QProcess &process, int timeoutMs) {
+    return process.state() == QProcess::NotRunning || process.waitForFinished(timeoutMs);
+}
+
 // 日期：2026-11-04；接收端清单只从公开分页字段导入，不使用发送端本机源路径。
 void importManifest(dukto::StrongManifest &source, dukto::StrongManifest &destination) {
     const auto entry = source.entry(1);
@@ -204,6 +209,49 @@ int parallelDispositionServer(const QString &directory) {
 class FileExchangeTests final : public QObject {
     Q_OBJECT
   private slots:
+
+    // 日期：2026-11-07；覆盖提前正常/错误退出、运行中完成和真实期限，防止提前退出误报或吞掉超时。
+    void childExitWait_data() {
+        QTest::addColumn<int>("delayMs");
+        QTest::addColumn<bool>("finishFirst");
+        QTest::addColumn<int>("exitCode");
+        QTest::addColumn<int>("waitMs");
+        QTest::addColumn<bool>("expected");
+        QTest::newRow("already-finished") << 0 << true << 0 << 10000 << true;
+        QTest::newRow("already-finished-error") << 0 << true << 37 << 10000 << true;
+        QTest::newRow("running-finishes") << 1000 << false << 0 << 10000 << true;
+        QTest::newRow("real-deadline") << 3000 << false << 0 << 20 << false;
+    }
+
+    // 日期：2026-11-07；真实子进程自行退出；等待成功与业务退出码分别核对，真实超时不能被状态检查放行。
+    void childExitWait() {
+        QFETCH(int, delayMs);
+        QFETCH(bool, finishFirst);
+        QFETCH(int, exitCode);
+        QFETCH(int, waitMs);
+        QFETCH(bool, expected);
+        QProcess child;
+        child.start(QCoreApplication::applicationFilePath(),
+                    {"--exit-state-fixture", QString::number(delayMs), QString::number(exitCode)});
+        QVERIFY(child.waitForStarted(10000));
+        if (finishFirst) {
+            QTRY_COMPARE_WITH_TIMEOUT(child.state(), QProcess::NotRunning, 10000);
+            QVERIFY(!child.waitForFinished(10000));
+        } else {
+            QCOMPARE(child.state(), QProcess::Running);
+        }
+        QCOMPARE(waitForStartedChildExit(child, waitMs), expected);
+        if (expected) {
+            QCOMPARE(child.state(), QProcess::NotRunning);
+            QCOMPARE(child.exitStatus(), QProcess::NormalExit);
+            QCOMPARE(child.exitCode(), exitCode);
+        } else {
+            QCOMPARE(child.state(), QProcess::Running);
+            child.kill();
+            QVERIFY(waitForStartedChildExit(child, 10000));
+            QCOMPARE(child.exitStatus(), QProcess::CrashExit);
+        }
+    }
 
     // 日期：2026-11-06；数据先退出后控制才发送失败；真实TLS必须保留远端磁盘根因。
     void remoteFailureAfterLaneDisconnect_data() {
@@ -818,7 +866,7 @@ class FileExchangeTests final : public QObject {
                 }
     }
 
-    // 日期：2026-11-06；仅控制测试夹具协调双方，清单/数据/结果全部使用真实生产TLS与持久日志。
+    // 日期：2026-11-07；真实TLS/持久日志；提前退出按状态确认，仍运行保留原十秒期限及退出码检查。
     void parallelDispositions() {
         QFETCH(bool, download);
         QFETCH(int, lanes);
@@ -953,7 +1001,7 @@ class FileExchangeTests final : public QObject {
         }
         channel.write(dukto::next::Type::Close, 3, {});
         QCOMPARE(channel.read().header.type, dukto::next::Type::Closed);
-        QVERIFY(server.waitForFinished(10000));
+        QVERIFY(waitForStartedChildExit(server, 10000));
         QCOMPARE(server.exitStatus(), QProcess::NormalExit);
         QVERIFY2(server.exitCode() == 0, server.readAllStandardError().constData());
         const auto remoteSummary =
@@ -1613,9 +1661,19 @@ class FileExchangeTests final : public QObject {
     }
 };
 
-// 日期：2026-11-04；标准错误保留核心诊断，避免 Windows Qt 日志出口隐藏未捕获异常原因。
+// 日期：2026-11-07；退出状态夹具仅用于测试子进程；标准错误继续保留核心诊断。
 int main(int argc, char **argv) {
     QCoreApplication application(argc, argv);
+    if (argc == 4 && QString::fromLocal8Bit(argv[1]) == "--exit-state-fixture") {
+        bool delayValid = false;
+        bool codeValid = false;
+        const int delay = QString::fromLocal8Bit(argv[2]).toInt(&delayValid);
+        const int code = QString::fromLocal8Bit(argv[3]).toInt(&codeValid);
+        if (!delayValid || !codeValid || delay < 0 || delay > 3000 || code < 0 || code > 125)
+            return 32;
+        QThread::msleep(static_cast<unsigned long>(delay));
+        return code;
+    }
     FileExchangeTests tests;
     try {
         if (argc == 3 && QString::fromLocal8Bit(argv[1]) == "--parallel-disposition-server")

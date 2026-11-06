@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="2" failures="1" tests="3" name="FileExchangeTests">
+  <properties>
+    <property value="5.15.13" name="QTestVersion"/>
+    <property value="5.15.13" name="QtVersion"/>
+    <property value="Qt 5.15.13 (x86_64&#x002D;little_endian&#x002D;lp64 shared (dynamic) release build; by GCC 13.2.0)" name="QtBuild"/>
+  </properties>
+  <testcase result="pass" name="initTestCase"/>
+  <testcase result="fail" name="parallelDispositions">
+    <!-- tag="download&#x002D;4&#x002D;1" message="exit&#x002D;state&#x002D;before state QProcess::NotRunning pid 0 error QProcess::UnknownError" type="qinfo" -->
+    <!-- tag="download&#x002D;4&#x002D;1" message="exit&#x002D;state&#x002D;after state QProcess::NotRunning result false elapsedMs 0 exitStatus QProcess::NormalExit exitCode 0" type="qinfo" -->
+    <failure tag="download&#x002D;4&#x002D;1" message="&apos;exitStateWaitResult&apos; returned FALSE. ()" result="fail"/>
+  </testcase>
+  <testcase result="pass" name="cleanupTestCase"/>
+  <system-err>
+<![CDATA[exit-state-before state QProcess::NotRunning pid 0 error QProcess::UnknownError]]>
+<![CDATA[exit-state-after state QProcess::NotRunning result false elapsedMs 0 exitStatus QProcess::NormalExit exitCode 0]]>
+  </system-err>
+</testsuite>

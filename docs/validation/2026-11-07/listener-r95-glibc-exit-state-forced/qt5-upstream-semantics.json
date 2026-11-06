@@ -1,0 +1,10 @@
+{
+  "upstreamUrl": "https://raw.githubusercontent.com/qt/qtbase/v5.15.13-lts-lgpl/src/corelib/io/qprocess.cpp",
+  "upstreamFileSha256": "8b2e19bd5925f969157b84e299d3c3f69736acce254cbbe3bc72737e03c46ecb",
+  "excerpt": "bool QProcess::waitForFinished(int msecs)\n{\n    Q_D(QProcess);\n    if (d->processState == QProcess::NotRunning)\n        return false;\n    if (d->processState == QProcess::Starting) {\n        QElapsedTimer stopWatch;\n        stopWatch.start();\n        bool started = waitForStarted(msecs);\n        if (!started)\n            return false;\n        msecs = qt_subtract_from_timeout(msecs, stopWatch.elapsed());\n    }\n\n    return d->waitForFinished(msecs);\n}\n\n/*!\n    Sets the current state of the QProcess to the \\a state specified.\n\n    \\sa state()\n*/\nvoid QProcess::setProcessState(ProcessState state)\n{\n    Q_D(QProc",
+  "runtimeReproduction": {
+    "path": "docs/validation/2026-11-07/listener-r95-glibc-exit-state-forced/receipt.json",
+    "sha256": "817dca297030daba978722a2fda84c8805bf7931ba8f23cc0c8b2c9662961906"
+  },
+  "distributionPatchesNotIndependentlyRebuilt": true
+}
