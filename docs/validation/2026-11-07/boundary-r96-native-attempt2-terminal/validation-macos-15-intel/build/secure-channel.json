@@ -1,0 +1,171 @@
+{
+  "date": "2026-11-04",
+  "passed": true,
+  "scope": "production SecureChannel; independent TLS endpoints",
+  "cases": {
+    "trustedCa": {
+      "passed": true,
+      "exitCode": 0,
+      "elapsedMs": 739,
+      "stage": "encrypted-frame-exchange"
+    },
+    "wrongHostnameCa": {
+      "passed": true,
+      "exitCode": 4,
+      "elapsedMs": 531,
+      "stage": "tls"
+    },
+    "pinnedSelfSigned": {
+      "passed": true,
+      "exitCode": 0,
+      "elapsedMs": 519,
+      "stage": "encrypted-frame-exchange"
+    },
+    "untrustedNoPin": {
+      "passed": true,
+      "exitCode": 4,
+      "elapsedMs": 525,
+      "stage": "tls"
+    },
+    "wrongPin": {
+      "passed": true,
+      "exitCode": 4,
+      "elapsedMs": 499,
+      "stage": "tls"
+    },
+    "wrongPinTrustedCa": {
+      "passed": true,
+      "exitCode": 4,
+      "elapsedMs": 511,
+      "stage": "tls"
+    },
+    "wrongHostnamePinned": {
+      "passed": true,
+      "exitCode": 4,
+      "elapsedMs": 573,
+      "stage": "tls"
+    },
+    "duplicateJson": {
+      "passed": true,
+      "exitCode": 2,
+      "elapsedMs": 517,
+      "stage": "protocol"
+    },
+    "oversizeHeader": {
+      "passed": true,
+      "exitCode": 2,
+      "elapsedMs": 503,
+      "stage": "protocol"
+    },
+    "truncatedBody": {
+      "passed": true,
+      "exitCode": 3,
+      "elapsedMs": 503,
+      "stage": "protocol"
+    },
+    "absoluteFrameTimeout": {
+      "passed": true,
+      "exitCode": 3,
+      "elapsedMs": 909,
+      "stage": "protocol"
+    },
+    "atomicCancellation": {
+      "passed": true,
+      "exitCode": 7,
+      "elapsedMs": 834,
+      "stage": "protocol"
+    },
+    "scanDisconnection": {
+      "passed": true,
+      "exitCode": 3,
+      "elapsedMs": 505,
+      "stage": "scan"
+    },
+    "scanCancellation": {
+      "passed": true,
+      "exitCode": 7,
+      "elapsedMs": 619,
+      "stage": "scan"
+    },
+    "observerFragmentedNormalResponse": {
+      "passed": true,
+      "exitCode": 0,
+      "elapsedMs": 450,
+      "stage": "encrypted-frame-exchange"
+    },
+    "write-failure": {
+      "passed": true,
+      "exitCode": 5,
+      "elapsedMs": 530,
+      "stage": "receive"
+    },
+    "write-fragmented-failure": {
+      "passed": true,
+      "exitCode": 5,
+      "elapsedMs": 562,
+      "stage": "receive"
+    },
+    "write-wrong-correlation": {
+      "passed": true,
+      "exitCode": 6,
+      "elapsedMs": 516,
+      "stage": "transfer"
+    },
+    "write-invalid-failure": {
+      "passed": true,
+      "exitCode": 2,
+      "elapsedMs": 547,
+      "stage": "transfer"
+    },
+    "write-abrupt": {
+      "passed": true,
+      "exitCode": 3,
+      "elapsedMs": 542,
+      "stage": "send"
+    },
+    "write-failure-close": {
+      "passed": true,
+      "exitCode": 5,
+      "elapsedMs": 542,
+      "stage": "receive"
+    },
+    "write-fragmented-failure-close": {
+      "passed": true,
+      "exitCode": 5,
+      "elapsedMs": 732,
+      "stage": "receive"
+    },
+    "expiredPinned": {
+      "passed": true,
+      "exitCode": 4,
+      "elapsedMs": 537,
+      "stage": "tls"
+    },
+    "futurePinned": {
+      "passed": true,
+      "exitCode": 4,
+      "elapsedMs": 509,
+      "stage": "tls"
+    },
+    "clientOnlyPinned": {
+      "passed": true,
+      "exitCode": 4,
+      "elapsedMs": 505,
+      "stage": "tls"
+    },
+    "productionServer": {
+      "passed": true,
+      "exitCode": 0
+    },
+    "generatedIdentityPinned": {
+      "passed": true,
+      "exitCode": 0,
+      "elapsedMs": 562,
+      "stage": "encrypted-frame-exchange"
+    },
+    "generatedIdentityServer": {
+      "passed": true,
+      "exitCode": 0
+    }
+  }
+}

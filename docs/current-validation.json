@@ -1,5 +1,5 @@
 {
-  "observedUtc": "2026-11-06T18:19:45.402525+00:00",
+  "observedUtc": "2026-11-06T18:24:20.147429+00:00",
   "productionCommit": "88f33b2c83f2950307c362fb64c693f7e9e5929d",
   "testCommit": "b2e4659b347c65eef24c8e568e07e96a2d6ff2d7",
   "packages": [
@@ -172,31 +172,26 @@
   "focusedRunUrl": "https://github.com/29583855/dukto-next/actions/runs/42036473915",
   "focusedWorkflowConclusion": "success",
   "nativeFull": {
-    "sourceCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
-    "productionCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
-    "runId": 42235469581,
-    "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42235469581",
+    "id": 42252931531,
+    "head_sha": "88f33b2c83f2950307c362fb64c693f7e9e5929d",
     "status": "completed",
-    "workflowConclusion": "failure",
-    "fullProtocolPending": false,
-    "allOriginalReportsVerified": true,
-    "expectedCoreTargetsEach": 23,
-    "failedCoreStepsObserved": [
-      "macos-15",
-      "macos-15-intel"
-    ],
-    "coreOriginalFailureEvidence": {
-      "path": "docs/validation/2026-11-06/text-view-r94-native-mac-core-failure/receipt.json",
-      "sha256": "842f28620161a943391e2c458b9852c452dba68281a00ceda42ad73b69ae05a8"
-    },
-    "allCasesPassed": false,
-    "protocolReports": 188,
-    "protocolFailures": 0,
-    "coreFailureRows": 9,
+    "conclusion": "success",
+    "html_url": "https://github.com/29583855/dukto-next/actions/runs/42252931531",
+    "sourceCommit": "88f33b2c83f2950307c362fb64c693f7e9e5929d",
+    "runAttempt": 2,
     "evidence": {
-      "path": "docs/validation/2026-11-06/text-view-r94-native-terminal-failure/receipt.json",
-      "sha256": "e2f0867e56a8e11e15516f43c59261399dd7ca6e1c5947272631adae0349bb9e"
-    }
+      "path": "docs/validation/2026-11-07/boundary-r96-native-attempt2-terminal/receipt.json",
+      "sha256": "b3de422cb12bbac3a1a5fa32de68e4f3d5903e1e054c9d072cd60cdc8705e330"
+    },
+    "completeAttemptEvidence": {
+      "path": "docs/validation/2026-11-07/boundary-r96-native-attempt2-terminal/complete-attempt-receipt.json",
+      "sha256": "952bc9e09fc8133da4aa2acfe6159f203dd0f383ae1e200de8f279f432d37a5e"
+    },
+    "originalReportsVerified": true,
+    "coreTargetsEach": 23,
+    "protocolReports": 188,
+    "explicitDarwinExpectedFailures": 2,
+    "qualifiedWithExplicitBoundary": true
   },
   "nativeMuslRunUrl": "https://github.com/29583855/dukto-next/actions/runs/42135996839",
   "originalFailureRunsRetained": [
@@ -214,7 +209,7 @@
   "releaseQualified": false,
   "deliveryComplete": false,
   "planVersion": "v0.98",
-  "currentSourceStage": "R98 dual Mac and dual Windows full core qualified; current Windows deployed preview verified; Linux new package and R96 ARM full protocol still in progress",
+  "currentSourceStage": "R96 four native complete 23-core/188-protocol regression verified after zero-step ARM capacity retry; R98 dual Mac/Windows full core and Windows deployed preview verified; Linux new package pending",
   "nativeMusl": {
     "sourceCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
     "productionCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
@@ -15193,7 +15188,7 @@
   },
   "listenerGuardR95ProductionPending": false,
   "nativeBoundaryR96": {
-    "observedUtc": "2026-11-06T17:16:33.951541+00:00",
+    "observedUtc": "2026-11-06T18:24:20.147429+00:00",
     "planVersion": "v0.95",
     "previousProductionCommit": "5dd243fbad36da36568943513deed95ee124ba2d",
     "productionCommitPending": false,
@@ -16064,7 +16059,7 @@
       "sha256": "7825fcf9e1af5387ae6b7a13e19d7fe2595911ddc7b1f283da533e9eda36bded"
     },
     "nativeMacRegressionPending": false,
-    "entireNativeProtocolPending": true,
+    "entireNativeProtocolPending": false,
     "parallelExitRootCauseProven": false,
     "releaseQualified": false,
     "deliveryComplete": false,
@@ -16086,8 +16081,8 @@
       "native": {
         "id": 42252931531,
         "head_sha": "88f33b2c83f2950307c362fb64c693f7e9e5929d",
-        "status": "in_progress",
-        "conclusion": null,
+        "status": "completed",
+        "conclusion": "success",
         "html_url": "https://github.com/29583855/dukto-next/actions/runs/42252931531"
       },
       "musl": {
@@ -16281,7 +16276,21 @@
     "fullNativeArmRetryEvidence": {
       "path": "docs/validation/2026-11-07/boundary-r96-native-terminal/r96-arm-capacity-terminal-retry.json",
       "sha256": "896965f97418229cee940d233943069c2f9223c72b3bed6568c4f90ee3967fe3"
-    }
+    },
+    "fullNativeQualifiedWithExplicitBoundary": true,
+    "fullNativeRunAttempt": 2,
+    "fullNativeProtocolReports": 188,
+    "fullNativeCoreTargetsEach": 23,
+    "fullNativeExpectedFailureInstances": 2,
+    "fullNativeEvidence": {
+      "path": "docs/validation/2026-11-07/boundary-r96-native-attempt2-terminal/receipt.json",
+      "sha256": "b3de422cb12bbac3a1a5fa32de68e4f3d5903e1e054c9d072cd60cdc8705e330"
+    },
+    "fullNativeCompleteAttemptEvidence": {
+      "path": "docs/validation/2026-11-07/boundary-r96-native-attempt2-terminal/complete-attempt-receipt.json",
+      "sha256": "952bc9e09fc8133da4aa2acfe6159f203dd0f383ae1e200de8f279f432d37a5e"
+    },
+    "originalAttemptOneFailureRetained": true
   },
   "nativeListenerRegressionR96": {
     "id": 42251051894,
@@ -16301,9 +16310,14 @@
     "native": {
       "id": 42252931531,
       "head_sha": "88f33b2c83f2950307c362fb64c693f7e9e5929d",
-      "status": "in_progress",
-      "conclusion": null,
-      "html_url": "https://github.com/29583855/dukto-next/actions/runs/42252931531"
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/29583855/dukto-next/actions/runs/42252931531",
+      "originalEvidencePending": false,
+      "evidence": {
+        "path": "docs/validation/2026-11-07/boundary-r96-native-attempt2-terminal/complete-attempt-receipt.json",
+        "sha256": "952bc9e09fc8133da4aa2acfe6159f203dd0f383ae1e200de8f279f432d37a5e"
+      }
     },
     "musl": {
       "id": 42253012733,
@@ -18555,6 +18569,33 @@
         "path": "docs/validation/2026-11-06/windows-r25-extra/summary.json",
         "sha256": "d130e6f72e58a877ef0074c10c590248f752aa9ff31dd141a5fab8b842ef9450"
       }
+    }
+  },
+  "nativeFullBeforeR96Final": {
+    "sourceCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
+    "productionCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
+    "runId": 42235469581,
+    "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42235469581",
+    "status": "completed",
+    "workflowConclusion": "failure",
+    "fullProtocolPending": false,
+    "allOriginalReportsVerified": true,
+    "expectedCoreTargetsEach": 23,
+    "failedCoreStepsObserved": [
+      "macos-15",
+      "macos-15-intel"
+    ],
+    "coreOriginalFailureEvidence": {
+      "path": "docs/validation/2026-11-06/text-view-r94-native-mac-core-failure/receipt.json",
+      "sha256": "842f28620161a943391e2c458b9852c452dba68281a00ceda42ad73b69ae05a8"
+    },
+    "allCasesPassed": false,
+    "protocolReports": 188,
+    "protocolFailures": 0,
+    "coreFailureRows": 9,
+    "evidence": {
+      "path": "docs/validation/2026-11-06/text-view-r94-native-terminal-failure/receipt.json",
+      "sha256": "e2f0867e56a8e11e15516f43c59261399dd7ca6e1c5947272631adae0349bb9e"
     }
   }
 }
