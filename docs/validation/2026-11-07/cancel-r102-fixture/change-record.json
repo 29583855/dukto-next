@@ -1,0 +1,27 @@
+{
+  "date": "2026-11-07",
+  "baselineSourceCommit": "1f82d5d3b9ae36e77ee98da942c2fc5369310c7a",
+  "changedFile": "tests/ui_tests.cpp",
+  "baselineSha256": "b07c71320cd383b37e85db91b33b8590622fa68faaa75affc562ae0dd121f756",
+  "fixedSha256": "62ed07a80350d1abe149e850f349595eb3a2f1932773fe05b5a5f165c5fe4bd7",
+  "encodingBomAndNewlinesPreserved": true,
+  "cancellationAndEofBudgetMilliseconds": 5000,
+  "fixtureChanges": [
+    "Set 64KiB Qt read limit before adopting incoming descriptor",
+    "Increase test peer read window to 256KiB only after cancellation before bounded EOF drain"
+  ],
+  "transferCore": [
+    {
+      "path": "src/core/legacy.cpp",
+      "sha256": "1ed160c739177e6d6f6e9faf894c9adbe5c17bb9afc81aad02928eb76240b177"
+    },
+    {
+      "path": "src/core/legacy.h",
+      "sha256": "711cf84fade4896c290958a59ad1d872bdf3b83178f08ee9198baa3e2ca345bb"
+    }
+  ],
+  "productCancellationBugFixClaimed": false,
+  "causalDiagnosis": "Late read cap and persistent 4KiB drain window are fixture hypotheses; exact old/new Ubuntu and Mac CI evidence required",
+  "releaseQualified": false,
+  "deliveryComplete": false
+}

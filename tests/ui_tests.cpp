@@ -48,6 +48,21 @@ class CountingClipboardData final : public QMimeData {
     std::shared_ptr<int> reads_;
 };
 
+// 日期：2026-11-07；独立慢接收端从接管原生描述符之前即限制Qt预读，避免平台事件时序抢先收完。
+class CancellationPeer final : public QTcpServer {
+  protected:
+    // 日期：2026-11-07；先设64KiB读取上限再发布连接；父对象管理失败连接和待接管套接字。
+    void incomingConnection(qintptr descriptor) override {
+        auto socket = new QTcpSocket(this);
+        socket->setReadBufferSize(64 * 1024);
+        if (!socket->setSocketDescriptor(descriptor)) {
+            socket->deleteLater();
+            return;
+        }
+        addPendingConnection(socket);
+    }
+};
+
 class UiTests final : public QObject {
     Q_OBJECT
   private:
@@ -116,7 +131,7 @@ class UiTests final : public QObject {
         QVERIFY(cancel);
         QTRY_VERIFY(!cancel->isVisible());
         const auto before = dukto::BufferCredit::usage()["dataUsed"].toString();
-        QTcpServer slow;
+        CancellationPeer slow;
         QVERIFY(slow.listen(QHostAddress::LocalHost, 0));
         QTcpSocket incoming;
         std::unique_ptr<QTcpSocket> peer;
@@ -140,7 +155,6 @@ class UiTests final : public QObject {
             QTRY_VERIFY(slow.hasPendingConnections());
             peer.reset(slow.nextPendingConnection());
             QVERIFY(peer);
-            peer->setReadBufferSize(4096);
             QTRY_VERIFY(peer->bytesAvailable() >= 16);
             const auto header = peer->read(16);
             QCOMPARE(qFromLittleEndian<qint64>(reinterpret_cast<const uchar *>(header.constData())),
@@ -149,6 +163,7 @@ class UiTests final : public QObject {
                 qFromLittleEndian<qint64>(reinterpret_cast<const uchar *>(header.constData() + 8)),
                 declared);
             QTRY_VERIFY(peer->bytesAvailable() > 32);
+            QVERIFY(peer->bytesAvailable() <= 64 * 1024);
             observed = 16;
         } else {
             incoming.connectToHost(QHostAddress::LocalHost, port);
@@ -170,6 +185,7 @@ class UiTests final : public QObject {
         QTRY_VERIFY(!cancel->isVisible());
         if (outgoing) {
             // 日期：2026-11-07；取消后有界排空独立对端，确认EOF与部分正文；不等待原文件完整发送。
+            peer->setReadBufferSize(256 * 1024);
             QObject::connect(peer.get(), &QTcpSocket::readyRead, peer.get(),
                              [&]() { observed += peer->readAll().size(); });
             observed += peer->readAll().size();
