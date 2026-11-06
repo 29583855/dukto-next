@@ -1,5 +1,5 @@
 {
-  "observedUtc": "2026-11-06T18:03:28.844134+00:00",
+  "observedUtc": "2026-11-06T18:19:45.402525+00:00",
   "productionCommit": "88f33b2c83f2950307c362fb64c693f7e9e5929d",
   "testCommit": "b2e4659b347c65eef24c8e568e07e96a2d6ff2d7",
   "packages": [
@@ -214,7 +214,7 @@
   "releaseQualified": false,
   "deliveryComplete": false,
   "planVersion": "v0.98",
-  "currentSourceStage": "R98 dual native Mac full core and corrected exit fixture qualified with explicit Darwin boundary; current Windows full core and Linux package in progress",
+  "currentSourceStage": "R98 dual Mac and dual Windows full core qualified; current Windows deployed preview verified; Linux new package and R96 ARM full protocol still in progress",
   "nativeMusl": {
     "sourceCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
     "productionCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
@@ -950,67 +950,52 @@
     }
   ],
   "windowsPreview": {
-    "archive": "dist/windows-preview-20261106-r25-completed-history/DuktoNext-windows-x64-preview.zip",
-    "sha256": "529b14ec96e57e2e1735f896efe2eaab243b034aa7616a6462b725411f325c9c",
-    "applicationSourceFiles": 242,
-    "allSourceBlobsMatchExactGitCommit": true,
+    "sourceCommit": "b2e4659b347c65eef24c8e568e07e96a2d6ff2d7",
+    "sourceFiles": 333,
+    "buildInputsVerified": 210,
     "binaries": {
-      "dukto-cli.exe": "7e10b8a7045c3786a76e1c255ab004fd8bf6bc26a2ee78dfddda5aed121e55de",
-      "dukto-gui.exe": "18ebca5db10446fe680abf00191dcf47eac3ae99c6e7d111c5816309fb93cb37"
+      "dukto-cli.exe": "2fdecefae477b2415dd9282964eee85ece9d50e582027fe2012f2828a91c394b",
+      "dukto-gui.exe": "65a0e7fd766f1b4837c9057b228cb38637b633efbe222fa89cfa5ff5d232bede"
     },
+    "allFrozenInputsUnchanged": true,
+    "coreEvidence": "docs\\validation\\2026-11-07\\exit-state-r98-full-windows\\verified-receipt.json",
+    "cases": [
+      {
+        "name": "deploy",
+        "exitCode": 0
+      },
+      {
+        "name": "relocated-system-path-runtime",
+        "exitCode": 0
+      }
+    ],
+    "completed": true,
+    "passed": true,
+    "cleanSystemQualified": false,
+    "releaseQualified": false,
+    "deliveryComplete": false,
+    "archive": "dist/windows-preview-20261107-r98-exit-state/DuktoNext-windows-x64-preview.zip",
+    "archiveSha256": "99f007bb1daf11a87750ecbb0435b5f0ccc617ce3baf9566efb77c72add77a82",
+    "sourceFilesVerified": 333,
+    "allSourceBlobsMatchExactGitCommit": true,
     "signedDependencyFiles": 364,
     "signedDependencyPackages": 24,
     "signedLicenseFiles": 53,
-    "runtimePassed": true,
-    "systemPathOnly": true,
-    "extraChecks": [
-      {
-        "name": "completed-history",
-        "path": "E:/project/dukto/docs/validation/2026-11-06/windows-r25-extra/completed-history.json",
-        "exitCode": 0,
-        "passed": true,
-        "sha256": "71f9d8a4a626e1037e389579268b7be6d0f6e84759bb8308b921c7cb83b227e5"
-      },
-      {
-        "name": "upload-receipt",
-        "path": "E:/project/dukto/docs/validation/2026-11-06/windows-r25-extra/upload-receipt.json",
-        "exitCode": 0,
-        "passed": true,
-        "sha256": "2a1154d005551b22115b2b51c580ac81d49704358e670a66d4675ecf37ee9b2c"
-      },
-      {
-        "name": "disposition",
-        "path": "E:/project/dukto/docs/validation/2026-11-06/windows-r25-extra/disposition.json",
-        "exitCode": 0,
-        "passed": true,
-        "sha256": "070426b381bb4ca7036efba671603681537751345b7ea9afdda402d3cadb9924"
-      },
-      {
-        "name": "certificate",
-        "path": "E:/project/dukto/docs/validation/2026-11-06/windows-r25-extra/certificate.json",
-        "exitCode": 0,
-        "passed": true,
-        "sha256": "07d0aad098e74fda5e8d228502b89e4139685361394c81fc7a80be872930fbca"
-      }
-    ],
-    "evidence": {
-      "runtime": {
-        "path": "docs/validation/2026-11-06/windows-r25-package-runtime.json",
-        "sha256": "df023dfd0c4dbb46d5fc4309a5bb2c5c6253fa871c42e77886033fdcedf9662a"
-      },
-      "source": {
-        "path": "docs/validation/2026-11-06/windows-r25-source-linkage.json",
-        "sha256": "4b9fad2dc8327f99dc9cc7970b82c69e9a997b79c8a7e0726da1f9401d3e218a"
-      },
-      "dependencies": {
-        "path": "docs/validation/2026-11-06/windows-r25-signed-payload-map.json",
-        "sha256": "797f1089b3b3eb9407af9343e126f4a399754d456b612239efc9bd091e65c62a"
-      },
-      "extra": {
-        "path": "docs/validation/2026-11-06/windows-r25-extra/summary.json",
-        "sha256": "d130e6f72e58a877ef0074c10c590248f752aa9ff31dd141a5fab8b842ef9450"
-      }
-    }
+    "runtimeEvidence": {
+      "path": "docs/validation/2026-11-07/exit-state-r98-windows-package/runtime.json",
+      "sha256": "a7d5e883076eb851dba35d1dd931423daf146ec40c9c459e28496793462bd922"
+    },
+    "dependencyEvidence": {
+      "path": "docs/validation/2026-11-07/exit-state-r98-windows-package/signed-payload-map.json",
+      "sha256": "c8dd750c403080de87b91edb21b5d99f563b5f819523891b78476ddadcc2f298"
+    },
+    "screenshotsViewed": true,
+    "signatureVerificationReusedFromPriorReceipt": true,
+    "freshSignatureVerificationPerformed": false,
+    "missingOriginalR12InventoryRestored": false,
+    "correspondingThirdPartySourceComplete": false,
+    "screenshotsReviewed": 1,
+    "screenshotReviewScope": "Actual Windows deployed first-launch dialog: Chinese and controls visible; avatar listener unavailable notice retained; full GUI/native selectors remain unqualified"
   },
   "linuxPreview": {
     "package": {
@@ -18403,7 +18388,7 @@
     "deliveryComplete": false,
     "sourceCommit": "b2e4659b347c65eef24c8e568e07e96a2d6ff2d7",
     "productionCommit": "b2e4659b347c65eef24c8e568e07e96a2d6ff2d7",
-    "observedUtc": "2026-11-06T18:03:28.844134+00:00",
+    "observedUtc": "2026-11-06T18:19:45.402525+00:00",
     "runs": {
       "listenerRegression": {
         "id": 42264789875,
@@ -18445,6 +18430,131 @@
       "html_url": "https://github.com/29583855/dukto-next/actions/runs/42266702018"
     },
     "linuxNewPackageSourceRef": "ci-r98-20261107",
-    "windowsFullCorePending": true
+    "windowsFullCorePending": false,
+    "windowsFullCoreEvidence": {
+      "path": "docs/validation/2026-11-07/exit-state-r98-full-windows/verified-receipt.json",
+      "sha256": "ebadf43f9ec8a8ec3f1636dd4c47f97000a24556f11fb6286aa6550bcc73560d"
+    },
+    "windowsCoreTargetsEach": 23,
+    "windowsToolchains": [
+      "ucrt",
+      "msvc"
+    ],
+    "windowsNewPackagePending": false,
+    "windowsNewPackage": {
+      "sourceCommit": "b2e4659b347c65eef24c8e568e07e96a2d6ff2d7",
+      "sourceFiles": 333,
+      "buildInputsVerified": 210,
+      "binaries": {
+        "dukto-cli.exe": "2fdecefae477b2415dd9282964eee85ece9d50e582027fe2012f2828a91c394b",
+        "dukto-gui.exe": "65a0e7fd766f1b4837c9057b228cb38637b633efbe222fa89cfa5ff5d232bede"
+      },
+      "allFrozenInputsUnchanged": true,
+      "coreEvidence": "docs\\validation\\2026-11-07\\exit-state-r98-full-windows\\verified-receipt.json",
+      "cases": [
+        {
+          "name": "deploy",
+          "exitCode": 0
+        },
+        {
+          "name": "relocated-system-path-runtime",
+          "exitCode": 0
+        }
+      ],
+      "completed": true,
+      "passed": true,
+      "cleanSystemQualified": false,
+      "releaseQualified": false,
+      "deliveryComplete": false,
+      "archive": "dist/windows-preview-20261107-r98-exit-state/DuktoNext-windows-x64-preview.zip",
+      "archiveSha256": "99f007bb1daf11a87750ecbb0435b5f0ccc617ce3baf9566efb77c72add77a82",
+      "sourceFilesVerified": 333,
+      "allSourceBlobsMatchExactGitCommit": true,
+      "signedDependencyFiles": 364,
+      "signedDependencyPackages": 24,
+      "signedLicenseFiles": 53,
+      "runtimeEvidence": {
+        "path": "docs/validation/2026-11-07/exit-state-r98-windows-package/runtime.json",
+        "sha256": "a7d5e883076eb851dba35d1dd931423daf146ec40c9c459e28496793462bd922"
+      },
+      "dependencyEvidence": {
+        "path": "docs/validation/2026-11-07/exit-state-r98-windows-package/signed-payload-map.json",
+        "sha256": "c8dd750c403080de87b91edb21b5d99f563b5f819523891b78476ddadcc2f298"
+      },
+      "screenshotsViewed": true,
+      "signatureVerificationReusedFromPriorReceipt": true,
+      "freshSignatureVerificationPerformed": false,
+      "missingOriginalR12InventoryRestored": false,
+      "correspondingThirdPartySourceComplete": false,
+      "screenshotsReviewed": 1,
+      "screenshotReviewScope": "Actual Windows deployed first-launch dialog: Chinese and controls visible; avatar listener unavailable notice retained; full GUI/native selectors remain unqualified"
+    },
+    "windowsNewPackageEvidence": {
+      "path": "docs/validation/2026-11-07/exit-state-r98-windows-package/verified-receipt.json",
+      "sha256": "2031b875ad6410525d42fed8b5d5348ec38a9ba500726f3691d82209ba380b4c"
+    }
+  },
+  "windowsPreviewBeforeR98": {
+    "archive": "dist/windows-preview-20261106-r25-completed-history/DuktoNext-windows-x64-preview.zip",
+    "sha256": "529b14ec96e57e2e1735f896efe2eaab243b034aa7616a6462b725411f325c9c",
+    "applicationSourceFiles": 242,
+    "allSourceBlobsMatchExactGitCommit": true,
+    "binaries": {
+      "dukto-cli.exe": "7e10b8a7045c3786a76e1c255ab004fd8bf6bc26a2ee78dfddda5aed121e55de",
+      "dukto-gui.exe": "18ebca5db10446fe680abf00191dcf47eac3ae99c6e7d111c5816309fb93cb37"
+    },
+    "signedDependencyFiles": 364,
+    "signedDependencyPackages": 24,
+    "signedLicenseFiles": 53,
+    "runtimePassed": true,
+    "systemPathOnly": true,
+    "extraChecks": [
+      {
+        "name": "completed-history",
+        "path": "E:/project/dukto/docs/validation/2026-11-06/windows-r25-extra/completed-history.json",
+        "exitCode": 0,
+        "passed": true,
+        "sha256": "71f9d8a4a626e1037e389579268b7be6d0f6e84759bb8308b921c7cb83b227e5"
+      },
+      {
+        "name": "upload-receipt",
+        "path": "E:/project/dukto/docs/validation/2026-11-06/windows-r25-extra/upload-receipt.json",
+        "exitCode": 0,
+        "passed": true,
+        "sha256": "2a1154d005551b22115b2b51c580ac81d49704358e670a66d4675ecf37ee9b2c"
+      },
+      {
+        "name": "disposition",
+        "path": "E:/project/dukto/docs/validation/2026-11-06/windows-r25-extra/disposition.json",
+        "exitCode": 0,
+        "passed": true,
+        "sha256": "070426b381bb4ca7036efba671603681537751345b7ea9afdda402d3cadb9924"
+      },
+      {
+        "name": "certificate",
+        "path": "E:/project/dukto/docs/validation/2026-11-06/windows-r25-extra/certificate.json",
+        "exitCode": 0,
+        "passed": true,
+        "sha256": "07d0aad098e74fda5e8d228502b89e4139685361394c81fc7a80be872930fbca"
+      }
+    ],
+    "evidence": {
+      "runtime": {
+        "path": "docs/validation/2026-11-06/windows-r25-package-runtime.json",
+        "sha256": "df023dfd0c4dbb46d5fc4309a5bb2c5c6253fa871c42e77886033fdcedf9662a"
+      },
+      "source": {
+        "path": "docs/validation/2026-11-06/windows-r25-source-linkage.json",
+        "sha256": "4b9fad2dc8327f99dc9cc7970b82c69e9a997b79c8a7e0726da1f9401d3e218a"
+      },
+      "dependencies": {
+        "path": "docs/validation/2026-11-06/windows-r25-signed-payload-map.json",
+        "sha256": "797f1089b3b3eb9407af9343e126f4a399754d456b612239efc9bd091e65c62a"
+      },
+      "extra": {
+        "path": "docs/validation/2026-11-06/windows-r25-extra/summary.json",
+        "sha256": "d130e6f72e58a877ef0074c10c590248f752aa9ff31dd141a5fab8b842ef9450"
+      }
+    }
   }
 }
