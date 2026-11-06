@@ -1,6 +1,19 @@
 # macOS独立开发预览包
 
-更新日期：2026-11-07。当前可下载包源码为`88f33b2c83f2950307c362fb64c693f7e9e5929d`（R96），采用C++14、Qt5和CMake。Apple Silicon与Intel均包含GUI和可独立运行的CLI；Qt5/OpenSSL运行依赖已随包部署。
+更新日期：2026-11-07。当前含依赖预览包为R100，精确源码`ed4f5cf08c96f04671e49e5138eda8ce1790ead3`，采用C++14、Qt5和CMake；Apple Silicon和Intel均有GUI、独立CLI及Qt5/OpenSSL依赖。
+
+## 当前R100含依赖部署包
+
+[双架构打包与原生迁移工作流](https://github.com/29583855/dukto-next/actions/runs/42286046864)终态success；ZIP含tar.gz、校验文件和运行原件，附件可能需要登录GitHub。
+
+| 架构 | 下载 | 内部tar.gz SHA-256 |
+| --- | --- | --- |
+| arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42286046864/artifacts/13538291807) | `8a383b4f06e06163ae598cf64e558049b3f57053d8af919ddca9adb6865d5fde` |
+| x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42286046864/artifacts/13537109669) | `244adf11797860213e8039f0be8fa9ef5b8beed5ddf365c33839a094bd5ecdb4` |
+
+每包338份应用源码全集与精确Git对象一致；各71框架链接、全部载荷、Mach-O架构和执行权限已验。每包五份原业务报告通过，覆盖独立CLI、16通道双向、1/4/16覆盖及4→8恢复；系统PATH/中文空格路径迁移通过。Cocoa及150%/200%导航和中文覆盖通过，四张实际原生启动/导航截图已查看。[收验及独立视觉回执](validation/2026-11-07/clipboard-r100-macos-package-terminal/qualified-receipt.json)。
+
+解压ZIP后用tar保留权限和框架链接，启动方式见下方示例。当前是adhoc开发预览；Developer ID、公证、干净系统、最低系统、完整GUI/选择器、第三方源码独立重建及正式发行继续验收。完整协议和长期按各自真实终态收验。
 
 ## R100最新编译产物（2026-11-07）
 
@@ -11,7 +24,7 @@
 | Apple Silicon / arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42282812778/artifacts/13535778206) |
 | Intel / x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42282812778/artifacts/13535669142) |
 
-[R100编译原件回执](validation/2026-11-07/clipboard-r100-macos-compiled/receipt.json)绑定实际GUI和CLI摘要。这些归档需要匹配的Qt5/OpenSSL运行依赖；下方含依赖预览包保持已验R96。R100完整原生回归仍待终态和原件收验，编译成功不授予整轮测试或正式发布资格。
+[R100编译原件回执](validation/2026-11-07/clipboard-r100-macos-compiled/receipt.json)绑定实际GUI和CLI摘要。这些归档需要匹配的Qt5/OpenSSL运行依赖；当前含依赖R100包见顶部；本节保留独立编译原件。R100完整原生回归仍待终态和原件收验，编译成功不授予整轮测试或正式发布资格。
 
 ## R99编译记录（2026-11-07）
 
@@ -22,9 +35,9 @@
 | Apple Silicon / arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42276738981/artifacts/13533422500) |
 | Intel / x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42276738981/artifacts/13534425181) |
 
-[编译原件回执](validation/2026-11-07/text-send-r99-macos-compiled/receipt.json)绑定实际程序摘要。本节归档需要匹配的Qt5/OpenSSL运行依赖；下方独立预览包已经部署依赖，其源码保持R96。R99完整原生回归尚在运行，编译产物不授予整轮测试通过或正式发布资格。
+[编译原件回执](validation/2026-11-07/text-send-r99-macos-compiled/receipt.json)绑定实际程序摘要。本节归档需要匹配的Qt5/OpenSSL运行依赖；当前含依赖R100包见顶部；本节保留R99编译身份。R99完整原生回归现已严格收验四平台各23核心和合计188协议，通过原件见R99终态回执；编译产物本身不授予正式发布资格。
 
-## 下载与校验
+## R96下载与校验（历史）
 
 [R96双架构原生打包与迁移工作流](https://github.com/29583855/dukto-next/actions/runs/42253077233)终态success，全部产物已按精确Git树和原报告核验。附件下载可能需要登录GitHub；ZIP包含tar.gz、校验文件及运行报告。
 
@@ -45,7 +58,7 @@ open "Dukto Next.app"
 
 使用tar解包保留框架链接和执行权限。移动时保留整个目录，CLI启动器与.app相邻；应用内CLI位于`Dukto Next.app/Contents/MacOS/dukto-cli`，独立运行不要求GUI启动。
 
-## 已验证范围
+## R96已验证范围（历史）
 
 GUI保留Dukto设备/最近/关于布局，底部“服务器 · 上传 / 下载”进入服务器页。两包分别在原生Mac运行器的中文空格目录和系统PATH下验证：独立CLI、16通道双向传输、1/4/16通道覆盖、覆盖恢复和4→8通道恢复，每包五份原业务报告逐摘要一致。
 

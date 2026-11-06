@@ -1,16 +1,16 @@
 # Linux 独立预览包
 
-更新日期：2026-11-07。当前包源码为`b2e4659b347c65eef24c8e568e07e96a2d6ff2d7`（R98），包含GUI和可独立运行的CLI，采用C++14、Qt5和CMake。目标为Ubuntu24.04或更新的x86_64 glibc环境，要求glibc2.39起及系统CJK字体。
+更新日期：2026-11-07。当前含依赖包为R100，精确源码`ed4f5cf08c96f04671e49e5138eda8ce1790ead3`，包含GUI与可独立运行的CLI，采用C++14、Qt5和CMake。目标Ubuntu24.04或更新的x86_64 glibc环境，要求glibc2.39起和系统CJK字体。
 
-## 当前可下载包（2026-11-07）
+## 当前R100可下载包
 
-[下载x86_64 glibc预览包](https://github.com/29583855/dukto-next/actions/runs/42266702018/artifacts/13532504491)（GitHub附件可能需要登录）。ZIP内含tar.gz、SHA及原始证据。内部tar.gz SHA-256：`3abe49bf08c653ab7c7c10fe66fd898d4fe95e060f500b4e061145dc6d80bd7e`。
+[下载x86_64 glibc预览包](https://github.com/29583855/dukto-next/actions/runs/42286121325/artifacts/13537119342)（GitHub附件可能需要登录）。ZIP含tar.gz、SHA和原始证据。内部tar.gz SHA-256：`0b7996b7b088aa3bf2541878c610f190521958652cdc47be966e0a7b9a607524`。
 
-333份应用源码全集逐字节匹配精确Git提交，708文件、2链接和132 ELF均已核验；23项核心测试、四种退出状态和原16组并行处置通过。实际Xvfb/X11、Weston/Wayland迁移各自通过16通道双向、1/4/16覆盖和4→8恢复，双显示各三份业务报告均已核验。两张包首次启动截图已查看，中文说明和控件正常。
+338份应用源码全集与精确Git对象逐字节一致；708部署文件、2链接和132 ELF已验。包构建23核心、剪贴板状态/草稿恢复实际QML、四种退出状态及原16组通过。X11和Wayland实际迁移各通过16通道双向、1/4/16覆盖及4→8恢复，双显示各三份业务报告已验。两张实际首次启动图已查看，中文和主要控件正常。
 
-[包资格回执](validation/2026-11-07/exit-state-r98-linux-package-terminal/qualified-receipt.json)绑定原始报告、截图和程序摘要。本机归档：`dist/linux-preview-20261107-r98-exit-state`。GUI需系统CJK字体，例如fonts-wqy-zenhei。
+[原件及独立视觉回执](validation/2026-11-07/clipboard-r100-linux-package-terminal/qualified-receipt.json)固定程序、源码和截图身份；本机归档`dist/linux-preview-20261107-r100-clipboard`。系统需CJK字体，例如fonts-wqy-zenhei。
 
-该包为R98，尚未包含R99发送文本预检/拒绝保留草稿及R100剪贴板可用状态修复。Xvfb/Weston迁移通过不替代物理桌面、干净系统、完整第三方源码或正式发布验收；完整项目继续未完成。
+当前已包含R99发送文本预检/拒绝保留草稿及R100剪贴板可用状态修复。Xvfb/Weston迁移不代替完整物理桌面、干净系统、第三方源码独立重建和正式发行；完整协议及86400秒长期继续单独收验。
 
 ## 构建依赖
 
