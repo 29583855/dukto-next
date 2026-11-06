@@ -21,7 +21,7 @@
 #include <QTimer>
 #include <QUrl>
 
-// 日期：2026-11-04；使用独立配置/数据库；首次运行准备默认下载目录，不重建用户保存后丢失的目录。
+// 日期：2026-11-07；初始化独立设置、历史和接收服务，并缓存剪贴板初始可用状态。
 Controller::Controller(quint16 port, QObject *parent, const QString &storageDirectory)
     : QObject(parent),
       settings_(QSettings::defaultFormat(), QSettings::UserScope, "DuktoNext", "Desktop"),
@@ -52,7 +52,9 @@ Controller::Controller(quint16 port, QObject *parent, const QString &storageDire
         if (!query.exec(sql))
             throw dukto::Error(dukto::ExitCode::Disk, query.lastError().text());
     loadHistory();
-    connect(QApplication::clipboard(), &QClipboard::dataChanged, this, &Controller::stateChanged);
+    connect(QApplication::clipboard(), &QClipboard::dataChanged, this,
+            &Controller::refreshClipboardAvailability);
+    refreshClipboardAvailability();
     // 日期：2026-11-04；版本检查状态独立于传输状态，失败不干扰局域网收发。
     connect(&updates_, &dukto::Updates::completed, this,
             [this](bool available, const QString &, const QUrl &page, const QString &message) {
@@ -202,9 +204,18 @@ bool Controller::termsAccepted() const {
     return settings_.value("terms", false).toBool();
 }
 
-// 日期：2026-11-04；与系统剪贴板变化信号联动，不缓存正文副本。
+// 日期：2026-11-07；只返回缓存可用状态，传输进度刷新不再读取剪贴板正文。
 bool Controller::clipboardAvailable() const {
-    return !QApplication::clipboard()->text().isEmpty();
+    return clipboardAvailable_;
+}
+
+// 日期：2026-11-07；仅实际变化时读取一次正文；只保存布尔值，显式发送仍重新读取最新文本。
+void Controller::refreshClipboardAvailability() {
+    const bool available = !QApplication::clipboard()->text().isEmpty();
+    if (available == clipboardAvailable_)
+        return;
+    clipboardAvailable_ = available;
+    emit clipboardAvailabilityChanged();
 }
 
 // 日期：2026-11-04；更新地址独立存储，不继承 Dukto 历史 HTTP 站点。

@@ -27,7 +27,7 @@ class Controller final : public QObject {
     Q_PROPERTY(bool busy READ busy NOTIFY stateChanged)
     Q_PROPERTY(double progress READ progress NOTIFY stateChanged)
     Q_PROPERTY(bool termsAccepted READ termsAccepted NOTIFY stateChanged)
-    Q_PROPERTY(bool clipboardAvailable READ clipboardAvailable NOTIFY stateChanged)
+    Q_PROPERTY(bool clipboardAvailable READ clipboardAvailable NOTIFY clipboardAvailabilityChanged)
     Q_PROPERTY(QString updateEndpoint READ updateEndpoint NOTIFY stateChanged)
     Q_PROPERTY(QString updateMessage READ updateMessage NOTIFY stateChanged)
     Q_PROPERTY(bool updateAvailable READ updateAvailable NOTIFY stateChanged)
@@ -45,7 +45,7 @@ class Controller final : public QObject {
     Q_PROPERTY(bool receivedTextPaged READ receivedTextPaged NOTIFY receivedTextPageChanged)
     Q_PROPERTY(int receivedTextPageCount READ receivedTextPageCount NOTIFY receivedTextPageChanged)
   public:
-    // 日期：2026-11-04；初始化设置、历史数据库及旧版发现/接收入口。
+    // 日期：2026-11-07；初始化独立设置/历史与发现接收入口，并读取剪贴板初始可用状态。
     Controller(quint16 port, QObject *parent = nullptr,
                const QString &storageDirectory = QString());
     // 日期：2026-11-04；等待工作线程收尾后关闭历史连接。
@@ -76,7 +76,7 @@ class Controller final : public QObject {
     double progress() const;
     // 日期：2026-11-04；首次说明由独立配置控制，不修改原版设置。
     bool termsAccepted() const;
-    // 日期：2026-11-04；剪贴板为空时禁用发送入口。
+    // 日期：2026-11-07；返回缓存的空值状态，频繁进度查询不读取系统剪贴板正文。
     bool clipboardAvailable() const;
     // 日期：2026-11-04；读取独立保存的更新源，默认不请求外部站点。
     QString updateEndpoint() const;
@@ -148,6 +148,8 @@ class Controller final : public QObject {
     Q_INVOKABLE void refresh();
   signals:
     void stateChanged();
+    // 日期：2026-11-07；正文是否为空改变时单独通知，不复用传输进度通知。
+    void clipboardAvailabilityChanged();
     void peersChanged();
     void historyChanged();
     void textReceived(const QString &text);
@@ -158,6 +160,8 @@ class Controller final : public QObject {
     void batchOpened();
 
   private:
+    // 日期：2026-11-07；仅初始化或实际剪贴板变化时读取一次正文，只保留布尔状态。
+    void refreshClipboardAvailability();
     // 日期：2026-11-04；在唯一发送任务槽位中启动工作线程。
     void start(dukto::LegacyRequest request);
     // 日期：2026-11-04；根据工作线程事件更新界面，不在主线程读取文件正文。
@@ -194,5 +198,6 @@ class Controller final : public QObject {
     double progress_ = 0;
     bool receiving_ = false;
     bool capturePending_ = false;
+    bool clipboardAvailable_ = false;
     std::unique_ptr<QTemporaryDir> captureDirectory_;
 };

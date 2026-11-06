@@ -224,3 +224,6 @@ R87 macOS下载已更新到409a73b：Intel/Apple Silicon的GUI和独立CLI、各
 
 
 2026-11-07 R99：最新a316e4a的Apple Silicon/Intel GUI及独立CLI编译产物均已核验，附件见[macOS构建与下载](docs/macOS独立预览包.md)。完整原生测试及长期验证继续，整体未完成。
+
+
+2026-11-07 R100：传输进度刷新不再反复读取剪贴板正文，双Windows实际QML及相关GUI回归通过；R98独立Ubuntu干净编译与23核心/退出专项通过。新GUI原生回归及整体交付继续，当前下载包身份不变。

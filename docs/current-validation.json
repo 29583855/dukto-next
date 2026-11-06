@@ -1,5 +1,5 @@
 {
-  "observedUtc": "2026-11-06T19:25:46.663524+00:00",
+  "observedUtc": "2026-11-06T19:45:01.455246+00:00",
   "productionCommit": "a316e4a4f947ac9a53aa6dd4477eb5b8e2a7fb38",
   "testCommit": "a316e4a4f947ac9a53aa6dd4477eb5b8e2a7fb38",
   "packages": [
@@ -223,8 +223,8 @@
   ],
   "releaseQualified": false,
   "deliveryComplete": false,
-  "planVersion": "v0.99",
-  "currentSourceStage": "R99 dual Mac GUI/CLI compilation outputs verified; R98 Linux deployed package and both displays qualified; R99 full native regression and R98 independent Ubuntu tests pending",
+  "planVersion": "v0.100",
+  "currentSourceStage": "R100 clipboard availability cache qualified on Windows; R98 independent Ubuntu clean build verified; full native latest GUI and delivery remain pending",
   "nativeMusl": {
     "sourceCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
     "productionCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
@@ -18602,6 +18602,26 @@
     "linuxNewPackageEvidence": {
       "path": "docs/validation/2026-11-07/exit-state-r98-linux-package-terminal/qualified-receipt.json",
       "sha256": "4d6bfa64b0e9f32abf949edc3a088e64607a94b68b083b39788234a783265f96"
+    },
+    "linuxIndependentCleanBuildPending": false,
+    "linuxIndependentCleanBuild": {
+      "observedUtc": "2026-11-06T19:40:22.071038+00:00",
+      "sourceCommit": "b2e4659b347c65eef24c8e568e07e96a2d6ff2d7",
+      "terminalPending": false,
+      "cleanBuild": true,
+      "passed": true,
+      "coreTargets": 23,
+      "newExitStateRows": 4,
+      "originalParallelRows": 16,
+      "sourceFiles": 333,
+      "buildInputs": 210,
+      "evidence": {
+        "path": "docs/validation/2026-11-07/exit-state-r98-final-glibc/verified-receipt.json",
+        "sha256": "e8fd893c5536f375ce672d6f8c63cdc39711ef3eed80a91d94405e077e6ef87a"
+      },
+      "entireProtocolSuiteRun": false,
+      "releaseQualified": false,
+      "deliveryComplete": false
     }
   },
   "windowsPreviewBeforeR98": {
@@ -19581,7 +19601,7 @@
       "sha256": "2d47b3a4c961cc33620e3cf78912ff078accd2c3445cdd41cabb39cf8d4ca377"
     }
   },
-  "currentGuiSourceCommitPending": false,
+  "currentGuiSourceCommitPending": true,
   "coreProductionCommit": "88f33b2c83f2950307c362fb64c693f7e9e5929d",
   "linuxPreviewR98": {
     "sourceCommit": "b2e4659b347c65eef24c8e568e07e96a2d6ff2d7",
@@ -19699,5 +19719,36 @@
       "path": "docs/validation/2026-11-07/text-send-r99-macos-compiled/receipt.json",
       "sha256": "2d47b3a4c961cc33620e3cf78912ff078accd2c3445cdd41cabb39cf8d4ca377"
     }
+  },
+  "r98IndependentGlibc": {
+    "observedUtc": "2026-11-06T19:40:22.071038+00:00",
+    "sourceCommit": "b2e4659b347c65eef24c8e568e07e96a2d6ff2d7",
+    "terminalPending": false,
+    "cleanBuild": true,
+    "passed": true,
+    "coreTargets": 23,
+    "newExitStateRows": 4,
+    "originalParallelRows": 16,
+    "sourceFiles": 333,
+    "buildInputs": 210,
+    "evidence": {
+      "path": "docs/validation/2026-11-07/exit-state-r98-final-glibc/verified-receipt.json",
+      "sha256": "e8fd893c5536f375ce672d6f8c63cdc39711ef3eed80a91d94405e077e6ef87a"
+    },
+    "entireProtocolSuiteRun": false,
+    "releaseQualified": false,
+    "deliveryComplete": false
+  },
+  "clipboardAvailabilityR100": {
+    "manifest": {
+      "path": "docs/ci-verification-20261107-r100.json",
+      "sha256": "48100f84f9f5eeec42b87ede53f5a4eb91e557a610941856395633dc6820f782"
+    },
+    "windowsEvidence": {
+      "path": "docs/validation/2026-11-07/clipboard-r100-qualified/verified-receipt.json",
+      "sha256": "aac1c6076566ff296d2a466df80056858bf7b7a67ff3fc4ec7cc135816247438"
+    },
+    "nativeCIPending": true,
+    "fullClipboardBudgetQualified": false
   }
 }
