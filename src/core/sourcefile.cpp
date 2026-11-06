@@ -2,7 +2,9 @@
 #include "error.h"
 
 #include <QDir>
+#include <QElapsedTimer>
 #include <QFileInfo>
+#include <QThread>
 #ifdef Q_OS_WIN
 #ifndef NOMINMAX
 #define NOMINMAX
@@ -59,8 +61,8 @@ QByteArray fileIdentity(int descriptor, bool contents = true) {
 }
 } // namespace
 
-// 日期：2026-11-04；Windows 不共享删除，拒绝链接本身；POSIX 通过固定父目录的 openat 打开。
-SourceFile::SourceFile(const QString &path) {
+// 日期：2026-11-06；Windows私有状态原子改配可能短暂持有DELETE句柄；只对错误32有界重试，源文件默认立即拒绝。
+SourceFile::SourceFile(const QString &path, OpenPolicy policy) {
     const QFileInfo info(path);
     int descriptor = -1;
 #ifdef Q_OS_WIN
@@ -68,19 +70,36 @@ SourceFile::SourceFile(const QString &path) {
     auto native = QDir::toNativeSeparators(info.absoluteFilePath());
     if (!native.startsWith("\\\\?\\"))
         native = native.startsWith("\\\\") ? "\\\\?\\UNC\\" + native.mid(2) : "\\\\?\\" + native;
-    const auto handle = CreateFileW(
-        reinterpret_cast<LPCWSTR>(native.utf16()), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
-        nullptr, OPEN_EXISTING, FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS, nullptr);
-    if (handle == INVALID_HANDLE_VALUE)
-        throw Error(ExitCode::Disk,
-                    QStringLiteral("无法安全打开源文件，系统错误码 %1").arg(GetLastError()),
-                    "read");
+    QElapsedTimer elapsed;
+    elapsed.start();
+    HANDLE handle = INVALID_HANDLE_VALUE;
+    for (int attempt = 1;; ++attempt) {
+        handle = CreateFileW(reinterpret_cast<LPCWSTR>(native.utf16()), GENERIC_READ,
+                             FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING,
+                             FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+        if (handle != INVALID_HANDLE_VALUE)
+            break;
+        const auto error = GetLastError();
+        const bool busy = policy == OpenPolicy::PrivateState && error == ERROR_SHARING_VIOLATION;
+        if (!busy || attempt >= 21 || elapsed.elapsed() >= 500)
+            throw Error(ExitCode::Disk,
+                        busy ? QStringLiteral("私有状态读取仍被占用，系统错误码 %1，已尝试 %2 次")
+                                   .arg(error)
+                                   .arg(attempt)
+                             : QStringLiteral("无法安全打开源文件，系统错误码 %1").arg(error),
+                        busy ? "read-busy" : "read");
+        // 日期：2026-11-06；每次只等剩余预算与25ms的较小值，最多500ms/21次；不开放删除共享。
+        const auto remaining = 500 - elapsed.elapsed();
+        if (remaining > 0)
+            QThread::msleep(static_cast<unsigned long>(qMin<qint64>(25, remaining)));
+    }
     descriptor = _open_osfhandle(reinterpret_cast<intptr_t>(handle), _O_RDONLY | _O_BINARY);
     if (descriptor < 0) {
         CloseHandle(handle);
         throw Error(ExitCode::Disk, QStringLiteral("无法接管源文件句柄"), "read");
     }
 #else
+    Q_UNUSED(policy)
     parent_.reset(new PosixDirectory(info.absolutePath(), false));
     name_ = info.fileName();
     descriptor = parent_->openRead(name_);

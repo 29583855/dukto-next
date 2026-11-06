@@ -197,7 +197,9 @@ QString PrivateStore::path(const QString &name) const {
 // 日期：2026-11-04；大数据库只核对原生权限、文件类型及固定对象，避免整体读取。
 qint64 PrivateStore::validateFile(const QString &name) const {
     verify();
-    SourceFile source(path(name));
+    SourceFile source(path(name), SourceFile::OpenPolicy::PrivateState);
+    // 日期：2026-11-06；共享占用等待后再次核对根ACL，随后仍核对已打开文件的所有者和类型。
+    verify();
     verifyFile(source.device());
     const auto size = source.device().size();
     // 日期：2026-11-05；SQLite连接可并发更新页，不把mtime/大小变化误报成源替换；类型/路径/所有者仍重验。
@@ -211,7 +213,9 @@ QByteArray PrivateStore::read(const QString &name, qint64 maximum) const {
     verify();
     if (maximum <= 0 || maximum > 1024 * 1024)
         throw Error(ExitCode::Config, QStringLiteral("私有状态读取预算无效"), "identity");
-    SourceFile source(path(name));
+    SourceFile source(path(name), SourceFile::OpenPolicy::PrivateState);
+    // 日期：2026-11-06；共享占用等待后再次核对根ACL，随后仍核对已打开文件的所有者和类型。
+    verify();
     auto &file = source.device();
     verifyFile(file);
     if (file.size() > maximum)

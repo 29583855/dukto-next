@@ -75,6 +75,102 @@ class CoreTests final : public QObject {
                                  dukto::Error);
     }
 #ifdef Q_OS_WIN
+    // 日期：2026-11-06；私有配置读和数据库对象核验均覆盖瞬时、持续和重复DELETE句柄占用。
+    void privateReadSharingContention_data() {
+        QTest::addColumn<bool>("validateOnly");
+        QTest::addColumn<bool>("persistent");
+        QTest::addColumn<int>("rounds");
+        QTest::newRow("read-release") << false << false << 1;
+        QTest::newRow("read-persistent") << false << true << 1;
+        QTest::newRow("read-repeated") << false << false << 8;
+        QTest::newRow("validate-release") << true << false << 1;
+        QTest::newRow("validate-persistent") << true << true << 1;
+        QTest::newRow("validate-repeated") << true << false << 8;
+    }
+
+    // 日期：2026-11-06；原生DELETE访问模拟原子改配窗口，成功必须读到原文，永久占用保持明确错误及有界资源。
+    void privateReadSharingContention() {
+        QFETCH(bool, validateOnly);
+        QFETCH(bool, persistent);
+        QFETCH(int, rounds);
+        QTemporaryDir temporary;
+        dukto::PrivateStore store(temporary.filePath("private"), true);
+        store.write("policy.json", "original-state");
+        const auto native = QDir::toNativeSeparators(temporary.filePath("private/policy.json"));
+        DWORD before = 0;
+        QVERIFY(GetProcessHandleCount(GetCurrentProcess(), &before));
+        for (int index = 0; index < rounds; ++index) {
+            const auto handle =
+                CreateFileW(reinterpret_cast<LPCWSTR>(native.utf16()), DELETE,
+                            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
+                            OPEN_EXISTING, FILE_FLAG_OPEN_REPARSE_POINT, nullptr);
+            QVERIFY(handle != INVALID_HANDLE_VALUE);
+            // 日期：2026-11-06；默认传输源不得继承私有配置重试，也不允许通过开放删除共享绕过占用。
+            bool immediateRejected = false;
+            try {
+                dukto::SourceFile source(temporary.filePath("private/policy.json"));
+            } catch (const dukto::Error &error) {
+                immediateRejected = error.code == dukto::ExitCode::Disk && error.stage == "read";
+            }
+            std::atomic_bool closed{false};
+            std::thread release;
+            if (!persistent)
+                release = std::thread([&]() {
+                    // 日期：2026-11-06；只关闭测试已拥有的原生句柄，不能修改生产等待预算。
+                    QThread::msleep(80);
+                    closed.store(CloseHandle(handle));
+                });
+            dukto::ExitCode code = dukto::ExitCode::Success;
+            QString stage;
+            QByteArray observed;
+            qint64 bytes = -1;
+            std::exception_ptr unexpected;
+            QElapsedTimer elapsed;
+            elapsed.start();
+            try {
+                if (validateOnly)
+                    bytes = store.validateFile("policy.json");
+                else
+                    observed = store.read("policy.json");
+            } catch (const dukto::Error &error) {
+                code = error.code;
+                stage = error.stage;
+            } catch (...) {
+                unexpected = std::current_exception();
+            }
+            const auto milliseconds = elapsed.elapsed();
+            if (release.joinable())
+                release.join();
+            else
+                closed.store(CloseHandle(handle));
+            QVERIFY(closed.load());
+            QVERIFY(immediateRejected);
+            QVERIFY(!unexpected);
+            QVERIFY2(milliseconds < 3000, qPrintable(QString::number(milliseconds)));
+            if (persistent) {
+                QCOMPARE(code, dukto::ExitCode::Disk);
+                QCOMPARE(stage, QString("read-busy"));
+                QVERIFY(milliseconds >= 450);
+            } else {
+                QCOMPARE(code, dukto::ExitCode::Success);
+                QVERIFY(milliseconds >= 50);
+                if (validateOnly)
+                    QCOMPARE(bytes, qint64(14));
+                else
+                    QCOMPARE(observed, QByteArray("original-state"));
+            }
+            QCOMPARE(store.read("policy.json"), QByteArray("original-state"));
+            QCOMPARE(store.validateFile("policy.json"), qint64(14));
+            QCOMPARE(
+                QDir(store.directory()).entryList({"*.part"}, QDir::Files | QDir::Hidden).size(),
+                0);
+        }
+        DWORD after = 0;
+        QVERIFY(GetProcessHandleCount(GetCurrentProcess(), &after));
+        QVERIFY2(after <= before + 2,
+                 qPrintable(QString("handles %1 -> %2").arg(before).arg(after)));
+    }
+
     // 日期：2026-11-06；真实原生读句柄覆盖短暂释放、持续占用及重复替换后的资源回收。
     void privateAtomicWriteContention_data() {
         QTest::addColumn<bool>("persistent");

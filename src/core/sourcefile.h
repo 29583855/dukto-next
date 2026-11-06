@@ -7,8 +7,10 @@
 namespace dukto {
 class SourceFile final {
   public:
-    // 日期：2026-11-04；固定父目录并原生打开普通文件；后续读操作不再解析绝对路径。
-    explicit SourceFile(const QString &path);
+    // 日期：2026-11-06；普通传输源立即打开；私有状态仅对Windows共享冲突作有界等待，安全校验相同。
+    enum class OpenPolicy { Immediate, PrivateState };
+    // 日期：2026-11-06；固定父目录，仍禁止删除共享；等待不能绕过链接、类型或原生身份检查。
+    explicit SourceFile(const QString &path, OpenPolicy policy = OpenPolicy::Immediate);
     // 日期：2026-11-04；先关闭文件再释放目录句柄，异常退出同样归还所有原生资源。
     ~SourceFile();
     SourceFile(const SourceFile &) = delete;

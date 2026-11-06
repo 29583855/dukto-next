@@ -36,6 +36,8 @@ def commands(build):
         add("windows-signal", "windows_signal_integration")
         # 日期：2026-11-06；真实共享句柄占用后同任务恢复，不能只验证接收核心。
         add("windows-overwrite-busy", "windows_overwrite_busy_integration")
+        # 日期：2026-11-06；实际私有配置瞬时占用可恢复，永久占用仍有界失败。
+        add("windows-private-read", "windows_private_read_integration")
     else:
         add("posix-path", "posix_path_integration")
     add("service", "service_integration")
