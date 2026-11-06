@@ -1,4 +1,5 @@
 #include "legacy.h"
+#include "buffercredit.h"
 #include "catalog.h"
 #include "error.h"
 #include "files.h"
@@ -22,9 +23,16 @@
 namespace dukto {
 namespace {
 class Wire final {
+  private:
+    std::unique_ptr<BufferCredit> credit_;
+
   public:
-    // 日期：2026-11-05；限制用户态接收缓冲，网络期限只统计当前I/O操作。
-    Wire(std::atomic_bool &cancelled, int timeout) : cancelled_(cancelled), timeout_(timeout) {
+    // 日期：2026-11-06；先接管描述符再申请2MiB共享数据额度，拒绝时同样关闭连接；socket先于额度析构。
+    Wire(std::atomic_bool &cancelled, int timeout, qintptr descriptor = -1)
+        : cancelled_(cancelled), timeout_(timeout) {
+        if (descriptor >= 0 && !socket.setSocketDescriptor(descriptor))
+            throw Error(ExitCode::Network, socket.errorString(), "receive");
+        credit_.reset(new BufferCredit(2 * 1024 * 1024, true));
         socket.setReadBufferSize(BufferSize * 2);
     }
     // 日期：2026-11-05；本地扫描/目录/数据库处理也可取消，但不消耗下一次网络等待期限。
@@ -44,9 +52,11 @@ class Wire final {
                 throw Error(ExitCode::Network, socket.errorString(), "connect");
         }
     }
-    // 日期：2026-11-04；每段输出等待发送缓冲排空，避免累计整个文件到 Qt 队列。
+    // 日期：2026-11-06；每次最多256KiB且排空Qt输出，正文/临时读取及512KiB输入共用既有授信。
     void write(const QByteArray &data) {
         check();
+        if (data.size() > BufferSize)
+            throw Error(ExitCode::Config, QStringLiteral("内部写入长度越界"), "send");
         QElapsedTimer progress;
         progress.start();
         const auto size = socket.write(data);
@@ -307,11 +317,9 @@ QJsonObject LegacyJob::send() {
             {"message", QStringLiteral("本地发送完成；R6 协议不提供远端校验确认")}};
 }
 
-// 日期：2026-11-04；所有已提交文件都有实际长度检查，失败只清理未完成临时文件。
+// 日期：2026-11-06；R6读写及映射数据库纳入共享授信，失败关闭描述符并只清理未完成文件。
 QJsonObject LegacyJob::receive() {
-    Wire wire(cancelled_, request_.timeoutMs);
-    if (!wire.socket.setSocketDescriptor(request_.descriptor))
-        throw Error(ExitCode::Network, wire.socket.errorString(), "receive");
+    Wire wire(cancelled_, request_.timeoutMs, request_.descriptor);
     const auto peerAddress = wire.socket.peerAddress();
     // 日期：2026-11-04；双栈监听收到的 IPv4 映射地址统一还原，与 IPv4 发现记录一致。
     const auto peer = peerAddress.toString().startsWith("::ffff:", Qt::CaseInsensitive)
@@ -333,6 +341,7 @@ QJsonObject LegacyJob::receive() {
             : request_.catalogPath;
     catalog_.reset(new Catalog(catalogPath));
     taskId_ = catalog_->begin(total, count, peer);
+    SqliteCacheCredit mappingCredit(2048);
     const auto connection = QUuid::createUuid().toString(QUuid::WithoutBraces);
     QSqlDatabase mapping = QSqlDatabase::addDatabase("QSQLITE", connection);
     QTemporaryDir metadata;
@@ -350,10 +359,11 @@ QJsonObject LegacyJob::receive() {
     mapping.setDatabaseName(metadata.filePath("roots.sqlite"));
     if (!metadata.isValid() || !mapping.open())
         throw Error(ExitCode::Disk, QStringLiteral("无法建立接收清单"), "receive");
+    mappingCredit.configure(mapping);
     QSqlQuery query(mapping);
-    for (const auto sql : {"PRAGMA cache_size=-2048", "PRAGMA max_page_count=65536",
-                           "CREATE TABLE roots(source TEXT PRIMARY KEY, target TEXT)",
-                           "CREATE TABLE paths(name TEXT PRIMARY KEY)"})
+    for (const auto sql :
+         {"PRAGMA max_page_count=65536", "CREATE TABLE roots(source TEXT PRIMARY KEY, target TEXT)",
+          "CREATE TABLE paths(name TEXT PRIMARY KEY)"})
         if (!query.exec(sql))
             throw Error(ExitCode::Disk, query.lastError().text(), "receive");
     if (!mapping.transaction())
