@@ -1,6 +1,6 @@
 {
   "date": "2026-11-07",
-  "planVersion": "v0.97",
+  "planVersion": "v0.98",
   "sourceCommitPending": false,
   "previousSourceCommit": "38f2384524bfdefa2ffefcc4c737224185a53266",
   "productionImplementationUnchangedFrom": "88f33b2c83f2950307c362fb64c693f7e9e5929d",
@@ -875,19 +875,52 @@
     "path": "docs/validation/2026-11-07/exit-state-r97-ci-guard-terminal/source-audit-r98.json",
     "sha256": "37baddab2e0ba48e458464c71caface69b44f49efcbe01be3618b11c95f1d330"
   },
-  "nativeMacRegressionPending": true,
+  "nativeMacRegressionPending": false,
   "releaseQualified": false,
   "deliveryComplete": false,
   "sourceCommit": "b2e4659b347c65eef24c8e568e07e96a2d6ff2d7",
   "productionCommit": "b2e4659b347c65eef24c8e568e07e96a2d6ff2d7",
-  "observedUtc": "2026-11-06T17:49:19.287325+00:00",
+  "observedUtc": "2026-11-06T18:03:28.844134+00:00",
   "runs": {
     "listenerRegression": {
       "id": 42264789875,
       "head_sha": "b2e4659b347c65eef24c8e568e07e96a2d6ff2d7",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/29583855/dukto-next/actions/runs/42264789875"
+    },
+    "linuxPackage": {
+      "id": 42266702018,
+      "head_sha": "b2e4659b347c65eef24c8e568e07e96a2d6ff2d7",
       "status": "in_progress",
       "conclusion": null,
-      "html_url": "https://github.com/29583855/dukto-next/actions/runs/42264789875"
+      "html_url": "https://github.com/29583855/dukto-next/actions/runs/42266702018"
     }
-  }
+  },
+  "nativeMacRegressionQualifiedWithExplicitBoundary": true,
+  "nativeMacFixtureQualified": true,
+  "nativeMacRegressionEvidence": {
+    "path": "docs/validation/2026-11-07/ci-guard-r98-native-regression-terminal/receipt.json",
+    "sha256": "79a7e6d4a8e0bd72e296b0263d6aab70cd45966b8153ea587773ca3d15e0e2cd"
+  },
+  "nativeMacFixtureEvidence": {
+    "path": "docs/validation/2026-11-07/ci-guard-r98-native-regression-terminal/fixture-qualification.json",
+    "sha256": "36742cb2282a5add4a9f28500d5c59d12d6a5991f9972d71596ef5e866e5747a"
+  },
+  "nativeMacCoreTargetsEach": 23,
+  "newExitStateRowsEach": 4,
+  "originalParallelRowsEach": 16,
+  "nativeMacFocusedRunsEach": 5,
+  "nativeMacRepeatedExitsEach": 10,
+  "nativeMacExpectedFailureInstances": 12,
+  "linuxNewPackagePending": true,
+  "linuxNewPackageRun": {
+    "id": 42266702018,
+    "head_sha": "b2e4659b347c65eef24c8e568e07e96a2d6ff2d7",
+    "status": "in_progress",
+    "conclusion": null,
+    "html_url": "https://github.com/29583855/dukto-next/actions/runs/42266702018"
+  },
+  "linuxNewPackageSourceRef": "ci-r98-20261107",
+  "windowsFullCorePending": true
 }

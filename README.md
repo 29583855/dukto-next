@@ -215,3 +215,6 @@ R87 macOS下载已更新到409a73b：Intel/Apple Silicon的GUI和独立CLI、各
 
 
 2026-11-06 R92：发现UDP空通知后的接收恢复已通过双Windows核心/R6/CLI及Alpine原用例对照，完整原生验收继续。当前Mac下载保持已验R90；见[计划](开发计划与进度.md)和[R92回执](docs/ci-verification-20261106-r92.json)。
+
+
+2026-11-07 R98：双Mac原生运行42264789875已收验，各23核心及四种退出状态/原16组通过，明确保留Darwin平台预期失败。可下载双Mac包保持已验R96；当前Windows完整核心及Linux新部署包继续，完整项目未完成。
