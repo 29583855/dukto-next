@@ -1,7 +1,7 @@
 {
-  "observedUtc": "2026-11-06T03:36:21.553290+00:00",
-  "productionCommit": "5ebbdbc7c2cc40c22c051e840e46a778b7408b70",
-  "testCommit": "5ebbdbc7c2cc40c22c051e840e46a778b7408b70",
+  "observedUtc": "2026-11-06T03:54:00.663796+00:00",
+  "productionCommit": "39fcd2292873878d6b2f0fc0a1c40bcb3d81dd85",
+  "testCommit": "39fcd2292873878d6b2f0fc0a1c40bcb3d81dd85",
   "packages": [
     {
       "architecture": "x86_64",
@@ -2415,6 +2415,74 @@
     "taskAccountingPublicServiceConnected": false,
     "publicSkipEnabled": false,
     "firstFailuresRetained": true,
+    "releaseQualified": false,
+    "deliveryComplete": false
+  },
+  "previousProductionBeforeR79": {
+    "productionCommit": "5ebbdbc7c2cc40c22c051e840e46a778b7408b70",
+    "testCommit": "5ebbdbc7c2cc40c22c051e840e46a778b7408b70"
+  },
+  "mandatoryTaskAccounting": {
+    "date": "2026-11-06",
+    "observedUtc": "2026-11-06T03:54:00.663796+00:00",
+    "planVersion": "v0.77",
+    "productionCommit": "39fcd2292873878d6b2f0fc0a1c40bcb3d81dd85",
+    "testCommit": "39fcd2292873878d6b2f0fc0a1c40bcb3d81dd85",
+    "windows": {
+      "coreTargetsEach": 22,
+      "taskStoreCasesEachIncludingLifecycle": 39,
+      "mandatoryContractScenariosEach": 11,
+      "accountingCasesEachIncludingLifecycle": 32,
+      "exchangeCasesEachIncludingLifecycle": 208,
+      "sourceInputsMatchExactGitCommit": 178,
+      "bothBuildsWithoutWarnings": true,
+      "localEvidence": {
+        "path": "docs/validation/2026-11-06/accounting-contract-r79-local-verified.json",
+        "sha256": "57af96c517c0c1e2a9ce9ec0f429b018909d79ccf972eb7d2668336c94385f8b"
+      },
+      "publicProtocolReports": 10,
+      "publicEvidence": {
+        "path": "docs/validation/2026-11-06/accounting-contract-r79-public-verified.json",
+        "sha256": "c521726ff4a29fcfde52c5d15774f86a880b005ea62648fce4db57dc9074012f"
+      }
+    },
+    "sourceAudit": {
+      "path": "docs/validation/2026-11-06/accounting-contract-r79-source-audit.json",
+      "sha256": "85d49a9bed5ecb0a1c462b31eeb88b638ee8c0d2f98500ed7c3866fccc1781dd"
+    },
+    "runs": {
+      "native": {
+        "id": 42158792914,
+        "head_sha": "39fcd2292873878d6b2f0fc0a1c40bcb3d81dd85",
+        "status": "queued",
+        "conclusion": null,
+        "html_url": "https://github.com/29583855/dukto-next/actions/runs/42158792914"
+      },
+      "musl": {
+        "id": 42159009348,
+        "head_sha": "39fcd2292873878d6b2f0fc0a1c40bcb3d81dd85",
+        "status": "in_progress",
+        "conclusion": null,
+        "html_url": "https://github.com/29583855/dukto-next/actions/runs/42159009348"
+      }
+    },
+    "publicSkipEnabled": false,
+    "publicAccountingConnected": false,
+    "macPackageSourceCommit": "5e862f5408fd2d4af51d4352e626f8208bd6e74a",
+    "pendingMacPackage": {
+      "sourceCommit": "5ebbdbc7c2cc40c22c051e840e46a778b7408b70",
+      "run": 42157539455
+    },
+    "previous49cdProtocolEvidence": [
+      {
+        "path": "docs/validation/2026-11-06/disposition-accounting-r77-protocol-progress-r79-verified.json",
+        "sha256": "41e3fa2c5cbc7e71cc05ff3c9e885c063a008f4175092ef847a1065c4cea23af"
+      },
+      {
+        "path": "docs/validation/2026-11-06/disposition-accounting-r77-musl-protocols-terminal-verified.json",
+        "sha256": "f58788de8685e6f13cd09fdee0cb0ee59617e9be6fb531fa923c9810ba856bf8"
+      }
+    ],
     "releaseQualified": false,
     "deliveryComplete": false
   }
