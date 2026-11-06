@@ -1,7 +1,7 @@
 {
-  "observedUtc": "2026-11-06T00:51:38.126936+00:00",
-  "productionCommit": "dab7c0e25585504f9ea38bd5cff5c61e51efe9f9",
-  "testCommit": "234a5d2debbd4ca38573c959f93e1f81f0729f39",
+  "observedUtc": "2026-11-06T01:37:48.410215+00:00",
+  "productionCommit": "cf37197ee68468c070833f639311370b63589fef",
+  "testCommit": "cf37197ee68468c070833f639311370b63589fef",
   "packages": [
     {
       "architecture": "x86_64",
@@ -164,25 +164,16 @@
   "focusedRunUrl": "https://github.com/29583855/dukto-next/actions/runs/42036473915",
   "focusedWorkflowConclusion": "success",
   "nativeFull": {
-    "sourceCommit": "234a5d2debbd4ca38573c959f93e1f81f0729f39",
-    "runId": 42139150179,
-    "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42139150179",
+    "sourceCommit": "cf37197ee68468c070833f639311370b63589fef",
+    "runId": 42144847843,
+    "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42144847843",
     "status": "in_progress",
     "workflowConclusion": null,
-    "productionCommit": "dab7c0e25585504f9ea38bd5cff5c61e51efe9f9",
     "expectedCoreTargetsEach": 21,
     "expectedProtocolCasesTotal": 163,
     "fullProtocolPending": true,
     "allProtocolReportHashesVerified": false,
-    "originalEvidenceVerified": false,
-    "coreTargetsEach": 21,
-    "coreSuitesPassed": 4,
-    "exchangeCasesEachIncludingLifecycle": 190,
-    "coreEvidence": {
-      "path": "docs/validation/2026-11-06/terminal-fixture-r73-pump-native/verified-summary.json",
-      "sha256": "503bb608a7f144943c5bb59281e76367695a60ced8f5ad051974ac764b29fe3a"
-    },
-    "originalCoreEvidenceVerified": true
+    "originalEvidenceVerified": false
   },
   "nativeMuslRunUrl": "https://github.com/29583855/dukto-next/actions/runs/42135996839",
   "originalFailureRunsRetained": [
@@ -199,25 +190,18 @@
   ],
   "releaseQualified": false,
   "deliveryComplete": false,
-  "planVersion": "v0.72",
-  "currentSourceStage": "dab production dual Windows/Alpine/Ubuntu disk full and 234 test four native cores verified; full protocols and first Intel package checkpoint failure cause pending",
+  "planVersion": "v0.73",
+  "currentSourceStage": "cf completed skip read-only history dual Windows verified; current native suites pending; first Windows concurrent commit and Intel original checkpoint failure causes open",
   "nativeMusl": {
-    "sourceCommit": "dab7c0e25585504f9ea38bd5cff5c61e51efe9f9",
-    "runId": 42135996839,
-    "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42135996839",
-    "status": "completed",
-    "workflowConclusion": "success",
+    "sourceCommit": "cf37197ee68468c070833f639311370b63589fef",
+    "runId": 42144898471,
+    "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42144898471",
+    "status": "in_progress",
+    "workflowConclusion": null,
     "expectedCoreTargets": 21,
     "expectedProtocolCases": 40,
-    "coreTargetsEach": 21,
-    "protocolCases": 40,
-    "fullProtocolPending": false,
-    "allProtocolReportHashesVerified": true,
-    "originalEvidenceVerified": true,
-    "evidence": {
-      "path": "docs/validation/2026-11-06/terminal-r72-protocol-proof-v1.json",
-      "sha256": "659a77fc54eedfdc35ff0dd70ac8091295d09d9f69ddc588a0bd883bdc2dd62f"
-    }
+    "fullProtocolPending": true,
+    "originalEvidenceVerified": false
   },
   "apfsCleanupR54": {
     "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42039126426",
@@ -617,7 +601,7 @@
       "sourceCommit": "31f3db3bfb5a8bf70b6217afd50df3284e27934c"
     }
   ],
-  "publicVerificationReceipt": "docs/ci-verification-20261106-r72.json",
+  "publicVerificationReceipt": "docs/ci-verification-20261106-r74.json",
   "lastVerifiedCopiedFull": {
     "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42065923177",
     "sourceCommit": "74dd5cec71fde472b940e869661d6e8533042a65",
@@ -1040,7 +1024,7 @@
     }
   },
   "currentWindowsLong": {
-    "productionCommit": "dab7c0e25585504f9ea38bd5cff5c61e51efe9f9",
+    "productionCommit": "cf37197ee68468c070833f639311370b63589fef",
     "status": "not_started",
     "qualificationComplete": false,
     "previousFrozenSession": 23745
@@ -1414,9 +1398,18 @@
   "originalNativeTerminalR72": {
     "sourceCommit": "dab7c0e25585504f9ea38bd5cff5c61e51efe9f9",
     "runId": 42135946545,
-    "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42135946545",
-    "status": "in_progress",
-    "workflowConclusion": null
+    "workflowConclusion": "failure",
+    "protocolReports": 163,
+    "allProtocolReportHashesVerified": true,
+    "windowsCoreTargetsPassed": 20,
+    "expectedCoreTargets": 21,
+    "windowsFailure": "CoreTests::concurrentExclusiveCommits",
+    "windowsFailureCauseResolved": false,
+    "firstMacCoreFailuresRetained": true,
+    "evidence": {
+      "path": "docs/validation/2026-11-06/terminal-r72-native-observation/terminal-failure-classification-r74.json",
+      "sha256": "64069fcad0281dae0fa2ff3a3b5d2823b2da8a06dba0851b7a62f175817a5763"
+    }
   },
   "terminalControlFailure": {
     "coreTargetsEach": 21,
@@ -1490,5 +1483,137 @@
     "status": "not_started",
     "qualificationComplete": false,
     "previousFrozenSession": 23745
+  },
+  "previousNativeFullR74": {
+    "sourceCommit": "234a5d2debbd4ca38573c959f93e1f81f0729f39",
+    "runId": 42139150179,
+    "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42139150179",
+    "status": "in_progress",
+    "workflowConclusion": null,
+    "productionCommit": "dab7c0e25585504f9ea38bd5cff5c61e51efe9f9",
+    "expectedCoreTargetsEach": 21,
+    "expectedProtocolCasesTotal": 163,
+    "fullProtocolPending": true,
+    "allProtocolReportHashesVerified": false,
+    "originalEvidenceVerified": false,
+    "coreTargetsEach": 21,
+    "coreSuitesPassed": 4,
+    "exchangeCasesEachIncludingLifecycle": 190,
+    "coreEvidence": {
+      "path": "docs/validation/2026-11-06/terminal-fixture-r73-pump-native/verified-summary.json",
+      "sha256": "503bb608a7f144943c5bb59281e76367695a60ced8f5ad051974ac764b29fe3a"
+    },
+    "originalCoreEvidenceVerified": true
+  },
+  "previousNativeMuslR74": {
+    "sourceCommit": "dab7c0e25585504f9ea38bd5cff5c61e51efe9f9",
+    "runId": 42135996839,
+    "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42135996839",
+    "status": "completed",
+    "workflowConclusion": "success",
+    "expectedCoreTargets": 21,
+    "expectedProtocolCases": 40,
+    "coreTargetsEach": 21,
+    "protocolCases": 40,
+    "fullProtocolPending": false,
+    "allProtocolReportHashesVerified": true,
+    "originalEvidenceVerified": true,
+    "evidence": {
+      "path": "docs/validation/2026-11-06/terminal-r72-protocol-proof-v1.json",
+      "sha256": "659a77fc54eedfdc35ff0dd70ac8091295d09d9f69ddc588a0bd883bdc2dd62f"
+    }
+  },
+  "previousWindowsLongR74": {
+    "productionCommit": "dab7c0e25585504f9ea38bd5cff5c61e51efe9f9",
+    "status": "not_started",
+    "qualificationComplete": false,
+    "previousFrozenSession": 23745
+  },
+  "skipCompletedHistory": {
+    "date": "2026-11-06",
+    "observedUtc": "2026-11-06T01:37:48.410215+00:00",
+    "planVersion": "v0.73",
+    "productionCommit": "cf37197ee68468c070833f639311370b63589fef",
+    "testCommit": "cf37197ee68468c070833f639311370b63589fef",
+    "windows": {
+      "productionCommit": "cf37197ee68468c070833f639311370b63589fef",
+      "exactGitArchiveInputsMatched": 175,
+      "sourceInputsUnchanged": true,
+      "windowsToolchains": [
+        "ucrt",
+        "msvc"
+      ],
+      "coreTargetsEach": 21,
+      "receiveSkipCasesEachIncludingLifecycle": 50,
+      "exchangeCasesEachIncludingLifecycle": 190,
+      "publicProtocolReportsEach": 3,
+      "sourceLinkageVerified": true,
+      "coreEvidence": {
+        "path": "docs/validation/2026-11-06/skip-history-r74-final-windows/summary.json",
+        "sha256": "a4846942d4aff96fe82b2438bb4a31de857a4c6e5b30b206525cca7f51501bf8"
+      },
+      "publicEvidence": {
+        "path": "docs/validation/2026-11-06/skip-history-r74-public-windows/summary.json",
+        "sha256": "53004d0b4145961a98e741d573b94eebaeaa70fe9d1d386d37f57346a8a5aa4e"
+      },
+      "publicSkipEnabled": false,
+      "nativeCurrentSourcePending": true,
+      "deliveryComplete": false,
+      "evidence": {
+        "path": "docs/validation/2026-11-06/skip-history-r74-final-windows/verified-summary.json",
+        "sha256": "17e95496a8a610993599a394a0e03012cad7fb83a771d0010eade04ef15a9a12"
+      }
+    },
+    "runs": {
+      "native": {
+        "sourceCommit": "cf37197ee68468c070833f639311370b63589fef",
+        "runId": 42144847843,
+        "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42144847843",
+        "status": "in_progress",
+        "workflowConclusion": null
+      },
+      "musl": {
+        "sourceCommit": "cf37197ee68468c070833f639311370b63589fef",
+        "runId": 42144898471,
+        "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42144898471",
+        "status": "in_progress",
+        "workflowConclusion": null
+      }
+    },
+    "sourceAudit": {
+      "files": 183,
+      "findings": 0,
+      "cxx14AndFormattingPassed": true,
+      "evidence": {
+        "path": "docs/validation/2026-11-06/skip-history-r74-final-source-audit.json",
+        "sha256": "8a8809b6d06f3a5528b8fcf36f2e90d87835e2f908a89efe347426d24a947c87"
+      }
+    },
+    "previousProtocolObservation": {
+      "path": "docs/validation/2026-11-06/native-r72-r73-protocol-observation-r74-2.json",
+      "sha256": "a984ee5778e00e2e5f1cee66690d546554a2fc233ef0284fc1e0bbad22fecb06"
+    },
+    "previousNativeRunTerminal": {
+      "sourceCommit": "dab7c0e25585504f9ea38bd5cff5c61e51efe9f9",
+      "runId": 42135946545,
+      "workflowConclusion": "failure",
+      "protocolReports": 163,
+      "allProtocolReportHashesVerified": true,
+      "windowsCoreTargetsPassed": 20,
+      "expectedCoreTargets": 21,
+      "windowsFailure": "CoreTests::concurrentExclusiveCommits",
+      "windowsFailureCauseResolved": false,
+      "firstMacCoreFailuresRetained": true,
+      "evidence": {
+        "path": "docs/validation/2026-11-06/terminal-r72-native-observation/terminal-failure-classification-r74.json",
+        "sha256": "64069fcad0281dae0fa2ff3a3b5d2823b2da8a06dba0851b7a62f175817a5763"
+      }
+    },
+    "intelPackageCheckpointFailureCauseResolved": false,
+    "nativeCurrentSourcePending": true,
+    "publicSkipEnabled": false,
+    "existingPreviewPackagesUpdated": false,
+    "releaseQualified": false,
+    "deliveryComplete": false
   }
 }
