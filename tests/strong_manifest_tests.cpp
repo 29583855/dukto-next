@@ -1,7 +1,11 @@
+#include "core/dispositionjournal.h"
 #include "core/error.h"
 #include "core/files.h"
 #include "core/protocol.h"
+#include "core/service.h"
 #include "core/strongmanifest.h"
+#include "core/transferdisposition.h"
+#include "core/uploadmanifest.h"
 
 #include <QCryptographicHash>
 #include <QDir>
@@ -212,6 +216,180 @@ class StrongManifestTests final : public QObject {
         QSqlDatabase::removeDatabase(name);
         QVERIFY_EXCEPTION_THROWN(dukto::StrongManifest(store, "changed.sqlite", false),
                                  dukto::Error);
+    }
+    // 日期：2026-11-06；206项冻结源跨进程重开后可删除，历史跳过免读，复制仍须真实源存在。
+    void uploadFrozenHistorySurvivesSourceRemoval() {
+        QTemporaryDir temporary;
+        const auto source = temporary.filePath("bundle");
+        QVERIFY(QDir().mkpath(source + "/空目录"));
+        for (int index = 0; index < 204; ++index) {
+            QFile file(source + QString("/item-%1").arg(index, 3, 10, QChar('0')));
+            QVERIFY(file.open(QIODevice::WriteOnly));
+            QCOMPARE(file.write("abc"), qint64(3));
+        }
+        dukto::PrivateStore store(temporary.filePath("private"), true);
+        dukto::ClientProfile profile;
+        profile.server = QUuid::createUuid();
+        profile.client = QUuid::createUuid();
+        const auto request = QUuid::createUuid();
+        const auto task = QUuid::createUuid();
+        const auto stem = "upload-source-" + request.toString(QUuid::WithoutBraces);
+        QJsonObject expected;
+        {
+            dukto::UploadManifest upload(store, request, profile, "data", "",
+                                         dukto::ConflictPolicy::Skip, {source});
+            expected = upload.get().summary();
+            QCOMPARE(expected["entries"].toString(), QString("206"));
+            dukto::DispositionJournal outcomes(store, "outcomes.sqlite", task, upload.get(),
+                                               "skip");
+            for (quint64 id = 1; id <= 206; ++id)
+                outcomes.append(id, upload.get().entry(id).relative, "skipped", 1);
+        }
+        const auto original = dukto::hashFile(QDir(store.directory()).filePath(stem + ".sqlite"));
+        const auto record = store.read(stem + ".json");
+        QVERIFY(QDir(source).removeRecursively());
+        const auto connections = QSqlDatabase::connectionNames();
+        for (int attempt = 0; attempt < 3; ++attempt) {
+            dukto::UploadManifest upload(store, request, profile, "data", "",
+                                         dukto::ConflictPolicy::Skip, {source});
+            QCOMPARE(upload.get().summary(), expected);
+            dukto::DispositionJournal outcomes(store, "outcomes.sqlite", task, upload.get(),
+                                               "skip");
+            QCOMPARE(
+                dukto::verifyCompletedSource(upload.get(), outcomes)["skippedEntries"].toString(),
+                QString("206"));
+        }
+        QCOMPARE(QSqlDatabase::connectionNames(), connections);
+        QCOMPARE(dukto::hashFile(QDir(store.directory()).filePath(stem + ".sqlite")), original);
+        QCOMPARE(store.read(stem + ".json"), record);
+        dukto::UploadManifest upload(store, request, profile, "data", "",
+                                     dukto::ConflictPolicy::Skip, {source});
+        dukto::DispositionJournal copied(store, "copied.sqlite", task, upload.get(), "skip");
+        for (quint64 id = 1; id <= 206; ++id)
+            copied.append(id, upload.get().entry(id).relative, "copied");
+        QVERIFY_EXCEPTION_THROWN(dukto::verifyCompletedSource(upload.get(), copied), dukto::Error);
+    }
+
+    // 日期：2026-11-06；同请求并发、源根/主体/目标/策略变更必须拒绝，正常重开不改变原库。
+    void uploadIdentityAndOwnership() {
+        QTemporaryDir temporary;
+        const auto source = temporary.filePath("sample");
+        QFile file(source);
+        QVERIFY(file.open(QIODevice::WriteOnly));
+        QCOMPARE(file.write("abc"), qint64(3));
+        file.close();
+        dukto::PrivateStore store(temporary.filePath("private"), true);
+        dukto::ClientProfile profile;
+        profile.server = QUuid::createUuid();
+        profile.client = QUuid::createUuid();
+        const auto request = QUuid::createUuid();
+        const auto stem = "upload-source-" + request.toString(QUuid::WithoutBraces);
+        {
+            dukto::UploadManifest first(store, request, profile, "data", "",
+                                        dukto::ConflictPolicy::Rename, {source});
+            QVERIFY_EXCEPTION_THROWN(dukto::UploadManifest(store, request, profile, "data", "",
+                                                           dukto::ConflictPolicy::Rename, {source}),
+                                     dukto::Error);
+        }
+        const auto before = dukto::hashFile(QDir(store.directory()).filePath(stem + ".sqlite"));
+        auto other = profile;
+        other.client = QUuid::createUuid();
+        QVERIFY_EXCEPTION_THROWN(dukto::UploadManifest(store, request, other, "data", "",
+                                                       dukto::ConflictPolicy::Rename, {source}),
+                                 dukto::Error);
+        other = profile;
+        other.server = QUuid::createUuid();
+        QVERIFY_EXCEPTION_THROWN(dukto::UploadManifest(store, request, other, "data", "",
+                                                       dukto::ConflictPolicy::Rename, {source}),
+                                 dukto::Error);
+        QVERIFY_EXCEPTION_THROWN(dukto::UploadManifest(store, request, profile, "other", "",
+                                                       dukto::ConflictPolicy::Rename, {source}),
+                                 dukto::Error);
+        QVERIFY_EXCEPTION_THROWN(dukto::UploadManifest(store, request, profile, "data", "other",
+                                                       dukto::ConflictPolicy::Rename, {source}),
+                                 dukto::Error);
+        QVERIFY_EXCEPTION_THROWN(dukto::UploadManifest(store, request, profile, "data", "",
+                                                       dukto::ConflictPolicy::Fail, {source}),
+                                 dukto::Error);
+        QVERIFY_EXCEPTION_THROWN(dukto::UploadManifest(store, request, profile, "data", "",
+                                                       dukto::ConflictPolicy::Rename,
+                                                       {temporary.filePath("other")}),
+                                 dukto::Error);
+        const auto connections = QSqlDatabase::connectionNames();
+        for (int attempt = 0; attempt < 3; ++attempt) {
+            dukto::UploadManifest restored(store, request, profile, "data", "",
+                                           dukto::ConflictPolicy::Rename, {source});
+            QCOMPARE(restored.get().entry(1).sha256, sha("abc"));
+        }
+        QCOMPARE(QSqlDatabase::connectionNames(), connections);
+        QCOMPARE(dukto::hashFile(QDir(store.directory()).filePath(stem + ".sqlite")), before);
+    }
+
+    // 日期：2026-11-06；取消扫描回收本次自建库；已有原件缺失、源映射被改及不完整库不得重建。
+    void uploadCancellationAndCorruption() {
+        QTemporaryDir temporary;
+        const auto source = temporary.filePath("sample");
+        QFile file(source);
+        QVERIFY(file.open(QIODevice::WriteOnly));
+        QCOMPARE(file.write("abc"), qint64(3));
+        file.close();
+        dukto::PrivateStore store(temporary.filePath("private"), true);
+        dukto::ClientProfile profile;
+        profile.server = QUuid::createUuid();
+        profile.client = QUuid::createUuid();
+        const auto request = QUuid::createUuid();
+        const auto stem = "upload-source-" + request.toString(QUuid::WithoutBraces);
+        int checks = 0;
+        QVERIFY_EXCEPTION_THROWN(
+            dukto::UploadManifest(store, request, profile, "data", "",
+                                  dukto::ConflictPolicy::Rename, {source}, nullptr,
+                                  [&]() {
+                                      // 日期：2026-11-06；在真实扫描检查点中止，验证异常路径不留下半份发布证据。
+                                      if (++checks == 5)
+                                          throw dukto::Error(dukto::ExitCode::Cancelled, "cancel",
+                                                             "manifest");
+                                  }),
+            dukto::Error);
+        QCOMPARE(checks, 5);
+        QVERIFY(!store.exists(stem + ".sqlite"));
+        QVERIFY(!store.exists(stem + ".json"));
+        {
+            dukto::UploadManifest upload(store, request, profile, "data", "",
+                                         dukto::ConflictPolicy::Rename, {source});
+        }
+        const auto saved = store.read(stem + ".json");
+        const auto baseline = QSqlDatabase::connectionNames();
+        const auto connection = QUuid::createUuid().toString();
+        {
+            auto database = QSqlDatabase::addDatabase("QSQLITE", connection);
+            database.setDatabaseName(QDir(store.directory()).filePath(stem + ".sqlite"));
+            QVERIFY(database.open());
+            QSqlQuery query(database);
+            query.prepare("UPDATE entries SET source=? WHERE id=1");
+            query.addBindValue(temporary.filePath("foreign"));
+            QVERIFY(query.exec());
+            query.finish();
+            database.close();
+        }
+        QSqlDatabase::removeDatabase(connection);
+        const auto changed = dukto::hashFile(QDir(store.directory()).filePath(stem + ".sqlite"));
+        QVERIFY_EXCEPTION_THROWN(dukto::UploadManifest(store, request, profile, "data", "",
+                                                       dukto::ConflictPolicy::Rename, {source}),
+                                 dukto::Error);
+        QCOMPARE(QSqlDatabase::connectionNames(), baseline);
+        QCOMPARE(dukto::hashFile(QDir(store.directory()).filePath(stem + ".sqlite")), changed);
+        QCOMPARE(store.read(stem + ".json"), saved);
+        store.remove(stem + ".json");
+        QVERIFY_EXCEPTION_THROWN(dukto::UploadManifest(store, request, profile, "data", "",
+                                                       dukto::ConflictPolicy::Rename, {source}),
+                                 dukto::Error);
+        QVERIFY(!store.exists(stem + ".json"));
+        store.write(stem + ".json", saved);
+        store.remove(stem + ".sqlite");
+        QVERIFY_EXCEPTION_THROWN(dukto::UploadManifest(store, request, profile, "data", "",
+                                                       dukto::ConflictPolicy::Rename, {source}),
+                                 dukto::Error);
+        QVERIFY(!store.exists(stem + ".sqlite"));
     }
 };
 QTEST_GUILESS_MAIN(StrongManifestTests)

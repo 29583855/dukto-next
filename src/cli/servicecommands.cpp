@@ -8,6 +8,7 @@
 #include "core/shares.h"
 #include "core/strongmanifest.h"
 #include "core/transferoperation.h"
+#include "core/uploadmanifest.h"
 
 #include <QCoreApplication>
 #include <QDir>
@@ -341,7 +342,7 @@ int runServiceCommand(const QCommandLineParser &parser, const QStringList &argum
         return 0;
     }
     std::unique_ptr<dukto::PrivateStore> transferState;
-    std::unique_ptr<dukto::TemporaryManifest> upload;
+    std::unique_ptr<dukto::UploadManifest> upload;
     QUuid request;
     QUuid resumeId;
     auto share = parser.value("share");
@@ -400,13 +401,14 @@ int runServiceCommand(const QCommandLineParser &parser, const QStringList &argum
         transferState.reset(
             new dukto::PrivateStore(QDir(stateDirectory).filePath("transfers"), true));
         if (command == "upload") {
-            upload.reset(new dukto::TemporaryManifest(*transferState));
             operation->run([&]() {
-                // 日期：2026-11-05；本地冻结清单只扫描一次，总期限与取消也覆盖无网络的摘要阶段。
-                upload->get().scan(parser.values("path"), stop, [&]() {
-                    // 日期：2026-11-05；扫描检查点处理信号，网络重试不重新扫描或更换强身份。
-                    QCoreApplication::processEvents(QEventLoop::AllEvents, 1);
-                });
+                // 日期：2026-11-06；原请求跨进程复用冻结源清单，重开不扫描已删除的跳过源。
+                upload.reset(new dukto::UploadManifest(
+                    *transferState, request, profile, share, relative, conflict,
+                    parser.values("path"), stop, [&]() {
+                        // 日期：2026-11-06；本地磁盘核验同样处理信号，并受原总期限约束。
+                        QCoreApplication::processEvents(QEventLoop::AllEvents, 1);
+                    }));
                 return QJsonObject{};
             });
         }

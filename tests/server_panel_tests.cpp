@@ -81,6 +81,82 @@ class SlowTestProxy final : public QTcpServer {
 class ServerPanelTests final : public QObject {
     Q_OBJECT
   private slots:
+    // 日期：2026-11-06；真实TLS上传后重建GUI面板，继续原请求不重扫新增项，复制源变化仍拒绝。
+    void uploadManifestAcrossPanelRestart() {
+        QTemporaryDir temporary;
+        const auto shared = temporary.filePath("shared");
+        const auto source = temporary.filePath("source");
+        QVERIFY(QDir().mkpath(shared));
+        QVERIFY(QDir().mkpath(source));
+        QFile payload(source + "/payload.bin");
+        QVERIFY(payload.open(QIODevice::WriteOnly));
+        QCOMPARE(payload.write("abc"), qint64(3));
+        payload.close();
+        ServerPanel server(temporary.filePath("server"));
+        server.execute("init", {{"names", "127.0.0.1"}});
+        QTRY_VERIFY_WITH_TIMEOUT(!server.busy(), 30000);
+        const auto fingerprint = server.identity()["fingerprint"];
+        const QVariantMap rights{{"share", "data"},
+                                 {"path", shared},
+                                 {"upload", true},
+                                 {"download", true},
+                                 {"browse", true}};
+        server.execute("share-add", rights);
+        QTRY_VERIFY_WITH_TIMEOUT(!server.busy(), 30000);
+        server.execute("pairing", rights);
+        QTRY_VERIFY_WITH_TIMEOUT(!server.busy(), 30000);
+        const auto credential = server.outcome()["credentialFile"];
+        QTcpServer reservation;
+        QVERIFY(reservation.listen(QHostAddress::LocalHost, 0));
+        const auto port = reservation.serverPort();
+        reservation.close();
+        server.setServing(true, "127.0.0.1", port);
+        QVERIFY(server.serving());
+        const auto request = QUuid::createUuid().toString(QUuid::WithoutBraces);
+        const QVariantMap options{
+            {"share", "data"}, {"path", source}, {"requestId", request}, {"channels", "4"}};
+        const auto clientPath = temporary.filePath("client");
+        QString task;
+        {
+            ServerPanel client(clientPath);
+            client.execute("pair", {{"target", QString("127.0.0.1:%1").arg(port)},
+                                    {"fingerprint", fingerprint},
+                                    {"credentialFile", credential}});
+            QTRY_VERIFY_WITH_TIMEOUT(!client.busy(), 30000);
+            QVERIFY(!client.outcome()["client"].toString().isEmpty());
+            client.execute("upload", options);
+            QTRY_VERIFY_WITH_TIMEOUT(!client.busy(), 30000);
+            QCOMPARE(client.task()["state"].toString(), QString("completed"));
+            task = client.task()["taskId"].toString();
+        }
+        const auto manifest =
+            QDir(clientPath).filePath("transfers/upload-source-" + request + ".sqlite");
+        const auto frozen = dukto::hashFile(manifest);
+        QFile extra(source + "/new.bin");
+        QVERIFY(extra.open(QIODevice::WriteOnly));
+        QCOMPARE(extra.write("new"), qint64(3));
+        extra.close();
+        {
+            ServerPanel restarted(clientPath);
+            restarted.execute("resume", {{"taskId", task}, {"path", source}, {"channels", "8"}});
+            QTRY_VERIFY_WITH_TIMEOUT(!restarted.busy(), 30000);
+            QCOMPARE(restarted.task()["state"].toString(), QString("completed"));
+            QCOMPARE(restarted.task()["taskId"].toString(), task);
+            QVERIFY(!QFile::exists(shared + "/source/new.bin"));
+            QVERIFY(payload.open(QIODevice::WriteOnly | QIODevice::Truncate));
+            QCOMPARE(payload.write("xyz"), qint64(3));
+            payload.close();
+            restarted.execute("upload", options);
+            QTRY_VERIFY_WITH_TIMEOUT(!restarted.busy(), 30000);
+            QCOMPARE(restarted.outcome()["code"].toInt(), 6);
+            QCOMPARE(restarted.outcome()["stage"].toString(), QString("completion"));
+        }
+        QCOMPARE(dukto::hashFile(manifest), frozen);
+        QCOMPARE(dukto::hashFile(shared + "/source/payload.bin"),
+                 QCryptographicHash::hash("abc", QCryptographicHash::Sha256));
+        server.setServing(false, "127.0.0.1", port);
+    }
+
     // 日期：2026-11-05；续期和迁移的生产按钮、错误保护、监听重启及原配对身份实际核对。
     void certificateLifecycleQml() {
         QTemporaryDir temporary;

@@ -41,6 +41,7 @@ add_library(dukto-core
     src/core/shares.cpp
     src/core/browse.cpp
     src/core/strongmanifest.cpp
+    src/core/uploadmanifest.cpp
     src/core/dispositionjournal.cpp
     src/core/taskstore.cpp
     src/core/transferitems.cpp

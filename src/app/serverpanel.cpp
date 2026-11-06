@@ -6,6 +6,7 @@
 #include "core/shares.h"
 #include "core/strongmanifest.h"
 #include "core/transferoperation.h"
+#include "core/uploadmanifest.h"
 #include <QDir>
 #include <QFileDialog>
 #include <QFileInfo>
@@ -260,7 +261,7 @@ void ServerAction::run() {
                            : dukto::ConflictPolicy::Rename;
         }
         std::unique_ptr<dukto::PrivateStore> transfers;
-        std::unique_ptr<dukto::TemporaryManifest> manifest;
+        std::unique_ptr<dukto::UploadManifest> manifest;
         if (operation == "upload" || operation == "download") {
             dukto::checkedChannels(options_.value("channels", "1").toString());
             if (operation == "download" && options_["output"].toString().isEmpty())
@@ -276,10 +277,10 @@ void ServerAction::run() {
                 auto paths = options_["paths"].toStringList();
                 if (paths.isEmpty() && !options_["path"].toString().isEmpty())
                     paths.append(options_["path"].toString());
-                manifest.reset(new dukto::TemporaryManifest(*transfers));
                 transfer->run([&]() {
-                    // 日期：2026-11-05；扫描共享合成取消源，自动重试不重新生成清单。
-                    manifest->get().scan(paths, stop);
+                    // 日期：2026-11-06；GUI与CLI共用持久冻结源，不因重启重扫或更换原请求清单。
+                    manifest.reset(new dukto::UploadManifest(*transfers, request, profile, share,
+                                                             relative, conflict, paths, stop));
                     return QJsonObject{};
                 });
             }

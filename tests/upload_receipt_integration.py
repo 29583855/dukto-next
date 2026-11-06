@@ -47,6 +47,9 @@ def recovery_case(executable, root, server, client, shared, channels, conflict):
     task = result["taskId"]
     state = client / "transfers"
     ledger = state / f"upload-disposition-{task}.sqlite"
+    frozen = [state / f"upload-source-{request}{suffix}" for suffix in (".json", ".sqlite")]
+    assert all(path.is_file() for path in frozen)
+    frozen_hashes = {path.name: digest(path) for path in frozen}
     manifest = server / "service" / f"manifest-{task}.sqlite"
     receiver = server / "service" / f"receive-{task}.sqlite"
     copied = state / f"test-manifest-{task}.sqlite"
@@ -73,10 +76,49 @@ def recovery_case(executable, root, server, client, shared, channels, conflict):
     original = changed.read_bytes()
     changed.write_bytes(original + b"changed-source")
     error = transfer(executable, client, operation, 6)
-    assert error["stage"] == "disposition"
+    assert error["stage"] == "completion"
     changed.write_bytes(original)
     assert transfer(executable, client, operation)["taskId"] == task
     assert verify_journal(state, copied.name, task, destination, conflict, sender=True)["records"] == expected["records"]
+    # 日期：2026-11-06；重试使用原冻结集合，扫描后新增文件须新建请求，不能混入已完成批次。
+    added = source / "new-after-freeze.bin"
+    added.write_bytes(b"not part of the original upload")
+    assert transfer(executable, client, operation)["taskId"] == task
+    assert not any(destination.rglob(added.name))
+    added.unlink()
+    # 日期：2026-11-06；改源根、缺失记录/数据库及本机源映射篡改都必须只读拒绝，再恢复原件。
+    frozen_attacks = []
+    for path in frozen:
+        hidden = path.with_suffix(path.suffix + ".saved")
+        path.rename(hidden)
+        try:
+            remaining = {item.name: digest(item) for item in frozen if item.exists()}
+            error = transfer(executable, client, operation, 6)
+            assert error["stage"] == "manifest" and not path.exists(), error
+            assert remaining == {item.name: digest(item) for item in frozen if item.exists()}
+            frozen_attacks.append({"attack": "missing-" + path.suffix, "refused": True})
+        finally:
+            hidden.rename(path)
+    original_database = frozen[1].read_bytes()
+    try:
+        with closing(sqlite3.connect(frozen[1])) as database:
+            database.execute("UPDATE entries SET source=? WHERE id=1", (str(root / "foreign-source"),))
+            database.commit()
+        tampered_hash = digest(frozen[1])
+        error = transfer(executable, client, operation, 6)
+        assert error["stage"] == "manifest" and digest(frozen[1]) == tampered_hash, error
+        frozen_attacks.append({"attack": "local-source-mapping", "refused": True})
+    finally:
+        frozen[1].write_bytes(original_database)
+    alternate = root / (key + "-alternate")
+    shutil.copytree(source, alternate)
+    changed_paths = list(operation)
+    changed_paths[changed_paths.index("--path") + 1] = str(alternate)
+    error = transfer(executable, client, changed_paths, 6)
+    assert error["stage"] == "manifest", error
+    frozen_attacks.append({"attack": "different-source-root", "refused": True})
+    assert transfer(executable, client, operation)["taskId"] == task
+    assert frozen_hashes == {path.name: digest(path) for path in frozen}
     attacks = []
     if conflict == "rename":
         manifest_backup, receiver_backup = root / "manifest-backup.sqlite", root / "receiver-backup.sqlite"
@@ -125,7 +167,9 @@ def recovery_case(executable, root, server, client, shared, channels, conflict):
         assert (destination / source.name / "file-203.bin").read_bytes() == b"existing-user-data"
     return {"taskId": task, "conflict": conflict, "channels": channels, "entries": expected["totalEntries"],
             "partialAndMissingLedgerRecovered": True, "receiverAndSenderRecordsMatch": True,
-            "requestRebindingRefused": True, "malformedEvidence": attacks}
+            "requestRebindingRefused": True, "malformedEvidence": attacks,
+            "frozenManifestPreservedAcrossProcesses": True, "newFilesDoNotChangeFrozenRequest": True,
+            "frozenManifestAttacks": frozen_attacks}
 
 
 # 日期：2026-11-06；所有服务仅监听自有回环端口，原报告不含凭据；任一恢复或拒绝错误都使专项失败。
