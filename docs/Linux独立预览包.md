@@ -1,17 +1,16 @@
 # Linux 独立预览包
 
-当前5857073包与db8c774生产输入相同，包含历史完成任务只读重验、逐项处置及确认恢复；GUI与独立CLI均已实际迁移验证。
+更新日期：2026-11-07。当前包源码为`b2e4659b347c65eef24c8e568e07e96a2d6ff2d7`（R98），包含GUI和可独立运行的CLI，采用C++14、Qt5和CMake。目标为Ubuntu24.04或更新的x86_64 glibc环境，要求glibc2.39起及系统CJK字体。
 
-更新日期：2026-11-06。目标为Ubuntu24.04或更新的x86_64 glibc环境，要求glibc2.39起及系统CJK字体。正式发布资格仍为false。
+## 当前可下载包（2026-11-07）
 
+[下载x86_64 glibc预览包](https://github.com/29583855/dukto-next/actions/runs/42266702018/artifacts/13532504491)（GitHub附件可能需要登录）。ZIP内含tar.gz、SHA及原始证据。内部tar.gz SHA-256：`3abe49bf08c653ab7c7c10fe66fd898d4fe95e060f500b4e061145dc6d80bd7e`。
 
-## 当前可下载包（2026-11-06）
+333份应用源码全集逐字节匹配精确Git提交，708文件、2链接和132 ELF均已核验；23项核心测试、四种退出状态和原16组并行处置通过。实际Xvfb/X11、Weston/Wayland迁移各自通过16通道双向、1/4/16覆盖和4→8恢复，双显示各三份业务报告均已核验。两张包首次启动截图已查看，中文说明和控件正常。
 
-[下载x86_64 glibc预览包](https://github.com/29583855/dukto-next/actions/runs/42111269030/artifacts/13455131861)（GitHub附件可能需要登录）。ZIP内含tar、SHA及原始证据。内部tar SHA-256：a05fe6ad7434cf3e77d9fab68abbd817055c31e3a4ffcaf59c75366d3daf4556。
+[包资格回执](validation/2026-11-07/exit-state-r98-linux-package-terminal/qualified-receipt.json)绑定原始报告、截图和程序摘要。本机归档：`dist/linux-preview-20261107-r98-exit-state`。GUI需系统CJK字体，例如fonts-wqy-zenhei。
 
-包源5857073，生产输入与db8c774相同。242份应用源码与精确Git树全集一致，708文件、2链接和132 ELF核验通过；21核心及主窗口导航通过。实际Xvfb/X11、Weston/Wayland迁移各自通过16通道双向、1/4/16覆盖及4→8恢复，三份内嵌业务报告均已读。两张实际截图已查看，中文/控件正常。GUI需系统CJK字体，例如fonts-wqy-zenhei。
-
-[公开回执](ci-verification-20261106-r68.json)分别绑定ELF和启动器摘要；覆盖/恢复子报告记录启动器摘要，transfer子报告未提供程序摘要，身份范围由实际归档及已验测试输入绑定。原附件持久保存在dist/linux-preview-20261106-r67-completed-history-terminal。Xvfb/Weston不替代物理桌面、干净系统、完整第三方源码或正式发布验收。
+该包为R98，尚未包含R99发送文本预检及拒绝保留草稿修复。Xvfb/Weston迁移通过不替代物理桌面、干净系统、完整第三方源码或正式发布验收；完整项目继续未完成。
 
 ## 构建依赖
 
@@ -112,3 +111,19 @@ v0.51：本页当前包双向1/4/16覆盖与已有文件4→8恢复通过；旧f
 ### v0.69 新源码资格说明（2026-11-06）
 
 最新生产源码4da0b12增加双端处置摘要确认，双Windows核心与协议专项通过；精确新提交的原生CI及双Mac部署包已启动，终态和原附件待核验。本页下载仍为已验db8c774生产输入，不声称包含新协议。上一db8c774五环境各21核心、四runner159及Alpine39协议原报告SHA均已核验。见[本轮回执](ci-verification-20261106-r69.json)。
+
+
+## R98替换前的下载入口（历史）
+
+当前5857073包与db8c774生产输入相同，包含历史完成任务只读重验、逐项处置及确认恢复；GUI与独立CLI均已实际迁移验证。
+
+更新日期：2026-11-06。目标为Ubuntu24.04或更新的x86_64 glibc环境，要求glibc2.39起及系统CJK字体。正式发布资格仍为false。
+
+
+## 当前可下载包（2026-11-06）
+
+[下载x86_64 glibc预览包](https://github.com/29583855/dukto-next/actions/runs/42111269030/artifacts/13455131861)（GitHub附件可能需要登录）。ZIP内含tar、SHA及原始证据。内部tar SHA-256：a05fe6ad7434cf3e77d9fab68abbd817055c31e3a4ffcaf59c75366d3daf4556。
+
+包源5857073，生产输入与db8c774相同。242份应用源码与精确Git树全集一致，708文件、2链接和132 ELF核验通过；21核心及主窗口导航通过。实际Xvfb/X11、Weston/Wayland迁移各自通过16通道双向、1/4/16覆盖及4→8恢复，三份内嵌业务报告均已读。两张实际截图已查看，中文/控件正常。GUI需系统CJK字体，例如fonts-wqy-zenhei。
+
+[公开回执](ci-verification-20261106-r68.json)分别绑定ELF和启动器摘要；覆盖/恢复子报告记录启动器摘要，transfer子报告未提供程序摘要，身份范围由实际归档及已验测试输入绑定。原附件持久保存在dist/linux-preview-20261106-r67-completed-history-terminal。Xvfb/Weston不替代物理桌面、干净系统、完整第三方源码或正式发布验收。

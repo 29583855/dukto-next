@@ -1,25 +1,8 @@
 {
-  "observedUtc": "2026-11-06T19:02:42.881996+00:00",
-  "productionCommit": "88f33b2c83f2950307c362fb64c693f7e9e5929d",
-  "testCommit": "b2e4659b347c65eef24c8e568e07e96a2d6ff2d7",
+  "observedUtc": "2026-11-06T19:25:46.663524+00:00",
+  "productionCommit": "a316e4a4f947ac9a53aa6dd4477eb5b8e2a7fb38",
+  "testCommit": "a316e4a4f947ac9a53aa6dd4477eb5b8e2a7fb38",
   "packages": [
-    {
-      "architecture": "x86_64",
-      "archive": "DuktoNext-linux-glibc-x64-preview.tar.gz",
-      "sha256": "a05fe6ad7434cf3e77d9fab68abbd817055c31e3a4ffcaf59c75366d3daf4556",
-      "sourceCommit": "5857073de686df38c2f3ee8dc1feb0ce98efdf4d",
-      "verifiedFiles": 708,
-      "verifiedLinks": 2,
-      "nativeImages": 132,
-      "applicationSourceFiles": 242,
-      "inputCliSha256": "225c7791c91696851ca96008c4334751424c538b7859d3c725d75d7626263b79",
-      "inputGuiSha256": "d2136b19fee544fd94a150c4ceb6ca2e9f4da771e084323824833ba0e9db6995",
-      "cleanSystemQualified": false,
-      "releaseQualified": false,
-      "artifactSha256": "3acc78726f1bb41ad613f1aeaa382a1e2fabfe569fbafc2ce3f6d06ddffe72f0",
-      "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42111269030/artifacts/13455131861",
-      "runtimeMigrationBothDisplaysQualified": true
-    },
     {
       "applicationSourceFiles": 329,
       "allSourceBlobsMatchExactGitCommit": true,
@@ -141,6 +124,30 @@
       "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42253077233/artifacts/13523845555",
       "zipSha256": "12233082c80a65e03dad6e3eec9791675b58a5389f2a677de7295c64ca17f7ce",
       "localArchive": "dist/macos-preview-20261107-r96-boundary/macos-preview-X64/package-output/DuktoNext-macos-x86_64-preview.tar.gz"
+    },
+    {
+      "architecture": "x86_64",
+      "archive": "DuktoNext-linux-glibc-x64-preview.tar.gz",
+      "sha256": "3abe49bf08c653ab7c7c10fe66fd898d4fe95e060f500b4e061145dc6d80bd7e",
+      "sourceCommit": "b2e4659b347c65eef24c8e568e07e96a2d6ff2d7",
+      "verifiedFiles": 708,
+      "verifiedLinks": 2,
+      "nativeImages": 132,
+      "applicationSourceFiles": 333,
+      "inputCliSha256": "816b549fd5c34be611e9e1f669e54ab8a2c224ace1206cc3b314adcceb9d2412",
+      "inputGuiSha256": "cdc0d34ba5e2a3d32288f214310218a6be6c6cb9b7bb425c3596f7819df6def6",
+      "cleanSystemQualified": false,
+      "releaseQualified": false,
+      "artifactId": 13532504491,
+      "artifactSha256": "0e5cbeac6b0e0d21f7163436476548caac6b63212256a9c5f6c01924464dce1b",
+      "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42266702018/artifacts/13532504491",
+      "runtimeMigrationBothDisplaysQualified": true,
+      "screenshotsViewed": true,
+      "screenshotsReviewed": 2,
+      "visualReview": {
+        "path": "docs/validation/2026-11-07/exit-state-r98-linux-package-terminal/visual-review.json",
+        "sha256": "9db90e2cd1c90e2640b32597291fb8040c0fd50847602eb8e14d155f1384c49a"
+      }
     }
   ],
   "packageRuntime": {
@@ -153,7 +160,15 @@
         "sha256": "bf68fef1ab766437924713ee3f29ab61a5dbca0bf166f03941fd87306a991f97"
       }
     },
-    "linux": "5857073 exact242 source files,132 ELF and X11/Wayland embedded business reports verified",
+    "linux": {
+      "sourceCommit": "b2e4659b347c65eef24c8e568e07e96a2d6ff2d7",
+      "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42266702018",
+      "bothDisplaysVerified": true,
+      "evidence": {
+        "path": "docs/validation/2026-11-07/exit-state-r98-linux-package-terminal/qualified-receipt.json",
+        "sha256": "4d6bfa64b0e9f32abf949edc3a088e64607a94b68b083b39788234a783265f96"
+      }
+    },
     "windows": "r25 current production; system PATH migration and four current feature suites passed",
     "windowsZipSha256": "529b14ec96e57e2e1735f896efe2eaab243b034aa7616a6462b725411f325c9c"
   },
@@ -209,7 +224,7 @@
   "releaseQualified": false,
   "deliveryComplete": false,
   "planVersion": "v0.99",
-  "currentSourceStage": "R99 GUI text encoding preflight and rejected draft retention qualified on both Windows toolchains; native R99 pending",
+  "currentSourceStage": "R99 dual Mac GUI/CLI compilation outputs verified; R98 Linux deployed package and both displays qualified; R99 full native regression and R98 independent Ubuntu tests pending",
   "nativeMusl": {
     "sourceCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
     "productionCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
@@ -394,6 +409,23 @@
       "applicationSourceFiles": 240,
       "sourceCommit": "db8c77476d7a52870c0beeb579e5ea8d88c701ff",
       "localArchive": "dist/macos-preview-20261106-r66-completed-history/macos-preview-X64/package-output/DuktoNext-macos-x86_64-preview.tar.gz"
+    },
+    {
+      "architecture": "x86_64",
+      "archive": "DuktoNext-linux-glibc-x64-preview.tar.gz",
+      "sha256": "a05fe6ad7434cf3e77d9fab68abbd817055c31e3a4ffcaf59c75366d3daf4556",
+      "sourceCommit": "5857073de686df38c2f3ee8dc1feb0ce98efdf4d",
+      "verifiedFiles": 708,
+      "verifiedLinks": 2,
+      "nativeImages": 132,
+      "applicationSourceFiles": 242,
+      "inputCliSha256": "225c7791c91696851ca96008c4334751424c538b7859d3c725d75d7626263b79",
+      "inputGuiSha256": "d2136b19fee544fd94a150c4ceb6ca2e9f4da771e084323824833ba0e9db6995",
+      "cleanSystemQualified": false,
+      "releaseQualified": false,
+      "artifactSha256": "3acc78726f1bb41ad613f1aeaa382a1e2fabfe569fbafc2ce3f6d06ddffe72f0",
+      "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42111269030/artifacts/13455131861",
+      "runtimeMigrationBothDisplaysQualified": true
     }
   ],
   "macOSPreview": {
@@ -18440,8 +18472,8 @@
       "linuxPackage": {
         "id": 42266702018,
         "head_sha": "b2e4659b347c65eef24c8e568e07e96a2d6ff2d7",
-        "status": "in_progress",
-        "conclusion": null,
+        "status": "completed",
+        "conclusion": "success",
         "html_url": "https://github.com/29583855/dukto-next/actions/runs/42266702018"
       }
     },
@@ -18461,12 +18493,12 @@
     "nativeMacFocusedRunsEach": 5,
     "nativeMacRepeatedExitsEach": 10,
     "nativeMacExpectedFailureInstances": 12,
-    "linuxNewPackagePending": true,
+    "linuxNewPackagePending": false,
     "linuxNewPackageRun": {
       "id": 42266702018,
       "head_sha": "b2e4659b347c65eef24c8e568e07e96a2d6ff2d7",
-      "status": "in_progress",
-      "conclusion": null,
+      "status": "completed",
+      "conclusion": "success",
       "html_url": "https://github.com/29583855/dukto-next/actions/runs/42266702018"
     },
     "linuxNewPackageSourceRef": "ci-r98-20261107",
@@ -18564,6 +18596,12 @@
       "scope": "Current fixed Windows TLS service with bounded tasks, same PID during each run, bidirectional payload/hash verification and process budgets; does not qualify arbitrary growth or disk GC",
       "releaseQualified": false,
       "deliveryComplete": false
+    },
+    "linuxNewPackageOriginalsVerified": true,
+    "linuxNewPackageScreenshotsViewed": 2,
+    "linuxNewPackageEvidence": {
+      "path": "docs/validation/2026-11-07/exit-state-r98-linux-package-terminal/qualified-receipt.json",
+      "sha256": "4d6bfa64b0e9f32abf949edc3a088e64607a94b68b083b39788234a783265f96"
     }
   },
   "windowsPreviewBeforeR98": {
@@ -18664,7 +18702,7 @@
   },
   "textSendGuardR99": {
     "planVersion": "v0.99",
-    "observedUtc": "2026-11-06T19:02:42.881996+00:00",
+    "observedUtc": "2026-11-06T19:25:46.663524+00:00",
     "basedOnSourceCommit": "b2e4659b347c65eef24c8e568e07e96a2d6ff2d7",
     "buildInputs": [
       {
@@ -19519,11 +19557,147 @@
       "path": "docs/validation/2026-11-07/text-send-r99-qualified/verified-receipt.json",
       "sha256": "1c1b3ad4e2aff9407de95b859470f05dc26e1e291fc9411af77ae94257cfca3f"
     },
-    "nativeCIRequested": false,
+    "nativeCIRequested": true,
     "nativeCIPending": true,
     "passedScope": "Windows GUI send preflight and rejected draft recovery only",
     "releaseQualified": false,
+    "deliveryComplete": false,
+    "sourceCommit": "a316e4a4f947ac9a53aa6dd4477eb5b8e2a7fb38",
+    "nativeCIAutomaticRunReused": true,
+    "nativeRun": {
+      "id": 42276738981,
+      "head_sha": "a316e4a4f947ac9a53aa6dd4477eb5b8e2a7fb38",
+      "status": "in_progress",
+      "conclusion": null,
+      "html_url": "https://github.com/29583855/dukto-next/actions/runs/42276738981"
+    },
+    "publicSourceEvidence": {
+      "path": "docs/validation/2026-11-07/text-send-r99-public-source-launch/observation.json",
+      "sha256": "fb4204b25744d947a8a060c21fed2695a16b2053581b6c6ea42c7345110442c6"
+    },
+    "macosCompilationVerified": true,
+    "macosCompilationEvidence": {
+      "path": "docs/validation/2026-11-07/text-send-r99-macos-compiled/receipt.json",
+      "sha256": "2d47b3a4c961cc33620e3cf78912ff078accd2c3445cdd41cabb39cf8d4ca377"
+    }
+  },
+  "currentGuiSourceCommitPending": false,
+  "coreProductionCommit": "88f33b2c83f2950307c362fb64c693f7e9e5929d",
+  "linuxPreviewR98": {
+    "sourceCommit": "b2e4659b347c65eef24c8e568e07e96a2d6ff2d7",
+    "run": {
+      "id": 42266702018,
+      "head_sha": "b2e4659b347c65eef24c8e568e07e96a2d6ff2d7",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/29583855/dukto-next/actions/runs/42266702018"
+    },
+    "package": {
+      "architecture": "x86_64",
+      "archive": "DuktoNext-linux-glibc-x64-preview.tar.gz",
+      "sha256": "3abe49bf08c653ab7c7c10fe66fd898d4fe95e060f500b4e061145dc6d80bd7e",
+      "sourceCommit": "b2e4659b347c65eef24c8e568e07e96a2d6ff2d7",
+      "verifiedFiles": 708,
+      "verifiedLinks": 2,
+      "nativeImages": 132,
+      "applicationSourceFiles": 333,
+      "inputCliSha256": "816b549fd5c34be611e9e1f669e54ab8a2c224ace1206cc3b314adcceb9d2412",
+      "inputGuiSha256": "cdc0d34ba5e2a3d32288f214310218a6be6c6cb9b7bb425c3596f7819df6def6",
+      "cleanSystemQualified": false,
+      "releaseQualified": false,
+      "artifactId": 13532504491,
+      "artifactSha256": "0e5cbeac6b0e0d21f7163436476548caac6b63212256a9c5f6c01924464dce1b",
+      "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42266702018/artifacts/13532504491",
+      "runtimeMigrationBothDisplaysQualified": true,
+      "screenshotsViewed": true,
+      "screenshotsReviewed": 2,
+      "visualReview": {
+        "path": "docs/validation/2026-11-07/exit-state-r98-linux-package-terminal/visual-review.json",
+        "sha256": "9db90e2cd1c90e2640b32597291fb8040c0fd50847602eb8e14d155f1384c49a"
+      }
+    },
+    "originalVerifiedSummary": {
+      "path": "docs/validation/2026-11-07/exit-state-r98-linux-package-terminal/verified-summary.json",
+      "sha256": "660d60202c917daf46c931940c27f1c7ce1c5f2b8f931b330bdecfc6bbf92acb"
+    },
+    "visualReview": {
+      "path": "docs/validation/2026-11-07/exit-state-r98-linux-package-terminal/visual-review.json",
+      "sha256": "9db90e2cd1c90e2640b32597291fb8040c0fd50847602eb8e14d155f1384c49a"
+    },
+    "passed": true,
+    "cleanSystemQualified": false,
+    "releaseQualified": false,
     "deliveryComplete": false
   },
-  "currentGuiSourceCommitPending": true
+  "macOSCompilationR99": {
+    "observedUtc": "2026-11-06T19:20:22.078590+00:00",
+    "sourceCommit": "a316e4a4f947ac9a53aa6dd4477eb5b8e2a7fb38",
+    "run": {
+      "id": 42276738981,
+      "head_sha": "a316e4a4f947ac9a53aa6dd4477eb5b8e2a7fb38",
+      "status": "in_progress",
+      "conclusion": null,
+      "html_url": "https://github.com/29583855/dukto-next/actions/runs/42276738981"
+    },
+    "packages": [
+      {
+        "sourceCommit": "a316e4a4f947ac9a53aa6dd4477eb5b8e2a7fb38",
+        "architecture": "arm64",
+        "artifactId": 13533422500,
+        "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42276738981/artifacts/13533422500",
+        "artifactSha256": "df9c68675cb6e3845c6f988cd3ecf047b88e53179fdf5dccb0f4fea861f6e7c4",
+        "archive": "DuktoNext-macos-ARM64-compiled.tar.gz",
+        "sha256": "e9d5a22ff65925f696e6019f41bacd4ae398db50f87cd3ed6b18333907c22b94",
+        "binaries": [
+          {
+            "path": "dukto-cli",
+            "sha256": "bd5293c38bb49e336a3dbd3ee020c8d0b3afb08f895e189955cbfe70721f8eb2",
+            "architecture": "arm64",
+            "executable": true
+          },
+          {
+            "path": "dukto-gui.app/Contents/MacOS/dukto-gui",
+            "sha256": "715647cb123ab8bfcef23174a52affa965e5de152e13180bf67f2561c810f81f",
+            "architecture": "arm64",
+            "executable": true
+          }
+        ],
+        "compileStepsPassed": true,
+        "dependenciesDeployed": false
+      },
+      {
+        "sourceCommit": "a316e4a4f947ac9a53aa6dd4477eb5b8e2a7fb38",
+        "architecture": "x86_64",
+        "artifactId": 13534425181,
+        "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42276738981/artifacts/13534425181",
+        "artifactSha256": "34ed39b675d8bb99410e5d89fdd99a3157a3ccf71542197af19b28e01d91f7c8",
+        "archive": "DuktoNext-macos-X64-compiled.tar.gz",
+        "sha256": "1a545e0261ff771a13fa77c1a4ff39f79f51f5b8dc4fc5a23db0a238a0b88be2",
+        "binaries": [
+          {
+            "path": "dukto-cli",
+            "sha256": "caa4cd33a32a341ecec7b65cc69564ec31411d7f29c1a33b8d9574f9bb21762d",
+            "architecture": "x86_64",
+            "executable": true
+          },
+          {
+            "path": "dukto-gui.app/Contents/MacOS/dukto-gui",
+            "sha256": "08c217cc34597eb566c959db3a7be473bad6d3807ddcf305bb033f93970fb163",
+            "architecture": "x86_64",
+            "executable": true
+          }
+        ],
+        "compileStepsPassed": true,
+        "dependenciesDeployed": false
+      }
+    ],
+    "bothArchitecturesCompiledAndVerified": true,
+    "fullNativeRegressionQualifiedByThisReceipt": false,
+    "releaseQualified": false,
+    "deliveryComplete": false,
+    "evidence": {
+      "path": "docs/validation/2026-11-07/text-send-r99-macos-compiled/receipt.json",
+      "sha256": "2d47b3a4c961cc33620e3cf78912ff078accd2c3445cdd41cabb39cf8d4ca377"
+    }
+  }
 }

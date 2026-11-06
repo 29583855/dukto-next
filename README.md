@@ -218,3 +218,9 @@ R87 macOS下载已更新到409a73b：Intel/Apple Silicon的GUI和独立CLI、各
 
 
 2026-11-07 R98：双Mac原生运行42264789875已收验，各23核心及四种退出状态/原16组通过，明确保留Darwin平台预期失败。可下载双Mac包保持已验R96；当前Windows完整核心及Linux新部署包继续，完整项目未完成。
+
+
+2026-11-07：Linux独立预览包已更新为R98（b2e4659），23核心及X11/Wayland迁移和传输原件已验；下载与精确范围见[Linux预览包](docs/Linux独立预览包.md)。R99 GUI修复及完整项目继续验收。
+
+
+2026-11-07 R99：最新a316e4a的Apple Silicon/Intel GUI及独立CLI编译产物均已核验，附件见[macOS构建与下载](docs/macOS独立预览包.md)。完整原生测试及长期验证继续，整体未完成。
