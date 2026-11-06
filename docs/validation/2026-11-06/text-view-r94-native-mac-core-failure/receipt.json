@@ -1,0 +1,69 @@
+{
+  "sourceCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
+  "runObserved": {
+    "id": 42235469581,
+    "status": "in_progress",
+    "conclusion": null,
+    "html_url": "https://github.com/29583855/dukto-next/actions/runs/42235469581"
+  },
+  "artifacts": [
+    {
+      "name": "core-validation-macos-15",
+      "id": 13512841755,
+      "sha256": "4b65861b0f56ebcdd90f4b553f49f78942f4226c572951f2e04a47696d9e9782"
+    },
+    {
+      "name": "core-validation-macos-15-intel",
+      "id": 13512577946,
+      "sha256": "ca8823515c9c328d111143ce4580c9ae5e2bcf0c3b7904aff0e7e6b907c3b6f3"
+    }
+  ],
+  "failures": [
+    {
+      "runner": "core-validation-macos-15",
+      "file": "docs\\validation\\2026-11-06\\text-view-r94-native-mac-core-failure\\core-validation-macos-15\\Testing\\QtTest\\core-tests.xml",
+      "case": {
+        "result": "fail",
+        "name": "exclusiveTcpBinding"
+      },
+      "failure": {
+        "tag": "exclusive-first-ipv4-then-dual",
+        "message": "'!second.listen(secondAddress, port)' returned FALSE. (two protocols acquired an overlapping TCP port)",
+        "result": "fail"
+      },
+      "text": null
+    },
+    {
+      "runner": "core-validation-macos-15-intel",
+      "file": "docs\\validation\\2026-11-06\\text-view-r94-native-mac-core-failure\\core-validation-macos-15-intel\\Testing\\QtTest\\core-tests.xml",
+      "case": {
+        "result": "fail",
+        "name": "exclusiveTcpBinding"
+      },
+      "failure": {
+        "tag": "exclusive-first-ipv4-then-dual",
+        "message": "'!second.listen(secondAddress, port)' returned FALSE. (two protocols acquired an overlapping TCP port)",
+        "result": "fail"
+      },
+      "text": null
+    },
+    {
+      "runner": "core-validation-macos-15-intel",
+      "file": "docs\\validation\\2026-11-06\\text-view-r94-native-mac-core-failure\\core-validation-macos-15-intel\\Testing\\QtTest\\file-exchange-tests.xml",
+      "case": {
+        "result": "fail",
+        "name": "parallelDispositions"
+      },
+      "failure": {
+        "tag": "download-4-2",
+        "message": "'server.waitForFinished(10000)' returned FALSE. ()",
+        "result": "fail"
+      },
+      "text": null
+    }
+  ],
+  "entireNativeRunTerminalVerified": false,
+  "rootCauseProven": false,
+  "releaseQualified": false,
+  "deliveryComplete": false
+}

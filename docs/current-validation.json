@@ -1,5 +1,5 @@
 {
-  "observedUtc": "2026-11-06T15:04:01.276285+00:00",
+  "observedUtc": "2026-11-06T15:19:46.657128+00:00",
   "productionCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
   "testCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
   "packages": [
@@ -180,7 +180,15 @@
     "workflowConclusion": null,
     "fullProtocolPending": true,
     "allOriginalReportsVerified": false,
-    "expectedCoreTargetsEach": 23
+    "expectedCoreTargetsEach": 23,
+    "failedCoreStepsObserved": [
+      "macos-15",
+      "macos-15-intel"
+    ],
+    "coreOriginalFailureEvidence": {
+      "path": "docs/validation/2026-11-06/text-view-r94-native-mac-core-failure/receipt.json",
+      "sha256": "842f28620161a943391e2c458b9852c452dba68281a00ceda42ad73b69ae05a8"
+    }
   },
   "nativeMuslRunUrl": "https://github.com/29583855/dukto-next/actions/runs/42135996839",
   "originalFailureRunsRetained": [
@@ -198,7 +206,7 @@
   "releaseQualified": false,
   "deliveryComplete": false,
   "planVersion": "v0.93",
-  "currentSourceStage": "R94 exact source and dual macOS previews verified; complete native protocol and final independent Ubuntu remain separate",
+  "currentSourceStage": "R94 macOS package subset verified; full native Mac core binding and Intel parallel-exit failures preserved; diagnostic source added",
   "nativeMusl": {
     "sourceCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
     "productionCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
@@ -390,7 +398,12 @@
       "path": "docs/validation/2026-11-06/text-view-r94-macos-package-terminal/receipt.json",
       "sha256": "9378ae8f1ff831189baf201536e27a20edb852085fe1581b65d807048c588d10"
     },
-    "releaseQualified": false
+    "releaseQualified": false,
+    "completeNativeCoreRegressionPassed": false,
+    "knownCoreFailureEvidence": {
+      "path": "docs/validation/2026-11-06/text-view-r94-native-mac-core-failure/receipt.json",
+      "sha256": "842f28620161a943391e2c458b9852c452dba68281a00ceda42ad73b69ae05a8"
+    }
   },
   "previousNativeFull": {
     "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42036392240",
@@ -14010,7 +14023,7 @@
         "html_url": "https://github.com/29583855/dukto-next/actions/runs/42235469581"
       }
     },
-    "observedUtc": "2026-11-06T14:56:36.012607+00:00",
+    "observedUtc": "2026-11-06T15:19:46.657128+00:00",
     "macosOriginalPackagesVerified": true,
     "macosPackages": [
       {
@@ -14157,7 +14170,13 @@
       "path": "docs/validation/2026-11-06/legacy-text-r93-native-terminal-failure/receipt.json",
       "sha256": "f2765a512def5d729aaf08593ebc939c6ab2b4ad1e11aed3f6f2ff6dbfa63db0"
     },
-    "previousR93NativeRunPassed": false
+    "previousR93NativeRunPassed": false,
+    "nativeMacCoreFailuresObserved": true,
+    "nativeMacCoreFailureEvidence": {
+      "path": "docs/validation/2026-11-06/text-view-r94-native-mac-core-failure/receipt.json",
+      "sha256": "842f28620161a943391e2c458b9852c452dba68281a00ceda42ad73b69ae05a8"
+    },
+    "nativeMacCoreFailureRootCauseProven": false
   },
   "localTextViewR94Pending": false,
   "nativeFullBeforeR94": {

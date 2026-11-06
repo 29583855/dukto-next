@@ -2,6 +2,8 @@
 
 更新日期：2026-11-06。当前可下载包源码为`dec40621cce2d223e46b343e0d3d345a67b80523`，使用C++14/Qt5。Apple Silicon和Intel分别包含GUI及可独立运行的CLI，Qt5/OpenSSL运行依赖已部署。
 
+同源码完整回归已发现双Mac监听冲突测试失败及Intel并行处置退出超时；以下包已通过限定的五项迁移业务，完整回归尚未通过，目前只供开发验证。
+
 ## 下载与校验
 
 [R94双架构打包与迁移工作流](https://github.com/29583855/dukto-next/actions/runs/42235503939)已终态success。按芯片选择附件；GitHub附件下载可能需要登录。ZIP内含tar.gz、校验值和原报告。
