@@ -207,13 +207,19 @@ class FileExchangeTests final : public QObject {
                                  {"manifest", QString::fromLatin1(hash.toHex())},
                                  {"token", QString(64, 'a')},
                                  {"lanes", "1"}};
+        // 日期：2026-11-06；五秒TLS准备不计入三秒故障观察；原生信任初始化耗时单独留档。
+        QElapsedTimer timeline;
+        timeline.start();
+        std::atomic<qint64> disconnectedAt{-1};
         std::atomic_bool disconnected{false};
         ExchangeServer lane;
         lane.operation = [&](qintptr descriptor) {
             // 日期：2026-11-06；TLS认证和加入完成后先关闭数据连接，控制错误此时尚未发出。
             {
-                dukto::next::SecureChannel peer(2000);
+                dukto::next::SecureChannel peer(5000);
+                qInfo() << "terminal fixture lane TLS begin" << timeline.elapsed();
                 peer.accept(descriptor, service.configuration());
+                qInfo() << "terminal fixture lane TLS ready" << timeline.elapsed();
                 const auto hello = peer.read();
                 peer.write(dukto::next::Type::HelloAck, hello.header.correlation,
                            {{"version", "1.0"},
@@ -226,19 +232,23 @@ class FileExchangeTests final : public QObject {
                 peer.write(dukto::next::Type::Attached, attach.header.correlation,
                            {{"sessionId", session}, {"lane", "0"}});
             }
+            disconnectedAt = timeline.elapsed();
             disconnected = true;
+            qInfo() << "terminal fixture lane disconnected" << disconnectedAt.load();
         };
         QVERIFY(lane.listen(QHostAddress::LocalHost, 0));
         ExchangeServer control;
         std::atomic_bool lateFailureWritten{false};
         control.operation = [&](qintptr descriptor) {
             // 日期：2026-11-06；控制晚300ms返回真实Failure，不凭数据断线猜测错误码。
-            dukto::next::SecureChannel peer(2000);
+            dukto::next::SecureChannel peer(5000);
+            qInfo() << "terminal fixture control TLS begin" << timeline.elapsed();
             peer.accept(descriptor, service.configuration());
+            qInfo() << "terminal fixture control TLS ready" << timeline.elapsed();
             QElapsedTimer deadline;
             deadline.start();
             while (!disconnected.load()) {
-                if (deadline.elapsed() > 2000)
+                if (deadline.elapsed() > 5000)
                     throw dukto::Error(dukto::ExitCode::Network, "fixture lane deadline", "test");
                 QThread::msleep(1);
             }
@@ -248,10 +258,10 @@ class FileExchangeTests final : public QObject {
                     if (reported == -3) {
                         peer.write(dukto::next::Type::Completed, 2, {{"ordinary", true}});
                     } else if (reported == -4) {
-                        // 日期：2026-11-06；合法busy不断续发仍须在原两秒总期限结束。
+                        // 日期：2026-11-06；合法busy持续四秒；失败观察仍须在生产三秒总期限结束。
                         QElapsedTimer busy;
                         busy.start();
-                        while (busy.elapsed() < 2500) {
+                        while (busy.elapsed() < 4000) {
                             peer.write(dukto::next::Type::TaskState, 2, {{"state", "busy"}});
                             QThread::msleep(50);
                         }
@@ -281,20 +291,24 @@ class FileExchangeTests final : public QObject {
                                            true};
         int code = 0;
         QString stage;
-        QElapsedTimer deadline;
-        deadline.start();
+        qint64 failureElapsed = -1;
         {
-            dukto::next::SecureChannel peer(2000);
+            dukto::next::SecureChannel peer(5000);
+            qInfo() << "terminal fixture client TLS begin" << timeline.elapsed();
             peer.connectTo("127.0.0.1", control.serverPort(), "127.0.0.1",
                            QSslConfiguration::defaultConfiguration(), profile.fingerprint);
+            qInfo() << "terminal fixture client TLS ready" << timeline.elapsed();
             dukto::ParallelTransfer transfer(ticket, Task, hash, false);
-            transfer.startClients(profile, 2000, &manifest);
+            transfer.startClients(profile, 5000, &manifest);
             try {
                 transfer.sendTree(peer, manifest, 2);
             } catch (const dukto::Error &error) {
                 code = static_cast<int>(error.code);
                 stage = error.stage;
             }
+            failureElapsed = timeline.elapsed() - disconnectedAt.load();
+            qInfo() << "terminal fixture failure" << code << stage << "after lane ms"
+                    << failureElapsed;
         }
         QVERIFY(lane.done());
         QVERIFY(control.done());
@@ -305,7 +319,7 @@ class FileExchangeTests final : public QObject {
                          : (reported == -1 || reported == -3 ? 6 : (reported == -2 ? 2 : 3));
         QCOMPARE(code, expected);
         if (reported == -4)
-            QVERIFY(deadline.elapsed() >= 2000 && deadline.elapsed() < 4000);
+            QVERIFY(failureElapsed >= 3000 && failureElapsed < 4000);
         if (reported > 0) {
             QCOMPARE(stage, QString("receive"));
             QVERIFY(lateFailureWritten.load());
