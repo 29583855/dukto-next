@@ -1,10 +1,12 @@
 #include "core/catalog.h"
+#include "core/diagnostics.h"
 #include "core/discovery.h"
 #include "core/endpoint.h"
 #include "core/error.h"
 #include "core/files.h"
 #include "core/identity.h"
 #include "core/legacy.h"
+#include "core/service.h"
 #include "core/sourcefile.h"
 #include "input.h"
 #include "servicecommands.h"
@@ -20,6 +22,7 @@
 #include <QSslSocket>
 #include <QStandardPaths>
 #include <QTcpServer>
+#include <QTemporaryFile>
 #include <QTextStream>
 #include <QTimer>
 #include <csignal>
@@ -81,7 +84,7 @@ void printText(const QString &text) {
         outputFailure();
 }
 
-// 日期：2026-11-06；JSON直接写已编码UTF-8，避免六倍转义的大文本再次解码成整份UTF-16临时字符串。
+// 日期：2026-11-07；JSON直接写已编码UTF-8，避免六倍转义的大文本再次解码成整份UTF-16临时字符串。
 void output(const QJsonObject &event, bool json) {
     if (json) {
         if (event.value("text").isString())
@@ -181,6 +184,19 @@ void output(const QJsonObject &event, bool json) {
                        ? QString("?")
                        : QString::number(event.value("etaSeconds").toDouble(), 'f', 0))
                << QStringLiteral(" s（仍需最终校验和提交）\n");
+    } else if (event.value("event") == "doctor") {
+        stream << event.value("message").toString() << '\n';
+        for (const auto &value : event.value("checks").toArray()) {
+            const auto check = value.toObject();
+            stream << check["id"].toString() << " [" << check["status"].toString() << "] "
+                   << check["message"].toString() << '\n';
+        }
+        const auto peer = event.value("peer").toObject();
+        stream << "peer [" << peer["status"].toString() << "] " << peer["message"].toString()
+               << '\n';
+        const auto capabilities = peer["capabilities"].toObject();
+        for (auto item = capabilities.begin(); item != capabilities.end(); ++item)
+            stream << item.key() << " = " << (item.value().toBool() ? "true" : "false") << '\n';
     } else if (event.contains("values")) {
         const auto values = event.value("values").toObject();
         for (auto iterator = values.begin(); iterator != values.end(); ++iterator)
@@ -194,27 +210,96 @@ void output(const QJsonObject &event, bool json) {
         outputFailure();
 }
 
-// 日期：2026-11-04；独立 CLI 自查运行依赖，不启动图形会话或自动更改配置。
-int doctor(bool json) {
-    const bool sqlite = QSqlDatabase::isDriverAvailable("QSQLITE");
-    const bool tls = QSslSocket::supportsSsl();
-    output({{"eventVersion", 1},
-            {"event", "doctor"},
-            {"qt", qVersion()},
-            {"cxxStandard", "C++14"},
-            {"sqlite", sqlite},
-            {"tls", tls},
-            {"tlsBuild", QSslSocket::sslLibraryBuildVersionString()},
-            {"tlsRuntime", QSslSocket::sslLibraryVersionString()},
-            {"config", QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation)},
-            {"message",
-             sqlite && tls ? QStringLiteral("核心依赖可用") : QStringLiteral("核心依赖不完整")}},
-           json);
-    return sqlite && tls ? 0 : 2;
+// 日期：2026-11-07；诊断只读取显式配置和固定检查项，指定资料时才主动认证检查对端能力。
+int doctor(const QCommandLineParser &parser, const QStringList &arguments, bool json) {
+    const QStringList allowed{"j",       "json",   "config-file",    "state-directory",
+                              "output",  "bind",   "port",           "profile",
+                              "timeout", "report", "non-interactive"};
+    if (arguments.size() != 1)
+        throw dukto::Error(dukto::ExitCode::Config, QStringLiteral("doctor不接受额外位置参数"),
+                           "arguments");
+    for (const auto &name : parser.optionNames()) {
+        if (!allowed.contains(name) || parser.values(name).size() > 1 ||
+            parser.optionNames().count(name) > 1)
+            throw dukto::Error(dukto::ExitCode::Config, QStringLiteral("doctor选项重复或不适用"),
+                               "arguments");
+    }
+    bool validPort = false;
+    bool validTimeout = false;
+    const auto port = parser.value("port").toUInt(&validPort);
+    const auto timeout = parser.value("timeout").toUInt(&validTimeout);
+    if (!validPort || !port || port > 65535 || !validTimeout || !timeout || timeout > 86400 ||
+        (parser.isSet("bind") && QHostAddress(parser.value("bind")).isNull()) ||
+        (parser.isSet("report") && parser.value("report").isEmpty()) ||
+        (parser.isSet("config-file") && parser.value("config-file").isEmpty()))
+        throw dukto::Error(dukto::ExitCode::Config,
+                           QStringLiteral("doctor端口、超时或路径参数无效"), "arguments");
+    QTemporaryFile emptySettings;
+    std::unique_ptr<QSettings> settings;
+    dukto::DiagnosticOptions options;
+    if (parser.isSet("config-file")) {
+        if (!emptySettings.open())
+            throw dukto::Error(dukto::ExitCode::Disk, QStringLiteral("无法建立有界配置检查"),
+                               "doctor");
+        settings.reset(new QSettings(emptySettings.fileName(), QSettings::IniFormat));
+        options.configurationFile = parser.value("config-file");
+    } else {
+        settings.reset(new QSettings);
+    }
+    options.stateDirectory =
+        parser.isSet("state-directory")
+            ? parser.value("state-directory")
+            : QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
+    options.outputDirectory =
+        parser.isSet("output") ? parser.value("output")
+                               : QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
+    options.requireConfiguration = parser.isSet("config-file");
+    options.requireStateDirectory = parser.isSet("state-directory");
+    options.requireOutputDirectory = parser.isSet("output");
+    options.checkPort = parser.isSet("port") || parser.isSet("bind");
+    options.port = static_cast<quint16>(port);
+    options.bindAddress = QHostAddress(parser.value("bind"));
+    auto report = dukto::collectDiagnostics(*settings, options);
+    if (parser.isSet("profile")) {
+        try {
+            dukto::PrivateStore clients(QDir(options.stateDirectory).filePath("clients"));
+            const auto profile = dukto::loadProfile(clients, parser.value("profile"));
+            if (!profile.paired || !profile.pendingCredential.isEmpty())
+                throw dukto::Error(dukto::ExitCode::Permission,
+                                   QStringLiteral("资料尚未配对或轮换待确认"), "doctor");
+            std::atomic_bool cancelled{false};
+            QTimer timer;
+            // 日期：2026-11-07；只检查显式资料，认证期间仍响应中断，不创建任务或更改信任。
+            QObject::connect(&timer, &QTimer::timeout, &timer,
+                             [&cancelled]() { cancelled.store(interrupted != 0); });
+            timer.start(25);
+            dukto::RemoteClient remote(profile, static_cast<int>(timeout) * 1000, &cancelled);
+            remote.authenticate();
+            report["peer"] = QJsonObject{{"status", "passed"},
+                                         {"tlsIdentityVerified", true},
+                                         {"authenticated", true},
+                                         {"capabilities", remote.diagnosticCapabilities()}};
+            remote.close();
+        } catch (const dukto::Error &error) {
+            report["peer"] = QJsonObject{
+                {"status", "failed"},
+                {"code", static_cast<int>(error.code)},
+                {"message",
+                 QStringLiteral("请核对配对资料、证书信任、服务地址和访问权限；诊断不会自动降级")}};
+            if (report["exitCode"].toInt() == 0)
+                report["exitCode"] = static_cast<int>(error.code);
+            report["passed"] = false;
+            report["message"] = QStringLiteral("诊断发现问题，请检查本地项目和对端资料");
+        }
+    }
+    if (parser.isSet("report"))
+        dukto::exportDiagnostics(report, parser.value("report"));
+    output(report, json);
+    return report["exitCode"].toInt();
 }
 } // namespace
 
-// 日期：2026-11-05；三平台控制台入口严格核对传输策略，解析或传输失败返回明确非零退出码。
+// 日期：2026-11-07；三平台控制台入口严格核对传输策略，解析或传输失败返回明确非零退出码。
 int runApplication(int argc, char **argv) {
     QCoreApplication app(argc, argv);
     QCoreApplication::setApplicationName("dukto-cli");
@@ -258,6 +343,7 @@ int runApplication(int argc, char **argv) {
          {"threads", QStringLiteral("新版上传/下载/继续的数据通道数：1/2/4/8/16"), "count", "1"},
          {"duration", QStringLiteral("设备发现持续秒数（1–3600）"), "seconds", "3"},
          {"config-file", QStringLiteral("使用独立 INI 配置文件"), "path"},
+         {"report", QStringLiteral("doctor导出本地JSON诊断报告；已有目标拒绝覆盖"), "file"},
          {"state-directory", QStringLiteral("任务明细保存目录"), "directory"},
          {"server-name",
           QStringLiteral("服务证书 SAN 的 IP/主机名，可重复（serve init/renew；配对时为一个名称）"),
@@ -334,8 +420,11 @@ int runApplication(int argc, char **argv) {
         if (parser.values("retries").size() > 1 || parser.values("deadline-seconds").size() > 1)
             throw dukto::Error(dukto::ExitCode::Config, QStringLiteral("重试与总时限选项不能重复"),
                                "arguments");
+        if (parser.isSet("report") && command != "doctor")
+            throw dukto::Error(dukto::ExitCode::Config, QStringLiteral("--report仅用于doctor"),
+                               "arguments");
         if (command == "doctor")
-            return doctor(json);
+            return doctor(parser, args, json);
         std::unique_ptr<QSettings> configuration;
         if (parser.isSet("config-file"))
             configuration.reset(new QSettings(parser.value("config-file"), QSettings::IniFormat));

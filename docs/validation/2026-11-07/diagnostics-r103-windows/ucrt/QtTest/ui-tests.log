@@ -1,0 +1,21 @@
+********* Start testing of UiTests *********
+Config: Using QtTest library 5.15.19, Qt 5.15.19 (x86_64-little_endian-llp64 shared (dynamic) release build; by GCC 16.1.0), windows 11
+PASS   : UiTests::initTestCase()
+QWARN  : UiTests::localDiagnosticExport() qrc:/ui/Main.qml:332: ReferenceError: applicationVersion is not defined
+FAIL!  : UiTests::localDiagnosticExport() 'findItem(view.quickWindow()->contentItem(), "exportDiagnosticReportButton")' returned FALSE. ()
+E:/project/dukto/tests/ui_tests.cpp(123) : failure location
+PASS   : UiTests::cancelThenTransferAgainThroughQml(send)
+PASS   : UiTests::cancelThenTransferAgainThroughQml(receive-header)
+PASS   : UiTests::cancelThenTransferAgainThroughQml(receive-partial)
+PASS   : UiTests::clipboardAvailabilityDoesNotReadOnProgress()
+PASS   : UiTests::rejectedTextKeepsDraftThroughQml()
+PASS   : UiTests::serverEntryThroughMainQml(compact)
+PASS   : UiTests::serverEntryThroughMainQml(default)
+PASS   : UiTests::receivedLargeTextThroughQml(paragraph-boundary)
+PASS   : UiTests::receivedLargeTextThroughQml(maximum-paragraphs)
+PASS   : UiTests::receivedLargeTextThroughQml(maximum-single-line)
+PASS   : UiTests::receivedLargeTextThroughQml(unicode-boundaries)
+PASS   : UiTests::dragClipboardAndTextThroughQml()
+PASS   : UiTests::cleanupTestCase()
+Totals: 14 passed, 1 failed, 0 skipped, 0 blacklisted, 5878ms
+********* Finished testing of UiTests *********

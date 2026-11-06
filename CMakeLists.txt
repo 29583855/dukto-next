@@ -24,6 +24,7 @@ endif()
 
 add_library(dukto-core
     src/core/error.cpp
+    src/core/diagnostics.cpp
     src/core/files.cpp
     src/core/nativecommit.cpp
     src/core/sourcefile.cpp

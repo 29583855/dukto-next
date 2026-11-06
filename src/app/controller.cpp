@@ -1,6 +1,7 @@
 #include "controller.h"
 #include "core/buffercredit.h"
 #include "core/catalog.h"
+#include "core/diagnostics.h"
 #include "core/endpoint.h"
 #include "core/error.h"
 #include "core/files.h"
@@ -31,6 +32,7 @@ Controller::Controller(quint16 port, QObject *parent, const QString &storageDire
                   .filePath("remote"),
               this),
       discovery_(this) {
+    diagnosticPort_ = port;
     const auto dataDirectory =
         storageDirectory.isEmpty()
             ? QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation)
@@ -93,6 +95,59 @@ Controller::Controller(quint16 port, QObject *parent, const QString &storageDire
                 : QStringLiteral("接收端口 %1 已监听；接收目录不可用，请在设置选择目录").arg(port);
     if (!avatars_.listen(port))
         status_ += QStringLiteral(" · 头像端口不可用，使用默认图标");
+}
+
+// 日期：2026-11-07；仅检查当前实例设置、数据/接收目录与已存在监听，不暂停正在执行的任务。
+QVariantMap Controller::diagnostics() {
+    try {
+        dukto::DiagnosticOptions options;
+        options.stateDirectory = QFileInfo(historyDatabase_.databaseName()).absolutePath();
+        options.outputDirectory = outputDirectory();
+        options.requireStateDirectory = true;
+        options.requireOutputDirectory = true;
+        options.listenerActive = listener_ && listener_->isListening();
+        options.port = diagnosticPort_;
+        options.checkPort = !options.listenerActive;
+        return dukto::collectDiagnostics(settings_, options).toVariantMap();
+    } catch (const dukto::Error &error) {
+        return QJsonObject{{"eventVersion", 1},
+                           {"event", "doctor"},
+                           {"reportVersion", 1},
+                           {"passed", false},
+                           {"exitCode", static_cast<int>(error.code)},
+                           {"message", QStringLiteral("诊断资源暂不可用，请稍后重试")}}
+            .toVariantMap();
+    }
+}
+
+// 日期：2026-11-07；只接受本地文件URL，使用同一白名单报告，拒绝覆盖并保留失败可见状态。
+bool Controller::exportDiagnosticsTo(const QUrl &destination) {
+    try {
+        if (!destination.isLocalFile())
+            throw dukto::Error(dukto::ExitCode::Config, QStringLiteral("请选择本地JSON报告文件"),
+                               "doctor");
+        dukto::exportDiagnostics(QJsonObject::fromVariantMap(diagnostics()),
+                                 destination.toLocalFile());
+        status_ = QStringLiteral("诊断报告已保存到本地；未上传");
+        emit stateChanged();
+        return true;
+    } catch (const dukto::Error &) {
+        status_ = QStringLiteral("诊断导出失败：请检查目录权限/剩余空间，并选择未存在的新文件名称");
+        emit stateChanged();
+        return false;
+    }
+}
+
+// 日期：2026-11-07；跨平台原生保存选择器只选择目标，已有文件由核心再次严格拒绝覆盖。
+void Controller::chooseDiagnosticReport() {
+    const auto destination = QFileDialog::getSaveFileName(
+        nullptr, QStringLiteral("导出本地诊断"),
+        QDir(outputDirectory())
+            .filePath("Dukto-diagnostic-" +
+                      QDateTime::currentDateTimeUtc().toString("yyyyMMdd-HHmmss") + ".json"),
+        QStringLiteral("JSON诊断报告 (*.json)"), nullptr, QFileDialog::DontConfirmOverwrite);
+    if (!destination.isEmpty())
+        exportDiagnosticsTo(QUrl::fromLocalFile(destination));
 }
 
 // 日期：2026-11-04；明确等待发送与接收线程，避免退出后继续写文件。

@@ -11,7 +11,7 @@ import sys
 import time
 
 
-# 日期：2026-11-06；集中声明跨平台真实专项及必需计量验证，保留原参数/时限和首次失败。
+# 日期：2026-11-07；集中声明跨平台真实专项及必需计量验证，保留原参数/时限和首次失败。
 def commands(build):
     windows = sys.platform == "win32"
     binary = build / "Release" if windows else build
@@ -34,6 +34,8 @@ def commands(build):
     add("legacy-timeout", "legacy_timeout_integration")
     add("parallel-attach", "parallel_attach_integration")
     add("cli", "cli_contracts")
+    # 日期：2026-11-07；实际CLI验证诊断导出、配置上限、端口冲突及已配对能力检查。
+    add("doctor", "doctor_integration")
     add("crash", "crash_integration")
     if windows:
         add("windows-path", "windows_path_integration")

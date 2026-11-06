@@ -728,6 +728,7 @@ Rectangle {
 
     Dialog {
         id: settingsDialog
+        objectName: "settingsDialog"
 
         title: "设置"
         anchors.centerIn: parent
@@ -820,6 +821,20 @@ Rectangle {
                 Button {
                     text: "保存名称"
                     onClicked: controller.setUsername(userInput.text)
+                }
+
+                Label {
+                    text: "诊断报告只保存在本地，包含运行库和检查结果；不包含访问令牌、配置值或传输正文。"
+                    Layout.fillWidth: true
+                    wrapMode: Text.WordWrap
+                    textFormat: Text.PlainText
+                    color: "#777"
+                }
+
+                Button {
+                    objectName: "exportDiagnosticReportButton"
+                    text: "导出本地诊断"
+                    onClicked: controller.chooseDiagnosticReport()
                 }
 
             }

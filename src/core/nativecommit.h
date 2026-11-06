@@ -67,6 +67,8 @@ class PosixDirectory final {
     void replaceReceived(const QString &name, const QString &destination) const;
     // 日期：2026-11-04；异常或取消只删除固定目录中的本任务临时项，不通过被替换的路径清理。
     void removeTemporary(const QString &name) const;
+    // 日期：2026-11-07；显式移除自建临时文件并检查unlinkat结果，失败不能当作探测成功。
+    void discardTemporary(const QString &name) const;
     // 日期：2026-11-04；显式状态清理检查 unlinkat 结果，除不存在外的错误必须报告。
     void removeEntry(const QString &name) const;
     // 日期：2026-11-05；只清理身份匹配的普通临时项或空目录，父描述符固定且不递归。

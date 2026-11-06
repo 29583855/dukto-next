@@ -303,6 +303,18 @@ RemoteClient::RemoteClient(const ClientProfile &profile, int timeoutMs,
         sessionSeconds_ = checkedSessionSeconds(response["sessionSeconds"]);
 }
 
+// 日期：2026-11-07；诊断能力使用固定字段白名单，未知能力不进入本地导出报告。
+QJsonObject RemoteClient::diagnosticCapabilities() const {
+    QJsonObject result;
+    for (const auto &name :
+         QStringList{"auth-v1", "browse-v1", "stream-transfer-v1", "parallel-transfer-v1",
+                     "task-control-v1", "task-items-v1", "credential-rotation-v1",
+                     "session-lifetime-v1", "task-admission-v1", "conflict-fail-v1",
+                     "conflict-overwrite-v1", "conflict-skip-v1", "disposition-progress-v1"})
+        result.insert(name, capabilities_.contains(name));
+    return result;
+}
+
 // 日期：2026-11-05；每条数据连接重新认证后转入数据授信，票据不进入事件输出。
 void RemoteClient::runDataLane(const QJsonObject &ticket, int lane,
                                const std::shared_ptr<ParallelState> &state,

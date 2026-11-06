@@ -83,6 +83,8 @@ class RemoteClient final {
     QUuid serverId() const;
     // 日期：2026-11-05；返回服务声明的认证时长；旧服务未声明能力时为 0，不能推断无限期。
     int sessionSeconds() const;
+    // 日期：2026-11-07；只返回实际协商的已知能力布尔值，不回传任意对端字符串或凭据。
+    QJsonObject diagnosticCapabilities() const;
 
   private:
     // 日期：2026-11-04；响应必须同序号且同预期类型，远端错误只显示规范化错误码/阶段/说明。

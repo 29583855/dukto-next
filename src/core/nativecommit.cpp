@@ -430,6 +430,16 @@ void PosixDirectory::removeTemporary(const QString &name) const {
     }
 }
 
+// 日期：2026-11-07；固定父描述符下显式清理临时项，拒绝路径分量并严格报告系统删除失败。
+void PosixDirectory::discardTemporary(const QString &name) const {
+    if (!name.startsWith(".dukto-") || !name.endsWith(".part") || name.contains('/') ||
+        name.contains(QChar::Null))
+        throw Error(ExitCode::Permission, QStringLiteral("临时文件清理名称无效"), "doctor");
+    const auto encoded = QFile::encodeName(name);
+    if (::unlinkat(descriptor_, encoded.constData(), 0) != 0)
+        throw Error(ExitCode::Disk, QStringLiteral("临时文件清理失败"), "doctor");
+}
+
 // 日期：2026-11-04；只解除单层名字，不递归删除，不跟随链接指向的目标。
 void PosixDirectory::removeEntry(const QString &name) const {
     verifyPrivate();

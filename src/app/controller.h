@@ -134,6 +134,12 @@ class Controller final : public QObject {
     Q_INVOKABLE bool sendDropped(const QString &host, int port, const QList<QUrl> &urls);
     // 日期：2026-11-04；仅在空闲时切换接收目录，保留现有数据。
     Q_INVOKABLE void chooseOutputDirectory();
+    // 日期：2026-11-07；返回当前实例本地白名单诊断，不读取用户正文或主动连接对端。
+    Q_INVOKABLE QVariantMap diagnostics();
+    // 日期：2026-11-07；共用原子导出供测试与原生选择器使用，失败保留已有文件并显示建议。
+    Q_INVOKABLE bool exportDiagnosticsTo(const QUrl &destination);
+    // 日期：2026-11-07；用户选择新JSON文件后才执行本地导出，不自动上传。
+    Q_INVOKABLE void chooseDiagnosticReport();
     // 日期：2026-11-04；打开存在的文件或目录，失败显示可操作的状态。
     Q_INVOKABLE void openPath(const QString &path);
     // 日期：2026-11-04；保存有效主题色，并立即更新界面。
@@ -174,6 +180,7 @@ class Controller final : public QObject {
     void displayReceivedText(QString text, std::shared_ptr<dukto::BufferCredit> credit);
     // 日期：2026-11-04；在端口转换前统一验证地址，错误直接反馈给界面。
     bool prepareRequest(dukto::LegacyRequest &request, const QString &host, int port);
+    quint16 diagnosticPort_ = 4644;
     QSettings settings_;
     ServerPanel server_;
     dukto::Discovery discovery_;

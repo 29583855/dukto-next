@@ -88,6 +88,51 @@ class UiTests final : public QObject {
 
   private slots:
 
+    // 日期：2026-11-07；GUI共用诊断导出核验活动监听、JSON白名单及同名保护，不打开系统选择器。
+    void localDiagnosticExport() {
+        QTemporaryDir root;
+        QVERIFY(root.isValid());
+        Controller controller(0, nullptr, root.path());
+        controller.acceptTerms();
+        const auto path = root.filePath(QStringLiteral("本地诊断.json"));
+        QVERIFY(controller.exportDiagnosticsTo(QUrl::fromLocalFile(path)));
+        QFile report(path);
+        QVERIFY(report.open(QIODevice::ReadOnly));
+        const auto bytes = report.readAll();
+        report.close();
+        const auto object = QJsonDocument::fromJson(bytes).object();
+        QCOMPARE(object["event"].toString(), QString("doctor"));
+        QCOMPARE(object["peer"].toObject()["status"].toString(), QString("not-requested"));
+        bool active = false;
+        for (const auto &value : object["checks"].toArray()) {
+            const auto check = value.toObject();
+            if (check["id"] == "tcp-listener")
+                active = check["status"] == "active-in-this-instance";
+        }
+        QVERIFY(active);
+        QVERIFY(!bytes.contains(root.path().toUtf8()));
+        QVERIFY(!controller.exportDiagnosticsTo(QUrl::fromLocalFile(path)));
+        QVERIFY(report.open(QIODevice::ReadOnly));
+        QCOMPARE(report.readAll(), bytes);
+        QVERIFY(!controller.exportDiagnosticsTo(QUrl("https://invalid.example/report.json")));
+        QQuickWidget view;
+        view.rootContext()->setContextProperty("controller", &controller);
+        view.rootContext()->setContextProperty("applicationVersion", DUKTO_VERSION);
+        view.resize(430, 700);
+        view.setSource(QUrl("qrc:/ui/Main.qml"));
+        QCOMPARE(view.status(), QQuickWidget::Ready);
+        QVERIFY(view.rootObject());
+        view.show();
+        QTRY_VERIFY(!view.grabFramebuffer().isNull());
+        auto settings = view.rootObject()->findChild<QObject *>("settingsDialog");
+        QVERIFY(settings);
+        QVERIFY(QMetaObject::invokeMethod(settings, "open"));
+        QTRY_VERIFY(settings->property("opened").toBool());
+        auto button = findItem(view.quickWindow()->contentItem(), "exportDiagnosticReportButton");
+        QVERIFY(button);
+        QCOMPARE(button->property("text").toString(), QStringLiteral("导出本地诊断"));
+    }
+
     // 日期：2026-11-07；原版中止后下一批崩溃的对照场景，分别覆盖新版实际发送和接收取消。
     void cancelThenTransferAgainThroughQml_data() {
         QTest::addColumn<QString>("phase");

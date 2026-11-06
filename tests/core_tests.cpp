@@ -1,4 +1,5 @@
 #include "core/catalog.h"
+#include "core/diagnostics.h"
 #include "core/discovery.h"
 #include "core/endpoint.h"
 #include "core/error.h"
@@ -8,6 +9,8 @@
 #include "core/privatestore.h"
 #include "core/sourcefile.h"
 #include "core/tcplistener.h"
+#include <QJsonArray>
+#include <QJsonDocument>
 
 #include <QDir>
 #include <QFile>
@@ -40,6 +43,104 @@ Q_DECLARE_METATYPE(QHostAddress)
 class CoreTests final : public QObject {
     Q_OBJECT
   private slots:
+    // 日期：2026-11-07；未知配置秘密不进报告，普通目录探针后无残留，配置原件逐字节不变。
+    void diagnosticBoundedConfiguration() {
+        QTemporaryDir root;
+        QVERIFY(root.isValid());
+        const auto path = root.filePath("settings.ini");
+        const QByteArray original(
+            "[General]\nport=4644\ntimeout=30\ncredential=DOCTOR-PRIVATE-MARKER\n");
+        QFile config(path);
+        QVERIFY(config.open(QIODevice::WriteOnly));
+        QCOMPARE(config.write(original), qint64(original.size()));
+        config.close();
+        QSettings settings(path, QSettings::IniFormat);
+        dukto::DiagnosticOptions options;
+        options.stateDirectory = root.path();
+        options.outputDirectory = root.path();
+        options.requireConfiguration = options.requireStateDirectory =
+            options.requireOutputDirectory = true;
+        const auto before =
+            QDir(root.path()).entryList(QDir::AllEntries | QDir::Hidden | QDir::NoDotAndDotDot);
+        const auto report = dukto::collectDiagnostics(settings, options);
+        QVERIFY(report["passed"].toBool());
+        QCOMPARE(report["checks"].toArray().size(), 5);
+        const auto bytes = QJsonDocument(report).toJson();
+        QVERIFY(bytes.size() < 65536);
+        QVERIFY(!bytes.contains("DOCTOR-PRIVATE-MARKER"));
+        QVERIFY(!bytes.contains(root.path().toUtf8()));
+        QCOMPARE(
+            QDir(root.path()).entryList(QDir::AllEntries | QDir::Hidden | QDir::NoDotAndDotDot),
+            before);
+        QVERIFY(config.open(QIODevice::ReadOnly));
+        QCOMPARE(config.readAll(), original);
+        config.close();
+        QVERIFY(config.open(QIODevice::WriteOnly | QIODevice::Truncate));
+        QCOMPARE(config.write(QByteArray(65537, 'x')), qint64(65537));
+        config.close();
+        QSettings oversized(path, QSettings::IniFormat);
+        const auto refused = dukto::collectDiagnostics(oversized, options);
+        QVERIFY(!refused["passed"].toBool());
+        QCOMPARE(refused["exitCode"].toInt(), 2);
+    }
+
+    // 日期：2026-11-07；端口占用必须失败，关闭后成功且探针不保留端口；显式目录不存在也失败。
+    void diagnosticPortAndDirectoryFailures() {
+        QTemporaryDir root;
+        QVERIFY(root.isValid());
+        QSettings settings(root.filePath("missing.ini"), QSettings::IniFormat);
+        dukto::TcpListener occupied;
+        QVERIFY(occupied.listen(QHostAddress::LocalHost, 0));
+        dukto::DiagnosticOptions options;
+        options.checkPort = true;
+        options.bindAddress = QHostAddress::LocalHost;
+        options.port = occupied.serverPort();
+        auto report = dukto::collectDiagnostics(settings, options);
+        QCOMPARE(report["exitCode"].toInt(), 3);
+        occupied.close();
+        report = dukto::collectDiagnostics(settings, options);
+        QVERIFY(report["passed"].toBool());
+        QVERIFY(occupied.listen(QHostAddress::LocalHost, options.port));
+        occupied.close();
+        options.requireOutputDirectory = true;
+        options.outputDirectory = root.filePath("missing");
+        report = dukto::collectDiagnostics(settings, options);
+        QCOMPARE(report["exitCode"].toInt(), 2);
+        QVERIFY(!QFileInfo::exists(options.outputDirectory));
+        QFile ordinary(root.filePath("ordinary"));
+        QVERIFY(ordinary.open(QIODevice::WriteOnly));
+        QCOMPARE(ordinary.write("keep"), qint64(4));
+        ordinary.close();
+        options.outputDirectory = ordinary.fileName();
+        report = dukto::collectDiagnostics(settings, options);
+        QCOMPARE(report["exitCode"].toInt(), 5);
+        QVERIFY(ordinary.open(QIODevice::ReadOnly));
+        QCOMPARE(ordinary.readAll(), QByteArray("keep"));
+    }
+
+    // 日期：2026-11-07；导出完整可解析JSON，已存在/过大报告拒绝且未提交临时文件全部清理。
+    void diagnosticAtomicExport() {
+        QTemporaryDir root;
+        QVERIFY(root.isValid());
+        const auto path = root.filePath(QStringLiteral("中文 报告.json"));
+        const QJsonObject report{{"event", "doctor"}, {"reportVersion", 1}, {"passed", true}};
+        dukto::exportDiagnostics(report, path);
+        QFile file(path);
+        QVERIFY(file.open(QIODevice::ReadOnly));
+        const auto bytes = file.readAll();
+        file.close();
+        QCOMPARE(QJsonDocument::fromJson(bytes).object(), report);
+        QVERIFY_EXCEPTION_THROWN(dukto::exportDiagnostics(report, path), dukto::Error);
+        QVERIFY(file.open(QIODevice::ReadOnly));
+        QCOMPARE(file.readAll(), bytes);
+        file.close();
+        QVERIFY_EXCEPTION_THROWN(
+            dukto::exportDiagnostics({{"value", QString(65537, 'x')}}, root.filePath("large.json")),
+            dukto::Error);
+        QCOMPARE(QDir(root.path()).entryList(QDir::Files | QDir::Hidden),
+                 QStringList{QFileInfo(path).fileName()});
+    }
+
     // 日期：2026-11-06；Windows旧Qt允许IPv4头像与双栈传输复用端口；两种先后顺序均须拒绝。
     void exclusiveTcpBinding_data() {
         QTest::addColumn<QHostAddress>("firstAddress");
