@@ -1,0 +1,20 @@
+********* Start testing of BufferCreditTests *********
+Config: Using QtTest library 5.15.19, Qt 5.15.19 (x86_64-little_endian-lp64 shared (dynamic) release build; by Clang 16.0.0 (clang-1600.0.26.6) (Apple)), osx 15.7
+PASS   : BufferCreditTests::initTestCase()
+PASS   : BufferCreditTests::legacyTextResultKeepsCreditUntilLastOwner()
+PASS   : BufferCreditTests::legacyTextSenderRejectsBeforeThreadStart()
+PASS   : BufferCreditTests::legacyTextReceiverRejectsBeforeBody()
+PASS   : BufferCreditTests::dataFilesShareAdmissionAndKeepPrivateReads()
+PASS   : BufferCreditTests::concurrentDataFileAdmission()
+PASS   : BufferCreditTests::legacySenderRespectsSharedSaturation()
+PASS   : BufferCreditTests::legacyReceiverSaturation(socket)
+PASS   : BufferCreditTests::legacyReceiverSaturation(catalog)
+PASS   : BufferCreditTests::legacyReceiverSaturation(mapping)
+PASS   : BufferCreditTests::legacyReceiveCountsMappingAndReleasesOnCancel()
+PASS   : BufferCreditTests::saturatedServiceClosesUnclaimedSockets()
+PASS   : BufferCreditTests::classificationAndReservationOrder()
+PASS   : BufferCreditTests::reservationAndUnwind()
+PASS   : BufferCreditTests::concurrentAdmission()
+PASS   : BufferCreditTests::cleanupTestCase()
+Totals: 16 passed, 0 failed, 0 skipped, 0 blacklisted, 5317ms
+********* Finished testing of BufferCreditTests *********

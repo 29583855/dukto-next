@@ -1,8 +1,8 @@
 {
-  "observedUtc": "2026-11-06T16:07:48.960714+00:00",
+  "observedUtc": "2026-11-06T16:35:02.010887+00:00",
   "planVersion": "v0.95",
   "previousProductionCommit": "5dd243fbad36da36568943513deed95ee124ba2d",
-  "productionCommitPending": true,
+  "productionCommitPending": false,
   "cppStandard": 14,
   "buildInputs": [
     {
@@ -869,9 +869,61 @@
     "path": "docs/validation/2026-11-06/listener-r95-full-windows/verified-receipt.json",
     "sha256": "7825fcf9e1af5387ae6b7a13e19d7fe2595911ddc7b1f283da533e9eda36bded"
   },
-  "nativeMacRegressionPending": true,
+  "nativeMacRegressionPending": false,
   "entireNativeProtocolPending": true,
   "parallelExitRootCauseProven": false,
   "releaseQualified": false,
-  "deliveryComplete": false
+  "deliveryComplete": false,
+  "productionCommit": "88f33b2c83f2950307c362fb64c693f7e9e5929d",
+  "testCommit": "88f33b2c83f2950307c362fb64c693f7e9e5929d",
+  "sourcePublic": true,
+  "sourcePublicationEvidence": {
+    "path": "docs/validation/2026-11-06/github-api-push-r96-boundary.json",
+    "sha256": "aacb84ffbd3150daa173bd8f1ee3cf4f26b469610b00a69b4becdcbed8632e3f"
+  },
+  "runs": {
+    "listenerRegression": {
+      "id": 42251051894,
+      "head_sha": "88f33b2c83f2950307c362fb64c693f7e9e5929d",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/29583855/dukto-next/actions/runs/42251051894"
+    },
+    "native": {
+      "id": 42252931531,
+      "head_sha": "88f33b2c83f2950307c362fb64c693f7e9e5929d",
+      "status": "queued",
+      "conclusion": null,
+      "html_url": "https://github.com/29583855/dukto-next/actions/runs/42252931531"
+    },
+    "musl": {
+      "id": 42253012733,
+      "head_sha": "88f33b2c83f2950307c362fb64c693f7e9e5929d",
+      "status": "in_progress",
+      "conclusion": null,
+      "html_url": "https://github.com/29583855/dukto-next/actions/runs/42253012733"
+    },
+    "macosPackages": {
+      "id": 42253077233,
+      "head_sha": "88f33b2c83f2950307c362fb64c693f7e9e5929d",
+      "status": "queued",
+      "conclusion": null,
+      "html_url": "https://github.com/29583855/dukto-next/actions/runs/42253077233"
+    }
+  },
+  "nativeMacRegressionPassedWithExplicitBoundary": true,
+  "nativeMacRegressionEvidence": {
+    "path": "docs/validation/2026-11-07/boundary-r96-native-regression-terminal/receipt.json",
+    "sha256": "ac8156f4b450a2cd9dad51a3d330f46c835e7b2b267ef200ff49a0bb977c8be9"
+  },
+  "nativeQtResultQualification": {
+    "path": "docs/validation/2026-11-07/boundary-r96-native-regression-terminal/qt-result-qualification.json",
+    "sha256": "fbc49c8209a6e0d6226a51791e0f34a9e3041bda232c36f20929b39ecd74f7d9"
+  },
+  "nativeMacCoreTargetsEach": 23,
+  "nativeMacFocusedRunsEach": 5,
+  "nativeMacExpectedFailureInstances": 12,
+  "nativeMacOriginalParallelExitCases": 20,
+  "nativeMacOriginalParallelExitFailures": 0,
+  "macosNewPackagesPending": true
 }
