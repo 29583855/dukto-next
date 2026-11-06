@@ -30,24 +30,27 @@ QString profileName(const QString &alias) {
     return "profile-" + alias + ".json";
 }
 
-// 日期：2026-11-05；按当前业务处理器精确声明能力，接收端不能从版本号推断其他操作可用。
-QJsonArray capabilities() {
-    return {"pair-v1",
-            "auth-v1",
-            "credential-rotation-v1",
-            "session-lifetime-v1",
-            "task-admission-v1",
-            "control-close-v1",
-            "browse-v1",
-            "stream-transfer-v1",
-            "task-control-v1",
-            "parallel-transfer-v1",
-            "byte-progress-v1",
-            "conflict-fail-v1",
-            "conflict-overwrite-v1",
-            "task-items-v1",
-            "task-item-failures-v1",
-            "disposition-summary-v1"};
+// 日期：2026-11-06；服务端可协商必需处置进度；尚未接线的普通客户端不声明此新能力。
+QJsonArray capabilities(bool dispositionProgress = false) {
+    QJsonArray result{"pair-v1",
+                      "auth-v1",
+                      "credential-rotation-v1",
+                      "session-lifetime-v1",
+                      "task-admission-v1",
+                      "control-close-v1",
+                      "browse-v1",
+                      "stream-transfer-v1",
+                      "task-control-v1",
+                      "parallel-transfer-v1",
+                      "byte-progress-v1",
+                      "conflict-fail-v1",
+                      "conflict-overwrite-v1",
+                      "task-items-v1",
+                      "task-item-failures-v1",
+                      "disposition-summary-v1"};
+    if (dispositionProgress)
+        result.append("disposition-progress-v1");
+    return result;
 }
 
 // 日期：2026-11-04；服务端只接受精确 1.0 能力协商，认证消息不能跳过协议入口。
@@ -454,7 +457,7 @@ ServiceWorker::~ServiceWorker() {
     wait();
 }
 
-// 日期：2026-11-05；构造授信失败也关闭已接收的描述符；错误响应和日志不包含认证秘密。
+// 日期：2026-11-06；独立核对本连接处置/进度能力；构造失败关闭描述符，错误不含认证秘密。
 void ServiceWorker::run() {
     std::unique_ptr<next::SecureChannel> connection;
     quint64 correlation = 1;
@@ -479,9 +482,12 @@ void ServiceWorker::run() {
         const bool peerDisposition =
             next::parseControl(first.payload)["capabilities"].toArray().contains(
                 "disposition-summary-v1");
+        const bool peerAccounting =
+            next::parseControl(first.payload)["capabilities"].toArray().contains(
+                "disposition-progress-v1");
         channel.write(next::Type::HelloAck, correlation,
                       {{"version", "1.0"},
-                       {"capabilities", capabilities()},
+                       {"capabilities", capabilities(true)},
                        {"sessionSeconds", QString::number(sessionSeconds)},
                        {"serverId", identity_.id.toString(QUuid::WithoutBraces)}});
         auto frame = channel.read();
@@ -543,6 +549,10 @@ void ServiceWorker::run() {
                 if (request.contains("dispositionSummary") && !peerDisposition)
                     throw Error(ExitCode::Config, QStringLiteral("对端未协商处置摘要能力"),
                                 "disposition");
+                // 日期：2026-11-06；新计量也须在本连接Hello声明，不能借其他任务或创建字段越过协商。
+                if (request.contains("dispositionProgress") && !peerAccounting)
+                    throw Error(ExitCode::Config, QStringLiteral("对端未协商处置进度能力"),
+                                "progress");
                 serveTransfer(channel, store, account, reauthenticate, request, frame.header.type,
                               correlation);
                 continue;

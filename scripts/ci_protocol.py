@@ -11,7 +11,7 @@ import sys
 import time
 
 
-# 日期：2026-11-05；集中声明既有真实专项，三平台保持原参数和时限，不用后续成功覆盖先前失败。
+# 日期：2026-11-06；集中声明跨平台真实专项及必需计量验证，保留原参数/时限和首次失败。
 def commands(build):
     windows = sys.platform == "win32"
     binary = build / "Release" if windows else build
@@ -39,6 +39,8 @@ def commands(build):
     else:
         add("posix-path", "posix_path_integration")
     add("service", "service_integration")
+    # 日期：2026-11-06；独立TLS客户机核对必需计量协商、持久结果及畸形进度拒绝。
+    add("service-accounting", "service_accounting_integration")
     add("client-list", "client_list_integration")
     add("credential-rotation", "credential_rotation_integration")
     add("certificate-lifecycle", "certificate_lifecycle_integration")

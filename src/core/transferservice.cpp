@@ -35,6 +35,19 @@ void resetUnbound(PrivateStore &store, const QString &name) {
         if (store.exists(key))
             store.remove(key);
 }
+// 日期：2026-11-06；必需计量和独立逐项摘要必须一致；数字完整不能替代持久处置证明。
+void checkDispositionAccounting(const TransferTask &task, const QJsonObject &summary) {
+    if (!task.accountingRequired)
+        return;
+    if (task.accounting.isEmpty() || summary["complete"] != QJsonValue(true))
+        throw Error(ExitCode::Integrity, QStringLiteral("任务缺少完整计量或处置证据"),
+                    "completion");
+    for (const auto &key : {"copiedBytes", "skippedBytes", "copiedFiles", "copiedDirectories",
+                            "skippedFiles", "skippedDirectories"})
+        if (task.accounting[key] != summary[key])
+            throw Error(ExitCode::Integrity, QStringLiteral("任务计量与逐项处置不同"),
+                        "completion");
+}
 } // namespace
 
 // 日期：2026-11-05；控制请求重查授权与执行租约，崩溃遗留的排队/扫描也可归一为可恢复中断。
@@ -122,7 +135,7 @@ QJsonObject manageTransfer(PrivateStore &store, const Principal &principal,
     return result;
 }
 
-// 日期：2026-11-06；历史完成也受全局授信和授权约束，原任务保持终态，只读核验当前文件。
+// 日期：2026-11-06；显式进度绑定必需计量并逐项核对；历史只读核验和旧协议兼容保持。
 void serveTransfer(next::SecureChannel &channel, PrivateStore &store, const Principal &principal,
                    const std::function<Principal()> &reauthenticate, const QJsonObject &request,
                    next::Type type, quint64 correlation) {
@@ -132,6 +145,7 @@ void serveTransfer(next::SecureChannel &channel, PrivateStore &store, const Prin
     const bool queuedProtocol = request.contains("queue");
     const bool explicitConflict = request.contains("conflict");
     const bool peerDisposition = request.contains("dispositionSummary");
+    const bool dispositionProgress = request.contains("dispositionProgress");
     if (explicitConflict && request["conflict"] != QJsonValue("fail") &&
         request["conflict"] != QJsonValue("overwrite"))
         throw Error(ExitCode::Config, QStringLiteral("未协商或未知的冲突策略"), "conflict");
@@ -141,7 +155,9 @@ void serveTransfer(next::SecureChannel &channel, PrivateStore &store, const Prin
     if ((!upload && type != next::Type::CreateDownload) ||
         request.size() != (upload ? 4 : 3) + (parallel ? 1 : 0) + (byteProgress ? 1 : 0) +
                               (queuedProtocol ? 1 : 0) + (explicitConflict ? 1 : 0) +
-                              (peerDisposition ? 1 : 0) ||
+                              (peerDisposition ? 1 : 0) + (dispositionProgress ? 1 : 0) ||
+        (dispositionProgress && (request["dispositionProgress"] != QJsonValue(true) ||
+                                 !peerDisposition || !byteProgress)) ||
         (peerDisposition && request["dispositionSummary"] != QJsonValue(true)) ||
         (queuedProtocol && request["queue"] != QJsonValue(true)) ||
         (byteProgress && request["byteProgress"] != QJsonValue(true)) ||
@@ -162,7 +178,7 @@ void serveTransfer(next::SecureChannel &channel, PrivateStore &store, const Prin
     auto task = tasks.create(principal.client, requestId, upload ? "upload" : "download", share,
                              relative, root->share().root,
                              upload ? sha(request["manifest"].toObject()["sha256"]) : QByteArray(),
-                             conflict);
+                             conflict, dispositionProgress);
     if (task.state == "failed" || task.state == "cancelled")
         throw Error(ExitCode::Config, QStringLiteral("任务已终止；需要新请求 ID 才能创建新传输"),
                     "task");
@@ -271,6 +287,7 @@ void serveTransfer(next::SecureChannel &channel, PrivateStore &store, const Prin
             DispositionJournal outcomes(store, outcomeName, task.id, *manifest,
                                         conflictPolicyName(task.conflict), work, true);
             const auto disposition = outcomes.summary(true, work);
+            checkDispositionAccounting(task, disposition);
             if (upload) {
                 DurableReceive::verifyCompleted(
                     store, "receive-" + key + ".sqlite", task.id, *manifest, selected,
@@ -453,11 +470,29 @@ void serveTransfer(next::SecureChannel &channel, PrivateStore &store, const Prin
             const auto current = tasks.task(principal.client, task.id);
             task = tasks.advance(*lease, current.revision, "transferring", processed);
         };
-        TransferProgress meter(channel, correlation, task.id, task.manifest, task.total, upload,
-                               byteProgress, [&](const QJsonObject &value) {
-                                   // 日期：2026-11-05；单线程限频快照同步任务查询，不增加逐片段数据库事务。
-                                   record(value["bytes"].toString().toLongLong());
-                               });
+        TransferProgress meter(
+            channel, correlation, task.id, task.manifest, task.total, upload, byteProgress,
+            [&](const QJsonObject &value) {
+                // 日期：2026-11-06；只在已验证进度回调持久化固定十字段，空条目也参与任务修订。
+                if (!dispositionProgress) {
+                    record(value["bytes"].toString().toLongLong());
+                    return;
+                }
+                QJsonObject snapshot{{"bytes", value["receivedBytes"]},
+                                     {"confirmed", value["confirmedBytes"]},
+                                     {"restored", value["restoredBytes"]}};
+                for (const auto &key :
+                     {"copiedBytes", "skippedBytes", "discardedBytes", "copiedFiles",
+                      "copiedDirectories", "skippedFiles", "skippedDirectories"})
+                    snapshot[key] = value[key];
+                const auto current = tasks.task(principal.client, task.id);
+                if (current.accounting != snapshot)
+                    task = tasks.recordAccounting(*lease, current.revision, snapshot);
+                else
+                    task = current;
+                processed = task.processed;
+            },
+            dispositionProgress, static_cast<quint64>(task.entries));
         const auto completed = [&](const StrongEntry &entry,
                                    const DurableReceive::Preparation &result) {
             const auto &path = result.path;
@@ -466,7 +501,8 @@ void serveTransfer(next::SecureChannel &channel, PrivateStore &store, const Prin
                             result.skippedRoot);
             // 日期：2026-11-05；文件完成与跨文件已确认块取较大值，避免多文件窗口完成时进度回退。
             completedBytes += result.skipped ? 0 : entry.bytes;
-            record(completedBytes);
+            if (!dispositionProgress)
+                record(completedBytes);
         };
         if (upload) {
             DurableReceive receiver(store, "receive-" + key + ".sqlite", task.id, *manifest,
@@ -488,6 +524,7 @@ void serveTransfer(next::SecureChannel &channel, PrivateStore &store, const Prin
         const auto disposition = outcomes.summary(true, work);
         work();
         const auto latest = tasks.task(principal.client, task.id);
+        checkDispositionAccounting(latest, disposition);
         task = tasks.advance(*lease, latest.revision, "verifying", processed);
         if (peerDisposition)
             confirmDisposition(disposition);

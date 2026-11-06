@@ -250,7 +250,7 @@ TaskLease::TaskLease(QUuid task, QUuid owner, const QString &path)
 // 日期：2026-11-04；QLockFile 归还所有权；进程崩溃后的锁依原生进程身份判定，不按任务年龄删除。
 TaskLease::~TaskLease() = default;
 
-// 日期：2026-11-06；身份状态根创建任务库，版本一原子迁移至固定计量列，旧记录及修订保持。
+// 日期：2026-11-06；原子迁移固定计量列；已有版本避免重写文件头，旧记录及修订保持。
 TaskStore::TaskStore(PrivateStore &store, bool control)
     : store_(store), connection_(QUuid::createUuid().toString()), cacheCredit_(1024, control) {
     // 日期：2026-11-04；同进程线程先串行初始化，避免 Windows 锁文件探测句柄与解锁删除竞争。
@@ -291,9 +291,11 @@ TaskStore::TaskStore(PrivateStore &store, bool control)
                            "NULL, processed INTEGER NOT NULL, error INTEGER NOT NULL, "
                            "message TEXT NOT NULL, updated TEXT NOT NULL, UNIQUE(owner,request))");
         execute(database_, "CREATE INDEX IF NOT EXISTS tasks_owner ON tasks(owner)");
-        if (schema < 2)
+        if (schema < 2) {
             execute(database_, "ALTER TABLE tasks ADD COLUMN accounting BLOB NOT NULL DEFAULT X''");
-        execute(database_, "PRAGMA user_version=2");
+            // 日期：2026-11-06；只在实际迁移时设置版本，已有版本查询不能改写SQLite文件头。
+            execute(database_, "PRAGMA user_version=2");
+        }
         transaction.commit();
     } catch (...) {
         database_.close();
