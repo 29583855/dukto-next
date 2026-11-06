@@ -1,6 +1,6 @@
 {
   "date": "2026-11-06",
-  "observedUtc": "2026-11-06T05:47:44.134777+00:00",
+  "observedUtc": "2026-11-06T06:05:36.063619+00:00",
   "planVersion": "v0.80",
   "productionCommit": "8e9077854085a842261abf2b030a83d945545822",
   "testCommit": "8e9077854085a842261abf2b030a83d945545822",
@@ -27,7 +27,11 @@
     "clientAccountingCasesEach": 6,
     "clientAccountingAttacksEach": 13,
     "oldContractCasesEach": 2,
-    "clientReadOnlyAttacksEach": 36
+    "clientReadOnlyAttacksEach": 36,
+    "idleThreadDiagnostic": {
+      "path": "docs/validation/2026-11-06/client-accounting-r82-idle-threads-diagnostic2/receipt.json",
+      "sha256": "6787b3ba023f3d3ec9f3c17e97342bafe381e3b3df93b5f73d3d208885337bec"
+    }
   },
   "sourceAudit": {
     "path": "docs/validation/2026-11-06/client-accounting-r82-final2-source-audit.json",
@@ -51,8 +55,8 @@
     "macosPackage": {
       "id": 42170433020,
       "head_sha": "8e9077854085a842261abf2b030a83d945545822",
-      "status": "in_progress",
-      "conclusion": null,
+      "status": "completed",
+      "conclusion": "success",
       "html_url": "https://github.com/29583855/dukto-next/actions/runs/42170433020"
     }
   },
@@ -78,15 +82,39 @@
   "protocolCasesPerPosixRunner": 42,
   "protocolCasesWindows": 45,
   "fourNativeTotal": 171,
-  "currentMacPackageSourceCommit": "8ff4fb6a8a61da17734a41f14c554d47debb6640",
+  "currentMacPackageSourceCommit": "8e9077854085a842261abf2b030a83d945545822",
   "currentMacPackageEvidence": {
-    "path": "docs/validation/2026-11-06/service-accounting-r81-macos-package-terminal/receipt.json",
-    "sha256": "e365f91af8cba2814cf105e9746c5038315ca65326183e62ed2f32306ad3aae3"
+    "path": "docs/validation/2026-11-06/client-accounting-r82-macos-package-terminal/receipt.json",
+    "sha256": "e5abe1dcea6732046fe6d75e2e2a64ae3f8b3b901e4b9ce259e3e466cbf540df"
   },
-  "newMacPackagePending": true,
+  "newMacPackagePending": false,
   "serverRequiredAccountingConnected": true,
   "publicAccountingConnected": true,
   "publicSkipEnabled": false,
   "releaseQualified": false,
-  "deliveryComplete": false
+  "deliveryComplete": false,
+  "completedMacPackage": {
+    "sourceCommit": "8e9077854085a842261abf2b030a83d945545822",
+    "run": {
+      "id": 42170433020,
+      "head_sha": "8e9077854085a842261abf2b030a83d945545822",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/29583855/dukto-next/actions/runs/42170433020"
+    },
+    "evidence": {
+      "path": "docs/validation/2026-11-06/client-accounting-r82-macos-package-terminal/receipt.json",
+      "sha256": "e5abe1dcea6732046fe6d75e2e2a64ae3f8b3b901e4b9ce259e3e466cbf540df"
+    }
+  },
+  "fiveNativeCores": {
+    "path": "docs/validation/2026-11-06/client-accounting-r82-five-native-cores-verified.json",
+    "sha256": "0d41fe19f6c0c687268656653e084bf5ce19f4cce31d0d7487b484a9289fb585",
+    "sourceCommit": "8e9077854085a842261abf2b030a83d945545822",
+    "coreTargetsEach": 22,
+    "taskStoreCasesEach": 39,
+    "accountingCasesEach": 32,
+    "exchangeCasesEach": 208,
+    "passed": true
+  }
 }

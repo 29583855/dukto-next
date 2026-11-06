@@ -1,15 +1,15 @@
 # macOS独立开发预览包
 
-更新日期：2026-11-06。当前可下载包源码为`8ff4fb6a8a61da17734a41f14c554d47debb6640`，C++14/Qt5；Intel和Apple Silicon分别交付GUI与独立CLI，Qt5/OpenSSL运行依赖已放入应用。
+更新日期：2026-11-06。当前可下载包源码为`8e9077854085a842261abf2b030a83d945545822`，C++14/Qt5；Intel和Apple Silicon分别交付GUI与独立CLI，Qt5/OpenSSL运行依赖已放入应用。
 
 ## 下载与校验
 
-[8ff4fb6双架构打包与迁移工作流](https://github.com/29583855/dukto-next/actions/runs/42165735963)终态success。按Mac芯片选择架构；GitHub附件下载可能需要登录。ZIP内含tar.gz、校验值和原报告。
+[8e90778双架构打包与迁移工作流](https://github.com/29583855/dukto-next/actions/runs/42170433020)终态success。按Mac芯片选择架构；GitHub附件下载可能需要登录。ZIP内含tar.gz、校验值和原报告。
 
 | 架构 | GitHub附件 | 内部tar.gz的SHA-256 |
 | --- | --- | --- |
-| Apple Silicon / arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42165735963/artifacts/13478549036) | `5e8c4ddabf464c6caef64bf50b787e585390be72c597a1dbc5596c01ec91ba3e` |
-| Intel / x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42165735963/artifacts/13479346657) | `fb6fc0d93224693009db85d05c9d01963ca8d20a78ebbf6221184b719a9fd071` |
+| Apple Silicon / arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42170433020/artifacts/13481630416) | `aa280cdd9a27451f89299f4a6e4c9e77f19331cfd0cd05f5e0a76b9b7ecf8037` |
+| Intel / x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42170433020/artifacts/13482035580) | `dee626b5abed57165f96f25742dff62b5a9f62265e9608e1880938563b8dde7a` |
 
 先解压ZIP。Apple Silicon示例（Intel将arm64替换为x86_64）：
 
@@ -27,13 +27,13 @@ open "Dukto Next.app"
 
 GUI保留Dukto设备/最近/关于布局，底部“服务器 · 上传 / 下载”进入服务器页。客户机主动连接服务器，执行配对、授权目录浏览、上传和下载；服务器无需主动连接客户机IP。GUI/CLI共用内核，扩展支持1/2/4/8/16通道以及暂停、取消和恢复，CLI可在无桌面服务器独立运行。
 
-两包在原生Mac runner的中文空格目录、仅系统PATH下实际迁移。arm64的1547份载荷、Intel的1705份载荷，各71个链接和全部文件摘要已核验；GUI/CLI Mach-O架构、执行权限、依赖来源及adhoc签名通过。两包各277份内附应用源码与精确Git树全集逐字节一致。各五份原业务报告按父SHA逐份读取并通过：独立CLI、16通道双向、1/4/16覆盖、覆盖恢复和4→8恢复。
+两包在原生Mac runner的中文空格目录、仅系统PATH下实际迁移。arm64的1547份载荷、Intel的1705份载荷，各71个链接和全部文件摘要已核验；GUI/CLI Mach-O架构、执行权限、依赖来源及adhoc签名通过。两包各280份内附应用源码与精确Git树全集逐字节一致。各五份原业务报告按父SHA逐份读取并通过：独立CLI、16通道双向、1/4/16覆盖、覆盖恢复和4→8恢复。
 
 两架构原生Cocoa服务器页截图已查看，中文和控件布局正常。生产QML/实际Controller测试夹具的服务器入口、页签、返回重开及紧凑尺寸通过；150%/200%缩放使用独立offscreen用例，完整部署GUI交互和原生文件选择器仍另行验收。
 
-同包源码8ff4fb6包含服务端必需计量协商、固定快照持久化和完成历史的独立摘要交叉核验，并修复任务查询重复设置数据库版本导致的文件头改写。双Windows各22核心及16份真实协议专项通过；普通客户端尚未启用新计量契约，公开skip仍关闭。本包各五份业务报告已验，完整原生CI与全部交互、物理网络和长期资源仍另行验收。
+同包源码8e90778已接通普通GUI/CLI客户端必需计量、本地/远端持久请求契约和最终实际进度/独立处置核验；旧请求保持原格式，新请求禁止能力降级。双Windows各22核心及合计28份真实专项通过。公开skip仍关闭，完整原生CI、全部交互、物理网络和长期资源仍另行验收。
 
-本机持久归档：dist/macos-preview-20261106-r81-service-accounting/BUILD-RECEIPT.json。[当前核验索引](current-validation.json)记录精确提交、运行、附件ID与摘要；原件回执为docs/validation/2026-11-06/service-accounting-r81-macos-package-terminal/receipt.json。
+本机持久归档：dist/macos-preview-20261106-r82-client-accounting/BUILD-RECEIPT.json。[当前核验索引](current-validation.json)记录精确提交、运行、附件ID与摘要；原件回执为docs/validation/2026-11-06/client-accounting-r82-macos-package-terminal/receipt.json。
 
 ## 交付边界
 
@@ -132,3 +132,6 @@ v0.78/r80收件（2026-11-06）：当前入口更新至9ac5ca7双Mac包，部署
 
 
 v0.79/r81收件（2026-11-06）：当前入口更新至8ff4fb6双Mac包，部署42165735963及两job终态success。各277源码与精确Git树全集一致；全部载荷、各71链接、五业务报告及四截图已核验。旧9ac5ca7包独立保留；正式签名、公证和干净系统资格继续。
+
+
+v0.80/r82收件（2026-11-06）：当前入口更新至8e90778双Mac包，部署42170433020及两job终态success。各280源码与精确Git树全集一致；全部载荷、各71链接、五业务报告及四截图已核验。旧8ff4fb6包独立保留；正式签名、公证和干净系统资格继续。
