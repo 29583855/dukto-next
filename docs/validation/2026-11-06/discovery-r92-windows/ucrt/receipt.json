@@ -1,0 +1,47 @@
+{
+  "toolchain": "ucrt",
+  "oldBinariesPreserved": [
+    {
+      "name": "dukto-cli.exe",
+      "sha256": "9f35cb9c3d66a1fc44d825b51bbe1a693bdacc0986ac454cbf6c11db171a4184"
+    },
+    {
+      "name": "dukto-gui.exe",
+      "sha256": "28bba2dc706295bb9df314168235b61686a01171cad2052661bdc492ec1caa66"
+    },
+    {
+      "name": "core-tests.exe",
+      "sha256": "1913cc5ab3673e40db48356e9f7b8b37c74ddadc9691b785175f5da4da80a0c2"
+    }
+  ],
+  "binary": {
+    "path": "build/windows-ucrt/dukto-cli.exe",
+    "sha256": "c2162a4b26791885e9512dd88b6ac83ba0f107dbc931cdbcc21966579090842f"
+  },
+  "cases": [
+    {
+      "name": "full-core",
+      "exitCode": 0,
+      "passed": true
+    },
+    {
+      "name": "legacy",
+      "exitCode": 0,
+      "passed": true,
+      "report": {
+        "path": "docs/validation/2026-11-06/discovery-r92-windows/ucrt/legacy.json",
+        "sha256": "4124e89b096f386eab7b654ac27edbd550a489d1e838c1ee85f24c5a63f9b6d0"
+      }
+    },
+    {
+      "name": "cli",
+      "exitCode": 0,
+      "passed": true,
+      "report": {
+        "path": "docs/validation/2026-11-06/discovery-r92-windows/ucrt/cli.json",
+        "sha256": "e84d9024b3cd20db3f9d60fa6a06181160cd4ae30e3a21f30916cd4cf6426020"
+      }
+    }
+  ],
+  "passed": true
+}

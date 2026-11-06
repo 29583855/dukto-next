@@ -6,7 +6,7 @@
 
 当前已建立 C++14 共用核心、Qt Quick 2 桌面端和独立 CLI。Windows 已验证与原版文件/目录/文本双向互传、超过 4 GiB、10 万文件、100 轮接收，以及首次说明/设置/截图/单实例和有界头像模块。完整原版交互、服务器、多线程、恢复和跨平台验收继续按计划推进。原版目录保留用于对照。
 
-公开仓库为[29583855/dukto-next](https://github.com/29583855/dukto-next)。当前源码`effd311`（R90）统一每进程32个传输数据文件额度，双Windows各23核心及新增4个业务行通过；CLI专项MSVC12/12、UCRT11/12，UCRT空闲线程采样原失败保留，根因未证明。精确提交完整原生验证继续；双Mac新包已收验。[Mac下载](docs/macOS独立预览包.md)为已验R90双架构包。见[回执](docs/ci-verification-20261106-r90.json)、[计划](开发计划与进度.md)和[当前索引](docs/current-validation.json)。整体交付继续。
+公开仓库为[29583855/dukto-next](https://github.com/29583855/dukto-next)。当前R92修复UDP发现空通知后的接收停滞，双Windows各23核心/R6/独立CLI及Alpine原用例新旧对照通过，精确上传和完整原生验收继续。[Mac下载](docs/macOS独立预览包.md)为已验R90双架构包，含每进程32个传输数据文件额度。旧失败保持，见[R92回执](docs/ci-verification-20261106-r92.json)、[计划](开发计划与进度.md)和[当前索引](docs/current-validation.json)。整体交付继续。
 
 新增[b9d9b78上传发送端确认](docs/decisions/0022-上传发送端持久处置与证据恢复.md)已通过本机专项；原CI终态failure保留：四平台临时库glob误判，另Windows并发隔离空闲线程5/基线3的原因未确认。旧运行不再视为进行中，完整历史见主计划v0.64。
 
@@ -212,3 +212,6 @@ Linux覆盖实际包已验证并更新；当前三平台c3fc781预览包早于�
 R86 macOS下载已更新至06089a5：双架构GUI/CLI、各290源码、五业务原报告及截图已验，详见[下载说明](docs/macOS独立预览包.md)。完整原生协议与正式交付继续。
 
 R87 macOS下载已更新到409a73b：Intel/Apple Silicon的GUI和独立CLI、各293源码、五业务原报告及四截图通过；包含公开skip，完整新原生协议独立验收。见[下载说明](docs/macOS独立预览包.md)。
+
+
+2026-11-06 R92：发现UDP空通知后的接收恢复已通过双Windows核心/R6/CLI及Alpine原用例对照，完整原生验收继续。当前Mac下载保持已验R90；见[计划](开发计划与进度.md)和[R92回执](docs/ci-verification-20261106-r92.json)。

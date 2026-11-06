@@ -1,0 +1,112 @@
+{
+  "date": "2026-11-06",
+  "inputs": [
+    {
+      "path": "src/core/discovery.cpp",
+      "sha256": "ed7a5dad49691c0c84457b0120cbfe31915f146f18176b0cb747744548ddacbe"
+    },
+    {
+      "path": "tests/core_tests.cpp",
+      "sha256": "4627a65b6a79df1c45746dedbed88b86a7d7ad61672d7f7d9b60b86dcc30c202"
+    }
+  ],
+  "testsAndTimeoutsUnchanged": true,
+  "toolchains": [
+    {
+      "toolchain": "ucrt",
+      "oldBinariesPreserved": [
+        {
+          "name": "dukto-cli.exe",
+          "sha256": "9f35cb9c3d66a1fc44d825b51bbe1a693bdacc0986ac454cbf6c11db171a4184"
+        },
+        {
+          "name": "dukto-gui.exe",
+          "sha256": "28bba2dc706295bb9df314168235b61686a01171cad2052661bdc492ec1caa66"
+        },
+        {
+          "name": "core-tests.exe",
+          "sha256": "1913cc5ab3673e40db48356e9f7b8b37c74ddadc9691b785175f5da4da80a0c2"
+        }
+      ],
+      "binary": {
+        "path": "build/windows-ucrt/dukto-cli.exe",
+        "sha256": "c2162a4b26791885e9512dd88b6ac83ba0f107dbc931cdbcc21966579090842f"
+      },
+      "cases": [
+        {
+          "name": "full-core",
+          "exitCode": 0,
+          "passed": true
+        },
+        {
+          "name": "legacy",
+          "exitCode": 0,
+          "passed": true,
+          "report": {
+            "path": "docs/validation/2026-11-06/discovery-r92-windows/ucrt/legacy.json",
+            "sha256": "4124e89b096f386eab7b654ac27edbd550a489d1e838c1ee85f24c5a63f9b6d0"
+          }
+        },
+        {
+          "name": "cli",
+          "exitCode": 0,
+          "passed": true,
+          "report": {
+            "path": "docs/validation/2026-11-06/discovery-r92-windows/ucrt/cli.json",
+            "sha256": "e84d9024b3cd20db3f9d60fa6a06181160cd4ae30e3a21f30916cd4cf6426020"
+          }
+        }
+      ],
+      "passed": true
+    },
+    {
+      "toolchain": "msvc",
+      "oldBinariesPreserved": [
+        {
+          "name": "dukto-cli.exe",
+          "sha256": "1b1835bcabd839581fa95812167b3c8cd3e2d3d73d1171646cc43611fa81878b"
+        },
+        {
+          "name": "dukto-gui.exe",
+          "sha256": "a6fde221a2f43a791bb1f738a44e66545bf813ee234b711aa90df80a58f7d475"
+        },
+        {
+          "name": "core-tests.exe",
+          "sha256": "0587a188f5a58330e821018638113528597d1636cfe306923304d94bc030358e"
+        }
+      ],
+      "binary": {
+        "path": "build/windows/Release/dukto-cli.exe",
+        "sha256": "55f887a9124cf8eeb7c24e13c5a4d37a7010e51a95728b1cc90ac096d51b98e9"
+      },
+      "cases": [
+        {
+          "name": "full-core",
+          "exitCode": 0,
+          "passed": true
+        },
+        {
+          "name": "legacy",
+          "exitCode": 0,
+          "passed": true,
+          "report": {
+            "path": "docs/validation/2026-11-06/discovery-r92-windows/msvc/legacy.json",
+            "sha256": "529096987725c23ff0e5548ae8edf60451a35b5bffbf0ba7672f878cb48465dc"
+          }
+        },
+        {
+          "name": "cli",
+          "exitCode": 0,
+          "passed": true,
+          "report": {
+            "path": "docs/validation/2026-11-06/discovery-r92-windows/msvc/cli.json",
+            "sha256": "e84d9024b3cd20db3f9d60fa6a06181160cd4ae30e3a21f30916cd4cf6426020"
+          }
+        }
+      ],
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "deliveryComplete": false
+}

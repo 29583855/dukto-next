@@ -129,13 +129,18 @@ void Discovery::expire() {
         emit changed();
 }
 
-// 日期：2026-11-05；每轮最多 64 个包并限制处理时间，持续发现流量不能长期占住 GUI 事件循环。
+// 日期：2026-11-06；每轮最多 64 包/5ms；可读通知至少非阻塞读取一次，恢复 Qt 的后续通知。
 void Discovery::read() {
     QElapsedTimer slice;
     slice.start();
     int received = 0;
-    for (; received < 64 && slice.elapsed() < 5 && socket_.hasPendingDatagrams(); ++received) {
+    for (; received < 64 && (received == 0 || slice.elapsed() < 5) &&
+           (received == 0 || socket_.hasPendingDatagrams());
+         ++received) {
+        // 日期：2026-11-06；排队续读可能先排空内核队列；迟到的空通知也须读取以重置 Qt 状态。
         const auto packet = socket_.receiveDatagram(1024);
+        if (!packet.isValid())
+            break;
         auto data = packet.data();
         if (data.isEmpty())
             continue;
@@ -192,9 +197,8 @@ void Discovery::read() {
         if (different)
             emit changed();
     }
-    // 日期：2026-11-05；回调刚发送的数据报可能稍后才可读；有收包的批次再查一次。
-    // 空批次不续排，始终最多一个事件，不使用忙轮询或阻塞等待占住界面线程。
-    if ((received > 0 || socket_.hasPendingDatagrams()) && !readQueued_) {
+    // 日期：2026-11-06；只在仍有包时递交一条续读事件；稍后到达的包由恢复后的可读通知处理。
+    if (socket_.hasPendingDatagrams() && !readQueued_) {
         readQueued_ = true;
         QTimer::singleShot(0, this, [this]() {
             // 日期：2026-11-05；同一实例最多一条后续排空事件，析构时由 Qt 自动撤销回调。

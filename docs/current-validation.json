@@ -1,5 +1,5 @@
 {
-  "observedUtc": "2026-11-06T12:19:26.333421+00:00",
+  "observedUtc": "2026-11-06T12:27:32.956357+00:00",
   "productionCommit": "effd3115e95e696077a13038f3bb0616362eac5d",
   "testCommit": "f8cf4cd7ce47eff0f2d72ad26d85ea3cb19f65e9",
   "packages": [
@@ -197,8 +197,8 @@
   ],
   "releaseQualified": false,
   "deliveryComplete": false,
-  "planVersion": "v0.90",
-  "currentSourceStage": "R90 data file budget; R91 bounded Windows system pool sampling fixture",
+  "planVersion": "v0.91",
+  "currentSourceStage": "Discovery notification recovery locally verified; exact R92 upload pending",
   "nativeMusl": {
     "sourceCommit": "f8cf4cd7ce47eff0f2d72ad26d85ea3cb19f65e9",
     "productionCommit": "effd3115e95e696077a13038f3bb0616362eac5d",
@@ -10079,5 +10079,46 @@
     "protocolReports": 44,
     "allOriginalReportsVerified": true
   },
-  "localDiscoveryRepairPending": true
+  "localDiscoveryRepairPending": false,
+  "discoveryNotificationR92": {
+    "date": "2026-11-06",
+    "observedUtc": "2026-11-06T12:27:32.956357+00:00",
+    "planVersion": "v0.91",
+    "productionCommit": null,
+    "testCommit": null,
+    "exactCommitPending": true,
+    "modifiedProductionFiles": [
+      "src/core/discovery.cpp"
+    ],
+    "cppStandard": 14,
+    "testsAndTimeoutsUnchanged": true,
+    "windowsEvidence": {
+      "path": "docs/validation/2026-11-06/discovery-r92-windows/receipt.json",
+      "sha256": "097b27a48d8856d2e27717f5ef048a1bfa582656a3ee208d790d3d22d1503c5e"
+    },
+    "windowsCoreTargetsEach": 23,
+    "windowsR6AndCliEachPassed": true,
+    "muslFocusedEvidence": {
+      "path": "docs/validation/2026-11-06/discovery-r92-focused-musl/receipt.json",
+      "sha256": "b1d4a24246d30c582927e6777580088dc9103a02a5befd7f9b739b70141f7061"
+    },
+    "muslFocusedOldFailures": [
+      "discoveryYieldsAndRejectsMalformedGoodbye",
+      "discoveryAggregatesAddresses"
+    ],
+    "muslFocusedFixedAttemptsPassed": 3,
+    "muslFullIndependentPending": true,
+    "muslFullRemoteRoot": "/home/dukto/discovery-r92",
+    "originalR90FullFailureRetained": true,
+    "allHistoricalDiscoveryRootCausesProven": false,
+    "sourceAudit": {
+      "path": "docs/validation/2026-11-06/discovery-r92-windows/source-audit.json",
+      "sha256": "aa14fdc3cd6440202c1499cd58ded9b08ce7fa10a438b06b6e150e6375b98605"
+    },
+    "currentMacPackageSourceCommit": "effd3115e95e696077a13038f3bb0616362eac5d",
+    "newMacPackagePending": true,
+    "runs": {},
+    "releaseQualified": false,
+    "deliveryComplete": false
+  }
 }
