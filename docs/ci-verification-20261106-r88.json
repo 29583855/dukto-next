@@ -1,0 +1,449 @@
+{
+  "date": "2026-11-06",
+  "observedUtc": "2026-11-06T10:17:41.315497+00:00",
+  "planVersion": "v0.87",
+  "productionCommit": "463521a9301016f36c0d80f8e6704faedce403a2",
+  "testCommit": "463521a9301016f36c0d80f8e6704faedce403a2",
+  "sourceAudit": {
+    "sourceCommit": "463521a9301016f36c0d80f8e6704faedce403a2",
+    "buildInputsMatchExactGitCommit": 199,
+    "frozenInputsMatchExactGitCommit": true,
+    "cppStandard": 14,
+    "changedCppFormatted": true,
+    "existingFilesEncodingAndNewlinePreserved": 5,
+    "productionFilesScanned": 89,
+    "todoFixmeStubMarkerCount": 0
+  },
+  "windowsEvidence": {
+    "path": "docs/validation/2026-11-06/private-read-r88a-windows/summary.json",
+    "sha256": "2697bfd8537e35de88dc00581569fa660545850702db88f56dd0f41cfce2f8f8"
+  },
+  "windows": {
+    "toolchains": [
+      {
+        "toolchain": "ucrt",
+        "binary": {
+          "path": "build/windows-ucrt/dukto-cli.exe",
+          "sha256": "e575d7eb4fd4a535c87f4b267fcce599d9f4469536797efe376fd908808767d1"
+        },
+        "cases": [
+          {
+            "name": "full-core",
+            "exitCode": 0,
+            "passed": true
+          },
+          {
+            "name": "windows-private-read",
+            "script": {
+              "path": "tests/windows_private_read_integration.py",
+              "sha256": "115ec257e25cffba3154f0a5a666c61343354df7cb079b733d13c2263ac26bc1"
+            },
+            "exitCode": 0,
+            "seconds": 2.484,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/private-read-r88a-windows/ucrt/windows-private-read.json",
+              "sha256": "20135fda669343aa6178d990321a5a8f42b57f16f41fa42943a0099e361d0bfb"
+            }
+          },
+          {
+            "name": "service",
+            "script": {
+              "path": "tests/service_integration.py",
+              "sha256": "09b20992c2f3bc9aa527e8bab55e62ebef97012ac3c54918a8f18570e2f1bdc7"
+            },
+            "exitCode": 0,
+            "seconds": 1.906,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/private-read-r88a-windows/ucrt/service.json",
+              "sha256": "704cd08e7c2e33398096cbb32a755b5dac5ab66f1f1077f9a3f28258ae28da83"
+            }
+          },
+          {
+            "name": "credential-rotation",
+            "script": {
+              "path": "tests/credential_rotation_integration.py",
+              "sha256": "996df218cef421f1683f032e731a6aa25f79dd6ba8c33fa3ff394bb401419d86"
+            },
+            "exitCode": 0,
+            "seconds": 22.938,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/private-read-r88a-windows/ucrt/credential-rotation.json",
+              "sha256": "45275c8c5295e7fa5eeef1254eea268c9929253c1df8cf4a608acdddcdbee65b"
+            }
+          },
+          {
+            "name": "certificate-lifecycle",
+            "script": {
+              "path": "tests/certificate_lifecycle_integration.py",
+              "sha256": "4e12cf00763ce2a305379742ec919a275a18c40befb6b1d04b6da76f1c051795"
+            },
+            "exitCode": 0,
+            "seconds": 16.016,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/private-read-r88a-windows/ucrt/certificate-lifecycle.json",
+              "sha256": "8cde1b8493932a768fdc1db2d4780dd48fdd2128a9216b410f26cc7d52d84a1b"
+            }
+          },
+          {
+            "name": "session-expiry",
+            "script": {
+              "path": "tests/session_expiry_integration.py",
+              "sha256": "bcc6d55db5a8b541d3466e27b4e880859f04a9d2156648d6b4219117cb293b75"
+            },
+            "exitCode": 0,
+            "seconds": 190.546,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/private-read-r88a-windows/ucrt/session-expiry.json",
+              "sha256": "1b962890fb0ccf854b1a18021fa2158ab6349001c8fa2ce083f5e670de4f75aa"
+            }
+          },
+          {
+            "name": "client-list",
+            "script": {
+              "path": "tests/client_list_integration.py",
+              "sha256": "895111c56cd48ceb52775de4f8fc4063a690e361c5722202f5ab40a7dc26524b"
+            },
+            "exitCode": 0,
+            "seconds": 1.875,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/private-read-r88a-windows/ucrt/client-list.json",
+              "sha256": "47a6bee66d511b6be4d2a4992f9cf01761e3811736e3e5f84141e910b21387c7"
+            }
+          },
+          {
+            "name": "transfer-faults",
+            "script": {
+              "path": "tests/transfer_faults_integration.py",
+              "sha256": "eae6d2fc846dc4c109cb6a9f7522b7ab37991fbf59551bdc831dd9414b839e83"
+            },
+            "exitCode": 0,
+            "seconds": 24.188,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/private-read-r88a-windows/ucrt/transfer-faults.json",
+              "sha256": "8011831ffed5ceccc5c5159d27d862e1e5542395e853c20e7b1002f146029bd9"
+            }
+          },
+          {
+            "name": "overwrite-faults",
+            "script": {
+              "path": "tests/transfer_faults_integration.py",
+              "sha256": "eae6d2fc846dc4c109cb6a9f7522b7ab37991fbf59551bdc831dd9414b839e83"
+            },
+            "exitCode": 0,
+            "seconds": 21.062,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/private-read-r88a-windows/ucrt/overwrite-faults.json",
+              "sha256": "5cf65899e8e1f1592781f11ff3d154b70ebd06600cc0c24d674945a452805198"
+            }
+          },
+          {
+            "name": "windows-overwrite-busy",
+            "script": {
+              "path": "tests/windows_overwrite_busy_integration.py",
+              "sha256": "64d5aa3ec928e7007d2654a147d48b585dac9b1d8fdcf000eec8625e45810cd3"
+            },
+            "exitCode": 0,
+            "seconds": 12.75,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/private-read-r88a-windows/ucrt/windows-overwrite-busy.json",
+              "sha256": "8b5cc67d7c30131991560d174546aab7a37d058a04fec908063ac28881063ef3"
+            }
+          },
+          {
+            "name": "conflict-skip",
+            "script": {
+              "path": "tests/conflict_skip_integration.py",
+              "sha256": "c3117507c5ab60e92e55edf1b69bacfb47ab3552ea90cd49934785ad7d252ff0"
+            },
+            "exitCode": 0,
+            "seconds": 55.016,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/private-read-r88a-windows/ucrt/conflict-skip.json",
+              "sha256": "d4d87635ce7c88404472a0ba7557af7d931324b46429438b40061021d07bde2c"
+            }
+          },
+          {
+            "name": "client-accounting",
+            "script": {
+              "path": "tests/client_accounting_integration.py",
+              "sha256": "855b2f7eea63b219e18a2aaf38b4578e9824fb3aa0e3b5791a5b535b92e547c8"
+            },
+            "exitCode": 0,
+            "seconds": 72.438,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/private-read-r88a-windows/ucrt/client-accounting.json",
+              "sha256": "6fff1ede57732b1a56bc3441b0be1f1d45b2fab83869b24bbd2e8bd8e5011ac5"
+            }
+          },
+          {
+            "name": "recovery",
+            "script": {
+              "path": "tests/transfer_recovery_integration.py",
+              "sha256": "79d7e3caba8e5dad28a08798892a6dd79863becf23b7c420c7a62a7391bc5e07"
+            },
+            "exitCode": 0,
+            "seconds": 59.984,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/private-read-r88a-windows/ucrt/recovery.json",
+              "sha256": "a816c0b6d7abd585a4bdc3143e46abc966a70ee69cd9ed777eec248e4e45328e"
+            }
+          }
+        ],
+        "passed": true
+      },
+      {
+        "toolchain": "msvc",
+        "binary": {
+          "path": "build/windows/Release/dukto-cli.exe",
+          "sha256": "4bd0988189a9a998ed3edd58597c2cc7fa524b72e5be88b4347714ce055ed03e"
+        },
+        "cases": [
+          {
+            "name": "full-core",
+            "exitCode": 0,
+            "passed": true
+          },
+          {
+            "name": "windows-private-read",
+            "script": {
+              "path": "tests/windows_private_read_integration.py",
+              "sha256": "115ec257e25cffba3154f0a5a666c61343354df7cb079b733d13c2263ac26bc1"
+            },
+            "exitCode": 0,
+            "seconds": 2.265,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/private-read-r88a-windows/msvc/windows-private-read.json",
+              "sha256": "0a11e9f4679eb0ff5fc43225b343ad46112ea23eb9e3184b87707e4e45c656a6"
+            }
+          },
+          {
+            "name": "service",
+            "script": {
+              "path": "tests/service_integration.py",
+              "sha256": "09b20992c2f3bc9aa527e8bab55e62ebef97012ac3c54918a8f18570e2f1bdc7"
+            },
+            "exitCode": 0,
+            "seconds": 1.672,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/private-read-r88a-windows/msvc/service.json",
+              "sha256": "704cd08e7c2e33398096cbb32a755b5dac5ab66f1f1077f9a3f28258ae28da83"
+            }
+          },
+          {
+            "name": "credential-rotation",
+            "script": {
+              "path": "tests/credential_rotation_integration.py",
+              "sha256": "996df218cef421f1683f032e731a6aa25f79dd6ba8c33fa3ff394bb401419d86"
+            },
+            "exitCode": 0,
+            "seconds": 22.797,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/private-read-r88a-windows/msvc/credential-rotation.json",
+              "sha256": "0ded510c910a8aa88ec0160fec944193c192ba76497e927bac6e2e9a49590368"
+            }
+          },
+          {
+            "name": "certificate-lifecycle",
+            "script": {
+              "path": "tests/certificate_lifecycle_integration.py",
+              "sha256": "4e12cf00763ce2a305379742ec919a275a18c40befb6b1d04b6da76f1c051795"
+            },
+            "exitCode": 0,
+            "seconds": 15.75,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/private-read-r88a-windows/msvc/certificate-lifecycle.json",
+              "sha256": "a87b0e814bdfd3e73f6fd4a43dfa74269e814516f0acf24b0e3b9c04dcca41fc"
+            }
+          },
+          {
+            "name": "session-expiry",
+            "script": {
+              "path": "tests/session_expiry_integration.py",
+              "sha256": "bcc6d55db5a8b541d3466e27b4e880859f04a9d2156648d6b4219117cb293b75"
+            },
+            "exitCode": 0,
+            "seconds": 199.484,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/private-read-r88a-windows/msvc/session-expiry.json",
+              "sha256": "1b6902dee0a79ec51ec46c6896142e68d59286019783cf44e726a8e87aa8d86b"
+            }
+          },
+          {
+            "name": "client-list",
+            "script": {
+              "path": "tests/client_list_integration.py",
+              "sha256": "895111c56cd48ceb52775de4f8fc4063a690e361c5722202f5ab40a7dc26524b"
+            },
+            "exitCode": 0,
+            "seconds": 1.844,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/private-read-r88a-windows/msvc/client-list.json",
+              "sha256": "753b1865bebb2ccfbd012e6de0bc7f5b35caa8bc265caffe649326a0bd77d25f"
+            }
+          },
+          {
+            "name": "transfer-faults",
+            "script": {
+              "path": "tests/transfer_faults_integration.py",
+              "sha256": "eae6d2fc846dc4c109cb6a9f7522b7ab37991fbf59551bdc831dd9414b839e83"
+            },
+            "exitCode": 0,
+            "seconds": 24.719,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/private-read-r88a-windows/msvc/transfer-faults.json",
+              "sha256": "56cf0f5f2bbea1e5e5fa67945f51e5041702a485e5342252c8b0e95887879ff6"
+            }
+          },
+          {
+            "name": "overwrite-faults",
+            "script": {
+              "path": "tests/transfer_faults_integration.py",
+              "sha256": "eae6d2fc846dc4c109cb6a9f7522b7ab37991fbf59551bdc831dd9414b839e83"
+            },
+            "exitCode": 0,
+            "seconds": 21.469,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/private-read-r88a-windows/msvc/overwrite-faults.json",
+              "sha256": "22dc8ec4dbe9408091a76c240e0c42a1573b2bbb8899a596ac4cb58879e41e13"
+            }
+          },
+          {
+            "name": "windows-overwrite-busy",
+            "script": {
+              "path": "tests/windows_overwrite_busy_integration.py",
+              "sha256": "64d5aa3ec928e7007d2654a147d48b585dac9b1d8fdcf000eec8625e45810cd3"
+            },
+            "exitCode": 0,
+            "seconds": 13.562,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/private-read-r88a-windows/msvc/windows-overwrite-busy.json",
+              "sha256": "0d91ce9dd54e1b67edc49f95cb8a1097c6ac1cdec4a97678089c7dc43ab68137"
+            }
+          },
+          {
+            "name": "conflict-skip",
+            "script": {
+              "path": "tests/conflict_skip_integration.py",
+              "sha256": "c3117507c5ab60e92e55edf1b69bacfb47ab3552ea90cd49934785ad7d252ff0"
+            },
+            "exitCode": 0,
+            "seconds": 57.578,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/private-read-r88a-windows/msvc/conflict-skip.json",
+              "sha256": "bd505acc5eaae276b8135706b133080473d5bda677d6b7a4e1a1ee4e0c938ff4"
+            }
+          },
+          {
+            "name": "client-accounting",
+            "script": {
+              "path": "tests/client_accounting_integration.py",
+              "sha256": "855b2f7eea63b219e18a2aaf38b4578e9824fb3aa0e3b5791a5b535b92e547c8"
+            },
+            "exitCode": 0,
+            "seconds": 73.953,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/private-read-r88a-windows/msvc/client-accounting.json",
+              "sha256": "fc0bd4aaf398fac5dd87d25511086beb54b75eb2cfd3d847509d6626933e8b2f"
+            }
+          },
+          {
+            "name": "recovery",
+            "script": {
+              "path": "tests/transfer_recovery_integration.py",
+              "sha256": "79d7e3caba8e5dad28a08798892a6dd79863becf23b7c420c7a62a7391bc5e07"
+            },
+            "exitCode": 0,
+            "seconds": 60.797,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/private-read-r88a-windows/msvc/recovery.json",
+              "sha256": "e57849e9714f897e95372a91b6c538b60d9c13dc35649ef436adc28aebfb03dc"
+            }
+          }
+        ],
+        "passed": true
+      }
+    ],
+    "coreTargetsEach": 23,
+    "nativePrivateReadDataRowsEach": 6,
+    "privateReadCliCasesEach": 6,
+    "protocolReportsEach": 12,
+    "allOriginalReportsVerified": true
+  },
+  "controlledDefectEvidence": {
+    "path": "docs/validation/2026-11-06/private-read-delete-share-r87-repro.json",
+    "sha256": "f09fabe29931dc0cf8925795a5b18b0128a80dcef54d894dca38e2c13cbb4adc"
+  },
+  "privateStateReadRetries": {
+    "windowsOnly": true,
+    "onlyWindowsError": 32,
+    "maximumMilliseconds": 500,
+    "maximumAttempts": 21,
+    "persistentExitCode": 5,
+    "persistentStage": "read-busy",
+    "defaultTransferSourceImmediate": true,
+    "deleteSharingEnabled": false
+  },
+  "r85CloudRootCauseProven": false,
+  "r85OriginalFailureRetained": true,
+  "runs": {
+    "macosPackage": {
+      "id": 42201525721,
+      "head_sha": "463521a9301016f36c0d80f8e6704faedce403a2",
+      "status": "queued",
+      "conclusion": null,
+      "html_url": "https://github.com/29583855/dukto-next/actions/runs/42201525721"
+    },
+    "musl": {
+      "id": 42201521473,
+      "head_sha": "463521a9301016f36c0d80f8e6704faedce403a2",
+      "status": "in_progress",
+      "conclusion": null,
+      "html_url": "https://github.com/29583855/dukto-next/actions/runs/42201521473"
+    },
+    "native": {
+      "id": 42201439317,
+      "head_sha": "463521a9301016f36c0d80f8e6704faedce403a2",
+      "status": "in_progress",
+      "conclusion": null,
+      "html_url": "https://github.com/29583855/dukto-next/actions/runs/42201439317"
+    }
+  },
+  "currentMacPackageSourceCommit": "409a73b168f1219844cbefed509c8e227b7c281e",
+  "currentMacPackageEvidence": {
+    "path": "docs/validation/2026-11-06/public-skip-r87-macos-package-terminal/receipt.json",
+    "sha256": "3dc8dbb38d2f124d50dbd70a6f43429e4056dcfffee5f838d95c2a9d8eaf1a2c"
+  },
+  "newMacPackagePending": true,
+  "previousR86NativeEvidence": {
+    "path": "docs/validation/2026-11-06/upload-manifest-r86-native-terminal/receipt.json",
+    "sha256": "b9f0220f5f80cb7dc80fefde3ee04ffe02c1b5f57bb0ea8611b851acc15cdd30"
+  },
+  "publicSkipEnabled": true,
+  "globalHistoryGcComplete": false,
+  "releaseQualified": false,
+  "deliveryComplete": false
+}
