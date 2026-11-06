@@ -46,13 +46,15 @@ def target_snapshot(root):
     return result
 
 
-# 日期：2026-11-06；客户端只读核验原接收；保留旧模式派生处置重建，原接收缺项/损坏/外来对象必须拒绝。
+# 日期：2026-11-06；客户端只读核验原接收；必需契约缺处置拒绝，旧契约允许有证明的派生恢复。
 def local_history(executable, client, operation, destination, task, records):
     local = client / "transfers"
     manifest = local / f"download-{task}.sqlite"
     ledger = local / f"disposition-{task}.sqlite"
     receiver = local / f"receive-{task}.sqlite"
     evidence = [manifest, ledger, receiver]
+    status, _ = run(executable, client, ["task", "--task", task])
+    required = status.get("accountingVersion") == 1
     assert all(path.is_file() for path in evidence)
     failures = []
 
@@ -134,11 +136,17 @@ def local_history(executable, client, operation, destination, task, records):
         hashes = {path.name: digest(path) for path in [manifest, receiver]}
         targets = target_snapshot(destination)
         try:
-            assert transfer(executable, client, operation)["taskId"] == task
+            if required:
+                unchanged_failure("missing-disposition" if complete_missing else "incomplete-disposition")
+                if complete_missing:
+                    assert not ledger.exists()
+            else:
+                assert transfer(executable, client, operation)["taskId"] == task
             assert hashes == {path.name: digest(path) for path in [manifest, receiver]}
             assert targets == target_snapshot(destination)
-            with closing(sqlite3.connect(f"{ledger.as_uri()}?mode=ro", uri=True)) as db:
-                assert db.execute("SELECT COUNT(*) FROM items").fetchone()[0] == len(records)
+            if not required:
+                with closing(sqlite3.connect(f"{ledger.as_uri()}?mode=ro", uri=True)) as db:
+                    assert db.execute("SELECT COUNT(*) FROM items").fetchone()[0] == len(records)
         finally:
             if complete_missing:
                 if ledger.exists():

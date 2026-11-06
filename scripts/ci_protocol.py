@@ -41,6 +41,7 @@ def commands(build):
     add("service", "service_integration")
     # 日期：2026-11-06；独立TLS客户机核对必需计量协商、持久结果及畸形进度拒绝。
     add("service-accounting", "service_accounting_integration")
+    add("client-accounting", "client_accounting_integration")
     add("client-list", "client_list_integration")
     add("credential-rotation", "credential_rotation_integration")
     add("certificate-lifecycle", "certificate_lifecycle_integration")

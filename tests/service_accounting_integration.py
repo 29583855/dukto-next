@@ -39,6 +39,7 @@ class AccountingSession(IndependentSession):
     def __init__(self, port, profile, negotiated=True):
         self.negotiated = negotiated
         self.snapshots = []
+        self.boundary_close = None
         super().__init__(port, profile)
         self.socket.settimeout(20)
 
@@ -55,17 +56,19 @@ class AccountingSession(IndependentSession):
         self.socket.sendall(struct.pack(">8sHHHHQII", b"DKTNEXT1", 1, 0, kind, 0,
                                         self.correlation, len(payload), 0) + payload)
 
-    # 日期：2026-11-06；恶意进度会使安全通道主动中止；截断帧和超时仍然失败，不能按任意断开判通过。
+    # 日期：2026-11-06；恶意进度会使安全通道主动中止；帧间RST/EPIPE仅为候选，截断帧和超时仍失败，不能按任意断开判通过。
     def frame_bytes(self, length, boundary=False):
         result = bytearray()
         while len(result) < length:
             try:
                 part = self.socket.recv(length - len(result))
-            except ConnectionResetError as error:
+            except (ConnectionResetError, BrokenPipeError) as error:
                 if boundary and not result:
-                    raise PeerClosed("reset before next frame") from error
+                    self.boundary_close = type(error).__name__
+                    raise PeerClosed("closed before next frame") from error
                 raise AssertionError("truncated frame") from error
             if boundary and not result and not part:
+                self.boundary_close = "eof"
                 raise PeerClosed("closed before next frame")
             assert part, "truncated frame"
             result.extend(part)
@@ -439,7 +442,8 @@ def progress_attacks(port, profile, server, service, root, source, summary, entr
         assert event_verified and service.poll() is None
         assert set(json.loads(accounting).values()) == {"0"}
         cases.append({"attack": attack, "refused": True, "code": expected_code, "state": state,
-                      "serviceEventVerified": True, "zeroSnapshotUnchanged": True, "passed": True})
+                      "serviceEventVerified": True, "zeroSnapshotUnchanged": True,
+                      "boundaryClose": session.boundary_close, "passed": True})
         print(json.dumps(cases[-1]), flush=True)
     return cases
 
@@ -469,7 +473,7 @@ def negotiation(port, profile, server, path):
     return cases
 
 
-# 日期：2026-11-06；运行真实CLI服务，普通客户端基线与扩展独立对端分别验收并固定原件身份。
+# 日期：2026-11-06；真实客户端基线启用必需计量，独立TLS对端另核服务端契约及攻击。
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("executable")
@@ -500,7 +504,7 @@ def main():
                                      "--credential-file", offer["credentialFile"]])
             profile = json.loads((client / "clients/profile-default.json").read_bytes())
             baseline = transfer(executable, client, ["upload", "--share", "data", "--path", str(source), "--remote-path", "baseline"])
-            assert "accountingVersion" not in baseline
+            assert baseline["accountingVersion"] == 1
             summary, entries, blocks = frozen_manifest(server / "service" / f"manifest-{baseline['taskId']}.sqlite")
             assert len(entries) == 106 and int(summary["bytes"]) > 8 * 1024 * 1024
             refused = negotiation(port, profile, server, source.name)
@@ -518,7 +522,7 @@ def main():
     args.report.parent.mkdir(parents=True, exist_ok=True)
     args.report.write_text(json.dumps({"date": "2026-11-06", "passed": True, "cases": cases,
         "negotiation": refused, "progressAttacks": attacks,
-        "ordinaryClientRemainsLegacy": True, "publicSkipEnabled": False,
+        "ordinaryClientRequiredAccounting": True, "publicSkipEnabled": False,
         "executableSha256": digest(Path(executable)), "scriptSha256": digest(Path(__file__)),
         "scope": "single TLS independent client; service required accounting and historical replay"},
         ensure_ascii=False, indent=2) + "\n", "utf-8")

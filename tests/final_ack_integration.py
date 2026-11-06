@@ -77,7 +77,7 @@ class FinalAckProxy(SlowProxy):
                 pass
 
 
-# 日期：2026-11-05；六个用例均执行真实首次传输和同请求重试，按原策略验证同名保护或原子覆盖及无重复副本。
+# 日期：2026-11-06；六例真实确认丢失重试，必需计量下载缺处置日志拒绝，旧请求恢复保持兼容。
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("executable")
@@ -178,6 +178,8 @@ def main():
                         journal = verify_journal(state / "service", f"manifest-{proxy.task}.sqlite", proxy.task,
                                                  destination, args.on_conflict)
                         legacy_rebuilt = channels == 4 and args.auto_retries == 0
+                        required = status.get("accountingVersion") == 1
+                        missing_required_refused = False
                         if direction == "download":
                             local = verify_journal(client / "transfers", f"download-{proxy.task}.sqlite", proxy.task,
                                                    destination, args.on_conflict)
@@ -190,7 +192,15 @@ def main():
                         if legacy_rebuilt:
                             # 日期：2026-11-06；双向分别模拟旧版本没有本机日志，须从实际接收证据补齐。
                             receipt = client / "transfers" / f"{'disposition' if direction == 'download' else 'upload-disposition'}-{proxy.task}.sqlite"
-                            receipt.rename(root / f"saved-disposition-{proxy.task}.sqlite")
+                            saved_receipt = root / f"saved-disposition-{proxy.task}.sqlite"
+                            receipt.rename(saved_receipt)
+                            if required and direction == "download":
+                                # 日期：2026-11-06；新任务缺原处置证据必须拒绝且不补库，恢复原件后仍能确认同一任务。
+                                missing = transfer(executable, client, arguments, 6)
+                                assert missing["stage"] == "completion" and not receipt.exists()
+                                saved_receipt.rename(receipt)
+                                missing_required_refused = True
+                                legacy_rebuilt = False
                         result = transfer(executable, client, arguments)
                         assert result["taskId"] == proxy.task and result["requestId"] == request
                         assert result["state"] == "completed"
@@ -227,7 +237,7 @@ def main():
                         cases.append({"direction": direction, "channels": channels, "taskId": proxy.task, "requestId": request,
                                       "droppedEncryptedBytes": proxy.dropped_bytes,
                                       "serverCompletedBeforeDrop": proxy.completed_snapshot, "clientFirstError": error,
-                                      "dispositionJournalVerified": True, "legacyLocalJournalRebuilt": legacy_rebuilt,
+                                      "dispositionJournalVerified": True, "legacyLocalJournalRebuilt": legacy_rebuilt, "missingRequiredDispositionRefused": missing_required_refused,
                                       "automaticRetries": args.auto_retries, "retrySameTask": True, "sha256": expected, "originalPreserved": args.on_conflict == "rename", "originalReplaced": args.on_conflict == "overwrite", "noDuplicateCopy": True, "laterUserReplacementProtected": args.on_conflict == "overwrite"})
                         print(key + ": final confirmation lost; same task retry verified", flush=True)
             finally:

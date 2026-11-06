@@ -25,6 +25,8 @@ class TransferProgress final {
     void publish(bool force = false);
     // 日期：2026-11-06；返回已同步或显式跳过的逻辑处理量；实际同步及复制字节在扩展事件分别记录。
     qint64 confirmed() const;
+    // 日期：2026-11-06；返回本轮已验证的固定十计数，完成回包须与此实际进度完全一致。
+    QJsonObject snapshot() const;
 
   private:
     // 日期：2026-11-06；逐字段核对身份及单调守恒计数，旧六字段和扩展十三字段不得混用。

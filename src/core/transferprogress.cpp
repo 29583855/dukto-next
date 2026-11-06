@@ -86,6 +86,11 @@ qint64 TransferProgress::confirmed() const {
     return accounting_.handled();
 }
 
+// 日期：2026-11-06；固定快照只反映本轮真实接收或经校验远端进度，不根据最终成功回包补造。
+QJsonObject TransferProgress::snapshot() const {
+    return accounting_.snapshot();
+}
+
 // 日期：2026-11-06；先核对身份及协议字段数，再原子接受单调计数；拒绝缺字段和未协商扩展。
 void TransferProgress::accept(const next::Frame &frame) {
     auto value = next::parseControl(frame.payload);

@@ -30,7 +30,7 @@ QString profileName(const QString &alias) {
     return "profile-" + alias + ".json";
 }
 
-// 日期：2026-11-06；服务端可协商必需处置进度；尚未接线的普通客户端不声明此新能力。
+// 日期：2026-11-06；服务端和客户端均声明实际支持的必需计量能力，创建仍按持久请求契约选择。
 QJsonArray capabilities(bool dispositionProgress = false) {
     QJsonArray result{"pair-v1",
                       "auth-v1",
@@ -285,14 +285,14 @@ ClientProfile prepareProfile(PrivateStore &store, const QString &alias, const QS
     return profile;
 }
 
-// 日期：2026-11-04；固定指纹与主机名在 TLS 层检查，HelloAck 的 ID 还必须匹配既有服务记录。
+// 日期：2026-11-06；固定TLS身份并声明必需计量支持；本次HelloAck不能替代原请求的持久契约。
 RemoteClient::RemoteClient(const ClientProfile &profile, int timeoutMs,
                            const std::atomic_bool *cancel)
     : profile_(profile), channel_(timeoutMs, cancel), cancel_(cancel), timeoutMs_(timeoutMs) {
     channel_.connectTo(profile.host, profile.port, profile.peerName,
                        QSslConfiguration::defaultConfiguration(), profile.fingerprint);
     const auto response = request(next::Type::Hello, next::Type::HelloAck,
-                                  {{"version", "1.0"}, {"capabilities", capabilities()}});
+                                  {{"version", "1.0"}, {"capabilities", capabilities(true)}});
     server_ = QUuid(response["serverId"].toString());
     if (response["version"] != "1.0" || !response["capabilities"].isArray() || server_.isNull() ||
         (!profile.server.isNull() && profile.server != server_))

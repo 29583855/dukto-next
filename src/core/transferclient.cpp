@@ -78,9 +78,92 @@ QJsonObject awaitAdmission(next::SecureChannel &channel, quint64 correlation, co
     }
 }
 
-// 日期：2026-11-05；初始、就绪与最终任务均核对原请求和冲突策略，不能把另一策略的结果当作成功。
+// 日期：2026-11-06；新请求选择双方支持的契约；已存在请求精确匹配旧/新绑定，不能升级或降级。
+bool bindAccounting(PrivateStore &local, const QString &name, const QJsonObject &legacy,
+                    ConflictPolicy conflict, bool capable, const QString &stage = "transfer") {
+    auto explicitBinding = legacy;
+    explicitBinding["version"] = 3;
+    explicitBinding["progress"] = "disposition-v1";
+    explicitBinding["conflict"] = conflictPolicyName(conflict);
+    const auto oldBytes = next::encodeControl(legacy);
+    const auto newBytes = next::encodeControl(explicitBinding);
+    if (local.exists(name)) {
+        const auto saved = local.read(name);
+        if (saved == oldBytes)
+            return false;
+        if (saved != newBytes)
+            throw Error(ExitCode::Integrity, QStringLiteral("请求已绑定其他目标、内容或计量契约"),
+                        stage);
+        if (!capable)
+            throw Error(ExitCode::Config,
+                        QStringLiteral("服务器缺少原请求必需计量能力，请升级服务器"), "progress");
+        return true;
+    }
+    local.write(name, capable ? newBytes : oldBytes);
+    return capable;
+}
+
+// 日期：2026-11-06；每个任务快照绑定当前契约和强清单，数字、守恒及已处理量分别校验。
+QJsonObject checkedAccounting(const QJsonObject &task, bool required, ConflictPolicy conflict) {
+    if (required ? task["accountingVersion"] != QJsonValue(1) : task.contains("accountingVersion"))
+        throw Error(ExitCode::Integrity, QStringLiteral("服务器改变了原请求计量契约"), "progress");
+    if (!required)
+        return {};
+    const auto total = next::decimal(task["total"], std::numeric_limits<qint64>::max());
+    const auto entries = next::decimal(task["entries"], 10000000);
+    const QStringList fields{"copiedBytes",       "skippedBytes",      "discardedBytes",
+                             "copiedFiles",       "copiedDirectories", "skippedFiles",
+                             "skippedDirectories"};
+    if (task["manifest"] == "") {
+        if (total || entries || task["bytes"] != "0" || task.contains("receivedBytes") ||
+            task.contains("confirmedBytes") || task.contains("restoredBytes") ||
+            task.contains("handledBytes"))
+            throw Error(ExitCode::Integrity, QStringLiteral("未绑定任务不能携带计量"), "progress");
+        for (const auto &key : fields)
+            if (task.contains(key))
+                throw Error(ExitCode::Integrity, QStringLiteral("未绑定任务不能携带处置"),
+                            "progress");
+        return {};
+    }
+    if (!entries)
+        throw Error(ExitCode::Integrity, QStringLiteral("必需计量缺少冻结条目"), "progress");
+    QJsonObject snapshot{{"bytes", task["receivedBytes"]},
+                         {"confirmed", task["confirmedBytes"]},
+                         {"restored", task["restoredBytes"]}};
+    for (const auto &key : fields)
+        snapshot[key] = task[key];
+    TransferAccounting meter(total, entries);
+    meter.accept(snapshot);
+    if (task["bytes"] != QString::number(meter.handled()) ||
+        task["handledBytes"] != task["bytes"] ||
+        (conflict != ConflictPolicy::Skip &&
+         (task["skippedBytes"] != "0" || task["discardedBytes"] != "0" ||
+          task["skippedFiles"] != "0" || task["skippedDirectories"] != "0")))
+        throw Error(ExitCode::Integrity, QStringLiteral("任务计量与逻辑进度或策略不同"),
+                    "progress");
+    return snapshot;
+}
+
+// 日期：2026-11-06；最终计量必须和独立本机处置摘要一致，新传输还须与实际进度快照逐字段一致。
+void checkCompletedAccounting(const QJsonObject &task, const QJsonObject &disposition,
+                              ConflictPolicy conflict, const QJsonObject &expected = {}) {
+    const auto snapshot = checkedAccounting(task, true, conflict);
+    if (disposition["complete"] != QJsonValue(true) ||
+        (!expected.isEmpty() && snapshot != expected))
+        throw Error(ExitCode::Integrity, QStringLiteral("最终计量与本轮实际进度不同"),
+                    "completion");
+    for (const auto &key : {"copiedBytes", "skippedBytes", "copiedFiles", "copiedDirectories",
+                            "skippedFiles", "skippedDirectories"})
+        if (snapshot[key] != disposition[key])
+            throw Error(ExitCode::Integrity, QStringLiteral("最终计量与本机处置证据不同"),
+                        "completion");
+}
+
+// 日期：2026-11-06；初始、就绪与最终任务均核对原请求、冲突策略及持久计量契约。
 QUuid checkedTask(const QJsonObject &task, const QUuid &request, const QString &direction,
-                  const QString &share, const QString &relative, ConflictPolicy conflict) {
+                  const QString &share, const QString &relative, ConflictPolicy conflict,
+                  bool accounting = false) {
+    checkedAccounting(task, accounting, conflict);
     const QUuid id(task["taskId"].toString());
     if (id.isNull() || task["taskId"] != id.toString(QUuid::WithoutBraces) ||
         task["requestId"] != request.toString(QUuid::WithoutBraces) ||
@@ -137,15 +220,18 @@ void confirmDisposition(next::SecureChannel &channel, quint64 correlation,
     channel.write(next::Type::DispositionAck, correlation, summary);
 }
 
-// 日期：2026-11-06；新协议最终回包须再次携带同一摘要和明确确认，历史观察帧不能充当本次成功。
+// 日期：2026-11-06；最终回包同时绑定处置和实际计量，历史观察帧不能充当本次成功。
 QJsonObject completedTask(next::SecureChannel &channel, quint64 correlation, const QUuid &id,
                           const QUuid &request, const QString &direction, const QString &share,
                           const QString &relative, const QJsonObject &summary,
-                          ConflictPolicy conflict, const QJsonObject &disposition = {}) {
+                          ConflictPolicy conflict, bool accounting,
+                          const QJsonObject &disposition = {}, const QJsonObject &snapshot = {}) {
     const auto value = control(channel, correlation, next::Type::TaskState);
-    if (checkedTask(value, request, direction, share, relative, conflict) != id)
+    if (checkedTask(value, request, direction, share, relative, conflict, accounting) != id)
         throw Error(ExitCode::Integrity, QStringLiteral("批次持久完成确认不完整"), "transfer");
     checkCompletedSummary(value, summary);
+    if (accounting)
+        checkCompletedAccounting(value, disposition, conflict, snapshot);
     if (!disposition.isEmpty() && (value["dispositionSummary"] != disposition ||
                                    value["dispositionConfirmed"] != QJsonValue(true) ||
                                    value.contains("confirmationRequired")))
@@ -217,7 +303,7 @@ QJsonObject verifyLocalDownload(PrivateStore &local, const QUuid &id, const QStr
 }
 } // namespace
 
-// 日期：2026-11-06；上传本地绑定与逐项持久确认共用单/多通道，完成重试只凭接收证据补齐。
+// 日期：2026-11-06；按原请求计量契约发送并核对最终快照；旧请求恢复仍按接收证据。
 QJsonObject RemoteClient::upload(const QUuid &requestId, const QString &share,
                                  const QString &relative, PrivateStore &local,
                                  StrongManifest &manifest,
@@ -235,22 +321,20 @@ QJsonObject RemoteClient::upload(const QUuid &requestId, const QString &share,
     requestLock.setStaleLockTime(0);
     if (!requestLock.tryLock(0))
         throw Error(ExitCode::Permission, QStringLiteral("本地同一上传请求正在执行"), "transfer");
-    const auto binding =
-        next::encodeControl({{"version", 1},
-                             {"server", server_.toString(QUuid::WithoutBraces)},
-                             {"client", profile_.client.toString(QUuid::WithoutBraces)},
-                             {"share", share},
-                             {"path", relative},
-                             {"conflict", conflictPolicyName(conflict)},
-                             {"manifest", manifest.summary()}});
+    const auto bindingInfo = QJsonObject{{"version", 1},
+                                         {"server", server_.toString(QUuid::WithoutBraces)},
+                                         {"client", profile_.client.toString(QUuid::WithoutBraces)},
+                                         {"share", share},
+                                         {"path", relative},
+                                         {"conflict", conflictPolicyName(conflict)},
+                                         {"manifest", manifest.summary()}};
     const auto requestName = "upload-request-" + requestKey + ".json";
-    if (local.exists(requestName)) {
-        if (local.read(requestName) != binding)
-            throw Error(ExitCode::Integrity,
-                        QStringLiteral("同一上传请求已绑定其他服务、清单或策略"), "disposition");
-    } else {
-        local.write(requestName, binding);
-    }
+    const bool accounting = bindAccounting(local, requestName, bindingInfo, conflict,
+                                           capabilities_.contains("disposition-progress-v1") &&
+                                               capabilities_.contains("byte-progress-v1") &&
+                                               capabilities_.contains("disposition-summary-v1"),
+                                           "disposition");
+    const auto binding = local.read(requestName);
     QJsonObject create{{"requestId", requestKey},
                        {"share", share},
                        {"path", relative},
@@ -266,13 +350,16 @@ QJsonObject RemoteClient::upload(const QUuid &requestId, const QString &share,
     const bool byteProgress = capabilities_.contains("byte-progress-v1");
     if (byteProgress)
         create["byteProgress"] = true;
+    if (accounting)
+        create["dispositionProgress"] = true;
     if (channels > 1) {
         if (!capabilities_.contains("parallel-transfer-v1"))
             throw Error(ExitCode::Config, QStringLiteral("服务器未协商多通道能力"), "parallel");
         create["channels"] = QString::number(channels);
     }
     const auto initial = request(next::Type::CreateUpload, next::Type::Task, create);
-    const auto id = checkedTask(initial, requestId, "upload", share, relative, conflict);
+    const auto id =
+        checkedTask(initial, requestId, "upload", share, relative, conflict, accounting);
     const auto key = id.toString(QUuid::WithoutBraces);
     // 日期：2026-11-06；不同请求或服务不得通过重复任务ID接管原发送处置，即使清单相同。
     QLockFile taskLock(local.directory() + "/upload-task-" + key + ".lock");
@@ -328,7 +415,8 @@ QJsonObject RemoteClient::upload(const QUuid &requestId, const QString &share,
             RemoteClient query(profile_, timeoutMs_, cancel_);
             query.authenticate();
             const auto current = query.manage(id);
-            if (checkedTask(current, requestId, "upload", share, relative, conflict) != id)
+            if (checkedTask(current, requestId, "upload", share, relative, conflict, accounting) !=
+                id)
                 throw Error(ExitCode::Integrity, QStringLiteral("上传恢复任务身份不同"),
                             "disposition");
             checkCompletedSummary(current, manifest.summary());
@@ -376,7 +464,7 @@ QJsonObject RemoteClient::upload(const QUuid &requestId, const QString &share,
             return context;
         confirmDisposition(channel_, correlation_, disposition);
         return completedTask(channel_, correlation_, id, requestId, "upload", share, relative,
-                             manifest.summary(), conflict, disposition);
+                             manifest.summary(), conflict, accounting, disposition);
     };
     if (initial["state"] == "completed") {
         const auto result = historicalResult(initial);
@@ -398,7 +486,7 @@ QJsonObject RemoteClient::upload(const QUuid &requestId, const QString &share,
     if (initial["needManifest"].toBool())
         sendStrongManifest(channel_, id, manifest, correlation_);
     auto ready = readyTask(channel_, correlation_, id, progress);
-    if (checkedTask(ready, requestId, "upload", share, relative, conflict) != id)
+    if (checkedTask(ready, requestId, "upload", share, relative, conflict, accounting) != id)
         throw Error(ExitCode::Integrity, QStringLiteral("上传就绪任务身份不同"), "transfer");
     if (ready["state"] == "completed") {
         const auto result = historicalResult(ready);
@@ -427,7 +515,8 @@ QJsonObject RemoteClient::upload(const QUuid &requestId, const QString &share,
     TransferProgress meter(channel_, correlation_, id,
                            QByteArray::fromHex(manifest.summary()["sha256"].toString().toLatin1()),
                            manifest.summary()["bytes"].toString().toLongLong(), false, byteProgress,
-                           progress);
+                           progress, accounting,
+                           next::decimal(manifest.summary()["entries"], 10000000));
     int actual = 1;
     if (channels > 1) {
         const auto ticket = control(channel_, correlation_, next::Type::ChannelTicket);
@@ -451,14 +540,15 @@ QJsonObject RemoteClient::upload(const QUuid &requestId, const QString &share,
     const auto disposition = outcomes.summary(true, dispositionCheck);
     if (summaryProtocol)
         confirmDisposition(channel_, correlation_, disposition);
-    auto result =
-        completedTask(channel_, correlation_, id, requestId, "upload", share, relative,
-                      manifest.summary(), conflict, summaryProtocol ? disposition : QJsonObject{});
+    auto result = completedTask(channel_, correlation_, id, requestId, "upload", share, relative,
+                                manifest.summary(), conflict, accounting,
+                                summaryProtocol ? disposition : QJsonObject{},
+                                accounting ? meter.snapshot() : QJsonObject{});
     result["channels"] = QString::number(actual);
     return result;
 }
 
-// 日期：2026-11-05；能力显式协商后读取持久明细；下载接收结果始终来自当前本机日志。
+// 日期：2026-11-06；明细核对任务计量版本及本机原请求契约，下载结果仍取本机日志。
 QJsonObject RemoteClient::items(const QUuid &id, PrivateStore &local, quint64 after) {
     if (!capabilities_.contains("task-items-v1"))
         throw Error(ExitCode::Config, QStringLiteral("服务器未提供逐项查询，请先升级服务器"),
@@ -480,8 +570,10 @@ QJsonObject RemoteClient::items(const QUuid &id, PrivateStore &local, quint64 af
     task.entries = next::decimal(info["entries"], 10000000);
     task.total = next::decimal(info["total"], std::numeric_limits<qint64>::max());
     task.manifest = QByteArray::fromHex(info["manifest"].toString().toLatin1());
+    task.accountingRequired = info.contains("accountingVersion");
     task.conflict = info.contains("conflict") ? checkedConflictPolicy(info["conflict"].toString())
                                               : ConflictPolicy::Rename;
+    checkedAccounting(info, task.accountingRequired, task.conflict);
     if (task.request.isNull() || task.error < 0 || task.error > 7 ||
         (task.direction != "upload" && task.direction != "download") ||
         (task.manifest.isEmpty() ? task.entries != 0 || task.total != 0
@@ -540,7 +632,7 @@ QJsonObject RemoteClient::items(const QUuid &id, PrivateStore &local, quint64 af
     return result;
 }
 
-// 日期：2026-11-05；本地请求、接收日志及远程任务均绑定冲突策略，默认旧日志保持兼容。
+// 日期：2026-11-06；下载绑定持久计量契约，按十三字段进度核验本机落盘与最终任务。
 QJsonObject RemoteClient::download(const QUuid &requestId, const QString &share,
                                    const QString &relative, PrivateStore &local,
                                    const QString &destination,
@@ -569,14 +661,10 @@ QJsonObject RemoteClient::download(const QUuid &requestId, const QString &share,
         bindingInfo["version"] = 2;
         bindingInfo["conflict"] = conflictPolicyName(conflict);
     }
-    const auto binding = next::encodeControl(bindingInfo);
-    if (local.exists(bindingName)) {
-        if (local.read(bindingName) != binding)
-            throw Error(ExitCode::Integrity, QStringLiteral("同一下载请求已绑定其他目标或服务器"),
-                        "transfer");
-    } else {
-        local.write(bindingName, binding);
-    }
+    const bool accounting = bindAccounting(local, bindingName, bindingInfo, conflict,
+                                           capabilities_.contains("disposition-progress-v1") &&
+                                               capabilities_.contains("byte-progress-v1") &&
+                                               capabilities_.contains("disposition-summary-v1"));
     QJsonObject create{{"requestId", requestId.toString(QUuid::WithoutBraces)},
                        {"share", share},
                        {"path", relative}};
@@ -591,6 +679,8 @@ QJsonObject RemoteClient::download(const QUuid &requestId, const QString &share,
     const bool byteProgress = capabilities_.contains("byte-progress-v1");
     if (byteProgress)
         create["byteProgress"] = true;
+    if (accounting)
+        create["dispositionProgress"] = true;
     if (channels > 1) {
         if (!capabilities_.contains("parallel-transfer-v1"))
             throw Error(ExitCode::Config, QStringLiteral("服务器未协商多通道能力"), "parallel");
@@ -610,7 +700,8 @@ QJsonObject RemoteClient::download(const QUuid &requestId, const QString &share,
             throw Error(ExitCode::Cancelled, QStringLiteral("本地处置校验已取消"), "disposition");
     };
     const auto initial = request(next::Type::CreateDownload, next::Type::Task, create);
-    const auto id = checkedTask(initial, requestId, "download", share, relative, conflict);
+    const auto id =
+        checkedTask(initial, requestId, "download", share, relative, conflict, accounting);
     const auto historicalResult = [&](const QJsonObject &context) {
         // 日期：2026-11-06；先重验本机历史接收，再完成本连接的双向摘要确认，不依赖历史终态直接成功。
         confirmingDisposition = true;
@@ -630,7 +721,7 @@ QJsonObject RemoteClient::download(const QUuid &requestId, const QString &share,
                           {{"sha256", context["manifest"]},
                            {"bytes", context["total"]},
                            {"entries", context["entries"]}},
-                          conflict, disposition);
+                          conflict, accounting, disposition);
         return value;
     };
     if (initial["state"] == "completed") {
@@ -649,7 +740,7 @@ QJsonObject RemoteClient::download(const QUuid &requestId, const QString &share,
             throw Error(ExitCode::Integrity, QStringLiteral("授信改变了清单交换约定"), "scheduler");
     }
     auto ready = readyTask(channel_, correlation_, id, progress);
-    if (checkedTask(ready, requestId, "download", share, relative, conflict) != id)
+    if (checkedTask(ready, requestId, "download", share, relative, conflict, accounting) != id)
         throw Error(ExitCode::Integrity, QStringLiteral("下载就绪任务身份不同"), "transfer");
     if (ready["state"] == "completed") {
         const auto result = historicalResult(ready);
@@ -697,7 +788,8 @@ QJsonObject RemoteClient::download(const QUuid &requestId, const QString &share,
                       {"logicalBytes", QString::number(entry.bytes)}});
     };
     TransferProgress meter(channel_, correlation_, id, expected,
-                           summary["bytes"].toString().toLongLong(), true, byteProgress, progress);
+                           summary["bytes"].toString().toLongLong(), true, byteProgress, progress,
+                           accounting, next::decimal(summary["entries"], 10000000));
     int actual = 1;
     if (channels > 1) {
         const auto ticket = control(channel_, correlation_, next::Type::ChannelTicket);
@@ -719,9 +811,10 @@ QJsonObject RemoteClient::download(const QUuid &requestId, const QString &share,
     const auto disposition = outcomes.summary(true, dispositionCheck);
     if (summaryProtocol)
         confirmDisposition(channel_, correlation_, disposition);
-    auto result =
-        completedTask(channel_, correlation_, id, requestId, "download", share, relative,
-                      manifest.summary(), conflict, summaryProtocol ? disposition : QJsonObject{});
+    auto result = completedTask(channel_, correlation_, id, requestId, "download", share, relative,
+                                manifest.summary(), conflict, accounting,
+                                summaryProtocol ? disposition : QJsonObject{},
+                                accounting ? meter.snapshot() : QJsonObject{});
     result["channels"] = QString::number(actual);
     return result;
 }

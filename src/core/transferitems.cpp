@@ -253,7 +253,7 @@ QJsonObject transferItems(PrivateStore &store, const TransferTask &task,
     return result;
 }
 
-// 日期：2026-11-05；远端发送完不代表本机落盘；缺少本机冻结清单时明示不可用，禁止制造复制成功。
+// 日期：2026-11-06；本机绑定同时核对策略和计量契约，缺本机清单明示不可用，不制造成功。
 QJsonObject localDownloadItems(PrivateStore &store, const QUuid &server, const QUuid &client,
                                const TransferTask &task, quint64 after) {
     auto result = pageInfo(task, after);
@@ -272,6 +272,11 @@ QJsonObject localDownloadItems(PrivateStore &store, const QUuid &server, const Q
                                 {"root", binding["root"]}};
     if (task.conflict != ConflictPolicy::Rename) {
         expected["version"] = 2;
+        expected["conflict"] = conflictPolicyName(task.conflict);
+    }
+    if (task.accountingRequired) {
+        expected["version"] = 3;
+        expected["progress"] = "disposition-v1";
         expected["conflict"] = conflictPolicyName(task.conflict);
     }
     if (task.direction != "download" || binding != expected || !binding["root"].isString() ||
