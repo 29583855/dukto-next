@@ -344,3 +344,9 @@ v0.72核心终验补记（2026-11-06）：测试234a5d2在Windows、Ubuntu、App
 v0.73/r74补记（2026-11-06）：当前生产cf37197增加只读skip完成核验，双Windows已验；新四runner42144847843包含Apple Silicon及Intel原生Qt5/C++14构建与运行，结果待实际原件。原dab42135946545已经终态failure：四平台163协议报告全通过，但Windows核心20/21和两Mac初次夹具失败保留；后续234核心四平台21/190已验。现有d973下载包不含cf变更，Intel候选包首次检查点失败根因尚未解决。[本轮回执](ci-verification-20261106-r74.json)。
 
 r75原生终态补记（2026-11-06）：234a5d2完整四runner已终态failure；四套核心各21/190通过，协议162/163，唯一失败是Intel凭据轮换的活动传输停止分类/状态断言，原业务报告缺失。d879f77只增加测试诊断，双Windows各12检查通过，双Mac原门槛专项42146188465待原件。生产cf37197及现有d973预览入口保持其原范围；首次包检查点失败根因仍开着。[诊断回执](ci-verification-20261106-r75.json)。
+
+r75实际原件补记（2026-11-06）：生产cf37197的Windows、Ubuntu、Apple Silicon、Intel和Alpine五套原生核心均通过各21/21；Windows50、POSIX51接收跳过用例，以及每套190文件交换用例逐原件核验。Ubuntu和Alpine各40协议原报告及SHA已验，Alpine工作流终态success；完整四runner协议仍待收齐。
+
+诊断d879f77的Windows原生128轮终态failure：126通过，98/124两轮在工作者commit阶段返回code5/stage conflict，定位到TargetReservation创建预约锁，尚未进入最终改名。原错误没有Qt锁分类/原生错误码，不能确认具体竞态。双Mac凭据轮换专项终态success，两份原报告各12检查及双向四通道停止/恢复原门槛已验；成功复验不等于首错根因解决。原生两轮失败、首次Intel轮换失败、原包检查点失败均保留。
+
+另一个只在本机缓存内的DeletePending夹具假设未证实：持有旧锁观察句柄时，QLockFile解除名字后仍能建立新预约，不满足“必须等待读者关闭”的假设。失败实验归档后已从维护测试撤回，并重建原core-tests及复验并发提交通过；未改生产锁语义。下一步需要在真实原生失败时取得Qt锁错误分类并继续接公开skip。[诊断回执](ci-verification-20261106-r75.json)。

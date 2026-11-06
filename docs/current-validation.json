@@ -173,7 +173,18 @@
     "expectedProtocolCasesTotal": 163,
     "fullProtocolPending": true,
     "allProtocolReportHashesVerified": false,
-    "originalEvidenceVerified": false
+    "originalEvidenceVerified": false,
+    "coreSuitesPassed": 4,
+    "coreTargetsEach": 21,
+    "exchangeCasesEachIncludingLifecycle": 190,
+    "windowsSkipCasesIncludingLifecycle": 50,
+    "posixSkipCasesIncludingLifecycle": 51,
+    "originalCoreEvidenceVerified": true,
+    "verifiedProtocolCasesSoFar": 40,
+    "coreEvidence": {
+      "path": "docs/validation/2026-11-06/skip-history-r74-native-progress-verified.json",
+      "sha256": "c17891f41cc1202bc76303375589f418f4c28028a594f20ce646c2e9009d73ca"
+    }
   },
   "nativeMuslRunUrl": "https://github.com/29583855/dukto-next/actions/runs/42135996839",
   "originalFailureRunsRetained": [
@@ -191,17 +202,24 @@
   "releaseQualified": false,
   "deliveryComplete": false,
   "planVersion": "v0.73",
-  "currentSourceStage": "cf skip completed history Windows verified; d879 bounded diagnostics; first Windows commit, Intel credential stop and Intel package checkpoint causes open",
+  "currentSourceStage": "cf five native core suites and Ubuntu/Alpine40 protocols verified; Windows lock creation reproduced 2/128, Mac rotation rechecks passed; full protocols and original causes open",
   "nativeMusl": {
     "sourceCommit": "cf37197ee68468c070833f639311370b63589fef",
     "runId": 42144898471,
     "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42144898471",
-    "status": "in_progress",
-    "workflowConclusion": null,
+    "status": "completed",
+    "workflowConclusion": "success",
     "expectedCoreTargets": 21,
     "expectedProtocolCases": 40,
-    "fullProtocolPending": true,
-    "originalEvidenceVerified": false
+    "fullProtocolPending": false,
+    "originalEvidenceVerified": true,
+    "coreTargetsEach": 21,
+    "protocolCases": 40,
+    "allProtocolReportHashesVerified": true,
+    "evidence": {
+      "path": "docs/validation/2026-11-06/skip-history-r74-native-progress-verified.json",
+      "sha256": "c17891f41cc1202bc76303375589f418f4c28028a594f20ce646c2e9009d73ca"
+    }
   },
   "apfsCleanupR54": {
     "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42039126426",
@@ -1706,15 +1724,15 @@
         "sourceCommit": "d879f77135c429af666c8684c17403fae67b1290",
         "runId": 42146184618,
         "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42146184618",
-        "status": "in_progress",
-        "workflowConclusion": null
+        "status": "completed",
+        "workflowConclusion": "failure"
       },
       "credentialRotation": {
         "sourceCommit": "d879f77135c429af666c8684c17403fae67b1290",
         "runId": 42146188465,
         "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42146188465",
-        "status": "in_progress",
-        "workflowConclusion": null
+        "status": "completed",
+        "workflowConclusion": "success"
       },
       "nativeCurrent": {
         "sourceCommit": "cf37197ee68468c070833f639311370b63589fef",
@@ -1727,14 +1745,48 @@
         "sourceCommit": "cf37197ee68468c070833f639311370b63589fef",
         "runId": 42144898471,
         "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42144898471",
-        "status": "in_progress",
-        "workflowConclusion": null
+        "status": "completed",
+        "workflowConclusion": "success"
       }
     },
     "intelPackageFirstCheckpointCauseResolved": false,
     "firstFailuresRetained": true,
     "publicSkipEnabled": false,
     "releaseQualified": false,
-    "deliveryComplete": false
+    "deliveryComplete": false,
+    "currentNativeOriginals": {
+      "productionCommit": "cf37197ee68468c070833f639311370b63589fef",
+      "fiveCoreSuitesPassed": true,
+      "coreTargetsEach": 21,
+      "windowsSkipCasesIncludingLifecycle": 50,
+      "posixSkipCasesIncludingLifecycle": 51,
+      "fileExchangeCasesEachIncludingLifecycle": 190,
+      "ubuntuAndMuslProtocolReports": 80,
+      "fullNativePending": true,
+      "evidence": {
+        "path": "docs/validation/2026-11-06/skip-history-r74-native-progress-verified.json",
+        "sha256": "c17891f41cc1202bc76303375589f418f4c28028a594f20ce646c2e9009d73ca"
+      }
+    },
+    "actualNativeDiagnostics": {
+      "windowsRunConclusion": "failure",
+      "rounds": 128,
+      "passedRounds": 126,
+      "failedRounds": [
+        98,
+        124
+      ],
+      "failureCode": 5,
+      "failureStage": "conflict",
+      "failureLocation": "TargetReservation creation",
+      "nativeLockErrorNotCaptured": true,
+      "causeResolved": false,
+      "bothMacRotationReportsPassed": true,
+      "originalIntelRotationFailureCauseResolved": false,
+      "evidence": {
+        "path": "docs/validation/2026-11-06/native-diagnostics-r75-actual-summary.json",
+        "sha256": "c51d9706a7a777f3bf9f3859d29907422cb801cd13230a494aad84e42f7cfe2c"
+      }
+    }
   }
 }

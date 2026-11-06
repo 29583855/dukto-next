@@ -72,15 +72,15 @@
       "sourceCommit": "d879f77135c429af666c8684c17403fae67b1290",
       "runId": 42146184618,
       "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42146184618",
-      "status": "in_progress",
-      "workflowConclusion": null
+      "status": "completed",
+      "workflowConclusion": "failure"
     },
     "credentialRotation": {
       "sourceCommit": "d879f77135c429af666c8684c17403fae67b1290",
       "runId": 42146188465,
       "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42146188465",
-      "status": "in_progress",
-      "workflowConclusion": null
+      "status": "completed",
+      "workflowConclusion": "success"
     },
     "nativeCurrent": {
       "sourceCommit": "cf37197ee68468c070833f639311370b63589fef",
@@ -93,13 +93,47 @@
       "sourceCommit": "cf37197ee68468c070833f639311370b63589fef",
       "runId": 42144898471,
       "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42144898471",
-      "status": "in_progress",
-      "workflowConclusion": null
+      "status": "completed",
+      "workflowConclusion": "success"
     }
   },
   "intelPackageFirstCheckpointCauseResolved": false,
   "firstFailuresRetained": true,
   "publicSkipEnabled": false,
   "releaseQualified": false,
-  "deliveryComplete": false
+  "deliveryComplete": false,
+  "currentNativeOriginals": {
+    "productionCommit": "cf37197ee68468c070833f639311370b63589fef",
+    "fiveCoreSuitesPassed": true,
+    "coreTargetsEach": 21,
+    "windowsSkipCasesIncludingLifecycle": 50,
+    "posixSkipCasesIncludingLifecycle": 51,
+    "fileExchangeCasesEachIncludingLifecycle": 190,
+    "ubuntuAndMuslProtocolReports": 80,
+    "fullNativePending": true,
+    "evidence": {
+      "path": "docs/validation/2026-11-06/skip-history-r74-native-progress-verified.json",
+      "sha256": "c17891f41cc1202bc76303375589f418f4c28028a594f20ce646c2e9009d73ca"
+    }
+  },
+  "actualNativeDiagnostics": {
+    "windowsRunConclusion": "failure",
+    "rounds": 128,
+    "passedRounds": 126,
+    "failedRounds": [
+      98,
+      124
+    ],
+    "failureCode": 5,
+    "failureStage": "conflict",
+    "failureLocation": "TargetReservation creation",
+    "nativeLockErrorNotCaptured": true,
+    "causeResolved": false,
+    "bothMacRotationReportsPassed": true,
+    "originalIntelRotationFailureCauseResolved": false,
+    "evidence": {
+      "path": "docs/validation/2026-11-06/native-diagnostics-r75-actual-summary.json",
+      "sha256": "c51d9706a7a777f3bf9f3859d29907422cb801cd13230a494aad84e42f7cfe2c"
+    }
+  }
 }
