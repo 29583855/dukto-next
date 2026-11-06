@@ -1,7 +1,7 @@
 {
-  "observedUtc": "2026-11-06T03:11:16.070622+00:00",
-  "productionCommit": "49cd8bcc509c63779e4c8fb617b7aa7151c3cf7c",
-  "testCommit": "49cd8bcc509c63779e4c8fb617b7aa7151c3cf7c",
+  "observedUtc": "2026-11-06T03:36:21.553290+00:00",
+  "productionCommit": "5ebbdbc7c2cc40c22c051e840e46a778b7408b70",
+  "testCommit": "5ebbdbc7c2cc40c22c051e840e46a778b7408b70",
   "packages": [
     {
       "architecture": "x86_64",
@@ -2321,6 +2321,99 @@
     "nativeCurrentSourcePending": true,
     "publicSkipEnabled": false,
     "taskAccountingPersistenceConnected": false,
+    "firstFailuresRetained": true,
+    "releaseQualified": false,
+    "deliveryComplete": false
+  },
+  "previousProductionBeforeR78": {
+    "productionCommit": "49cd8bcc509c63779e4c8fb617b7aa7151c3cf7c",
+    "testCommit": "49cd8bcc509c63779e4c8fb617b7aa7151c3cf7c"
+  },
+  "taskAccountingPersistence": {
+    "date": "2026-11-06",
+    "observedUtc": "2026-11-06T03:36:21.553290+00:00",
+    "planVersion": "v0.76",
+    "productionCommit": "5ebbdbc7c2cc40c22c051e840e46a778b7408b70",
+    "testCommit": "5ebbdbc7c2cc40c22c051e840e46a778b7408b70",
+    "windows": {
+      "coreTargetsEach": 22,
+      "taskStoreCasesEachIncludingLifecycle": 28,
+      "accountingCasesEachIncludingLifecycle": 32,
+      "exchangeCasesEachIncludingLifecycle": 208,
+      "schemaMigrationVersion": 2,
+      "schemaMigrationProcessesEach": 8,
+      "oldFifteenColumnsUnchanged": true,
+      "migrationRollbackPassed": true,
+      "bothBuildsWithoutWarnings": true,
+      "sourceInputsMatchExactGitCommit": 178,
+      "evidence": {
+        "path": "docs/validation/2026-11-06/task-accounting-r78-local-verified.json",
+        "sha256": "6d6eab54da3c42ffac48c218e0b8747bbc50445767e2003785187c3b8c58bad2"
+      },
+      "publicProtocolReports": 10,
+      "publicEvidence": {
+        "path": "docs/validation/2026-11-06/task-accounting-r78-public-verified.json",
+        "sha256": "f2a6f699862406a5ee5b5560ae7529b40357f6e07c93c37e357e391dc5f2c866"
+      }
+    },
+    "sourceAudit": {
+      "files": 187,
+      "findings": 0,
+      "cxx14AndFormattingPassed": true,
+      "evidence": {
+        "path": "docs/validation/2026-11-06/task-accounting-r78-source-audit.json",
+        "sha256": "85d49a9bed5ecb0a1c462b31eeb88b638ee8c0d2f98500ed7c3866fccc1781dd"
+      }
+    },
+    "runs": {
+      "native": {
+        "id": 42157485050,
+        "head_sha": "5ebbdbc7c2cc40c22c051e840e46a778b7408b70",
+        "status": "in_progress",
+        "conclusion": null,
+        "html_url": "https://github.com/29583855/dukto-next/actions/runs/42157485050"
+      },
+      "musl": {
+        "id": 42157535533,
+        "head_sha": "5ebbdbc7c2cc40c22c051e840e46a778b7408b70",
+        "status": "in_progress",
+        "conclusion": null,
+        "html_url": "https://github.com/29583855/dukto-next/actions/runs/42157535533"
+      },
+      "macOSPackage": {
+        "id": 42157539455,
+        "head_sha": "5ebbdbc7c2cc40c22c051e840e46a778b7408b70",
+        "status": "queued",
+        "conclusion": null,
+        "html_url": "https://github.com/29583855/dukto-next/actions/runs/42157539455"
+      }
+    },
+    "previous49cdNativeCores": {
+      "coreTargetsEach": 22,
+      "allFivePassed": true,
+      "nativeEvidence": {
+        "path": "docs/validation/2026-11-06/disposition-accounting-r77-native-cores-verified.json",
+        "sha256": "6de1f0bfb74bdf15fe0fa7184b0037639614f45e7cb5e92567208636ac0ecff9"
+      },
+      "muslEvidence": {
+        "path": "docs/validation/2026-11-06/disposition-accounting-r77-musl-core-verified.json",
+        "sha256": "99e4907a032c031728b0dca8cf89417dea43dde92771d65a51eb1023bf1d29db"
+      },
+      "fullProtocolsPending": true
+    },
+    "previous5eNativeProtocols": {
+      "verifiedReports": 163,
+      "allFourRunnersPassed": true,
+      "muslVerifiedSeparately": 40,
+      "evidence": {
+        "path": "docs/validation/2026-11-06/reservation-fix-r76-native-protocols-terminal-verified.json",
+        "sha256": "64820dfdb777804868bb07271d4d6e3b41026dbb7077571d0cc1cc6dfdd4c6dc"
+      }
+    },
+    "currentMacPackageSourceCommit": "5e862f5408fd2d4af51d4352e626f8208bd6e74a",
+    "nativeCurrentSourcePending": true,
+    "taskAccountingPublicServiceConnected": false,
+    "publicSkipEnabled": false,
     "firstFailuresRetained": true,
     "releaseQualified": false,
     "deliveryComplete": false

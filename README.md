@@ -6,7 +6,7 @@
 
 当前已建立 C++14 共用核心、Qt Quick 2 桌面端和独立 CLI。Windows 已验证与原版文件/目录/文本双向互传、超过 4 GiB、10 万文件、100 轮接收，以及首次说明/设置/截图/单实例和有界头像模块。完整原版交互、服务器、多线程、恢复和跨平台验收继续按计划推进。原版目录保留用于对照。
 
-公开仓库为[29583855/dukto-next](https://github.com/29583855/dukto-next)。最新生产[49cd8bc](https://github.com/29583855/dukto-next/commit/49cd8bcc509c63779e4c8fb617b7aa7151c3cf7c)区分复制、跳过和晚期冲突丢弃字节，计量保持固定大小；双Windows各22核心/32计量/208交换及六份公开CLI协议通过，新五环境原生CI已启动。[Mac下载入口](docs/macOS独立预览包.md)仍为已验5e862f5双架构GUI/独立CLI，各263源码/五迁移报告/截图已核对。公开skip任务持久化及完整项目继续，见[本轮回执](docs/ci-verification-20261106-r77.json)、[主计划](开发计划与进度.md)和[当前索引](docs/current-validation.json)。
+公开仓库为[29583855/dukto-next](https://github.com/29583855/dukto-next)。最新生产[5ebbdbc](https://github.com/29583855/dukto-next/commit/5ebbdbc7c2cc40c22c051e840e46a778b7408b70)增加任务固定计量持久化和旧库原子迁移，双Windows各22核心/28任务库/32计量/208交换及十份公开专项通过；新原生CI与双Mac部署已启动。前版49cd8bc五原生核心各22项、双Mac编译产物已验；5e四runner163及Alpine40完整协议已验。[Mac下载](docs/macOS独立预览包.md)仍为已验5e862f5双架构GUI/独立CLI，包与新源码资格分别记录。公开skip服务接线及完整项目继续，见[本轮回执](docs/ci-verification-20261106-r78.json)、[主计划](开发计划与进度.md)和[当前索引](docs/current-validation.json)。
 
 新增[b9d9b78上传发送端确认](docs/decisions/0022-上传发送端持久处置与证据恢复.md)已通过本机专项；原CI终态failure保留：四平台临时库glob误判，另Windows并发隔离空闲线程5/基线3的原因未确认。旧运行不再视为进行中，完整历史见主计划v0.64。
 
