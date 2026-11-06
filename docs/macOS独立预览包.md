@@ -15,7 +15,20 @@
 
 解压ZIP后用tar保留权限和框架链接，启动方式见下方示例。当前是adhoc开发预览；Developer ID、公证、干净系统、最低系统、完整GUI/选择器、第三方源码独立重建及正式发行继续验收。完整协议和长期按各自真实终态收验。
 
-## R101最新编译产物（2026-11-07）
+## R102最新编译产物（2026-11-07）
+
+精确源码`c1325b0b33ff4df116449c1e1c00d5b27a1a125c`已公开；[原生CI 42304553041](https://github.com/29583855/dukto-next/actions/runs/42304553041)的Apple Silicon/Intel原生编译、归档及附件上传均成功。两份GUI/独立CLI已取回，官方附件摘要、内部tar摘要、源码、Mach-O架构、执行权限及许可逐件核验。
+
+| 架构 | 编译产物 | 内部tar.gz SHA-256 |
+| --- | --- | --- |
+| arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42304553041/artifacts/13545078414) | `039ad27382e784ca236c33737ed69e552fc44809e8420fa806b0787305ac38d5` |
+| x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42304553041/artifacts/13545822719) | `24b7cf4800fef5cb220b5fa228a10c00af7f57df716ab77dc58ee6ee6105dbd5` |
+
+[R102编译原件回执](validation/2026-11-07/cancel-r102-macos-compiled/receipt.json)。归档需要匹配Qt5/OpenSSL依赖；CI自行下载安装。含依赖开发预览包继续使用顶部R100入口，未更换其源码身份。
+
+R102四runner各23核心、88份Qt原报告及48行取消回归已核验，含每平台原生/150%/200%场景、清理后同控制器双向内容核验；两条Darwin预期失败明确保留。[核心与取消子集回执](validation/2026-11-07/cancel-r102-native-core/receipt.json)。完整协议和原生槽负例总JSON仍待最终附件；不授完整F18、整个GUI或正式发布资格。R101原生发送取消失败继续保留，独立Ubuntu旧夹具三次成功复查也不覆盖该失败。
+
+## R101编译及原始失败记录（2026-11-07）
 
 精确源码`1f82d5d3b9ae36e77ee98da942c2fc5369310c7a`已公开；[原生CI 42300792120](https://github.com/29583855/dukto-next/actions/runs/42300792120)的Apple Silicon和Intel实际编译、归档及附件上传成功。GUI与独立CLI的附件摘要、内部tar摘要、源码、Mach-O架构和执行权限均已核验。
 
