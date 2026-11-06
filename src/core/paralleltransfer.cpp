@@ -27,6 +27,32 @@ std::mutex registryMutex;
 std::map<QString, std::weak_ptr<ParallelState>> registry;
 int serverLanes = 0;
 constexpr int MaximumLanes = 16;
+
+// 日期：2026-11-06；仅网络错误可被明确业务根因替换，取消及本机完整性错误不能被远端改写。
+bool networkFailure(const std::exception_ptr &failure) {
+    if (!failure)
+        return false;
+    try {
+        std::rethrow_exception(failure);
+    } catch (const Error &error) {
+        return error.code == ExitCode::Network;
+    } catch (...) {
+        return false;
+    }
+}
+
+// 日期：2026-11-06；组取消不是新的业务根因，不能覆盖先发生的数据连接故障。
+bool explicitFailure(const std::exception_ptr &failure) {
+    if (!failure)
+        return false;
+    try {
+        std::rethrow_exception(failure);
+    } catch (const Error &error) {
+        return error.code != ExitCode::Network && error.code != ExitCode::Cancelled;
+    } catch (...) {
+        return true;
+    }
+}
 } // namespace
 
 struct ParallelState {
@@ -67,10 +93,12 @@ struct ParallelState {
             serverLanes -= count;
         }
     }
-    // 日期：2026-11-05；失败广播给控制与每条通道，普通数据通知不会遗漏取消或异常等待者。
-    void stop(const std::exception_ptr &error = {}) {
+    // 日期：2026-11-06；控制明确取消可替换网络错误；数据清理取消不覆盖根因，并唤醒全部等待者。
+    void stop(const std::exception_ptr &error = {}, bool controlCause = false) {
         std::lock_guard<std::mutex> lock(mutex);
-        if (error && !failure)
+        if (error &&
+            (!failure || (networkFailure(failure) &&
+                          (explicitFailure(error) || (controlCause && !networkFailure(error))))))
             failure = error;
         cancelled.store(true);
         changed.notify_all();
@@ -236,6 +264,27 @@ next::Frame read(next::SecureChannel &channel, quint64 correlation,
         }
         return frame;
     }
+}
+
+// 日期：2026-11-06；先取消同组数据；仅网络根因等待控制终止响应，超时/普通确认仍保留失败。
+[[noreturn]] void transferFailure(ParallelState &state, next::SecureChannel &control,
+                                  quint64 correlation, const std::exception_ptr &failure) {
+    state.stop(failure, true);
+    std::exception_ptr original;
+    try {
+        state.check();
+    } catch (...) {
+        original = std::current_exception();
+    }
+    if (networkFailure(original)) {
+        try {
+            control.awaitPeerFailure(correlation);
+        } catch (...) {
+            state.stop(std::current_exception(), true);
+        }
+    }
+    state.check();
+    std::rethrow_exception(original);
 }
 
 class Pulse final {
@@ -701,10 +750,8 @@ void ParallelTransfer::sendTree(
     }
     state_->waitAll(true, work);
 } catch (...) {
-    // 日期：2026-11-06；控制读取超时不能遮盖数据工作者已记录的原始处置拒绝。
-    state_->stop(std::current_exception());
-    state_->check();
-    throw;
+    // 日期：2026-11-06；控制终止错误与数据断线统一裁决，已记录的完整性拒绝优先保留。
+    transferFailure(*state_, control, correlation, std::current_exception());
 }
 
 // 日期：2026-11-05；单一日志执行者轮转接收；冲突/磁盘/完整性异常先发布根因，再取消数据线程。
@@ -876,9 +923,7 @@ void ParallelTransfer::receiveTree(
                        {"kind", "empty"}});
     }
 } catch (...) {
-    // 日期：2026-11-06；控制读取超时不能遮盖数据工作者已记录的原始处置拒绝。
-    state_->stop(std::current_exception());
-    state_->check();
-    throw;
+    // 日期：2026-11-06；控制终止错误与数据断线统一裁决，已记录的完整性拒绝优先保留。
+    transferFailure(*state_, control, correlation, std::current_exception());
 }
 } // namespace dukto

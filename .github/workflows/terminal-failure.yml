@@ -1,0 +1,59 @@
+name: TLS terminal failure and real ENOSPC
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  terminal-failure:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Qt5 and TLS
+        run: sudo apt-get update && sudo apt-get install -y ninja-build qtbase5-dev qtdeclarative5-dev qtquickcontrols2-5-dev libqt5sql5-sqlite libssl-dev
+      # 日期：2026-11-06；专项使用同一C++14生产内核，只减少不相关GUI测试目标的构建时间。
+      - name: Configure C++14
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DDUKTO_BUILD_TESTS=ON
+      - name: Compile CLI and deterministic TLS regressions
+        id: compile
+        run: cmake --build build --parallel 4 --target dukto-cli file-exchange-tests
+      - name: Deterministic terminal error and disposition regressions
+        if: "!cancelled() && steps.compile.outcome == 'success'"
+        run: |
+          mkdir -p build/terminal-regression
+          build/file-exchange-tests remoteFailureAfterLaneDisconnect rejectedParallelDisposition -o build/terminal-regression/test.log,txt -o build/terminal-regression/test.xml,junitxml
+      # 日期：2026-11-06；只填独立64MiB tmpfs；所有档位/策略均运行，任一失败保留原始报告并使job失败。
+      - name: Actual isolated ENOSPC and recovery
+        if: "!cancelled() && steps.compile.outcome == 'success'"
+        shell: bash
+        run: |
+          limited="$RUNNER_TEMP/dukto-terminal-limited"
+          mkdir "$limited"
+          sudo mount -t tmpfs -o "size=64m,uid=$(id -u),gid=$(id -g)" tmpfs "$limited"
+          trap 'sudo umount "$limited"' EXIT
+          status=0
+          for policy in rename overwrite; do
+            for channels in 1 4 16; do
+              python -u -X utf8 tests/parallel_disk_integration.py build/dukto-cli --limited-directory "$limited" --threads "$channels" --on-conflict "$policy" --report "build/disk-$policy-$channels.json" > "build/disk-$policy-$channels.log" 2>&1 || status=1
+            done
+          done
+          exit "$status"
+      - name: Preserve exact source and original evidence
+        if: always()
+        run: |
+          git rev-parse HEAD > build/source-commit.txt
+          sha256sum build/dukto-cli build/file-exchange-tests tests/parallel_disk_integration.py src/core/paralleltransfer.cpp src/core/securechannel.cpp > build/inputs.sha256
+      - name: Upload terminal failure evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tls-terminal-failure-ubuntu
+          path: |
+            build/*.json
+            build/*.log
+            build/*.sha256
+            build/source-commit.txt
+            build/terminal-regression/

@@ -4,6 +4,7 @@
 #include <QCoreApplication>
 #include <QDateTime>
 #include <QEventLoop>
+#include <QScopedValueRollback>
 #include <QSslCertificate>
 #include <QSslError>
 #include <QSslKey>
@@ -344,6 +345,44 @@ void SecureChannel::writeFailure(quint64 correlation, const QJsonObject &object)
         QCoreApplication::processEvents(QEventLoop::AllEvents, 1);
     }
     socket_.disconnectFromHost();
+}
+
+// 日期：2026-11-06；只在失败退栈时读取控制连接；总期限、解码缓冲和心跳处理均有界。
+void SecureChannel::awaitPeerFailure(quint64 correlation) {
+    if (!established_)
+        return;
+    QScopedValueRollback<int> timeout(timeoutMs_, qMin(timeoutMs_, 3000));
+    QElapsedTimer elapsed;
+    elapsed.start();
+    for (;;) {
+        Decoder decoder;
+        while (decoder.requiredBytes() > 0) {
+            waitUntil([this]() { return socket_.bytesAvailable() > 0; }, elapsed, "parallel");
+            const auto bytes = socket_.read(decoder.requiredBytes());
+            if (bytes.isEmpty())
+                throw Error(ExitCode::Network, QStringLiteral("终止错误帧读取失败"), "parallel");
+            decoder.append(bytes);
+        }
+        const auto frame = decoder.take();
+        if (frame.header.correlation != correlation)
+            throw Error(ExitCode::Integrity, QStringLiteral("终止错误请求序号不同"), "parallel");
+        if (frame.header.type == Type::Failure) {
+            const auto value = parseControl(frame.payload);
+            const auto code = value["code"].toInt(-1);
+            if (code < 1 || code > 7 || !value["message"].isString() || !value["stage"].isString())
+                throw Error(ExitCode::Config, QStringLiteral("终止错误响应无效"), "parallel");
+            throw Error(static_cast<ExitCode>(code), value["message"].toString(),
+                        value["stage"].toString());
+        }
+        if (frame.header.type == Type::Progress && progress_) {
+            progress_(frame);
+        } else if (frame.header.type != Type::TaskState ||
+                   parseControl(frame.payload) != QJsonObject{{"state", "busy"}}) {
+            throw Error(ExitCode::Integrity, QStringLiteral("失败阶段收到非终止响应"), "parallel");
+        }
+        // 日期：2026-11-06；完整心跳/进度也消耗同一总期限，不能每帧重新续期。
+        check(elapsed, "parallel");
+    }
 }
 
 // 日期：2026-11-04；摘要针对实际握手叶证书的 DER，不针对易变化的 PEM 文本或公钥字符串。

@@ -1,6 +1,7 @@
 """日期：2026-11-05；独立小型挂载点上的新版 TLS 中途 ENOSPC，验证文件保护及释放空间后继续使用。"""
 
 import argparse
+from collections import deque
 import json
 import os
 from pathlib import Path
@@ -16,7 +17,7 @@ from transfer_recovery_integration import SlowProxy, TransferProcess, wait_check
 
 
 # 日期：2026-11-05；每方向独立元数据、身份与目标，首次已同步块后才填盘，不能把预检查拒绝当作中途故障。
-def exercise(executable, mount, capacity, channels, direction, policy):
+def exercise(executable, mount, capacity, channels, direction, policy, failure_report):
     with tempfile.TemporaryDirectory(prefix="dukto-parallel-enospc-", dir=mount) as limited, \
             tempfile.TemporaryDirectory(prefix="dukto-parallel-enospc-state-") as temporary:
         root, target = Path(temporary).resolve(), Path(limited).resolve()
@@ -41,6 +42,7 @@ def exercise(executable, mount, capacity, channels, direction, policy):
         offer, _ = run(executable, state, ["serve", "pairing", *rights])
         port = free_port()
         active = None
+        task, failed = None, None
         with tempfile.TemporaryFile(mode="w+", encoding="utf-8") as service_events, \
                 tempfile.TemporaryFile(mode="w+", encoding="utf-8") as errors:
             server = subprocess.Popen([executable, "serve", "start", "--bind", "127.0.0.1", "--port", str(port),
@@ -112,6 +114,29 @@ def exercise(executable, mount, capacity, channels, direction, policy):
                         "retainedPartCountAfterFailure": len(retained), "recovery": recovery, "sha256": expected,
                         "originalPreservedBeforePublication": True, "sameNameOriginalPreserved": policy == "rename",
                         "originalReplacedAfterRecovery": policy == "overwrite", "conflictPolicy": policy}
+            except BaseException as error:
+                # 日期：2026-11-06；临时目录清理前保存根因；失败不得因缺少最终成功报告而丢失现场。
+                service_events.seek(0)
+                recent = deque(service_events, maxlen=32)
+                errors.seek(0)
+                diagnostic = {
+                    "date": "2026-11-06", "passed": False, "direction": direction,
+                    "channels": channels, "conflictPolicy": policy, "taskId": task,
+                    "failure": failed, "assertion": repr(error), "expectedError": 5,
+                    "clientExitCode": active.process.poll() if active else None,
+                    "serviceExitCode": server.poll(),
+                    "serviceRecentEvents": [json.loads(line) for line in recent],
+                    "serviceStderr": errors.read(8192),
+                    "originalProtected": original.read_bytes() == b"existing user data must survive",
+                    "retainedParts": [{"name": part.name, "bytes": part.stat().st_size}
+                                      for part in target.glob(".dukto-*.part")],
+                    "executableSha256": digest(Path(executable)),
+                    "scriptSha256": digest(Path(__file__)),
+                }
+                failure_report.parent.mkdir(parents=True, exist_ok=True)
+                with failure_report.open("x", encoding="utf-8") as report:
+                    report.write(json.dumps(diagnostic, ensure_ascii=False, indent=2) + "\n")
+                raise
             finally:
                 if active and active.process.poll() is None:
                     active.finish(kill=True)
@@ -139,7 +164,9 @@ def main():
     assert os.path.ismount(mount) and capacity == args.filesystem_bytes
     assert 32 * 1024**2 <= capacity <= 512 * 1024**2
     executable = str(Path(args.executable).resolve())
-    cases = [exercise(executable, mount, capacity, args.threads, direction, args.on_conflict) for direction in ("upload", "download")]
+    cases = [exercise(executable, mount, capacity, args.threads, direction, args.on_conflict,
+                      args.report.with_name(args.report.stem + "-" + direction + "-failure.json"))
+             for direction in ("upload", "download")]
     args.report.parent.mkdir(parents=True, exist_ok=True)
     args.report.write_text(json.dumps({"date": "2026-11-05", "passed": True, "filesystemBytes": capacity,
         "cases": cases, "platform": os.uname().sysname, "conflictPolicy": args.on_conflict,

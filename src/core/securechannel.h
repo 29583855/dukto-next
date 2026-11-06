@@ -29,6 +29,8 @@ class SecureChannel final {
     void write(Type type, quint64 correlation, const QJsonObject &object);
     // 日期：2026-11-05；终止失败帧写出后最多等一秒接收对端关闭，有界丢弃在途正文，避免RST遮盖根因。
     void writeFailure(quint64 correlation, const QJsonObject &object);
+    // 日期：2026-11-06；数据先断线时最多等待三秒读取同请求终止错误；普通确认不能变成成功。
+    void awaitPeerFailure(quint64 correlation);
     // 日期：2026-11-04；返回已经过握手校验的证书指纹，供配对核对和受保护的信任记录使用。
     QByteArray peerFingerprint() const;
     // 日期：2026-11-04；长扫描/摘要期间定期处理本线程 TLS

@@ -174,6 +174,144 @@ class FileExchangeTests final : public QObject {
     Q_OBJECT
   private slots:
 
+    // 日期：2026-11-06；数据先退出后控制才发送失败；真实TLS必须保留远端磁盘根因。
+    void remoteFailureAfterLaneDisconnect_data() {
+        QTest::addColumn<int>("reported");
+        QTest::newRow("disk") << 5;
+        QTest::newRow("permission") << 4;
+        QTest::newRow("explicit-control-cancellation") << 7;
+        QTest::newRow("abrupt-control") << 0;
+        QTest::newRow("wrong-correlation") << -1;
+        QTest::newRow("invalid-failure") << -2;
+        QTest::newRow("ordinary-confirmation") << -3;
+        QTest::newRow("busy-deadline") << -4;
+    }
+
+    // 日期：2026-11-06；源清单和每条握手独立构造，断线不能被当作成功或吞掉终态错误。
+    void remoteFailureAfterLaneDisconnect() {
+        QFETCH(int, reported);
+        QTemporaryDir temporary;
+        QFile source(temporary.filePath("data.bin"));
+        QVERIFY(source.open(QIODevice::WriteOnly));
+        QCOMPARE(source.write("body"), qint64(4));
+        source.close();
+        dukto::PrivateStore store(temporary.filePath("private"), true);
+        dukto::StrongManifest manifest(store, "source.sqlite", true);
+        manifest.scan({source.fileName()});
+        const auto hash = QByteArray::fromHex(manifest.summary()["sha256"].toString().toLatin1());
+        const auto service = dukto::initializeIdentity(store, {"127.0.0.1"});
+        const auto client = QUuid::createUuid();
+        const auto session = QUuid::createUuid().toString(QUuid::WithoutBraces);
+        const QJsonObject ticket{{"sessionId", session},
+                                 {"taskId", Task.toString(QUuid::WithoutBraces)},
+                                 {"manifest", QString::fromLatin1(hash.toHex())},
+                                 {"token", QString(64, 'a')},
+                                 {"lanes", "1"}};
+        std::atomic_bool disconnected{false};
+        ExchangeServer lane;
+        lane.operation = [&](qintptr descriptor) {
+            // 日期：2026-11-06；TLS认证和加入完成后先关闭数据连接，控制错误此时尚未发出。
+            {
+                dukto::next::SecureChannel peer(2000);
+                peer.accept(descriptor, service.configuration());
+                const auto hello = peer.read();
+                peer.write(dukto::next::Type::HelloAck, hello.header.correlation,
+                           {{"version", "1.0"},
+                            {"serverId", service.id.toString(QUuid::WithoutBraces)},
+                            {"capabilities", QJsonArray{"parallel-transfer-v1"}}});
+                const auto auth = peer.read();
+                peer.write(dukto::next::Type::Authenticated, auth.header.correlation,
+                           dukto::Principal{client, 1, {{"data", true, true, true}}}.publicInfo());
+                const auto attach = peer.read();
+                peer.write(dukto::next::Type::Attached, attach.header.correlation,
+                           {{"sessionId", session}, {"lane", "0"}});
+            }
+            disconnected = true;
+        };
+        QVERIFY(lane.listen(QHostAddress::LocalHost, 0));
+        ExchangeServer control;
+        std::atomic_bool lateFailureWritten{false};
+        control.operation = [&](qintptr descriptor) {
+            // 日期：2026-11-06；控制晚300ms返回真实Failure，不凭数据断线猜测错误码。
+            dukto::next::SecureChannel peer(2000);
+            peer.accept(descriptor, service.configuration());
+            QElapsedTimer deadline;
+            deadline.start();
+            while (!disconnected.load()) {
+                if (deadline.elapsed() > 2000)
+                    throw dukto::Error(dukto::ExitCode::Network, "fixture lane deadline", "test");
+                QThread::msleep(1);
+            }
+            QThread::msleep(300);
+            if (reported) {
+                try {
+                    if (reported == -3) {
+                        peer.write(dukto::next::Type::Completed, 2, {{"ordinary", true}});
+                    } else if (reported == -4) {
+                        // 日期：2026-11-06；合法busy不断续发仍须在原两秒总期限结束。
+                        QElapsedTimer busy;
+                        busy.start();
+                        while (busy.elapsed() < 2500) {
+                            peer.write(dukto::next::Type::TaskState, 2, {{"state", "busy"}});
+                            QThread::msleep(50);
+                        }
+                    } else {
+                        peer.writeFailure(
+                            reported == -1 ? 9 : 2,
+                            {{"code", reported == -2 ? 99 : (reported < 0 ? 5 : reported)},
+                             {"stage", "receive"},
+                             {"message", "independent terminal failure"}});
+                    }
+                    lateFailureWritten = true;
+                } catch (const dukto::Error &error) {
+                    if (error.code != dukto::ExitCode::Network)
+                        throw;
+                }
+            }
+        };
+        QVERIFY(control.listen(QHostAddress::LocalHost, 0));
+        const dukto::ClientProfile profile{"test",
+                                           "127.0.0.1",
+                                           lane.serverPort(),
+                                           "127.0.0.1",
+                                           service.certificate.digest(QCryptographicHash::Sha256),
+                                           service.id,
+                                           client,
+                                           QByteArray(32, 'x'),
+                                           true};
+        int code = 0;
+        QString stage;
+        QElapsedTimer deadline;
+        deadline.start();
+        {
+            dukto::next::SecureChannel peer(2000);
+            peer.connectTo("127.0.0.1", control.serverPort(), "127.0.0.1",
+                           QSslConfiguration::defaultConfiguration(), profile.fingerprint);
+            dukto::ParallelTransfer transfer(ticket, Task, hash, false);
+            transfer.startClients(profile, 2000, &manifest);
+            try {
+                transfer.sendTree(peer, manifest, 2);
+            } catch (const dukto::Error &error) {
+                code = static_cast<int>(error.code);
+                stage = error.stage;
+            }
+        }
+        QVERIFY(lane.done());
+        QVERIFY(control.done());
+        QVERIFY2(lane.error.isEmpty(), qPrintable(lane.error));
+        QVERIFY2(control.error.isEmpty(), qPrintable(control.error));
+        const int expected =
+            reported > 0 ? reported
+                         : (reported == -1 || reported == -3 ? 6 : (reported == -2 ? 2 : 3));
+        QCOMPARE(code, expected);
+        if (reported == -4)
+            QVERIFY(deadline.elapsed() >= 2000 && deadline.elapsed() < 4000);
+        if (reported > 0) {
+            QCOMPARE(stage, QString("receive"));
+            QVERIFY(lateFailureWritten.load());
+        }
+    }
+
     // 日期：2026-11-06；单条真实数据连接足够覆盖门禁状态机，4/16通道业务另有独立进程全量测试。
     void rejectedParallelDisposition_data() {
         QTest::addColumn<int>("stage");
