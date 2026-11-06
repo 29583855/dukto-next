@@ -1,0 +1,125 @@
+{
+  "date": "2026-11-06",
+  "passed": true,
+  "cases": [
+    {
+      "taskId": "34dde507-b13d-47ac-a61d-093f44314aaf",
+      "conflict": "rename",
+      "channels": 1,
+      "entries": 206,
+      "partialAndMissingLedgerRecovered": true,
+      "receiverAndSenderRecordsMatch": true,
+      "requestRebindingRefused": true,
+      "malformedEvidence": [
+        {
+          "attack": "missing-receive-journal",
+          "refused": true,
+          "recordedEntries": 73
+        },
+        {
+          "attack": "missing-entry",
+          "refused": true,
+          "recordedEntries": 73
+        },
+        {
+          "attack": "not-copied",
+          "refused": true,
+          "recordedEntries": 73
+        },
+        {
+          "attack": "changed-source",
+          "refused": true,
+          "recordedEntries": 73
+        },
+        {
+          "attack": "foreign-parent",
+          "refused": true,
+          "recordedEntries": 73
+        }
+      ],
+      "frozenManifestPreservedAcrossProcesses": true,
+      "newFilesDoNotChangeFrozenRequest": true,
+      "frozenManifestAttacks": [
+        {
+          "attack": "missing-.json",
+          "refused": true
+        },
+        {
+          "attack": "missing-.sqlite",
+          "refused": true
+        },
+        {
+          "attack": "local-source-mapping",
+          "refused": true
+        },
+        {
+          "attack": "different-source-root",
+          "refused": true
+        }
+      ]
+    },
+    {
+      "taskId": "0ea46519-fd3f-40d1-90cf-394d422884cb",
+      "conflict": "fail",
+      "channels": 4,
+      "entries": 206,
+      "partialAndMissingLedgerRecovered": true,
+      "receiverAndSenderRecordsMatch": true,
+      "requestRebindingRefused": true,
+      "malformedEvidence": [],
+      "frozenManifestPreservedAcrossProcesses": true,
+      "newFilesDoNotChangeFrozenRequest": true,
+      "frozenManifestAttacks": [
+        {
+          "attack": "missing-.json",
+          "refused": true
+        },
+        {
+          "attack": "missing-.sqlite",
+          "refused": true
+        },
+        {
+          "attack": "local-source-mapping",
+          "refused": true
+        },
+        {
+          "attack": "different-source-root",
+          "refused": true
+        }
+      ]
+    },
+    {
+      "taskId": "1bad82d0-2735-43e4-a64a-d28532bb98cb",
+      "conflict": "overwrite",
+      "channels": 16,
+      "entries": 206,
+      "partialAndMissingLedgerRecovered": true,
+      "receiverAndSenderRecordsMatch": true,
+      "requestRebindingRefused": true,
+      "malformedEvidence": [],
+      "frozenManifestPreservedAcrossProcesses": true,
+      "newFilesDoNotChangeFrozenRequest": true,
+      "frozenManifestAttacks": [
+        {
+          "attack": "missing-.json",
+          "refused": true
+        },
+        {
+          "attack": "missing-.sqlite",
+          "refused": true
+        },
+        {
+          "attack": "local-source-mapping",
+          "refused": true
+        },
+        {
+          "attack": "different-source-root",
+          "refused": true
+        }
+      ]
+    }
+  ],
+  "executableSha256": "afd4186b082ad3fd365de7c695a6c263bc96dd3bc29af346a340eab7ae9e2669",
+  "scriptSha256": "3b3fa3c9a003c6f047d4f610617f519650b6b6f0ef6fc2b93e71176ced378a79",
+  "scope": "historical receiver acknowledgements; not current remote content verification"
+}

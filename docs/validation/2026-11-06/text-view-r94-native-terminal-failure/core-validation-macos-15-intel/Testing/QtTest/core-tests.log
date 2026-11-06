@@ -1,0 +1,40 @@
+********* Start testing of CoreTests *********
+Config: Using QtTest library 5.15.19, Qt 5.15.19 (x86_64-little_endian-lp64 shared (dynamic) release build; by Clang 16.0.0 (clang-1600.0.26.6) (Apple)), osx 15.7
+PASS   : CoreTests::initTestCase()
+FAIL!  : CoreTests::exclusiveTcpBinding(exclusive-first-ipv4-then-dual) '!second.listen(secondAddress, port)' returned FALSE. (two protocols acquired an overlapping TCP port)
+   Loc: [/Users/runner/work/dukto-next/dukto-next/tests/core_tests.cpp(80)]
+PASS   : CoreTests::exclusiveTcpBinding(exclusive-first-dual-then-ipv4)
+FAIL!  : CoreTests::exclusiveTcpBinding(exclusive-first-ipv4-wildcard-then-specific) '!second.listen(secondAddress, port)' returned FALSE. (two protocols acquired an overlapping TCP port)
+   Loc: [/Users/runner/work/dukto-next/dukto-next/tests/core_tests.cpp(80)]
+PASS   : CoreTests::exclusiveTcpBinding(exclusive-first-ipv6-same)
+FAIL!  : CoreTests::exclusiveTcpBinding(qt-first-ipv4-then-dual) '!second.listen(secondAddress, port)' returned FALSE. (two protocols acquired an overlapping TCP port)
+   Loc: [/Users/runner/work/dukto-next/dukto-next/tests/core_tests.cpp(80)]
+PASS   : CoreTests::exclusiveTcpBinding(qt-first-dual-then-ipv4)
+FAIL!  : CoreTests::exclusiveTcpBinding(qt-first-ipv4-wildcard-then-specific) '!second.listen(secondAddress, port)' returned FALSE. (two protocols acquired an overlapping TCP port)
+   Loc: [/Users/runner/work/dukto-next/dukto-next/tests/core_tests.cpp(80)]
+PASS   : CoreTests::exclusiveTcpBinding(qt-first-ipv6-same)
+PASS   : CoreTests::tcpAddressFamilies()
+PASS   : CoreTests::privateStoreContracts()
+PASS   : CoreTests::privateMutableFileValidation()
+PASS   : CoreTests::sourceObjectPinned()
+PASS   : CoreTests::sourceMutationRejected()
+PASS   : CoreTests::posixFileInformationRejectsUnsafeNames()
+PASS   : CoreTests::posixSafeSourcePaths()
+PASS   : CoreTests::storageSpacePreflight()
+PASS   : CoreTests::posixDirectoryReplacementRejected()
+PASS   : CoreTests::catalogOwnershipAndInterruptedState()
+PASS   : CoreTests::catalogPersistenceAndPages()
+PASS   : CoreTests::endpointBoundaries()
+PASS   : CoreTests::rejectsUnsafePaths()
+PASS   : CoreTests::atomicConflictAndCleanup()
+PASS   : CoreTests::concurrentExclusiveCommits()
+PASS   : CoreTests::nativeCommitFailureCleansTemporary()
+PASS   : CoreTests::shortWritesAndDiskFailures()
+PASS   : CoreTests::manifestRoundTrip()
+PASS   : CoreTests::uniqueManifestRoots()
+PASS   : CoreTests::discoveryYieldsAndRejectsMalformedGoodbye()
+PASS   : CoreTests::discoveryAggregatesAddresses()
+PASS   : CoreTests::cancelReceiveReleasesResources()
+PASS   : CoreTests::cleanupTestCase()
+Totals: 28 passed, 4 failed, 0 skipped, 0 blacklisted, 13178ms
+********* Finished testing of CoreTests *********

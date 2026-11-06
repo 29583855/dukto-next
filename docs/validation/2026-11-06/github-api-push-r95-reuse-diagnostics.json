@@ -1,0 +1,1442 @@
+{
+  "observedUtc": "2026-11-06T16:01:05.638684+00:00",
+  "commit": "c640e707408366af35904e97c3315888360cdcd6",
+  "parent": "5dd243fbad36da36568943513deed95ee124ba2d",
+  "tree": "83f969f0f2cbd28b2bdb81d8588525735ed9ff45",
+  "files": [
+    {
+      "path": ".github/workflows/macos-listener-reuse-diagnostics.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1afb0fe7ea70d09b5a6d49373be51b35d4412fb2"
+    },
+    {
+      "path": "docs/ci-verification-20261106-r95.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4c9c3c7c90f388b51c55d42a34f4acd5f23f6c30"
+    },
+    {
+      "path": "docs/current-validation.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "222a8b1f533c431f1ccc8c4db7603be24b695677"
+    },
+    {
+      "path": "docs/decisions/0050-macOS监听表核对与优雅重启.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "211ebf215a3f3ee53fda323d036c28bd59bf95d2"
+    },
+    {
+      "path": "docs/macOS构建与验收.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c55578ba7d8a08b71758965d1f4c1c524480e372"
+    },
+    {
+      "path": "docs/validation/2026-11-06/github-api-push-r95-listener-guard.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3509a3741ba873ba63c1477796d9c88b12b7b354"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/avatars-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4116e99e9b782385da114b584ac0f6e54463eb9f"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/avatars-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "20f00dcb087af72474d05056038ae58bcd025981"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/browse-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "58d46b95247f6547d6edfc3a0c18ecfc2215cd73"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/browse-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "100f49fdd8ad03ad5b447a79c08c334e10cecb9f"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/buffer-credit-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1dabe63c8790a0e1dc1c95b6ace8e5e12500ae4a"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/buffer-credit-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "63485784a71bc8d7a621564edbc6005083f9b878"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/controller-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7326339ccebeb27e74e63d09f9f30cc8c7f8e450"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/controller-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "65b41363abcf212ae09f912f1417f95e4dd62529"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/core-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7d0fba1358fa7f29b401b2afe838c2e1c88cd377"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/core-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d86898ca740c3886d7d25dd20b446bfd93f54903"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/discovery-identity-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "14997dfc954243d0e2653eba129cc6508e28d494"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/discovery-identity-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7a377a4edce3776de9105a63c1b1a69ff2905c3c"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/disposition-journal-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ef90fd42f51c86a5bb2f7563f65c59adbf0ab7cf"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/disposition-journal-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ab8651f15e9a05452d6fd19fe98889778aaa5b77"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/durable-receive-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "17673222b5f5d59ba41bf0d6e4821640541cab1c"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/durable-receive-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c4f5da10e5ccd3b739f20d432d2b6ce42ede47e8"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/file-exchange-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bd4b3a605f78cf41942231878ef7b901622a1582"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/file-exchange-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "489dafd116e5877c0a30e97beb60c892e1c1c232"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/identity-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "54923479b8a5fca091bacaa4d60f8ebc12178d70"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/identity-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e23f2fca36bfe772a1a0754e1c4fb03bb51383f1"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/main-server-360x560.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2e092a808fa22a5fa0fcb091d89b9a989132771a"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/main-server-360x560.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "410536863c5934aeb69327e8e976d2ca2fbfe76b"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/main-server-430x700.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "63e8583d1ee2cbfc5abb3663c1b32bb61a756534"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/main-server-430x700.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0a6c2e14d74b87b7e8c9518071eae1d9596003f5"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/main-terms-360x560.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "15d6655371dbd67ad8eab284ac52400fa409fa9a"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/main-terms-430x700.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "804abbc0a1d91289a19a26812648fe4e9e879251"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/protocol-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "aa0314a8a9a394084e5bf0bfdb3dbc4d1411d4de"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/protocol-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fb571a2a36f72d484e0981f25e311f865fafc6ab"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/receive-skip-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2e510e1383e3f2d653abba16952f2075780ffa04"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/receive-skip-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f01621090765a5c4f5ced16879873b2be53988f7"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/server-certificate-migration.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "409f479e9c850986d86724d78f7ded6ae706e0c7"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/server-certificate-renewal.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "58d105db78c5eff3afdbb9bb0eeb2aa9140ab5a3"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/server-clients.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7944b7e29ba5e9d7fe15f046526e443611ec7a3c"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/server-item-failure.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e25a58866d5efe0cebf44b0deb81362311921abc"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/server-local.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d1d4688a343a915ae96dff43fe320af3c01eb4df"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/server-overwrite.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4d3a56cb5c44142468d2f6ae57540ff112330c29"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/server-page.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ab3e759a1a874493ec6c108a717ab5284efd52a3"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/server-panel-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9860915d33449e8c890a4a79650b9e69c69c9d97"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/server-panel-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b8c4b3f6788a71767e9aa4308295bdbacfba4179"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/server-queue.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "14a944f2516a3cabe592ccbdc168b570d067c80c"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/server-session-policy.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "75382cd170506bb656af9ce7943aa864c92adf17"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/server-task-items.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "908ccc037cd8fb86318f69444b8eab8b60cdd0b1"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/server-tasks.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1ffd8ae308f75b10b724356b68b91b8b6665d6f4"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/server-transfer-policy.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1d2c8a9bf24ca674948df5ad55a900f7624ea5ae"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/sqlite-cache-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2c79ee120d461039e6bcd4312f3c9e18aec7c7cd"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/sqlite-cache-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7fd0831348fe8e0cfe63ee9f80aaa755f63fb6f0"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/strong-manifest-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "78f213d407ce7303e2c0e7fa693fdbd44cfd2a30"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/strong-manifest-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "375c737a78612e862bf151c379c3760822a2d219"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/task-store-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3242b095544f5c0c82c37215a0aaf1dc2f40686f"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/task-store-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6639e166abe98b2be6d999d2665ea4553b3251ab"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/transfer-accounting-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0a5c16a3e9cac6ae473cf27d5f8e734f15a75b89"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/transfer-accounting-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "07900788ff2ea7550ae1ed283b6e12732ed75de2"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/transfer-items-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e3e5b7875eeda0cade479bec7183bd2437ae6146"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/transfer-items-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "60189c4299331f09939f1b7933415ca80ecc2823"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/transfer-operation-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c0e9e8ae3c5ee8b9eb52e10624d94b779ab5b84e"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/transfer-operation-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "309f33293d1d5ad49fe50e62715e3f255408e92c"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/transfer-scheduler-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "075719696a69c62f97642343889a49a782b8487a"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/transfer-scheduler-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b6ddec5d19433a4724302fc0c6077f4de07fd2db"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/ui-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4d8dff6526abfa61b9e01c54e8732f20673e7eb8"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/ui-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c85c056ea04bf50b6c1b8bf325b009f763f9a343"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/updates-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "56d789deb1084e7b49206a5841ad9f633520fc9d"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/QtTest/updates-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d8265aef0f1bf7b147e35f77d42358622b5cd767"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/Temporary/CTestCostData.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2e9db911ac099f0030c2dc295b1cba360f2b2bcb"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/Temporary/LastTest.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8c5d67a2849ba9383d7f44dc767a46b210d9fb9b"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/build/Testing/Temporary/LastTestsFailed.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "50ec3376df91ace6e31442dfcd76b90ec5688791"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/build.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9af7d90c81f6bad40ba6fc0073f140721fe70e80"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/configure.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "03ce5d4734609825839024abd8f724edb84674a6"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/core-1.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4bd67adc67427800b3197039cc66e0008efa3587"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/core-1.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "927acff9abee312f12e34dcd024c81c08f09fae4"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/core-2.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "80de46e9edbf8cdb715607164b6d6e0b13ba7706"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/core-2.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "927acff9abee312f12e34dcd024c81c08f09fae4"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/core-3.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6ef334facfc6615848e9a9d2750f8f6d9384d8b2"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/core-3.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "927acff9abee312f12e34dcd024c81c08f09fae4"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/core-4.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7149ed131641ca65c107f12b6e6d053e7e51009f"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/core-4.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "927acff9abee312f12e34dcd024c81c08f09fae4"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/core-5.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7660daa0ae75518c20d3a9f134427e88bcdbec59"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/core-5.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "927acff9abee312f12e34dcd024c81c08f09fae4"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/core-exit-codes.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9112e94dc5e3db8f904925b194e65ab55b89b98d"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/ctest.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "558baf794a0177ffc66b5f22eb732c413934e926"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/environment.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e87f2a8c659e0502769ac6802a5f8eeeca69c45a"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/parallel-exit/parallel-1.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d1400243e9c965c04571a0c2a172beb27f90df35"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/parallel-exit/parallel-1.stdout.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/parallel-exit/parallel-1.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "27b85d41ccb8263c4a38915e73026f0737b53bde"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/parallel-exit/parallel-10.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "35669a6ed94965801db360eb63ecbfe5ffb2525a"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/parallel-exit/parallel-10.stdout.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/parallel-exit/parallel-10.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "27b85d41ccb8263c4a38915e73026f0737b53bde"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/parallel-exit/parallel-2.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bb85aeed7a07d6083e1a8f0bc2110d76acfc244a"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/parallel-exit/parallel-2.stdout.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/parallel-exit/parallel-2.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "27b85d41ccb8263c4a38915e73026f0737b53bde"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/parallel-exit/parallel-3.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "13ee87277a6646697f196a38c9e8b9b51af5a2f4"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/parallel-exit/parallel-3.stdout.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/parallel-exit/parallel-3.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "27b85d41ccb8263c4a38915e73026f0737b53bde"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/parallel-exit/parallel-4.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "839f34690ccbf9931095e20b83729d142cbaed5b"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/parallel-exit/parallel-4.stdout.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/parallel-exit/parallel-4.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "27b85d41ccb8263c4a38915e73026f0737b53bde"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/parallel-exit/parallel-5.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0d9f7a9fbed98ce5b85844ea448c3a66db79b2a1"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/parallel-exit/parallel-5.stdout.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/parallel-exit/parallel-5.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "27b85d41ccb8263c4a38915e73026f0737b53bde"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/parallel-exit/parallel-6.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1ad1058ac4add2ce363f95ff608ecc238ff1385e"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/parallel-exit/parallel-6.stdout.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/parallel-exit/parallel-6.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "27b85d41ccb8263c4a38915e73026f0737b53bde"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/parallel-exit/parallel-7.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "acd02cf6459560dae4ff4d1ade3137a080d9ae91"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/parallel-exit/parallel-7.stdout.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/parallel-exit/parallel-7.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "27b85d41ccb8263c4a38915e73026f0737b53bde"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/parallel-exit/parallel-8.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "97d7257a365ebab4f86a68fba6ebf0acfd14ff5e"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/parallel-exit/parallel-8.stdout.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/parallel-exit/parallel-8.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "27b85d41ccb8263c4a38915e73026f0737b53bde"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/parallel-exit/parallel-9.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "29e4bcc3587c32c3da733eb4f4307d854df46dc5"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/parallel-exit/parallel-9.stdout.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/parallel-exit/parallel-9.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "27b85d41ccb8263c4a38915e73026f0737b53bde"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/parallel-exit/report.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1fae07f458943e563c3e756bc5aab7c40aa51594"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15-intel/evidence/source-commit.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e0a76c16ef9d7418c03d1b11bdee5ad3e847609d"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/avatars-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4d88a2b1bba3b78cdba84dfb1c28cbf6b58aeaf5"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/avatars-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "89890177d95e66822dae240a3aff509603d3604d"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/browse-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0300dae67f75a3183d579e1b080681999382dc06"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/browse-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ccdd4e21b2d24fb44b5fd92acd8e49006d48798b"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/buffer-credit-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f25075dd0619e26dba5746b766c2c919d3403dd1"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/buffer-credit-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "255e4788e272c6377f05949c844af9e3cd37a546"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/controller-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1dd785928f54a07333d7347c586338cd8f9fa2f6"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/controller-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5df318116277a993135472772811b8f6e7837734"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/core-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "84acd189dcc8667f6ac2c52aed180981b4d60107"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/core-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "58f39cb8f02a35f9d025d6e5ef27b89f17f5578c"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/discovery-identity-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0ad861b712894015fd385c414058a5a2820388af"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/discovery-identity-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f8e74c1a31d64ae438adabcdc03db2525a6b062d"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/disposition-journal-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a1ca58777c1de05733118026f8863b1487eaaa4c"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/disposition-journal-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5d01977a506267a4d72cc43192d88f3522dcd827"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/durable-receive-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2748bd852e17335e2bc5f831e8b2d9ebf801f523"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/durable-receive-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a039aa51235a35160f338abf9cc587972669a6d6"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/file-exchange-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4f9b7d2594f98ef22a4ad9cdc84b8d23c04da2e6"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/file-exchange-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b04adda2b563d3c514cff33987a7d99c65298d74"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/identity-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3cd71eac33eba266062af15bf79c88181e425000"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/identity-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d7678e59a38170aec9bf321bbb5721ab438a202b"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/main-server-360x560.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2e092a808fa22a5fa0fcb091d89b9a989132771a"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/main-server-360x560.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e360a9f42d8d763534a47a724e4991fe71ff8369"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/main-server-430x700.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "63e8583d1ee2cbfc5abb3663c1b32bb61a756534"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/main-server-430x700.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e0f4501cc026e7fcd8a23de820eae80cffd4c566"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/main-terms-360x560.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5ad55790ff95ae17209248875cb96e5c461edb91"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/main-terms-430x700.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "509c8d9620ed8cd8951fc394a099e9f71e70c72f"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/protocol-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7833b1527942dfb71c5ad0de87b4bc1070703abe"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/protocol-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "552bc4b51c41a9abb456c331cca7c8d429d12dc0"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/receive-skip-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "14d475caec35786ee9159887319bc34344a2e012"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/receive-skip-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "772fe00a376c2dbc561cfc026ae570471b90e62d"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/server-certificate-migration.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dcb9db1fbecab3718f84426b40070e0c5d6e8289"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/server-certificate-renewal.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c8f108b5052c9d4f2c710fa38d9093d25da73dcb"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/server-clients.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c285373d81b55fb5831d82acac457b84a751431b"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/server-item-failure.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a2a4fe5dc336acb893ef0e810608eb75977ccb4d"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/server-local.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b4edf84b58b61112f6ed2a2fe232f93afde411a0"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/server-overwrite.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d50176c23531544848cafff137ceac37b384224a"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/server-page.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7b2615d73b955a7448ec3efbc56e9762bd780b88"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/server-panel-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "afd877466cb6ab23998411af9e4726de66ac89dd"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/server-panel-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "35eeaeae174259f87abc4894a4e8800fa4ea6840"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/server-queue.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fd7b0a3be2d32294b5de1604ea1dbe6ec5ed5eab"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/server-session-policy.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "42e933f754a029bdc91995e14c4fcfaf74ee6819"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/server-task-items.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cf432961f1eaa5c2d841cfeccca8b1cb1f47c448"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/server-tasks.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7effb174c2ee7f8158bb3c29da4cd4ad849d9e68"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/server-transfer-policy.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b0f84403ff4464d72d7008dc2f5258fd57472667"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/sqlite-cache-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d01cb33f1af4e22584a07dd893a2fde56247e56a"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/sqlite-cache-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "41c7bf0a19555aaf14d1700cb06b0763983c6228"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/strong-manifest-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1e542863b20b3c3008b54b17adb4330d5dd3751c"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/strong-manifest-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b4427cd6a76826b6f08c21af3e5c9359f5b6a7ca"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/task-store-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8f8298796f126d696eb9390bf1c4847a0a2c7403"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/task-store-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5c6b7688c492e5606f6601f5841c0db49df3b69c"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/transfer-accounting-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "07415c01dab611c33acb76d604478cd225e4f112"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/transfer-accounting-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5a147ad848d68f632ca186219582c83900c69dd7"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/transfer-items-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "60ef6268cfa47641161bc0058b436607f5f1fc39"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/transfer-items-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a54098b6061743e3fa1efa4500db4adeedcf39dc"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/transfer-operation-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9e9a6b77e113c9c4739398c7f08a42ce3a2239fd"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/transfer-operation-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ff4b60328fb94d3dc1f90598380feecc28b66da2"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/transfer-scheduler-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4b34f18c26ab3407e5f3534afbc79f23a504ca26"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/transfer-scheduler-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "19e54e09b6062fe2045e79cb90449218503dc163"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/ui-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "023057dc254169181b569d7b4525573e86028c5c"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/ui-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8f702059b3c67a6d4c62d405949b248fa341f7f7"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/updates-tests.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "24d94c5429b5e8a8e40c9dd8a180d0677ad5740e"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/QtTest/updates-tests.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "08105657e214264eeda4abf14e303bf6ccc3b9c1"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/Temporary/CTestCostData.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c15eac38d858817518591d7d7b2e43f192ac7636"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/Temporary/LastTest.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bdacf19bba2a8fef6e63c1e40b3215a846cd25a8"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/build/Testing/Temporary/LastTestsFailed.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "50ec3376df91ace6e31442dfcd76b90ec5688791"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/build.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "21e04e764201c6efdea608adb2266a77e3358bab"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/configure.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "eb8159080de326339bd4aade86360baaf2014525"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/core-1.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0bb03d565e07347f0f5221f36fc61e395174ed55"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/core-1.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dcf3008e4a8de259541f137524700e689280dea8"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/core-2.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c3df4e330ab555e3d04c11c57bae01db2a534e16"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/core-2.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dcf3008e4a8de259541f137524700e689280dea8"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/core-3.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7e0b45062d80b724dd6a541c135f070cc4061785"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/core-3.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dcf3008e4a8de259541f137524700e689280dea8"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/core-4.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "054bec55fe6010dc96e807d3cc31eac0a9131783"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/core-4.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dcf3008e4a8de259541f137524700e689280dea8"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/core-5.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3209587b40ffabd99ecd7266f0480c0491a673fc"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/core-5.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dcf3008e4a8de259541f137524700e689280dea8"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/core-exit-codes.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9112e94dc5e3db8f904925b194e65ab55b89b98d"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/ctest.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cdfc44c5e64e370ec20ca1e2f2b2401079231f21"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/environment.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a2460f3757ddb614a83c59922cab48b7f92f71d6"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/parallel-exit/parallel-1.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b61e386d7e654fb50b74ff34c5d381bea4570957"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/parallel-exit/parallel-1.stdout.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/parallel-exit/parallel-1.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9bdaaf4438ee31ce7e0248d7573b277c28902245"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/parallel-exit/parallel-10.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ec54b687970e3dcc12bba4bde242d09ca4f97602"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/parallel-exit/parallel-10.stdout.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/parallel-exit/parallel-10.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9bdaaf4438ee31ce7e0248d7573b277c28902245"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/parallel-exit/parallel-2.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e7bf60325f36c43839b5f99a6b98c5603a6c58bd"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/parallel-exit/parallel-2.stdout.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/parallel-exit/parallel-2.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9bdaaf4438ee31ce7e0248d7573b277c28902245"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/parallel-exit/parallel-3.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a2ceca65e0187af00d8ab5b9f243307296110dd9"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/parallel-exit/parallel-3.stdout.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/parallel-exit/parallel-3.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9bdaaf4438ee31ce7e0248d7573b277c28902245"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/parallel-exit/parallel-4.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c2b4ce79be16fcfc19b39e2cd02bf9644c9fc93d"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/parallel-exit/parallel-4.stdout.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/parallel-exit/parallel-4.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9bdaaf4438ee31ce7e0248d7573b277c28902245"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/parallel-exit/parallel-5.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0cec1d49a0c33b976bdcb83b2fc3fabdd6548d5a"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/parallel-exit/parallel-5.stdout.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/parallel-exit/parallel-5.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9bdaaf4438ee31ce7e0248d7573b277c28902245"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/parallel-exit/parallel-6.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "38b9da32173f162a3e279ebd06b8c63a3c29a17a"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/parallel-exit/parallel-6.stdout.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/parallel-exit/parallel-6.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9bdaaf4438ee31ce7e0248d7573b277c28902245"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/parallel-exit/parallel-7.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3b8b4e72ca592cba49741a79db228bbf12addd08"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/parallel-exit/parallel-7.stdout.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/parallel-exit/parallel-7.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9bdaaf4438ee31ce7e0248d7573b277c28902245"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/parallel-exit/parallel-8.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "68a2c82169e0dfe5ba613c3e3df3f639d3d56160"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/parallel-exit/parallel-8.stdout.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/parallel-exit/parallel-8.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9bdaaf4438ee31ce7e0248d7573b277c28902245"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/parallel-exit/parallel-9.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e32199f762b3aad7ce5ab336d0eb890c2e4535dc"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/parallel-exit/parallel-9.stdout.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/parallel-exit/parallel-9.xml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9bdaaf4438ee31ce7e0248d7573b277c28902245"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/parallel-exit/report.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9c75adec78ea6fbfbc99b31e6d2b0931fcbb6979"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/macos-listener-regression-macos-15/evidence/source-commit.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e0a76c16ef9d7418c03d1b11bdee5ad3e847609d"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/receipt.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fc5bca03efe8bb6af27e4ab75c22d4d58f91c9bc"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/reuse-probe-source-audit.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dd17bb879c2fc1a7639250bd30fdf29eb5fbca29"
+    },
+    {
+      "path": "docs/validation/2026-11-06/listener-r95-native-terminal-failure/verification-driver.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f45ce9887db86c528096f9ff6c86c9d909da4500"
+    },
+    {
+      "path": "docs/执行进度.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "034fc4f0a9d7b8fe05db5e762327b67d67f27ba9"
+    },
+    {
+      "path": "docs/构建验证摘要.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cd6f560ad2eb183131806c35931c9379978f8ee2"
+    },
+    {
+      "path": "tests/listener_probe/CMakeLists.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "95dd2384fb7b53fbb8edefbf93d3b7b6f4a329be"
+    },
+    {
+      "path": "tests/listener_probe/reuse.cpp",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cc1413354df05d10874ada980b130cc28e3f2d08"
+    },
+    {
+      "path": "开发计划与进度.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1386e6224128ef0164cf819773d81085d49d750f"
+    }
+  ],
+  "treeBatches": 2,
+  "reusedPriorBinaryBlobs": false,
+  "maximumTreePayloadBytes": 524288,
+  "exactLocalCommitPreserved": true,
+  "force": false,
+  "passed": true
+}

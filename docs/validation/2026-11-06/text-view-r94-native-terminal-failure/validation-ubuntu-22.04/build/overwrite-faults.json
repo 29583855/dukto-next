@@ -1,0 +1,151 @@
+{
+  "date": "2026-11-05",
+  "passed": true,
+  "executableSha256": "887677562c4f88cbb622a16e0f385ab7cdd966b8f8e4193bfe94c87d48cf2a96",
+  "testScriptSha256": "eae6d2fc846dc4c109cb6a9f7522b7ab37991fbf59551bdc831dd9414b839e83",
+  "conflictPolicy": "overwrite",
+  "sourceChangeDeadlineSeconds": 30,
+  "authorizationDeadlineSeconds": 15,
+  "sampleSha256": "6dc338aaba7de55291429f33b095fb6bbb4b1752d97d45bec6a122c4ccda2199",
+  "cases": [
+    {
+      "direction": "upload",
+      "fault": "same-size-mtime-source-change",
+      "taskId": "92fee875-ddd6-4c4f-a2d5-8ce3644df8ff",
+      "checkpoint": 16777216,
+      "secondsAfterFault": 3.038,
+      "deadlineSeconds": 30,
+      "clientError": {
+        "code": 6,
+        "event": "error",
+        "eventVersion": 1,
+        "message": "读取期间源文件已变化",
+        "stage": "read"
+      },
+      "serverTask": {
+        "state": "interrupted",
+        "error": 0,
+        "confirmed": 4194304,
+        "total": 67108875
+      },
+      "originalPreserved": true,
+      "noPublishedCopy": true
+    },
+    {
+      "direction": "download",
+      "fault": "same-size-mtime-source-change",
+      "taskId": "a73da394-907e-4bdc-9c36-e1089c6f4c04",
+      "checkpoint": 16777216,
+      "secondsAfterFault": 0.349,
+      "deadlineSeconds": 30,
+      "clientError": {
+        "code": 6,
+        "event": "error",
+        "eventVersion": 1,
+        "message": "读取期间源文件已变化",
+        "stage": "read"
+      },
+      "serverTask": {
+        "state": "failed",
+        "error": 6,
+        "confirmed": 4194304,
+        "total": 67108875
+      },
+      "originalPreserved": true,
+      "noPublishedCopy": true
+    },
+    {
+      "direction": "upload",
+      "fault": "revoke",
+      "taskId": "12eda39d-4c2a-4bee-8024-d175d134ecdc",
+      "checkpoint": 16777216,
+      "secondsAfterFault": 0.072,
+      "deadlineSeconds": 15,
+      "clientError": {
+        "code": 4,
+        "event": "error",
+        "eventVersion": 1,
+        "message": "配对或认证被拒绝，请核对凭据、有效期和授权",
+        "stage": "auth"
+      },
+      "serverTask": {
+        "state": "interrupted",
+        "error": 0,
+        "confirmed": 8388608,
+        "total": 67108875
+      },
+      "originalPreserved": true,
+      "noPublishedCopy": true
+    },
+    {
+      "direction": "download",
+      "fault": "revoke",
+      "taskId": "8fe78fe2-9e79-4950-8b86-aaf4337b841d",
+      "checkpoint": 16777216,
+      "secondsAfterFault": 3.215,
+      "deadlineSeconds": 15,
+      "clientError": {
+        "code": 3,
+        "event": "error",
+        "eventVersion": 1,
+        "message": "安全连接已断开或无法连接",
+        "stage": "protocol"
+      },
+      "serverTask": {
+        "state": "interrupted",
+        "error": 0,
+        "confirmed": 4194304,
+        "total": 67108875
+      },
+      "originalPreserved": true,
+      "noPublishedCopy": true
+    },
+    {
+      "direction": "upload",
+      "fault": "root-reconfigure",
+      "taskId": "eb90c515-9193-4d29-b919-c8b44f945131",
+      "checkpoint": 16777216,
+      "secondsAfterFault": 0.082,
+      "deadlineSeconds": 15,
+      "clientError": {
+        "code": 4,
+        "event": "error",
+        "eventVersion": 1,
+        "message": "数据通道授权根已变化",
+        "stage": "parallel"
+      },
+      "serverTask": {
+        "state": "failed",
+        "error": 4,
+        "confirmed": 8388608,
+        "total": 67108875
+      },
+      "originalPreserved": true,
+      "noPublishedCopy": true
+    },
+    {
+      "direction": "download",
+      "fault": "root-reconfigure",
+      "taskId": "332e926a-57b7-48e4-abdb-43648c71c80f",
+      "checkpoint": 16777216,
+      "secondsAfterFault": 0.343,
+      "deadlineSeconds": 15,
+      "clientError": {
+        "code": 4,
+        "event": "error",
+        "eventVersion": 1,
+        "message": "数据通道授权根已变化",
+        "stage": "parallel"
+      },
+      "serverTask": {
+        "state": "failed",
+        "error": 4,
+        "confirmed": 4194304,
+        "total": 67108875
+      },
+      "originalPreserved": true,
+      "noPublishedCopy": true
+    }
+  ],
+  "scope": "selected mid-transfer content/authorization/root faults; partial data retained, no disk-full or final-ack-loss claim"
+}

@@ -1,0 +1,33 @@
+{
+  "passed": true,
+  "checks": [
+    "expiry-warning-and-invalid-renewal-preserves-original",
+    "both-directions-real-checkpoints-renew-restart-trust-resume-idempotency",
+    "pending-rotation-both-states-retained-then-explicitly-recovered",
+    "revoked-principal-cannot-migrate",
+    "expired-and-future-readable-start-rejected-explicit-renewal-works",
+    "concurrent-old-fingerprint-renewal-exactly-one-writer",
+    "public-events-contain-no-private-material"
+  ],
+  "recoveries": [
+    {
+      "direction": "upload",
+      "taskId": "b1e86f82-5afa-4b4c-b8ec-0cceaf1fce0e",
+      "checkpointBytes": 4194304,
+      "reusedBytes": 4194304,
+      "resumeChannels": 8,
+      "repeatChannels": 16
+    },
+    {
+      "direction": "download",
+      "taskId": "1670bb2d-108c-4ae7-b72e-98e4a14d6f8b",
+      "checkpointBytes": 4194304,
+      "reusedBytes": 4194304,
+      "resumeChannels": 8,
+      "repeatChannels": 16
+    }
+  ],
+  "executableSha256": "afd4186b082ad3fd365de7c695a6c263bc96dd3bc29af346a340eab7ae9e2669",
+  "inPlaceRequested": false,
+  "binaryUnchanged": true
+}

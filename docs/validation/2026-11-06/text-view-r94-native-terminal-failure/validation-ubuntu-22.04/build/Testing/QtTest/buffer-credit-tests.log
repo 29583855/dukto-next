@@ -1,0 +1,20 @@
+********* Start testing of BufferCreditTests *********
+Config: Using QtTest library 5.15.3, Qt 5.15.3 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.3.0), ubuntu 22.04
+PASS   : BufferCreditTests::initTestCase()
+PASS   : BufferCreditTests::legacyTextResultKeepsCreditUntilLastOwner()
+PASS   : BufferCreditTests::legacyTextSenderRejectsBeforeThreadStart()
+PASS   : BufferCreditTests::legacyTextReceiverRejectsBeforeBody()
+PASS   : BufferCreditTests::dataFilesShareAdmissionAndKeepPrivateReads()
+PASS   : BufferCreditTests::concurrentDataFileAdmission()
+PASS   : BufferCreditTests::legacySenderRespectsSharedSaturation()
+PASS   : BufferCreditTests::legacyReceiverSaturation(socket)
+PASS   : BufferCreditTests::legacyReceiverSaturation(catalog)
+PASS   : BufferCreditTests::legacyReceiverSaturation(mapping)
+PASS   : BufferCreditTests::legacyReceiveCountsMappingAndReleasesOnCancel()
+PASS   : BufferCreditTests::saturatedServiceClosesUnclaimedSockets()
+PASS   : BufferCreditTests::classificationAndReservationOrder()
+PASS   : BufferCreditTests::reservationAndUnwind()
+PASS   : BufferCreditTests::concurrentAdmission()
+PASS   : BufferCreditTests::cleanupTestCase()
+Totals: 16 passed, 0 failed, 0 skipped, 0 blacklisted, 4625ms
+********* Finished testing of BufferCreditTests *********

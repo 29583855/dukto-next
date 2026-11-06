@@ -1,0 +1,140 @@
+{
+  "date": "2026-11-05",
+  "passed": true,
+  "executableSha256": "d77e47fac4429db4e62f6a5a2a2af367f312d920388de022e31a13bb577fc887",
+  "scriptSha256": "00e739a3460e26c92c75f85bb3560b5fdf2ce7a1a90c2663f1fccf730eb67801",
+  "inPlaceRequested": false,
+  "cases": [
+    {
+      "direction": "upload",
+      "channels": 1,
+      "taskId": "18c70621-7a64-4c74-8f2e-f1e40939c79e",
+      "requestId": "5f21b553-cea1-4a6d-9726-f72be59d75b0",
+      "checkpoint": 4194304,
+      "restoredBytes": 4194304,
+      "retries": 1,
+      "sha256": "c6ca2e0dc9c6802ce67209be8e6bde1861cd4a2dcaec4422b0c0d433d4575e0d",
+      "sameTask": true,
+      "noDuplicate": true
+    },
+    {
+      "direction": "download",
+      "channels": 1,
+      "taskId": "97d43312-03cb-42ab-a36d-1afaa1f6a79a",
+      "requestId": "5f386897-8aef-453e-a6ab-503539d45c7b",
+      "checkpoint": 4194304,
+      "restoredBytes": 4194304,
+      "retries": 1,
+      "sha256": "c6ca2e0dc9c6802ce67209be8e6bde1861cd4a2dcaec4422b0c0d433d4575e0d",
+      "sameTask": true,
+      "noDuplicate": true
+    },
+    {
+      "direction": "upload",
+      "channels": 4,
+      "taskId": "7f6f8331-7a6e-41c9-91d8-bd61cd04e312",
+      "requestId": "e9e27c77-2243-41e9-84ce-c078dd68d9d0",
+      "checkpoint": 16777216,
+      "restoredBytes": 16777216,
+      "retries": 1,
+      "sha256": "c6ca2e0dc9c6802ce67209be8e6bde1861cd4a2dcaec4422b0c0d433d4575e0d",
+      "sameTask": true,
+      "noDuplicate": true
+    },
+    {
+      "direction": "download",
+      "channels": 4,
+      "taskId": "864cd7f3-13b8-472d-8be0-e0865fca882e",
+      "requestId": "3d70896f-a95b-4fdd-9e46-698451fe0499",
+      "checkpoint": 16777216,
+      "restoredBytes": 16777216,
+      "retries": 1,
+      "sha256": "c6ca2e0dc9c6802ce67209be8e6bde1861cd4a2dcaec4422b0c0d433d4575e0d",
+      "sameTask": true,
+      "noDuplicate": true
+    },
+    {
+      "direction": "upload",
+      "channels": 16,
+      "taskId": "69f2d1fb-c740-4270-aefb-d52a2efc18b4",
+      "requestId": "6a1c1f05-258e-44b4-a2dc-ba4c8832c4a6",
+      "checkpoint": 50331648,
+      "restoredBytes": 54525952,
+      "retries": 1,
+      "sha256": "c6ca2e0dc9c6802ce67209be8e6bde1861cd4a2dcaec4422b0c0d433d4575e0d",
+      "sameTask": true,
+      "noDuplicate": true
+    },
+    {
+      "direction": "download",
+      "channels": 16,
+      "taskId": "25d31541-0423-4ee0-a2e1-d1fde0c369c7",
+      "requestId": "dedcf0a2-eaf8-4988-b6e7-d59eb70bb79d",
+      "checkpoint": 58720256,
+      "restoredBytes": 62914560,
+      "retries": 1,
+      "sha256": "c6ca2e0dc9c6802ce67209be8e6bde1861cd4a2dcaec4422b0c0d433d4575e0d",
+      "sameTask": true,
+      "noDuplicate": true
+    },
+    {
+      "kind": "connection-refused",
+      "retries": 3,
+      "delaysMs": [
+        250,
+        500,
+        1000
+      ]
+    },
+    {
+      "kind": "wrong-certificate",
+      "retries": 0,
+      "exitCode": 4
+    },
+    {
+      "kind": "permission-denied",
+      "retries": 0,
+      "exitCode": 4
+    },
+    {
+      "kind": "remote-pause",
+      "taskId": "78c393f9-0ef3-4709-89ed-3f1c81daff63",
+      "state": "paused",
+      "checkpoint": 16777216,
+      "exitCode": 7,
+      "automaticRestartPrevented": true
+    },
+    {
+      "kind": "remote-cancel",
+      "taskId": "9ca57bb0-bef7-44c8-ba45-090be34cbd6f",
+      "state": "cancelled",
+      "checkpoint": 16777216,
+      "exitCode": 7,
+      "automaticRestartPrevented": true
+    },
+    {
+      "kind": "queue-deadline",
+      "seconds": 1.119,
+      "exitCode": 3,
+      "retries": 0
+    },
+    {
+      "kind": "body-deadline",
+      "taskId": "9412ee86-a9ff-43de-9f9d-3475f389a527",
+      "exitCode": 3,
+      "retries": 0
+    },
+    {
+      "kind": "invalid-options",
+      "cases": 5,
+      "exitCode": 2
+    }
+  ],
+  "timingConfiguration": {
+    "caseDeadlineSeconds": 120,
+    "caseExitBudgetSeconds": 120,
+    "readyBudgetSeconds": 30
+  },
+  "defaultTimingGatesPassed": true,
+  "scope": "loopback TLS fault proxy; no physical LAN or uninterruptible OS-call hard deadline claim"
+}
