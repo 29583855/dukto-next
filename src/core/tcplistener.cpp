@@ -13,6 +13,14 @@
 #include <QNetworkInterface>
 #include <QNetworkProxy>
 #include <cstring>
+#ifdef Q_OS_MACOS
+#include <cerrno>
+#include <netinet/in.h>
+#include <netinet/in_pcb.h>
+#include <netinet/tcp_fsm.h>
+#include <netinet/tcp_var.h>
+#include <sys/sysctl.h>
+#endif
 
 namespace dukto {
 #ifdef Q_OS_WIN
@@ -93,12 +101,94 @@ DWORD overlappingListeners(const QHostAddress &address, quint16 port, ULONG fami
 } // namespace
 #endif
 
+#ifdef Q_OS_MACOS
+namespace {
+// 日期：2026-11-06；只统计实际LISTEN端点；TIME_WAIT不算监听，快照最多8MiB且重试不超过三次。
+int macOverlappingListeners(const QHostAddress &address, quint16 port, int &count) {
+    constexpr size_t maximum = 8 * 1024 * 1024;
+    for (int attempt = 0; attempt < 3; ++attempt) {
+        size_t size = 0;
+        if (sysctlbyname("net.inet.tcp.pcblist64", nullptr, &size, nullptr, 0) != 0)
+            return errno;
+        if (size < sizeof(xinpgen) || size > maximum)
+            return ENOBUFS;
+        QByteArray snapshot(static_cast<int>(size), Qt::Uninitialized);
+        if (sysctlbyname("net.inet.tcp.pcblist64", snapshot.data(), &size, nullptr, 0) != 0) {
+            if (errno == ENOMEM)
+                continue;
+            return errno;
+        }
+        if (size > static_cast<size_t>(snapshot.size()) || size < sizeof(xinpgen))
+            return EPROTO;
+        xinpgen header{};
+        std::memcpy(&header, snapshot.constData(), sizeof(header));
+        if (header.xig_len != sizeof(header))
+            return EPROTO;
+        count = 0;
+        for (size_t offset = header.xig_len; offset < size;) {
+            if (size - offset < sizeof(u_int32_t))
+                return EPROTO;
+            u_int32_t length = 0;
+            std::memcpy(&length, snapshot.constData() + offset, sizeof(length));
+            if (length > size - offset)
+                return EPROTO;
+            if (length == sizeof(xinpgen))
+                return offset + length == size ? 0 : EPROTO;
+            if (length < sizeof(xtcpcb64))
+                return EPROTO;
+            xtcpcb64 row{};
+            std::memcpy(&row, snapshot.constData() + offset, sizeof(row));
+            const auto &endpoint = row.xt_inpcb;
+            if (row.t_state == TCPS_LISTEN && ntohs(endpoint.inp_lport) == port &&
+                endpoint.xi_socket.xso_protocol == IPPROTO_TCP) {
+                bool overlaps = address == QHostAddress::Any;
+                if ((endpoint.inp_vflag & INP_IPV4) &&
+                    address.protocol() == QAbstractSocket::IPv4Protocol) {
+                    const auto local = ntohl(endpoint.inp_laddr.s_addr);
+                    overlaps = address == QHostAddress::AnyIPv4 || local == INADDR_ANY ||
+                               local == address.toIPv4Address();
+                }
+                if ((endpoint.inp_vflag & INP_IPV6) &&
+                    address.protocol() == QAbstractSocket::IPv6Protocol) {
+                    const auto requested = address.toIPv6Address();
+                    const in6_addr wildcard{};
+                    const auto &local = endpoint.in6p_laddr;
+                    // 日期：2026-11-06；链路本地地址的内核嵌入scope归一化；同址不同接口仍允许独立监听。
+                    in6_addr normalized = local;
+                    quint32 scope = 0;
+                    if (IN6_IS_ADDR_LINKLOCAL(&normalized)) {
+                        scope = quint32(normalized.s6_addr[2]) * 256 + normalized.s6_addr[3];
+                        normalized.s6_addr[2] = normalized.s6_addr[3] = 0;
+                    }
+                    bool numeric = false;
+                    auto requestedScope = address.scopeId().toUInt(&numeric);
+                    if (!numeric && !address.scopeId().isEmpty())
+                        requestedScope =
+                            QNetworkInterface::interfaceIndexFromName(address.scopeId());
+                    overlaps =
+                        address == QHostAddress::AnyIPv6 ||
+                        std::memcmp(&local, &wildcard, sizeof(local)) == 0 ||
+                        (std::memcmp(normalized.s6_addr, requested.c, sizeof(requested.c)) == 0 &&
+                         (scope == 0 || requestedScope == 0 || scope == requestedScope));
+                }
+                if (overlaps)
+                    ++count;
+            }
+            offset += length;
+        }
+        return 0;
+    }
+    return EAGAIN;
+}
+} // namespace
+#endif
+
 // 日期：2026-11-06；本地监听明确直连，不把服务端口交给用户系统代理。
 TcpListener::TcpListener(QObject *parent) : QTcpServer(parent) {
     setProxy(QNetworkProxy::NoProxy);
 }
 
-// 日期：2026-11-06；Windows的通配/指定地址及IPv4/双栈重叠一律拒绝共享，避免连接进入错误协议。
+// 日期：2026-11-06；Windows原生独占与Mac监听表前后核对拒绝重叠端口，避免连接进入错误协议。
 bool TcpListener::listen(const QHostAddress &address, quint16 port) {
     if (isListening())
         return false;
@@ -199,6 +289,31 @@ bool TcpListener::listen(const QHostAddress &address, quint16 port) {
     // 日期：2026-11-06；Qt接管描述符并管理初始化失败的清理，原生守卫不重复关闭。
     socket.descriptor = INVALID_SOCKET;
     return setSocketDescriptor(static_cast<qintptr>(descriptor));
+#elif defined(Q_OS_MACOS)
+    // 日期：2026-11-06；Darwin可跨族或通配/具体地址复用端口；绑定前后查询真实监听，不改变TIME_WAIT复用选项。
+    const auto fail = [this](int code) {
+        nativeError_ = QStringLiteral("无法独占监听端口（macOS错误 %1）").arg(code);
+        nativeCode_ = code == EADDRINUSE                ? QAbstractSocket::AddressInUseError
+                      : code == EACCES || code == EPERM ? QAbstractSocket::SocketAccessError
+                      : code == EADDRNOTAVAIL ? QAbstractSocket::SocketAddressNotAvailableError
+                                              : QAbstractSocket::UnknownSocketError;
+        return false;
+    };
+    if (port != 0) {
+        int count = 0;
+        const auto error = macOverlappingListeners(address, port, count);
+        if (error != 0 || count != 0)
+            return fail(error != 0 ? error : EADDRINUSE);
+    }
+    if (!QTcpServer::listen(address, port))
+        return false;
+    int count = 0;
+    const auto error = macOverlappingListeners(address, serverPort(), count);
+    if (error != 0 || count != 1) {
+        QTcpServer::close();
+        return fail(error != 0 ? error : EADDRINUSE);
+    }
+    return true;
 #else
     return QTcpServer::listen(address, port);
 #endif

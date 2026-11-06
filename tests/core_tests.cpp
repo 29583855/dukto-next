@@ -131,6 +131,42 @@ class CoreTests final : public QObject {
         }
     }
 
+    // 日期：2026-11-06；服务主动正常关闭产生TIME_WAIT后原端口立即重启，不能通过禁用地址复用求绿。
+    void tcpGracefulRestart_data() {
+        QTest::addColumn<QHostAddress>("address");
+        QTest::newRow("ipv4") << QHostAddress(QHostAddress::AnyIPv4);
+        QTest::newRow("ipv6") << QHostAddress(QHostAddress::AnyIPv6);
+        QTest::newRow("dual") << QHostAddress(QHostAddress::Any);
+    }
+
+    // 日期：2026-11-06；八轮真实连接与优雅关闭；每轮检查原端口、完整字节和客户端FIN到达。
+    void tcpGracefulRestart() {
+        QFETCH(QHostAddress, address);
+        dukto::TcpListener server;
+        QVERIFY2(server.listen(address), qPrintable(server.errorString()));
+        const auto port = server.serverPort();
+        const auto loopback = address == QHostAddress::AnyIPv6 ? QHostAddress::LocalHostIPv6
+                                                               : QHostAddress::LocalHost;
+        for (int attempt = 0; attempt < 8; ++attempt) {
+            QTcpSocket client;
+            client.connectToHost(loopback, port);
+            QVERIFY(client.waitForConnected(2000));
+            QTRY_VERIFY(server.hasPendingConnections());
+            QScopedPointer<QTcpSocket> peer(server.nextPendingConnection());
+            const QByteArray payload("restart body");
+            QCOMPARE(peer->write(payload), qint64(payload.size()));
+            peer->flush();
+            peer->disconnectFromHost();
+            QTRY_COMPARE(client.state(), QAbstractSocket::UnconnectedState);
+            QCOMPARE(client.readAll(), payload);
+            QCOMPARE(peer->state(), QAbstractSocket::UnconnectedState);
+            peer.reset();
+            server.close();
+            QVERIFY2(server.listen(address, port), qPrintable(server.errorString()));
+            QCOMPARE(server.serverPort(), port);
+        }
+    }
+
     // 日期：2026-11-04；状态根和文件实际核验原生权限，更新原子可读且非法键/超量读取明确拒绝。
     void privateStoreContracts() {
         QTemporaryDir temporary;

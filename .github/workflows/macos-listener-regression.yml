@@ -1,0 +1,84 @@
+name: Native macOS listener guard regression
+on:
+  workflow_dispatch:
+jobs:
+  regression:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-15, macos-15-intel]
+    runs-on: ${{ matrix.os }}
+    env:
+      QT_QPA_PLATFORM: offscreen
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install native Qt5 OpenSSL and diagnostic sampler
+        shell: bash
+        run: |
+          brew install qt@5 openssl@3
+          echo "CMAKE_PREFIX_PATH=$(brew --prefix qt@5)" >> "$GITHUB_ENV"
+          echo "OPENSSL_ROOT_DIR=$(brew --prefix openssl@3)" >> "$GITHUB_ENV"
+          echo "$(brew --prefix qt@5)/bin" >> "$GITHUB_PATH"
+          python -m pip install psutil
+      # 日期：2026-11-06；原失败文件交换测试和监听断言/时限保持原字节，只追加优雅重启测试。
+      - name: Verify original failed assertions remain unchanged
+        shell: bash
+        run: |
+          git fetch --no-tags origin dec40621cce2d223e46b343e0d3d345a67b80523
+          git diff --exit-code dec40621cce2d223e46b343e0d3d345a67b80523 -- tests/file_exchange_tests.cpp
+          python - <<'PY'
+          from pathlib import Path
+          import subprocess
+          old = subprocess.check_output(['git', 'show', 'dec40621cce2d223e46b343e0d3d345a67b80523:tests/core_tests.cpp']).decode('utf-8-sig').replace('\r\n', '\n')
+          new = Path('tests/core_tests.cpp').read_text('utf-8-sig')
+          start = '    void exclusiveTcpBinding_data()'
+          old_end = '    // 日期：2026-11-04；状态根和文件'
+          new_end = '    // 日期：2026-11-06；服务主动正常关闭'
+          assert old[old.index(start):old.index(old_end)].rstrip() == new[new.index(start):new.index(new_end)].rstrip()
+          PY
+          mkdir -p evidence
+          printf '%s\n' "$GITHUB_SHA" > evidence/source-commit.txt
+          sw_vers > evidence/environment.log
+          uname -m >> evidence/environment.log
+          qmake -query >> evidence/environment.log
+      - name: Compile complete original application and tests
+        id: compile
+        shell: bash
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release > evidence/configure.log 2>&1
+          cmake --build build --parallel 4 > evidence/build.log 2>&1
+      - name: All 23 core targets
+        if: ${{ !cancelled() && steps.compile.outcome == 'success' }}
+        shell: bash
+        run: |
+          set -o pipefail
+          ctest --test-dir build --output-on-failure | tee evidence/ctest.log
+      # 日期：2026-11-06；五轮验证端点冲突、双栈实际连接及优雅FIN后同端口重启，不修改原断言。
+      - name: Repeated exclusive binding address families and graceful restart
+        if: ${{ !cancelled() && steps.compile.outcome == 'success' }}
+        shell: bash
+        run: |
+          set +e
+          status=0
+          for attempt in 1 2 3 4 5; do
+            build/core-tests exclusiveTcpBinding tcpAddressFamilies tcpGracefulRestart -o "evidence/core-$attempt.log,txt" -o "evidence/core-$attempt.xml,junitxml"
+            code=$?
+            echo "$attempt $code" >> evidence/core-exit-codes.txt
+            if test "$code" -ne 0; then status=1; fi
+          done
+          exit "$status"
+      - name: Original parallel exit with native stack collection
+        if: ${{ !cancelled() && steps.compile.outcome == 'success' }}
+        run: python scripts/ci_macos_parallel_exit.py build/file-exchange-tests --output evidence/parallel-exit --attempts 10
+      - name: Preserve complete original regression evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-listener-regression-${{ matrix.os }}
+          path: |
+            evidence/**
+            build/Testing/Temporary/**
+            build/Testing/QtTest/**
