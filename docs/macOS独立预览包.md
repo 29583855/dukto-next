@@ -1,17 +1,15 @@
 # macOS独立开发预览包
 
-更新日期：2026-11-06。当前可下载包源码为`dec40621cce2d223e46b343e0d3d345a67b80523`，使用C++14/Qt5。Apple Silicon和Intel分别包含GUI及可独立运行的CLI，Qt5/OpenSSL运行依赖已部署。
-
-同源码完整回归已发现双Mac监听冲突测试失败及Intel并行处置退出超时；以下包已通过限定的五项迁移业务，完整回归尚未通过，目前只供开发验证。
+更新日期：2026-11-07。当前可下载包源码为`88f33b2c83f2950307c362fb64c693f7e9e5929d`（R96），采用C++14、Qt5和CMake。Apple Silicon与Intel均包含GUI和可独立运行的CLI；Qt5/OpenSSL运行依赖已随包部署。
 
 ## 下载与校验
 
-[R94双架构打包与迁移工作流](https://github.com/29583855/dukto-next/actions/runs/42235503939)已终态success。按芯片选择附件；GitHub附件下载可能需要登录。ZIP内含tar.gz、校验值和原报告。
+[R96双架构原生打包与迁移工作流](https://github.com/29583855/dukto-next/actions/runs/42253077233)终态success，全部产物已按精确Git树和原报告核验。附件下载可能需要登录GitHub；ZIP包含tar.gz、校验文件及运行报告。
 
 | 架构 | GitHub附件 | 内部tar.gz的SHA-256 |
 | --- | --- | --- |
-| Apple Silicon / arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42235503939/artifacts/13512437084) | `5d27bb3a5e8a451b0ef86b9936d8be11e64314e46f7678663dc66f21f485ac8c` |
-| Intel / x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42235503939/artifacts/13512497736) | `da732ef665ce58724d3631796d47a1748f3169abadeea8520da496a1ce177337` |
+| Apple Silicon / arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42253077233/artifacts/13522446070) | `21b7c187ecdb49734240f668e0e6f7c21660929a92ea73059d1125c40962245a` |
+| Intel / x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42253077233/artifacts/13523845555) | `749abede37be1ae1cb87acaf9289c4eef39e7f251887fed44b0c86b9e1fb9590` |
 
 先解压ZIP。Apple Silicon示例（Intel将arm64替换为x86_64）：
 
@@ -23,23 +21,23 @@ open "Dukto Next.app"
 ./dukto-cli --help
 ```
 
-使用tar解包可保留框架链接和执行权限。移动时保留整个目录，CLI启动器与.app保持相邻；应用内独立CLI为Dukto Next.app/Contents/MacOS/dukto-cli，无需GUI运行。
+使用tar解包保留框架链接和执行权限。移动时保留整个目录，CLI启动器与.app相邻；应用内CLI位于`Dukto Next.app/Contents/MacOS/dukto-cli`，独立运行不要求GUI启动。
 
 ## 已验证范围
 
-GUI保留Dukto设备/最近/关于布局，底部“服务器 · 上传 / 下载”进入服务器页。客户机主动连接服务器，执行配对、授权目录浏览、上传和下载；服务器无需主动连接客户机IP。GUI/CLI共用核心，支持1/2/4/8/16通道及暂停、取消和恢复。
+GUI保留Dukto设备/最近/关于布局，底部“服务器 · 上传 / 下载”进入服务器页。两包分别在原生Mac运行器的中文空格目录和系统PATH下验证：独立CLI、16通道双向传输、1/4/16通道覆盖、覆盖恢复和4→8通道恢复，每包五份原业务报告逐摘要一致。
 
-两包均在原生Mac runner的中文空格目录、仅系统PATH下实际迁移。arm64的1547份、Intel的1705份载荷及各71个框架链接全部核验；GUI/CLI的Mach-O架构、执行权限、依赖来源及adhoc签名通过。两包各317份应用源码与精确Git树全集逐字节一致。每包五份原业务报告按父摘要核对：独立CLI、16通道双向、1/4/16覆盖、覆盖恢复和4→8恢复。
+arm64有1547份载荷，Intel有1705份；各71个框架链接、Mach-O架构、执行权限、依赖来源及adhoc签名均已核验。每包内附329份应用源码，全集逐字节匹配精确提交。两架构启动页/服务器页共四张原生截图已查看，中文和主要控件正常。Cocoa主窗口导航及150%/200% offscreen紧凑布局通过；完整原生GUI操作、原生文件选择器和Retina仍各自验收。
 
-两架构的原生启动页和服务器页共四张截图已实际查看，中文与主要控件正常。生产QML/实际Controller夹具验证服务器入口、页签、返回重开和紧凑尺寸；150%/200%缩放为独立offscreen用例。完整部署GUI操作及原生文件选择器仍分别验收。
+[同提交焦点回归](https://github.com/29583855/dukto-next/actions/runs/42251051894)各23核心、五轮监听/双栈/优雅重启和各十轮原并行退出通过。每次核心明确记录一条Darwin预期失败：系统允许后来外部Qt通配/具体地址端口共享。本软件主动启动时检查并拒绝已有冲突，不声称内核独占或防止外部程序后来共享端口。
 
-本包新增接收文本分页、完整复制/历史和有界接收文本所有权；最大8MiB正文保留完整内容。Windows独占监听适配器只在Windows生效。R94完整原生协议、独立Ubuntu和全部资源预算按当前索引单独收验，不能用五项包内业务代替全套。旧R93 Intel覆盖恢复失败原件保留，其根因未证明。
+四平台完整CI的ARM任务因GitHub容量不足未取得运行器，尚待整轮结束后单独补跑；其他完整协议按原件独立收验。旧R95独立Ubuntu完整回归22/23，16通道退出超时仍未证明根因；三次独立复查通过不能覆盖原失败。包内五业务通过不等于完整产品稳定性或长期验收完成。
 
-本机持久归档：dist/macos-preview-20261106-r94-text-view/BUILD-RECEIPT.json。[当前核验索引](current-validation.json)保存精确提交、运行及摘要；[双包原件回执](validation/2026-11-06/text-view-r94-macos-package-terminal/receipt.json)可独立复查。
+本机归档：`dist/macos-preview-20261107-r96-boundary/BUILD-RECEIPT.json`。[当前索引](current-validation.json)和[双包原件回执](validation/2026-11-07/boundary-r96-macos-package-terminal/receipt.json)记录精确提交、附件及摘要。
 
 ## 交付边界
 
-当前为adhoc签名的开发预览，Developer ID签名、Apple公证、干净Mac/Gatekeeper、最低系统、完整依赖源码独立重建及整体验收尚未完成。releaseQualified=false、deliveryComplete=false。
+当前是adhoc签名开发预览。Developer ID签名、Apple公证、干净Mac/Gatekeeper、最低系统、依赖对应源码独立重建、物理网络/3×3和当前各平台长期资源验收尚未完成。releaseQualified=false，deliveryComplete=false。
 
 ## 历史版本记录
 
