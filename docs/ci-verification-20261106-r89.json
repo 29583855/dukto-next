@@ -1,0 +1,460 @@
+{
+  "date": "2026-11-06",
+  "observedUtc": "2026-11-06T10:50:39.537769+00:00",
+  "planVersion": "v0.88",
+  "productionCommit": "cd2f6fa83c96f966ffa19a56f1e7f75d86df2085",
+  "testCommit": "cd2f6fa83c96f966ffa19a56f1e7f75d86df2085",
+  "sourceAudit": {
+    "sourceCommit": "cd2f6fa83c96f966ffa19a56f1e7f75d86df2085",
+    "buildInputsMatchExactGitCommit": 199,
+    "frozenInputsMatchExactGitCommit": true,
+    "changedFilesEncodingBomNewlinePreserved": true,
+    "clangFormatPassed": true,
+    "cppStandard": 14,
+    "productionFilesScanned": 89,
+    "todoFixmeStubMarkerCount": 0
+  },
+  "windowsEvidence": {
+    "path": "docs/validation/2026-11-06/legacy-buffer-r89f-windows/summary.json",
+    "sha256": "8fad81ab12d006115d82dd8c7cee1fd883705833c65133eba154e457ec2cc337"
+  },
+  "windows": {
+    "toolchains": [
+      {
+        "toolchain": "ucrt",
+        "binary": {
+          "path": "build/windows-ucrt/dukto-cli.exe",
+          "sha256": "a2bd12786aeaf15cfdcd57d86922189a63ecd0ff238caf54a7fa1b05ab9dba7f"
+        },
+        "cases": [
+          {
+            "name": "full-core",
+            "exitCode": 0,
+            "passed": true,
+            "originalReusedFrom": {
+              "path": "docs/validation/2026-11-06/legacy-buffer-r89b-windows/ucrt/ctest.log",
+              "sha256": "0d6dcefb7037459efc1f3bf15cd0786a92eac3f1fc16433f304943286330c78e"
+            },
+            "unchangedBinary": {
+              "path": "build/windows-ucrt/dukto-cli.exe",
+              "sha256": "a2bd12786aeaf15cfdcd57d86922189a63ecd0ff238caf54a7fa1b05ab9dba7f"
+            }
+          },
+          {
+            "name": "legacy",
+            "script": {
+              "path": "tests/legacy_integration.py",
+              "sha256": "5bdb91368ec90e9c967062a14700fd66a72552e23e3e1353416c3f09a87c01c2"
+            },
+            "exitCode": 0,
+            "seconds": 1.219,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/legacy-buffer-r89d-windows/ucrt/legacy.json",
+              "sha256": "378bfd03c3b4fb906a3b0277f2f99ea4c4d86c3b7800b49d5620a68e51bf20d0"
+            }
+          },
+          {
+            "name": "legacy-timeout",
+            "script": {
+              "path": "tests/legacy_timeout_integration.py",
+              "sha256": "203345719c62625bf8d83020f87d0a1b6afea56481f76ff7cd6e41841d9e04f8"
+            },
+            "exitCode": 0,
+            "seconds": 22.891,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/legacy-buffer-r89d-windows/ucrt/legacy-timeout.json",
+              "sha256": "0ca67080efccf768f0bf650d998c02e79745de4174222c26e00e30ddb9645a87"
+            }
+          },
+          {
+            "name": "cli",
+            "script": {
+              "path": "tests/cli_contracts.py",
+              "sha256": "1021c069abdd4644b780840d35728dd94e4939cdda6098090386b8c8f4b87cde"
+            },
+            "exitCode": 0,
+            "seconds": 3.093,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/legacy-buffer-r89d-windows/ucrt/cli.json",
+              "sha256": "e84d9024b3cd20db3f9d60fa6a06181160cd4ae30e3a21f30916cd4cf6426020"
+            }
+          },
+          {
+            "name": "service",
+            "script": {
+              "path": "tests/service_integration.py",
+              "sha256": "09b20992c2f3bc9aa527e8bab55e62ebef97012ac3c54918a8f18570e2f1bdc7"
+            },
+            "exitCode": 0,
+            "seconds": 1.735,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/legacy-buffer-r89d-windows/ucrt/service.json",
+              "sha256": "704cd08e7c2e33398096cbb32a755b5dac5ab66f1f1077f9a3f28258ae28da83"
+            }
+          },
+          {
+            "name": "task-admission-upload",
+            "script": {
+              "path": "tests/task_admission_integration.py",
+              "sha256": "cdbbd888e111273fffdd9528a69bf4067a768d9d9eaf486f57799247bc425b0b"
+            },
+            "exitCode": 0,
+            "seconds": 47.937,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/legacy-buffer-r89d-windows/ucrt/task-admission-upload.json",
+              "sha256": "6134a8fd50e465a0c5844ebe73c49b1401c28e376214b6cb41c3e3795f1583f4"
+            }
+          },
+          {
+            "name": "task-admission-download",
+            "script": {
+              "path": "tests/task_admission_integration.py",
+              "sha256": "cdbbd888e111273fffdd9528a69bf4067a768d9d9eaf486f57799247bc425b0b"
+            },
+            "exitCode": 0,
+            "seconds": 45.25,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/legacy-buffer-r89d-windows/ucrt/task-admission-download.json",
+              "sha256": "b9b483953d0a8115f276b79022a0711760566cf804abe5ec6046ee353dcc71dc"
+            }
+          },
+          {
+            "name": "task-admission-mixed",
+            "script": {
+              "path": "tests/task_admission_integration.py",
+              "sha256": "cdbbd888e111273fffdd9528a69bf4067a768d9d9eaf486f57799247bc425b0b"
+            },
+            "exitCode": 0,
+            "seconds": 47.547,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/legacy-buffer-r89d-windows/ucrt/task-admission-mixed.json",
+              "sha256": "270e88b5ad08b1f31f48ce9c897fdeec9ff9a26c5f377b98c153d620a2ff2b12"
+            }
+          },
+          {
+            "name": "parallel-isolation",
+            "exitCode": 0,
+            "passed": true,
+            "script": {
+              "path": "tests/parallel_isolation_integration.py",
+              "sha256": "69b635ad132eb96f63d9ef86e4a7305c8c5dd1700490fe036ec59b10000ad4a8"
+            },
+            "report": {
+              "path": "docs/validation/2026-11-06/legacy-buffer-r89e-windows/ucrt/parallel-isolation.json",
+              "sha256": "9a489491e7ead9b5941fa49440f6bfb210985c53bdad4e92c86e63b92ad683ad"
+            },
+            "retryEvidence": {
+              "binary": {
+                "path": "docs/validation/2026-11-06/legacy-buffer-r89e-windows/ucrt/dukto-cli.exe",
+                "sha256": "a2bd12786aeaf15cfdcd57d86922189a63ecd0ff238caf54a7fa1b05ab9dba7f"
+              },
+              "script": {
+                "path": "tests/parallel_isolation_integration.py",
+                "sha256": "69b635ad132eb96f63d9ef86e4a7305c8c5dd1700490fe036ec59b10000ad4a8"
+              },
+              "exitCode": 0,
+              "seconds": 31.907,
+              "passed": true,
+              "report": {
+                "path": "docs/validation/2026-11-06/legacy-buffer-r89e-windows/ucrt/parallel-isolation.json",
+                "sha256": "9a489491e7ead9b5941fa49440f6bfb210985c53bdad4e92c86e63b92ad683ad"
+              },
+              "failedAttemptRetained": "docs/validation/2026-11-06/legacy-buffer-r89d-windows/ucrt/parallel-isolation.log"
+            },
+            "firstFailure": {
+              "log": "docs/validation/2026-11-06/legacy-buffer-r89d-windows/ucrt/parallel-isolation.log",
+              "assertion": "post-task process thread count exceeded initial sample by two",
+              "retained": true
+            }
+          },
+          {
+            "name": "transfer-faults",
+            "script": {
+              "path": "tests/transfer_faults_integration.py",
+              "sha256": "eae6d2fc846dc4c109cb6a9f7522b7ab37991fbf59551bdc831dd9414b839e83"
+            },
+            "exitCode": 0,
+            "seconds": 18.578,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/legacy-buffer-r89d-windows/ucrt/transfer-faults.json",
+              "sha256": "4ddc2aa12d535a96617b28e61d1e22b762dc6b93c10c9f26ead42f5907eca034"
+            }
+          },
+          {
+            "name": "conflict-skip",
+            "script": {
+              "path": "tests/conflict_skip_integration.py",
+              "sha256": "c3117507c5ab60e92e55edf1b69bacfb47ab3552ea90cd49934785ad7d252ff0"
+            },
+            "exitCode": 0,
+            "seconds": 54.828,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/legacy-buffer-r89d-windows/ucrt/conflict-skip.json",
+              "sha256": "95da44d5144bf3288de7f2f24155ba46536145ec083050217fd25724f90c93ca"
+            }
+          }
+        ],
+        "passed": true,
+        "parallelIsolationFirstFailure": {
+          "name": "parallel-isolation",
+          "script": {
+            "path": "tests/parallel_isolation_integration.py",
+            "sha256": "69b635ad132eb96f63d9ef86e4a7305c8c5dd1700490fe036ec59b10000ad4a8"
+          },
+          "exitCode": 1,
+          "seconds": 32.0,
+          "passed": false,
+          "report": null
+        }
+      },
+      {
+        "toolchain": "msvc",
+        "binary": {
+          "path": "build/windows/Release/dukto-cli.exe",
+          "sha256": "80a375f2bf8ce169fed9518b03dda8ac354cb5191f62bf50b0234edee17839c4"
+        },
+        "cases": [
+          {
+            "name": "full-core",
+            "exitCode": 0,
+            "passed": true,
+            "originalReusedFrom": {
+              "path": "docs/validation/2026-11-06/legacy-buffer-r89b-windows/msvc/ctest.log",
+              "sha256": "3a6ece7f3c1ba4389f38b876fdafedce08c8d647a97d970895cf84474475c0f0"
+            },
+            "unchangedBinary": {
+              "path": "build/windows/Release/dukto-cli.exe",
+              "sha256": "80a375f2bf8ce169fed9518b03dda8ac354cb5191f62bf50b0234edee17839c4"
+            }
+          },
+          {
+            "name": "legacy",
+            "script": {
+              "path": "tests/legacy_integration.py",
+              "sha256": "5bdb91368ec90e9c967062a14700fd66a72552e23e3e1353416c3f09a87c01c2"
+            },
+            "exitCode": 0,
+            "seconds": 1.063,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/legacy-buffer-r89d-windows/msvc/legacy.json",
+              "sha256": "5a4497c0aa9d6cc42d0ad724853129c29e5be6fbf887d302584639bd735e9dd9"
+            }
+          },
+          {
+            "name": "legacy-timeout",
+            "script": {
+              "path": "tests/legacy_timeout_integration.py",
+              "sha256": "203345719c62625bf8d83020f87d0a1b6afea56481f76ff7cd6e41841d9e04f8"
+            },
+            "exitCode": 0,
+            "seconds": 22.89,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/legacy-buffer-r89d-windows/msvc/legacy-timeout.json",
+              "sha256": "84287d71ff85d38cea35c46759a852dda027995f395c0edd72645eaf51482f43"
+            }
+          },
+          {
+            "name": "cli",
+            "script": {
+              "path": "tests/cli_contracts.py",
+              "sha256": "1021c069abdd4644b780840d35728dd94e4939cdda6098090386b8c8f4b87cde"
+            },
+            "exitCode": 0,
+            "seconds": 3.032,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/legacy-buffer-r89d-windows/msvc/cli.json",
+              "sha256": "e84d9024b3cd20db3f9d60fa6a06181160cd4ae30e3a21f30916cd4cf6426020"
+            }
+          },
+          {
+            "name": "service",
+            "script": {
+              "path": "tests/service_integration.py",
+              "sha256": "09b20992c2f3bc9aa527e8bab55e62ebef97012ac3c54918a8f18570e2f1bdc7"
+            },
+            "exitCode": 0,
+            "seconds": 2.015,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/legacy-buffer-r89d-windows/msvc/service.json",
+              "sha256": "704cd08e7c2e33398096cbb32a755b5dac5ab66f1f1077f9a3f28258ae28da83"
+            }
+          },
+          {
+            "name": "task-admission-upload",
+            "script": {
+              "path": "tests/task_admission_integration.py",
+              "sha256": "cdbbd888e111273fffdd9528a69bf4067a768d9d9eaf486f57799247bc425b0b"
+            },
+            "exitCode": 0,
+            "seconds": 49.75,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/legacy-buffer-r89d-windows/msvc/task-admission-upload.json",
+              "sha256": "82a9e15eb1c61d43fe4bc2646ca95a3eebbc4f06aefc2bd6256f037d02e7265d"
+            }
+          },
+          {
+            "name": "task-admission-download",
+            "script": {
+              "path": "tests/task_admission_integration.py",
+              "sha256": "cdbbd888e111273fffdd9528a69bf4067a768d9d9eaf486f57799247bc425b0b"
+            },
+            "exitCode": 0,
+            "seconds": 46.703,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/legacy-buffer-r89d-windows/msvc/task-admission-download.json",
+              "sha256": "6cafd5d608b553263122688b28aef575dec64f82d0ac746679e526c6e3eab64a"
+            }
+          },
+          {
+            "name": "task-admission-mixed",
+            "script": {
+              "path": "tests/task_admission_integration.py",
+              "sha256": "cdbbd888e111273fffdd9528a69bf4067a768d9d9eaf486f57799247bc425b0b"
+            },
+            "exitCode": 0,
+            "seconds": 48.75,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/legacy-buffer-r89d-windows/msvc/task-admission-mixed.json",
+              "sha256": "02f0f7bc071242851d5153c9f9ca666e4953b1fa293fdbf48a5d76bb3a3e92cf"
+            }
+          },
+          {
+            "name": "parallel-isolation",
+            "script": {
+              "path": "tests/parallel_isolation_integration.py",
+              "sha256": "69b635ad132eb96f63d9ef86e4a7305c8c5dd1700490fe036ec59b10000ad4a8"
+            },
+            "exitCode": 0,
+            "seconds": 34.125,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/legacy-buffer-r89d-windows/msvc/parallel-isolation.json",
+              "sha256": "620b6ae6412e539f079a963c871ff999f18f49a57f05a98e626b3f46f05f8256"
+            }
+          },
+          {
+            "name": "transfer-faults",
+            "script": {
+              "path": "tests/transfer_faults_integration.py",
+              "sha256": "eae6d2fc846dc4c109cb6a9f7522b7ab37991fbf59551bdc831dd9414b839e83"
+            },
+            "exitCode": 0,
+            "seconds": 25.094,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/legacy-buffer-r89d-windows/msvc/transfer-faults.json",
+              "sha256": "f9130037c447f7380e6c21e9292d048ef08700580da57fb4bff1da63c9892155"
+            }
+          },
+          {
+            "name": "conflict-skip",
+            "script": {
+              "path": "tests/conflict_skip_integration.py",
+              "sha256": "c3117507c5ab60e92e55edf1b69bacfb47ab3552ea90cd49934785ad7d252ff0"
+            },
+            "exitCode": 0,
+            "seconds": 55.766,
+            "passed": true,
+            "report": {
+              "path": "docs/validation/2026-11-06/legacy-buffer-r89d-windows/msvc/conflict-skip.json",
+              "sha256": "c1724fbfb4268d12944164a0804f2a4e3989fe842466dcab45296512d07f7275"
+            }
+          }
+        ],
+        "passed": true
+      }
+    ],
+    "coreTargetsEach": 23,
+    "protocolReportsEach": 10,
+    "newNativeCreditRowsEach": 5,
+    "receiverSaturationLoopsPerRow": 12,
+    "allFinalOriginalReportsVerified": true
+  },
+  "firstProductFailure": {
+    "evidence": {
+      "path": "docs/validation/2026-11-06/legacy-buffer-r89d-windows/summary.json",
+      "sha256": "782cad242d42120c4a8b97def93eb2949d208cb5d37a68a3240a57a342d5f360"
+    },
+    "toolchain": "ucrt",
+    "case": "parallel-isolation",
+    "retest": {
+      "binary": {
+        "path": "docs/validation/2026-11-06/legacy-buffer-r89e-windows/ucrt/dukto-cli.exe",
+        "sha256": "a2bd12786aeaf15cfdcd57d86922189a63ecd0ff238caf54a7fa1b05ab9dba7f"
+      },
+      "script": {
+        "path": "tests/parallel_isolation_integration.py",
+        "sha256": "69b635ad132eb96f63d9ef86e4a7305c8c5dd1700490fe036ec59b10000ad4a8"
+      },
+      "exitCode": 0,
+      "seconds": 31.907,
+      "passed": true,
+      "report": {
+        "path": "docs/validation/2026-11-06/legacy-buffer-r89e-windows/ucrt/parallel-isolation.json",
+        "sha256": "9a489491e7ead9b5941fa49440f6bfb210985c53bdad4e92c86e63b92ad683ad"
+      },
+      "failedAttemptRetained": "docs/validation/2026-11-06/legacy-buffer-r89d-windows/ucrt/parallel-isolation.log"
+    },
+    "rootCauseProven": false,
+    "failureRetained": true,
+    "expectationsWeakened": false
+  },
+  "runs": {
+    "macosPackage": {
+      "id": 42205533754,
+      "head_sha": "cd2f6fa83c96f966ffa19a56f1e7f75d86df2085",
+      "status": "queued",
+      "conclusion": null,
+      "html_url": "https://github.com/29583855/dukto-next/actions/runs/42205533754"
+    },
+    "musl": {
+      "id": 42205529837,
+      "head_sha": "cd2f6fa83c96f966ffa19a56f1e7f75d86df2085",
+      "status": "in_progress",
+      "conclusion": null,
+      "html_url": "https://github.com/29583855/dukto-next/actions/runs/42205529837"
+    },
+    "native": {
+      "id": 42205483109,
+      "head_sha": "cd2f6fa83c96f966ffa19a56f1e7f75d86df2085",
+      "status": "in_progress",
+      "conclusion": null,
+      "html_url": "https://github.com/29583855/dukto-next/actions/runs/42205483109"
+    }
+  },
+  "currentMacPackageSourceCommit": "463521a9301016f36c0d80f8e6704faedce403a2",
+  "currentMacPackageEvidence": {
+    "path": "docs/validation/2026-11-06/private-read-r88-macos-package-terminal/receipt.json",
+    "sha256": "e2a8a031a382cdaca7da30f504664ae3dbea98df11942467988faa4571b946df"
+  },
+  "newMacPackagePending": true,
+  "verifiedR87MuslEvidence": {
+    "path": "docs/validation/2026-11-06/public-skip-r87-musl-terminal/receipt.json",
+    "sha256": "9bd8f92eb1d99f50db4debcc8ce28eece9fecf93f94d03cbf0e080b09d6080d6"
+  },
+  "allR6BuffersAccounted": false,
+  "globalTaskAndHandleBudgetComplete": false,
+  "globalHistoryGcComplete": false,
+  "releaseQualified": false,
+  "deliveryComplete": false,
+  "verifiedR88MuslEvidence": {
+    "path": "docs/validation/2026-11-06/private-read-r88-musl-terminal/receipt.json",
+    "sha256": "400e2d41d6d489219bcb4bae6b33d84d5593e86b3a3b8f27e0db63ba4ddd1a79"
+  }
+}

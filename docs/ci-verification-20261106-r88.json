@@ -1,6 +1,6 @@
 {
   "date": "2026-11-06",
-  "observedUtc": "2026-11-06T10:17:41.315497+00:00",
+  "observedUtc": "2026-11-06T10:47:47.092146+00:00",
   "planVersion": "v0.87",
   "productionCommit": "463521a9301016f36c0d80f8e6704faedce403a2",
   "testCommit": "463521a9301016f36c0d80f8e6704faedce403a2",
@@ -413,15 +413,15 @@
     "macosPackage": {
       "id": 42201525721,
       "head_sha": "463521a9301016f36c0d80f8e6704faedce403a2",
-      "status": "queued",
-      "conclusion": null,
+      "status": "completed",
+      "conclusion": "success",
       "html_url": "https://github.com/29583855/dukto-next/actions/runs/42201525721"
     },
     "musl": {
       "id": 42201521473,
       "head_sha": "463521a9301016f36c0d80f8e6704faedce403a2",
-      "status": "in_progress",
-      "conclusion": null,
+      "status": "completed",
+      "conclusion": "success",
       "html_url": "https://github.com/29583855/dukto-next/actions/runs/42201521473"
     },
     "native": {
@@ -432,12 +432,12 @@
       "html_url": "https://github.com/29583855/dukto-next/actions/runs/42201439317"
     }
   },
-  "currentMacPackageSourceCommit": "409a73b168f1219844cbefed509c8e227b7c281e",
+  "currentMacPackageSourceCommit": "463521a9301016f36c0d80f8e6704faedce403a2",
   "currentMacPackageEvidence": {
-    "path": "docs/validation/2026-11-06/public-skip-r87-macos-package-terminal/receipt.json",
-    "sha256": "3dc8dbb38d2f124d50dbd70a6f43429e4056dcfffee5f838d95c2a9d8eaf1a2c"
+    "path": "docs/validation/2026-11-06/private-read-r88-macos-package-terminal/receipt.json",
+    "sha256": "e2a8a031a382cdaca7da30f504664ae3dbea98df11942467988faa4571b946df"
   },
-  "newMacPackagePending": true,
+  "newMacPackagePending": false,
   "previousR86NativeEvidence": {
     "path": "docs/validation/2026-11-06/upload-manifest-r86-native-terminal/receipt.json",
     "sha256": "b9f0220f5f80cb7dc80fefde3ee04ffe02c1b5f57bb0ea8611b851acc15cdd30"
@@ -445,5 +445,140 @@
   "publicSkipEnabled": true,
   "globalHistoryGcComplete": false,
   "releaseQualified": false,
-  "deliveryComplete": false
+  "deliveryComplete": false,
+  "macosPackages": [
+    {
+      "applicationSourceFiles": 296,
+      "allSourceBlobsMatchExactGitCommit": true,
+      "verifiedPayloadFiles": 1547,
+      "verifiedLinks": 71,
+      "guiCli": [
+        {
+          "path": "Dukto Next.app/Contents/MacOS/dukto-cli",
+          "sha256": "a2cad00e95293437fbc2becb8c456b8c3a1efee534f75dd1429cbc28502a03c6",
+          "executable": true
+        },
+        {
+          "path": "Dukto Next.app/Contents/MacOS/dukto-gui",
+          "sha256": "fc3a09e7efe4ad3dac182dc9a170a9bff37e32c3574fc104a72bef7fbf538581",
+          "executable": true
+        }
+      ],
+      "signature": "adhoc",
+      "developerIdSigned": false,
+      "notarized": false,
+      "runtimeReports": [
+        {
+          "path": "build/package-runtime-cli.json",
+          "sha256": "ca43475b92b14749f2ccef1258b460aa5895869f0e2954bd34f73cc13100bdc4",
+          "passed": true
+        },
+        {
+          "path": "build/package-runtime-transfer16.json",
+          "sha256": "837192e5f005cf3c89055986ef227abdf192996214618603edabdfbcf89b23a8",
+          "passed": true
+        },
+        {
+          "path": "build/package-runtime-overwrite.json",
+          "sha256": "4df7ced18ac538230751d537fe3ac5de0df0317b1d0178b609ba82b0b4cd49fc",
+          "passed": true
+        },
+        {
+          "path": "build/package-runtime-overwrite-recovery.json",
+          "sha256": "6971e380fd6186533225f1c744347b16f57a3691df2ff8dc6790aa7422a720f0",
+          "passed": true
+        },
+        {
+          "path": "build/package-runtime-recovery4to8.json",
+          "sha256": "a81bc3edc3a3908ea2b5d76d2b2df381cbc709352ab524757b0f931ddc0023a1",
+          "passed": true
+        }
+      ],
+      "runtimeMigrationQualified": true,
+      "mainWindowNavigationPassed": true,
+      "systemPathOnly": true,
+      "screenshot": "docs/validation/2026-11-06/private-read-r88-macos-package-terminal/macos-preview-ARM64/build/package-runtime.png",
+      "navigationScreenshot": "docs/validation/2026-11-06/private-read-r88-macos-package-terminal/macos-preview-ARM64/build/main-window-navigation/native/Testing/QtTest/main-server-430x700.png",
+      "architecture": "arm64",
+      "archive": "DuktoNext-macos-arm64-preview.tar.gz",
+      "sha256": "29697e9e1069ded3c6b0a5e9ed5f40cfe5522bf785e712c9788bb8d16946fb26",
+      "sourceCommit": "463521a9301016f36c0d80f8e6704faedce403a2",
+      "artifactId": 13495321085,
+      "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42201525721/artifacts/13495321085",
+      "zipSha256": "9bb98e280a8aeb46f56fc0d9fd0533c1117a2ba9431cc4082910cf505d5ca396",
+      "localArchive": "dist/macos-preview-20261106-r88-public-skip/macos-preview-ARM64/package-output/DuktoNext-macos-arm64-preview.tar.gz"
+    },
+    {
+      "applicationSourceFiles": 296,
+      "allSourceBlobsMatchExactGitCommit": true,
+      "verifiedPayloadFiles": 1705,
+      "verifiedLinks": 71,
+      "guiCli": [
+        {
+          "path": "Dukto Next.app/Contents/MacOS/dukto-cli",
+          "sha256": "bf92766ca183d2f478a83fafc66f5aca3725baba2cae379b283fda0981e6d6fe",
+          "executable": true
+        },
+        {
+          "path": "Dukto Next.app/Contents/MacOS/dukto-gui",
+          "sha256": "4d27c5bf808b137234adee36fa38ab48f3026d36b95e380da3556795d3f2cf0a",
+          "executable": true
+        }
+      ],
+      "signature": "adhoc",
+      "developerIdSigned": false,
+      "notarized": false,
+      "runtimeReports": [
+        {
+          "path": "build/package-runtime-cli.json",
+          "sha256": "53cf6edb4d26f8438a5f116d40c3f75d5879acba38ac53d2560cc35e24e8649b",
+          "passed": true
+        },
+        {
+          "path": "build/package-runtime-transfer16.json",
+          "sha256": "837192e5f005cf3c89055986ef227abdf192996214618603edabdfbcf89b23a8",
+          "passed": true
+        },
+        {
+          "path": "build/package-runtime-overwrite.json",
+          "sha256": "891e7f653fafb2a45abd253c87368ee4f82c504322ab5b38fd30bbf7ff176070",
+          "passed": true
+        },
+        {
+          "path": "build/package-runtime-overwrite-recovery.json",
+          "sha256": "09173e744a3c2f44494b669a226f6445c233ed71e723b0f002e344723780ff34",
+          "passed": true
+        },
+        {
+          "path": "build/package-runtime-recovery4to8.json",
+          "sha256": "27896638afb06508fed1768d7c904afbb66bf34baec70b9a207bdc408c1434bd",
+          "passed": true
+        }
+      ],
+      "runtimeMigrationQualified": true,
+      "mainWindowNavigationPassed": true,
+      "systemPathOnly": true,
+      "screenshot": "docs/validation/2026-11-06/private-read-r88-macos-package-terminal/macos-preview-X64/build/package-runtime.png",
+      "navigationScreenshot": "docs/validation/2026-11-06/private-read-r88-macos-package-terminal/macos-preview-X64/build/main-window-navigation/native/Testing/QtTest/main-server-430x700.png",
+      "architecture": "x86_64",
+      "archive": "DuktoNext-macos-x86_64-preview.tar.gz",
+      "sha256": "639a6d2b0c9af0a394d8ef5825d417363d80f57ef51738811c468dd9d3d4df7c",
+      "sourceCommit": "463521a9301016f36c0d80f8e6704faedce403a2",
+      "artifactId": 13494779801,
+      "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42201525721/artifacts/13494779801",
+      "zipSha256": "df04aadfffa6ebcb7d8e6ba2005b8375083ce7218c4e7ee55f9524c1867f1036",
+      "localArchive": "dist/macos-preview-20261106-r88-public-skip/macos-preview-X64/package-output/DuktoNext-macos-x86_64-preview.tar.gz"
+    }
+  ],
+  "macosEvidence": {
+    "path": "docs/validation/2026-11-06/private-read-r88-macos-package-terminal/receipt.json",
+    "sha256": "e2a8a031a382cdaca7da30f504664ae3dbea98df11942467988faa4571b946df"
+  },
+  "macosOriginalPackagesVerified": true,
+  "macosScreenshotsViewed": 4,
+  "muslOriginalEvidence": {
+    "path": "docs/validation/2026-11-06/private-read-r88-musl-terminal/receipt.json",
+    "sha256": "400e2d41d6d489219bcb4bae6b33d84d5593e86b3a3b8f27e0db63ba4ddd1a79"
+  },
+  "muslOriginalReportsVerified": true
 }
