@@ -1,5 +1,5 @@
 {
-  "observedUtc": "2026-11-06T17:03:59.107322+00:00",
+  "observedUtc": "2026-11-06T17:16:33.951541+00:00",
   "productionCommit": "88f33b2c83f2950307c362fb64c693f7e9e5929d",
   "testCommit": "88f33b2c83f2950307c362fb64c693f7e9e5929d",
   "packages": [
@@ -214,7 +214,7 @@
   "releaseQualified": false,
   "deliveryComplete": false,
   "planVersion": "v0.95",
-  "currentSourceStage": "R96 dual native Mac deployed previews verified; full native ARM capacity cancellation, remaining full protocol and old Ubuntu exit timeout remain separate",
+  "currentSourceStage": "R96 dual Mac deployed previews and Alpine 23 core/46 protocols verified; full native ARM capacity retry and Ubuntu exit-state diagnosis pending",
   "nativeMusl": {
     "sourceCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
     "productionCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
@@ -15208,7 +15208,7 @@
   },
   "listenerGuardR95ProductionPending": false,
   "nativeBoundaryR96": {
-    "observedUtc": "2026-11-06T17:03:59.107322+00:00",
+    "observedUtc": "2026-11-06T17:16:33.951541+00:00",
     "planVersion": "v0.95",
     "previousProductionCommit": "5dd243fbad36da36568943513deed95ee124ba2d",
     "productionCommitPending": false,
@@ -16271,7 +16271,20 @@
     "fullNativeArmCapacityEvidence": {
       "path": "docs/validation/2026-11-07/boundary-r96-arm-capacity/original-capacity-cancellation.json",
       "sha256": "d215213cd8385ce5c30e4d667c1119a297d29350de10fa9e46642f47ffdddf82"
-    }
+    },
+    "alpineOriginalReportsVerified": true,
+    "alpineCoreTargets": 23,
+    "alpineProtocolReports": 46,
+    "alpineEvidence": {
+      "path": "docs/validation/2026-11-07/boundary-r96-musl-terminal/receipt.json",
+      "sha256": "49db11d220ea509970b930d2ac75c13929da403f89d9a0669fb5e3a8191b87cd"
+    },
+    "independentUbuntuGroupExitDiagnostic": {
+      "path": "docs/validation/2026-11-07/listener-r95-glibc-group-exit-diagnostic/receipt.json",
+      "sha256": "a16e9176ce6218d0964fca8ec4851d5b6aeb44c502fa1f68c320c816f8c7ac59"
+    },
+    "independentUbuntuGroupExitStillFailed": true,
+    "independentUbuntuExitRootCauseProven": false
   },
   "nativeListenerRegressionR96": {
     "id": 42251051894,
@@ -16581,5 +16594,20 @@
       "zipSha256": "0ff71c27b44eefff069e81b9bf3888d7fed3ea6dd475ef57569b2e6db109a3c2",
       "localArchive": "dist/macos-preview-20261106-r94-text-view/macos-preview-X64/package-output/DuktoNext-macos-x86_64-preview.tar.gz"
     }
-  ]
+  ],
+  "alpineR96": {
+    "id": 42253012733,
+    "head_sha": "88f33b2c83f2950307c362fb64c693f7e9e5929d",
+    "status": "completed",
+    "conclusion": "success",
+    "html_url": "https://github.com/29583855/dukto-next/actions/runs/42253012733",
+    "sourceCommit": "88f33b2c83f2950307c362fb64c693f7e9e5929d",
+    "coreTargets": 23,
+    "protocolReports": 46,
+    "originalEvidenceVerified": true,
+    "evidence": {
+      "path": "docs/validation/2026-11-07/boundary-r96-musl-terminal/receipt.json",
+      "sha256": "49db11d220ea509970b930d2ac75c13929da403f89d9a0669fb5e3a8191b87cd"
+    }
+  }
 }

@@ -1,12 +1,12 @@
 # Dukto 功能复现与跨平台传输项目
 
-更新日期：2026-11-06
+更新日期：2026-11-07
 
 项目以 `Dukto/` 内的 Dukto R6 为功能参考，开发 Windows、macOS、Linux 共用内核的桌面应用和独立命令行程序，增加服务器上传/下载、多线程提速及可靠恢复能力。
 
 当前已建立 C++14 共用核心、Qt Quick 2 桌面端和独立 CLI。Windows 已验证与原版文件/目录/文本双向互传、超过 4 GiB、10 万文件、100 轮接收，以及首次说明/设置/截图/单实例和有界头像模块。完整原版交互、服务器、多线程、恢复和跨平台验收继续按计划推进。原版目录保留用于对照。
 
-公开仓库为[29583855/dukto-next](https://github.com/29583855/dukto-next)。R96精确源码`88f33b2`及[双架构Mac开发预览下载](docs/macOS独立预览包.md)已核验：C++14/Qt5 GUI和独立CLI、Qt5/OpenSSL部署、每包五项迁移业务及全部源码/载荷通过。同提交Mac焦点回归通过，每次有一条明确Darwin端口共享XFAIL；完整协议/ARM容量补跑、旧Ubuntu退出超时和整体验收继续。见[计划](开发计划与进度.md)和[当前核验索引](docs/current-validation.json)。
+公开仓库为[29583855/dukto-next](https://github.com/29583855/dukto-next)。R96精确源码`88f33b2`及[双架构Mac开发预览下载](docs/macOS独立预览包.md)已核验：C++14/Qt5 GUI和独立CLI、Qt5/OpenSSL部署、每包五项迁移业务及全部源码/载荷通过。同提交Mac焦点回归通过，每次有一条明确Darwin端口共享XFAIL；同提交Alpine23核心/46协议已验；完整四原生/ARM容量补跑、旧Ubuntu退出诊断和整体验收继续。见[计划](开发计划与进度.md)和[当前核验索引](docs/current-validation.json)。
 
 新增[b9d9b78上传发送端确认](docs/decisions/0022-上传发送端持久处置与证据恢复.md)已通过本机专项；原CI终态failure保留：四平台临时库glob误判，另Windows并发隔离空闲线程5/基线3的原因未确认。旧运行不再视为进行中，完整历史见主计划v0.64。
 
