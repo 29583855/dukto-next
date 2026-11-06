@@ -1,6 +1,6 @@
 {
   "date": "2026-11-06",
-  "observedUtc": "2026-11-06T02:28:00.897391+00:00",
+  "observedUtc": "2026-11-06T02:38:10.475547+00:00",
   "planVersion": "v0.74",
   "productionCommit": "5e862f5408fd2d4af51d4352e626f8208bd6e74a",
   "testCommit": "5e862f5408fd2d4af51d4352e626f8208bd6e74a",
@@ -70,8 +70,8 @@
       "sourceCommit": "5e862f5408fd2d4af51d4352e626f8208bd6e74a",
       "runId": 42150170860,
       "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42150170860",
-      "status": "in_progress",
-      "workflowConclusion": null
+      "status": "completed",
+      "workflowConclusion": "success"
     }
   },
   "nativeCurrentSourcePending": true,
@@ -97,16 +97,175 @@
     }
   },
   "previousCfProtocolObservation": {
-    "verifiedReports": 80,
+    "verifiedReports": 120,
     "runners": [
       "ubuntu-22.04",
-      "macos-15"
+      "macos-15",
+      "macos-15-intel"
     ],
     "muslVerifiedSeparately": 40,
     "fullProtocolPending": true,
     "evidence": {
-      "path": "docs/validation/2026-11-06/skip-history-r74-protocol-observation-r76.json",
-      "sha256": "03ee7498a73a6ca21a35ec9674a52dafeff19e88d887e81dfee2238a75f89c0c"
+      "path": "docs/validation/2026-11-06/reservation-fix-r76-native-progress-verified.json",
+      "sha256": "4f256dac9381acf9b450188a05bd4212f56be27eff23a9929857277494323383"
+    },
+    "pendingRunners": [
+      "windows-2022"
+    ]
+  },
+  "macOSPackages": {
+    "sourceCommit": "5e862f5408fd2d4af51d4352e626f8208bd6e74a",
+    "run": {
+      "id": 42150170860,
+      "head_sha": "5e862f5408fd2d4af51d4352e626f8208bd6e74a",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/29583855/dukto-next/actions/runs/42150170860"
+    },
+    "packages": [
+      {
+        "applicationSourceFiles": 263,
+        "allSourceBlobsMatchExactGitCommit": true,
+        "verifiedPayloadFiles": 1547,
+        "verifiedLinks": 71,
+        "guiCli": [
+          {
+            "path": "Dukto Next.app/Contents/MacOS/dukto-cli",
+            "sha256": "a46ec8c94860d58579605c851e1aaeb7ae1f1db229dbd3181d28d4e0f5747205",
+            "executable": true
+          },
+          {
+            "path": "Dukto Next.app/Contents/MacOS/dukto-gui",
+            "sha256": "22d7146c9e6449a1bfdc120f5b920dd3c9a713539119e9e1076e01ecb934d3e4",
+            "executable": true
+          }
+        ],
+        "signature": "adhoc",
+        "developerIdSigned": false,
+        "notarized": false,
+        "runtimeReports": [
+          {
+            "path": "build/package-runtime-cli.json",
+            "sha256": "1632e8595b7aae5ca0512cc33ecea93ef912b9e6b0e0246e2f309a0af8eea99b",
+            "passed": true
+          },
+          {
+            "path": "build/package-runtime-transfer16.json",
+            "sha256": "837192e5f005cf3c89055986ef227abdf192996214618603edabdfbcf89b23a8",
+            "passed": true
+          },
+          {
+            "path": "build/package-runtime-overwrite.json",
+            "sha256": "12ab5a23f0bec5555d9f7a8be2d18f9a34306fe5b97a3bbd8e57c18423474679",
+            "passed": true
+          },
+          {
+            "path": "build/package-runtime-overwrite-recovery.json",
+            "sha256": "96cbb36c8debca85fe77898714e49f9377824635e534962056eb5b3398747546",
+            "passed": true
+          },
+          {
+            "path": "build/package-runtime-recovery4to8.json",
+            "sha256": "b186c225c93ac24780a69ce193559d6bf4e6b700bc7ae37a1a7a554380834dc6",
+            "passed": true
+          }
+        ],
+        "runtimeMigrationQualified": true,
+        "mainWindowNavigationPassed": true,
+        "systemPathOnly": true,
+        "screenshot": "docs/validation/2026-11-06/reservation-fix-r76-macos-package-terminal/macos-preview-ARM64/build/package-runtime.png",
+        "navigationScreenshot": "docs/validation/2026-11-06/reservation-fix-r76-macos-package-terminal/macos-preview-ARM64/build/main-window-navigation/native/Testing/QtTest/main-server-430x700.png",
+        "architecture": "arm64",
+        "archive": "DuktoNext-macos-arm64-preview.tar.gz",
+        "sha256": "3d8b5a418264bd909308744fabdd89e2559e4e27e30e4412fd6f2ff7b9c0f85f",
+        "sourceCommit": "5e862f5408fd2d4af51d4352e626f8208bd6e74a",
+        "artifactId": 13472502412,
+        "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42150170860/artifacts/13472502412",
+        "zipSha256": "42e01347dfc93884b18f6321804310d57d31cda7326f4d763b020ee6d431bcbd",
+        "localArchive": "dist/macos-preview-20261106-r76-reservation-fix/macos-preview-ARM64/package-output/DuktoNext-macos-arm64-preview.tar.gz"
+      },
+      {
+        "applicationSourceFiles": 263,
+        "allSourceBlobsMatchExactGitCommit": true,
+        "verifiedPayloadFiles": 1705,
+        "verifiedLinks": 71,
+        "guiCli": [
+          {
+            "path": "Dukto Next.app/Contents/MacOS/dukto-cli",
+            "sha256": "a1abbc443ab24e4c4f319977382934529b02c58723dc062268ded67d00af9635",
+            "executable": true
+          },
+          {
+            "path": "Dukto Next.app/Contents/MacOS/dukto-gui",
+            "sha256": "2a137af4d9b5c013747f5ddd017a334c92dcdc9616fd6d6a293e772bca245ca7",
+            "executable": true
+          }
+        ],
+        "signature": "adhoc",
+        "developerIdSigned": false,
+        "notarized": false,
+        "runtimeReports": [
+          {
+            "path": "build/package-runtime-cli.json",
+            "sha256": "4b1a2a9f0de030bf7025cc9552d643efba987f6603736003534b7be792e5400b",
+            "passed": true
+          },
+          {
+            "path": "build/package-runtime-transfer16.json",
+            "sha256": "837192e5f005cf3c89055986ef227abdf192996214618603edabdfbcf89b23a8",
+            "passed": true
+          },
+          {
+            "path": "build/package-runtime-overwrite.json",
+            "sha256": "e8bc75abef02eb5169e81f816c7bf0113e124c5cba5061ec11a3c8c99ff89781",
+            "passed": true
+          },
+          {
+            "path": "build/package-runtime-overwrite-recovery.json",
+            "sha256": "fd36b86e2c7230739e61ebb10350e3e19393854c0e7b94129a14be70b32e6cc8",
+            "passed": true
+          },
+          {
+            "path": "build/package-runtime-recovery4to8.json",
+            "sha256": "e24b3fa291c93e8852705ad6e4bb8cb4f8476b8fb092087545cda661774efe34",
+            "passed": true
+          }
+        ],
+        "runtimeMigrationQualified": true,
+        "mainWindowNavigationPassed": true,
+        "systemPathOnly": true,
+        "screenshot": "docs/validation/2026-11-06/reservation-fix-r76-macos-package-terminal/macos-preview-X64/build/package-runtime.png",
+        "navigationScreenshot": "docs/validation/2026-11-06/reservation-fix-r76-macos-package-terminal/macos-preview-X64/build/main-window-navigation/native/Testing/QtTest/main-server-430x700.png",
+        "architecture": "x86_64",
+        "archive": "DuktoNext-macos-x86_64-preview.tar.gz",
+        "sha256": "15c85373629d4483008cb7cecc9beae215a35cc36dfe671d5ff03c358d5ff064",
+        "sourceCommit": "5e862f5408fd2d4af51d4352e626f8208bd6e74a",
+        "artifactId": 13471429546,
+        "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42150170860/artifacts/13471429546",
+        "zipSha256": "c39bd918237ae4474359d4e9a485d531311497f43595680954394ebcce5fa0f3",
+        "localArchive": "dist/macos-preview-20261106-r76-reservation-fix/macos-preview-X64/package-output/DuktoNext-macos-x86_64-preview.tar.gz"
+      }
+    ],
+    "bothArchitecturesVerified": true,
+    "screenshotsViewed": 4,
+    "evidence": {
+      "path": "docs/validation/2026-11-06/reservation-fix-r76-macos-package-terminal/receipt.json",
+      "sha256": "133a6b964e1ae66634f716ad8c6c619e0b1cc7b3eb82edc5e53927607440ba7c"
     }
-  }
+  },
+  "nativeProgress": {
+    "fiveNativeCoresPassed": true,
+    "coreTargetsEach": 21,
+    "windowsBaseCasesIncludingLifecycle": 26,
+    "posixBaseCasesIncludingLifecycle": 22,
+    "exchangeCasesEachIncludingLifecycle": 190,
+    "windowsSkipCasesIncludingLifecycle": 50,
+    "posixSkipCasesIncludingLifecycle": 51,
+    "evidence": {
+      "path": "docs/validation/2026-11-06/reservation-fix-r76-native-progress-verified.json",
+      "sha256": "4f256dac9381acf9b450188a05bd4212f56be27eff23a9929857277494323383"
+    }
+  },
+  "macOSPreviewUpdated": true,
+  "windowsLinuxPreviewUpdated": false
 }

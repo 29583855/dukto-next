@@ -1,6 +1,6 @@
 # macOS 构建与验收
 
-更新日期：2026-11-06，计划v0.74。已验下载保持d973da1双架构GUI/独立CLI。最新5e862f5原生构建与双Mac部署执行中，实际原件验完再更新下载。Qt5/OpenSSL由CI安装；完整交互、干净系统和正式分发继续，首次失败记录保留。
+更新日期：2026-11-06，计划v0.74。当前下载为精确5e862f5双架构GUI/独立CLI，[部署42150170860](https://github.com/29583855/dukto-next/actions/runs/42150170860)及两job终态success。各263应用源码、全部载荷/链接/原生架构、各五业务原报告和四截图已核验。Qt5/OpenSSL由CI安装，运行依赖随包提供；完整原生协议、全部交互、干净系统和正式分发继续。
 
 ## 运行环境
 
@@ -352,3 +352,5 @@ r75实际原件补记（2026-11-06）：生产cf37197的Windows、Ubuntu、Apple
 另一个只在本机缓存内的DeletePending夹具假设未证实：持有旧锁观察句柄时，QLockFile解除名字后仍能建立新预约，不满足“必须等待读者关闭”的假设。失败实验归档后已从维护测试撤回，并重建原core-tests及复验并发提交通过；未改生产锁语义。下一步需要在真实原生失败时取得Qt锁错误分类并继续接公开skip。[诊断回执](ci-verification-20261106-r75.json)。
 
 v0.74/r76更新（2026-11-06）：5e862f5已上传，新四runner42150041377与双Mac部署42150170860实际启动。Qt5/OpenSSL仍由CI自行安装；待真实编译/迁移原件验完才替换下载入口。当前入口保留d973da1及其原SHA；Intel首次轮换/包检查点失败根因未确认，不因后续成功消除。[本轮回执](ci-verification-20261106-r76.json)。
+
+r76五原生核心补记（2026-11-06）：5e862f5的Windows、Ubuntu glibc、Alpine musl、Apple Silicon和Intel五套原生核心各21/21通过；Windows基础26/POSIX22、Windows跳过50/POSIX51、每套190文件交换用例原件及Qt消息计数已核验。完整四runner及Alpine协议继续原输入执行。上一cf37197的Ubuntu/双Mac合计120协议原报告及SHA已核验，Alpine另40已验，Windows终态继续收取。五核心通过和双Mac迁移通过均不替代完整协议、长期资源或正式交付。[本轮回执](ci-verification-20261106-r76.json)。

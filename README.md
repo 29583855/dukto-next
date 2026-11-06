@@ -6,7 +6,7 @@
 
 当前已建立 C++14 共用核心、Qt Quick 2 桌面端和独立 CLI。Windows 已验证与原版文件/目录/文本双向互传、超过 4 GiB、10 万文件、100 轮接收，以及首次说明/设置/截图/单实例和有界头像模块。完整原版交互、服务器、多线程、恢复和跨平台验收继续按计划推进。原版目录保留用于对照。
 
-公开仓库为[29583855/dukto-next](https://github.com/29583855/dukto-next)。最新生产[5e862f5](https://github.com/29583855/dukto-next/commit/5e862f5408fd2d4af51d4352e626f8208bd6e74a)为Windows预约创建瞬时权限拒绝增加有界重试。双Windows各21核心、各256轮原八线程压力及六份上传/下载覆盖和恢复协议已验，Windows原生CI再128轮全部通过；新Windows/macOS/Linux原生CI与双Mac部署正在执行。现有[Mac下载入口](docs/macOS独立预览包.md)仍为已验d973da1双架构预览，首次失败原件和未确认根因保留。公开skip上层接线及完整项目继续，见[本轮回执](docs/ci-verification-20261106-r76.json)、[主计划](开发计划与进度.md)和[当前索引](docs/current-validation.json)。
+公开仓库为[29583855/dukto-next](https://github.com/29583855/dukto-next)。最新生产[5e862f5](https://github.com/29583855/dukto-next/commit/5e862f5408fd2d4af51d4352e626f8208bd6e74a)为Windows预约创建瞬时权限拒绝增加有界重试。双Windows各21核心、各256轮原八线程压力及六份上传/下载覆盖和恢复协议已验，Windows原生CI再128轮全部通过；当前Windows/Linux/双Mac及Alpine五原生核心各21项已验，完整协议继续执行。[Mac下载入口](docs/macOS独立预览包.md)已更新为5e862f5双架构预览；各263份应用源码、五份迁移业务报告和四截图已验。首次失败原件和未确认根因保留。公开skip上层接线及完整项目继续，见[本轮回执](docs/ci-verification-20261106-r76.json)、[主计划](开发计划与进度.md)和[当前索引](docs/current-validation.json)。
 
 新增[b9d9b78上传发送端确认](docs/decisions/0022-上传发送端持久处置与证据恢复.md)已通过本机专项；原CI终态failure保留：四平台临时库glob误判，另Windows并发隔离空闲线程5/基线3的原因未确认。旧运行不再视为进行中，完整历史见主计划v0.64。
 
