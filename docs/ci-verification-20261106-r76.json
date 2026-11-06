@@ -1,0 +1,112 @@
+{
+  "date": "2026-11-06",
+  "observedUtc": "2026-11-06T02:28:00.897391+00:00",
+  "planVersion": "v0.74",
+  "productionCommit": "5e862f5408fd2d4af51d4352e626f8208bd6e74a",
+  "testCommit": "5e862f5408fd2d4af51d4352e626f8208bd6e74a",
+  "windows": {
+    "coreTargetsEach": 21,
+    "coreCasesEachIncludingLifecycle": 26,
+    "skipCasesEachIncludingLifecycle": 50,
+    "exchangeCasesEachIncludingLifecycle": 190,
+    "stressRoundsEach": 256,
+    "workersPerRound": 8,
+    "individualCommits": 4096,
+    "protocolReports": 6,
+    "actualAclShortAndPersistentCasesPassed": true,
+    "sourceInputs": 175,
+    "allSourceInputsMatchExactCommit": true,
+    "allOriginalHashesVerified": true,
+    "evidence": {
+      "path": "docs/validation/2026-11-06/reservation-fix-r76-local-verified.json",
+      "sha256": "c931e402c8594bd9c8908c84e68d8e48ca2f9310bf41200164053513c675fe8e"
+    }
+  },
+  "diagnosticBeforeFix": {
+    "roundsEach": 64,
+    "ucrtFailedRounds": 4,
+    "msvcFailedRounds": 1,
+    "qtLockError": 2,
+    "windowsErrorObservedAfterQtReturned": 2,
+    "observedErrorIsOriginalCreateFileError": false,
+    "firstAclFailureCases": 2,
+    "evidence": {
+      "path": "docs/validation/2026-11-06/reservation-errors-r76-windows/summary.json",
+      "sha256": "cd87b772e17c5a13b85895e8fd93f60098c72cd81e1c24f01fb26c604d6563ac"
+    }
+  },
+  "sourceAudit": {
+    "files": 184,
+    "findings": 0,
+    "cxx14AndFormattingPassed": true,
+    "evidence": {
+      "path": "docs/validation/2026-11-06/reservation-fix-r76-source-audit.json",
+      "sha256": "8e8914f9714c59a7253d7bc79be72508023a6109d3551febf99ac12dd22901d1"
+    }
+  },
+  "runs": {
+    "native": {
+      "sourceCommit": "5e862f5408fd2d4af51d4352e626f8208bd6e74a",
+      "runId": 42150041377,
+      "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42150041377",
+      "status": "queued",
+      "workflowConclusion": null
+    },
+    "concurrentCommit": {
+      "sourceCommit": "5e862f5408fd2d4af51d4352e626f8208bd6e74a",
+      "runId": 42150099721,
+      "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42150099721",
+      "status": "completed",
+      "workflowConclusion": "success"
+    },
+    "musl": {
+      "sourceCommit": "5e862f5408fd2d4af51d4352e626f8208bd6e74a",
+      "runId": 42150103498,
+      "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42150103498",
+      "status": "in_progress",
+      "workflowConclusion": null
+    },
+    "macOSPackage": {
+      "sourceCommit": "5e862f5408fd2d4af51d4352e626f8208bd6e74a",
+      "runId": 42150170860,
+      "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42150170860",
+      "status": "in_progress",
+      "workflowConclusion": null
+    }
+  },
+  "nativeCurrentSourcePending": true,
+  "publicSkipEnabled": false,
+  "intelCredentialRotationFirstFailureCauseResolved": false,
+  "intelPackageFirstCheckpointCauseResolved": false,
+  "firstFailuresRetained": true,
+  "existingPreviewPackagesUpdated": false,
+  "currentSource24HourPassed": false,
+  "releaseQualified": false,
+  "deliveryComplete": false,
+  "nativeStress": {
+    "runId": 42150099721,
+    "status": "completed",
+    "workflowConclusion": "success",
+    "rounds": 128,
+    "workersPerRound": 8,
+    "individualCommits": 1024,
+    "allRoundHashesAndSourceVerified": true,
+    "evidence": {
+      "path": "docs/validation/2026-11-06/reservation-fix-r76-native-stress-verified.json",
+      "sha256": "2106c0571ab6afce3907e1a09cbb83c202939bea6ad6e735dec36bab11356418"
+    }
+  },
+  "previousCfProtocolObservation": {
+    "verifiedReports": 80,
+    "runners": [
+      "ubuntu-22.04",
+      "macos-15"
+    ],
+    "muslVerifiedSeparately": 40,
+    "fullProtocolPending": true,
+    "evidence": {
+      "path": "docs/validation/2026-11-06/skip-history-r74-protocol-observation-r76.json",
+      "sha256": "03ee7498a73a6ca21a35ec9674a52dafeff19e88d887e81dfee2238a75f89c0c"
+    }
+  }
+}
