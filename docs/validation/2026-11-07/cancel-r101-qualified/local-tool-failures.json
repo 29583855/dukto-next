@@ -1,0 +1,47 @@
+{
+  "date": "2026-11-07",
+  "failuresRetained": [
+    {
+      "stage": "Wrong Python path",
+      "exitCode": 1,
+      "productMutatedOrRun": false
+    },
+    {
+      "stage": "Initial cancellation test incorrectly demanded nonzero partial-block progress",
+      "evidence": {
+        "path": "docs/validation/2026-11-07/cancel-r101-windows/driver-result.json",
+        "sha256": "9c7f30ad0f13bc7700e23726113de75cd001b6d427e5f8ab9113b8527297f1f8"
+      }
+    },
+    {
+      "stage": "Incorrect product diagnosis; redundant core event draft restored exactly before validation",
+      "evidence": {
+        "path": "docs/validation/2026-11-07/cancel-r101-windows/diagnosis-correction.json",
+        "sha256": "dec788d0380fc9a77d75d7c4920b489c43e8e0598e1ba76dd95c7f378c9bfd3c"
+      }
+    },
+    {
+      "stage": "Local collector expected native Qt XML instead of JUnit after UCRT 23 passed",
+      "evidence": {
+        "path": "docs/validation/2026-11-07/cancel-r101-corrected-windows/collector-failure.json",
+        "sha256": "0d69afdb4ff373326da5c5855793a921d8942845d47c4178dbfac7d77fe10971"
+      }
+    },
+    {
+      "stage": "Verifier initially treated Qt JUnit message counter as failure counter",
+      "evidence": {
+        "path": "docs/validation/2026-11-07/cancel-r101-qualified/initial-verifier-failure.json",
+        "sha256": "97d8a2d70373ef9d49b892019ab5c5eaec76c707dcb664f912db58edf18fbced"
+      }
+    },
+    {
+      "stage": "Native preparation required old CTest summary spelling",
+      "exitCode": 1,
+      "failedBeforeMutation": true,
+      "correction": "Accept both actual complete 23/23 summary formats"
+    }
+  ],
+  "qualificationThresholdReduced": false,
+  "releaseQualified": false,
+  "deliveryComplete": false
+}

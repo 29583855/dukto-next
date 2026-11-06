@@ -436,6 +436,7 @@ Rectangle {
                     }
 
                     Button {
+                        objectName: "legacyCancelButton"
                         text: "取消"
                         flat: true
                         onClicked: controller.cancel()

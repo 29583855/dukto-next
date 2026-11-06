@@ -10,6 +10,7 @@
 #include <QGlyphRun>
 #include <QJsonArray>
 #include <QJsonDocument>
+#include <QMetaMethod>
 #include <QMimeData>
 #include <QQmlContext>
 #include <QQmlEngine>
@@ -71,6 +72,147 @@ class UiTests final : public QObject {
     }
 
   private slots:
+
+    // 日期：2026-11-07；原版中止后下一批崩溃的对照场景，分别覆盖新版实际发送和接收取消。
+    void cancelThenTransferAgainThroughQml_data() {
+        QTest::addColumn<QString>("phase");
+        QTest::newRow("send") << QString("send");
+        QTest::newRow("receive-header") << QString("receive-header");
+        QTest::newRow("receive-partial") << QString("receive-partial");
+    }
+
+    // 日期：2026-11-07；实际点击生产取消按钮，部分数据后结束且释放临时额度，同一控制器随后双向成功。
+    void cancelThenTransferAgainThroughQml() {
+        QFETCH(QString, phase);
+        const bool outgoing = phase == "send";
+        QTemporaryDir temporary;
+        QVERIFY(temporary.isValid());
+        const auto output = temporary.filePath("output");
+        QVERIFY(QDir().mkpath(output));
+        QSettings::setDefaultFormat(QSettings::IniFormat);
+        QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, temporary.path());
+        QSettings settings(QSettings::IniFormat, QSettings::UserScope, "DuktoNext", "Desktop");
+        settings.setValue("output", output);
+        settings.setValue("terms", true);
+        settings.sync();
+        QTcpServer reservation;
+        QVERIFY(reservation.listen(QHostAddress::LocalHost, 0));
+        const auto port = reservation.serverPort();
+        reservation.close();
+        Controller controller(port, nullptr, temporary.filePath("state"));
+        QQuickWidget view;
+        view.setResizeMode(QQuickWidget::SizeRootObjectToView);
+        view.resize(430, 700);
+        view.rootContext()->setContextProperty("controller", &controller);
+        view.rootContext()->setContextProperty("applicationVersion", DUKTO_VERSION);
+        view.setSource(QUrl("qrc:/ui/Main.qml"));
+        QCOMPARE(view.status(), QQuickWidget::Ready);
+        view.show();
+        view.activateWindow();
+        view.setFocus();
+        auto root = view.rootObject();
+        QVERIFY(root);
+        auto cancel = root->findChild<QQuickItem *>("legacyCancelButton");
+        QVERIFY(cancel);
+        QTRY_VERIFY(!cancel->isVisible());
+        const auto before = dukto::BufferCredit::usage()["dataUsed"].toString();
+        QTcpServer slow;
+        QVERIFY(slow.listen(QHostAddress::LocalHost, 0));
+        QTcpSocket incoming;
+        std::unique_ptr<QTcpSocket> peer;
+        const qint64 declared = 32 * 1024 * 1024;
+        // 日期：2026-11-07；独立构造小端R6头，不借用被测收发编码器。
+        const auto number = [](qint64 value) {
+            QByteArray bytes(8, '\0');
+            qToLittleEndian(value, reinterpret_cast<uchar *>(bytes.data()));
+            return bytes;
+        };
+        qint64 observed = 0;
+        if (outgoing) {
+            QFile source(temporary.filePath("cancel.bin"));
+            QVERIFY(source.open(QIODevice::WriteOnly));
+            const QByteArray block(64 * 1024, 'x');
+            for (int index = 0; index < declared / block.size(); ++index)
+                QCOMPARE(source.write(block), qint64(block.size()));
+            source.close();
+            QVERIFY(controller.sendDropped("127.0.0.1", slow.serverPort(),
+                                           {QUrl::fromLocalFile(source.fileName())}));
+            QTRY_VERIFY(slow.hasPendingConnections());
+            peer.reset(slow.nextPendingConnection());
+            QVERIFY(peer);
+            peer->setReadBufferSize(4096);
+            QTRY_VERIFY(peer->bytesAvailable() >= 16);
+            const auto header = peer->read(16);
+            QCOMPARE(qFromLittleEndian<qint64>(reinterpret_cast<const uchar *>(header.constData())),
+                     qint64(1));
+            QCOMPARE(
+                qFromLittleEndian<qint64>(reinterpret_cast<const uchar *>(header.constData() + 8)),
+                declared);
+            QTRY_VERIFY(peer->bytesAvailable() > 32);
+            observed = 16;
+        } else {
+            incoming.connectToHost(QHostAddress::LocalHost, port);
+            QVERIFY(incoming.waitForConnected(2000));
+            const auto frame = phase == "receive-header"
+                                   ? number(1)
+                                   : number(1) + number(declared) + QByteArray("cancel.bin\0", 11) +
+                                         number(declared) + QByteArray(64 * 1024, 'x');
+            QCOMPARE(incoming.write(frame), qint64(frame.size()));
+            incoming.flush();
+            if (phase == "receive-partial")
+                QTRY_VERIFY(
+                    !QDir(output).entryList({"*.part"}, QDir::Files | QDir::Hidden).isEmpty());
+        }
+        QTRY_VERIFY(controller.busy() && cancel->isVisible());
+        click(view, cancel);
+        QTRY_VERIFY2_WITH_TIMEOUT(!controller.busy(), qPrintable(controller.status()), 5000);
+        QVERIFY(controller.status().contains(QStringLiteral("取消")));
+        QTRY_VERIFY(!cancel->isVisible());
+        if (outgoing) {
+            // 日期：2026-11-07；取消后有界排空独立对端，确认EOF与部分正文；不等待原文件完整发送。
+            QObject::connect(peer.get(), &QTcpSocket::readyRead, peer.get(),
+                             [&]() { observed += peer->readAll().size(); });
+            observed += peer->readAll().size();
+            QTRY_COMPARE_WITH_TIMEOUT(peer->state(), QAbstractSocket::UnconnectedState, 5000);
+            observed += peer->readAll().size();
+            QVERIFY(observed > 32 && observed < declared);
+        } else {
+            QTRY_VERIFY(QDir(output).entryList({"*.part"}, QDir::Files | QDir::Hidden).isEmpty());
+            QVERIFY(!QFileInfo::exists(QDir(output).filePath("cancel.bin")));
+            incoming.abort();
+        }
+        QTRY_COMPARE(dukto::BufferCredit::usage()["dataUsed"].toString(), before);
+        const auto nextOutput = temporary.filePath("next-output");
+        QVERIFY(QDir().mkpath(nextOutput));
+        dukto::LegacyListener receiver(nextOutput, 3000);
+        QVERIFY(receiver.listen(QHostAddress::LocalHost, 0));
+        QSignalSpy result(&receiver, &dukto::LegacyListener::result);
+        QFile nextSource(temporary.filePath("next.bin"));
+        const QByteArray payload = QStringLiteral("中止后同实例继续\ncafé 🚀\n").toUtf8();
+        QVERIFY(nextSource.open(QIODevice::WriteOnly));
+        QCOMPARE(nextSource.write(payload), qint64(payload.size()));
+        nextSource.close();
+        QVERIFY(controller.sendDropped("127.0.0.1", receiver.serverPort(),
+                                       {QUrl::fromLocalFile(nextSource.fileName())}));
+        QTRY_COMPARE_WITH_TIMEOUT(result.count(), 1, 5000);
+        QCOMPARE(result[0][0].toInt(), 0);
+        QTRY_VERIFY(!controller.busy());
+        QCOMPARE(dukto::hashFile(nextSource.fileName()),
+                 dukto::hashFile(QDir(nextOutput).filePath("next.bin")));
+        QTcpSocket next;
+        next.connectToHost(QHostAddress::LocalHost, port);
+        QVERIFY(next.waitForConnected(2000));
+        const auto frame = number(1) + number(payload.size()) + QByteArray("after.bin\0", 10) +
+                           number(payload.size()) + payload;
+        QCOMPARE(next.write(frame), qint64(frame.size()));
+        next.flush();
+        QFile received(QDir(output).filePath("after.bin"));
+        QTRY_VERIFY2_WITH_TIMEOUT(received.exists(), qPrintable(controller.status()), 5000);
+        QTRY_VERIFY(!controller.busy());
+        QVERIFY(received.open(QIODevice::ReadOnly));
+        QCOMPARE(received.readAll(), payload);
+        QTRY_COMPARE(dukto::BufferCredit::usage()["dataUsed"].toString(), before);
+    }
 
     // 日期：2026-11-07；生产QML的一百次进度通知不得重读剪贴板，空值禁用且点击发送必须读取最新正文。
     void clipboardAvailabilityDoesNotReadOnProgress() {
@@ -648,7 +790,7 @@ class UiTests final : public QObject {
     }
 };
 
-// 日期：2026-11-05；默认offscreen隔离剪贴板；显式原生模式只准执行不接触剪贴板的服务器入口测试。
+// 日期：2026-11-07；默认offscreen隔离剪贴板；原生只准运行服务器入口和兼容取消，拒绝混入其他槽。
 int main(int argc, char **argv) {
     const auto native = qgetenv("DUKTO_TEST_UI_PLATFORM");
     if (!native.isEmpty() && native != "windows" && native != "cocoa" && native != "xcb" &&
@@ -667,10 +809,26 @@ int main(int argc, char **argv) {
     // 日期：2026-11-05；与产品主入口使用相同Windows字体，布局和点击坐标按实际应用字体计算。
     QApplication::setFont(QFont("Microsoft YaHei UI", 10));
 #endif
-    if (!native.isEmpty() && (QGuiApplication::platformName().toLatin1() != native ||
-                              !app.arguments().contains("serverEntryThroughMainQml") ||
-                              app.arguments().contains("dragClipboardAndTextThroughQml")))
-        return 2;
+    if (!native.isEmpty()) {
+        if (QGuiApplication::platformName().toLatin1() != native)
+            return 2;
+        const QStringList allowed{"serverEntryThroughMainQml", "cancelThenTransferAgainThroughQml"};
+        bool selected = false;
+        for (const auto &argument : app.arguments().mid(1)) {
+            for (int index = UiTests::staticMetaObject.methodOffset();
+                 index < UiTests::staticMetaObject.methodCount(); ++index) {
+                const auto name =
+                    QString::fromLatin1(UiTests::staticMetaObject.method(index).name());
+                if (argument == name || argument.startsWith(name + ':')) {
+                    if (!allowed.contains(name))
+                        return 2;
+                    selected = true;
+                }
+            }
+        }
+        if (!selected)
+            return 2;
+    }
     UiTests tests;
     return QTest::qExec(&tests, argc, argv);
 }

@@ -11,7 +11,7 @@ import traceback
 import xml.etree.ElementTree as ET
 
 
-# 日期：2026-11-05；固定QtTest程序身份，每个场景使用独立目录，原失败和截图不相互覆盖。
+# 日期：2026-11-07；固定QtTest身份，原生导航/三取消及槽位白名单独立留存，失败和截图不覆盖。
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("executable", type=Path)
@@ -27,7 +27,7 @@ def main():
     report = {"date": datetime.now(timezone.utc).isoformat(), "passed": False,
               "sourceCommit": os.environ.get("GITHUB_SHA"), "executableSha256": original,
               "nativePlatform": args.platform, "cases": [],
-              "scope": "production Main.qml loaded by compiled application controller fixture; real native server-entry click, compact/default layout, tabs, back/reopen and resize; high-DPI scenes use isolated offscreen; packaged GUI/native choosers and complete R6 remain separate"}
+              "scope": "production Main.qml native server entry and send/header/partial-body cancellation clicks; every cancellation checks cleanup, credit return and later same-instance bidirectional content; compact/default layout and isolated high-DPI scenes; native selector rejects clipboard test slots before execution; packaged GUI/native choosers and complete R6 remain separate"}
     try:
         for name, platform, scale in (("native", args.platform, "1"),
                                       ("offscreen-150", "offscreen", "1.5"),
@@ -44,7 +44,15 @@ def main():
             entry = {"name": name, "platform": platform, "scaleFactor": scale, "passed": False}
             report["cases"].append(entry)
             try:
+                if platform != "offscreen":
+                    guard = subprocess.run([str(executable), "serverEntryThroughMainQml",
+                                            "clipboardAvailabilityDoesNotReadOnProgress"],
+                                           env=env, cwd=working, capture_output=True, timeout=30)
+                    entry["nativeSelectorGuard"] = {"exitCode": guard.returncode,
+                                                    "passed": guard.returncode == 2}
+                    assert guard.returncode == 2, entry
                 result = subprocess.run([str(executable), "serverEntryThroughMainQml",
+                                         "cancelThenTransferAgainThroughQml",
                                          "-o", str(log) + ",txt", "-o", str(xml) + ",junitxml"],
                                         env=env, cwd=working, capture_output=True, timeout=60)
                 entry.update(exitCode=result.returncode,
@@ -56,6 +64,13 @@ def main():
                 text = log.read_text(encoding="utf-8-sig")
                 assert "QWARN" not in text and "QFATAL" not in text
                 assert "serverEntryThroughMainQml(compact)" in text and "serverEntryThroughMainQml(default)" in text
+                cancellation = ["send", "receive-header", "receive-partial"]
+                for tag in cancellation:
+                    assert text.splitlines().count("PASS   : UiTests::cancelThenTransferAgainThroughQml(" + tag + ")") == 1
+                matching = [case for case in suite.findall("testcase")
+                            if case.get("name") == "cancelThenTransferAgainThroughQml"]
+                assert len(matching) == 1 and matching[0].get("result") == "pass"
+                entry["verifiedCancellationRows"] = cancellation
                 frames = []
                 for size in ("360x560", "430x700"):
                     stem = working / "Testing/QtTest" / ("main-server-" + size)

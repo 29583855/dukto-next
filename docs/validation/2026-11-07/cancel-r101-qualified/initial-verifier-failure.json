@@ -1,0 +1,13 @@
+{
+  "date": "2026-11-07",
+  "exitCode": 1,
+  "stage": "Report interpretation after both Windows drivers completed successfully",
+  "reason": "Initial verifier treated Qt JUnit errors attribute as actual failure count; Qt counts qinfo/qwarn messages there",
+  "correction": "Require no failure/error nodes, all testcase results pass, and exact known message types/counts per report; native cancellation reports still require zero messages",
+  "initialDriver": {
+    "path": "docs/validation/2026-11-07/cancel-r101-qualified/initial-verification-driver.py",
+    "sha256": "8743148cd5b6e73262971df465c3a598c4b28c54ebfb59406d21cdb7d35d5aef"
+  },
+  "testsRepeatedByCorrection": false,
+  "unknownFailuresAccepted": false
+}

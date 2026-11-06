@@ -1,5 +1,5 @@
 {
-  "observedUtc": "2026-11-06T21:24:04.471459+00:00",
+  "observedUtc": "2026-11-06T21:52:52.430943+00:00",
   "productionCommit": "ed4f5cf08c96f04671e49e5138eda8ce1790ead3",
   "testCommit": "ed4f5cf08c96f04671e49e5138eda8ce1790ead3",
   "packages": [
@@ -213,8 +213,8 @@
   ],
   "releaseQualified": false,
   "deliveryComplete": false,
-  "planVersion": "v0.100",
-  "currentSourceStage": "R100 current packages and dual macOS APFS disk subset verified; first native run artifact upload failed on Intel, only that job retried; full delivery and long tests remain pending",
+  "planVersion": "v0.101",
+  "currentSourceStage": "R101 native cancellation regression extended; Windows MSVC/UCRT complete core and native/high-DPI passed; R100 deployed package identity retained; full delivery and native qualification pending",
   "nativeMusl": {
     "sourceCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
     "productionCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
@@ -19613,7 +19613,7 @@
       "sha256": "4e925961855239abe68898110d7e27d2d842a6676373cc2ab724a1f18d5af3a0"
     }
   },
-  "currentGuiSourceCommitPending": false,
+  "currentGuiSourceCommitPending": true,
   "coreProductionCommit": "88f33b2c83f2950307c362fb64c693f7e9e5929d",
   "linuxPreviewR98": {
     "sourceCommit": "b2e4659b347c65eef24c8e568e07e96a2d6ff2d7",
@@ -20220,6 +20220,18 @@
     "sameInstanceNextSendQualified": false,
     "originalQt4CrashObserved": true,
     "crashRootCauseEstablished": false,
+    "wholeF18Qualified": false
+  },
+  "cancelRecoveryR101": {
+    "manifest": {
+      "path": "docs/ci-verification-20261107-r101.json",
+      "sha256": "f2dcd03296675ac83220d42b233d0796cce5a4ed8103be22b9ebc104ce7c6663"
+    },
+    "windowsEvidence": {
+      "path": "docs/validation/2026-11-07/cancel-r101-qualified/verified-receipt.json",
+      "sha256": "50f750cc6ceeee5c2e561f0417681d0fab3697e6cb8d49604141503daef81be1"
+    },
+    "nativeCIPending": true,
     "wholeF18Qualified": false
   }
 }
