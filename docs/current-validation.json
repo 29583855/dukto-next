@@ -1,5 +1,5 @@
 {
-  "observedUtc": "2026-11-06T11:59:38.248133+00:00",
+  "observedUtc": "2026-11-06T12:19:26.333421+00:00",
   "productionCommit": "effd3115e95e696077a13038f3bb0616362eac5d",
   "testCommit": "f8cf4cd7ce47eff0f2d72ad26d85ea3cb19f65e9",
   "packages": [
@@ -8316,7 +8316,7 @@
   },
   "legacyBufferR89": {
     "date": "2026-11-06",
-    "observedUtc": "2026-11-06T11:26:30.700625+00:00",
+    "observedUtc": "2026-11-06T12:19:26.333421+00:00",
     "planVersion": "v0.88",
     "productionCommit": "cd2f6fa83c96f966ffa19a56f1e7f75d86df2085",
     "testCommit": "cd2f6fa83c96f966ffa19a56f1e7f75d86df2085",
@@ -8749,8 +8749,8 @@
       "native": {
         "id": 42205483109,
         "head_sha": "cd2f6fa83c96f966ffa19a56f1e7f75d86df2085",
-        "status": "in_progress",
-        "conclusion": null,
+        "status": "completed",
+        "conclusion": "success",
         "html_url": "https://github.com/29583855/dukto-next/actions/runs/42205483109"
       }
     },
@@ -8908,7 +8908,14 @@
       "sha256": "da52b75f61e15f5ea6a67370f4e4dec931b667af63de8476519c59a1bd3e1037"
     },
     "muslOriginalCoreAndProtocolReportsVerified": true,
-    "muslProtocolReportCount": 44
+    "muslProtocolReportCount": 44,
+    "nativeEvidence": {
+      "path": "docs/validation/2026-11-06/legacy-buffer-r89-native-terminal/receipt.json",
+      "sha256": "ffec31c59f00cc32b24230bcff9d8bfe444e6db1af9dd17a52ddf685ce2ac756"
+    },
+    "nativeOriginalReportsVerified": true,
+    "nativeCoreTargetsEach": 23,
+    "nativeProtocolReports": 180
   },
   "verifiedR88Musl": {
     "sourceCommit": "463521a9301016f36c0d80f8e6704faedce403a2",
@@ -9103,7 +9110,7 @@
   },
   "dataFileR90": {
     "date": "2026-11-06",
-    "observedUtc": "2026-11-06T11:46:31.262402+00:00",
+    "observedUtc": "2026-11-06T12:19:26.333421+00:00",
     "planVersion": "v0.89",
     "productionCommit": "effd3115e95e696077a13038f3bb0616362eac5d",
     "testCommit": "effd3115e95e696077a13038f3bb0616362eac5d",
@@ -9578,8 +9585,8 @@
       "musl": {
         "id": 42209498984,
         "head_sha": "effd3115e95e696077a13038f3bb0616362eac5d",
-        "status": "in_progress",
-        "conclusion": null,
+        "status": "completed",
+        "conclusion": "success",
         "html_url": "https://github.com/29583855/dukto-next/actions/runs/42209498984"
       },
       "native": {
@@ -9603,9 +9610,29 @@
     "globalHistoryGcComplete": false,
     "localMusl": {
       "remoteRoot": "/home/dukto/data-file-r90",
-      "status": "building",
-      "passed": null,
-      "sourceSnapshotSha256": "2a6056588072aefe4105a490102a34b8e5bc6f7d05551e006e033263369d9fee"
+      "status": "completed",
+      "passed": false,
+      "sourceSnapshotSha256": "2a6056588072aefe4105a490102a34b8e5bc6f7d05551e006e033263369d9fee",
+      "evidence": {
+        "path": "docs/validation/2026-11-06/data-file-r90-musl/receipt.json",
+        "sha256": "a18e72246ca98a44f29b7ab01d7fa9c20f332c7dd58dd5647383a2abba0e9cc6"
+      },
+      "coreTargetsPassed": 22,
+      "coreTargetsTotal": 23,
+      "failedOriginalCases": [
+        {
+          "target": "CoreTests",
+          "case": "discoveryYieldsAndRejectsMalformedGoodbye",
+          "message": "'observedAtTimer >= 0' returned FALSE. ()"
+        },
+        {
+          "target": "CoreTests",
+          "case": "discoveryAggregatesAddresses",
+          "message": "'(peer().isEmpty())' returned FALSE. ()"
+        }
+      ],
+      "originalFailureRetained": true,
+      "frozenBuildInputsMatchExactGit": 201
     },
     "releaseQualified": false,
     "deliveryComplete": false,
@@ -9738,7 +9765,14 @@
       "sha256": "497ae55920ccdcee25856864d6f4ac50365f918b8f43920073b8c56f485522b3"
     },
     "macosOriginalPackagesVerified": true,
-    "macosScreenshotsViewed": 4
+    "macosScreenshotsViewed": 4,
+    "muslEvidence": {
+      "path": "docs/validation/2026-11-06/data-file-r90-musl-terminal/receipt.json",
+      "sha256": "80bc47a50373e641d574ec4ad0cebca72ee8e4f995cc30fedeb7a3c0d8dca282"
+    },
+    "muslOriginalReportsVerified": true,
+    "muslCoreTargets": 23,
+    "muslProtocolReports": 44
   },
   "verifiedR89Musl": {
     "sourceCommit": "cd2f6fa83c96f966ffa19a56f1e7f75d86df2085",
@@ -10015,10 +10049,35 @@
     "sourceCommit": "effd3115e95e696077a13038f3bb0616362eac5d",
     "runId": 42209498984,
     "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42209498984",
-    "status": "in_progress",
-    "workflowConclusion": null,
-    "fullProtocolPending": true,
-    "allOriginalReportsVerified": false,
-    "expectedCoreTargetsEach": 23
-  }
+    "status": "completed",
+    "workflowConclusion": "success",
+    "fullProtocolPending": false,
+    "allOriginalReportsVerified": true,
+    "expectedCoreTargetsEach": 23,
+    "evidence": {
+      "path": "docs/validation/2026-11-06/data-file-r90-musl-terminal/receipt.json",
+      "sha256": "80bc47a50373e641d574ec4ad0cebca72ee8e4f995cc30fedeb7a3c0d8dca282"
+    }
+  },
+  "verifiedR89Native": {
+    "sourceCommit": "cd2f6fa83c96f966ffa19a56f1e7f75d86df2085",
+    "evidence": {
+      "path": "docs/validation/2026-11-06/legacy-buffer-r89-native-terminal/receipt.json",
+      "sha256": "ffec31c59f00cc32b24230bcff9d8bfe444e6db1af9dd17a52ddf685ce2ac756"
+    },
+    "coreTargetsEach": 23,
+    "protocolReports": 180,
+    "allOriginalReportsVerified": true
+  },
+  "verifiedR90Musl": {
+    "sourceCommit": "effd3115e95e696077a13038f3bb0616362eac5d",
+    "evidence": {
+      "path": "docs/validation/2026-11-06/data-file-r90-musl-terminal/receipt.json",
+      "sha256": "80bc47a50373e641d574ec4ad0cebca72ee8e4f995cc30fedeb7a3c0d8dca282"
+    },
+    "coreTargets": 23,
+    "protocolReports": 44,
+    "allOriginalReportsVerified": true
+  },
+  "localDiscoveryRepairPending": true
 }

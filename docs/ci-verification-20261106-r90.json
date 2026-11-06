@@ -1,6 +1,6 @@
 {
   "date": "2026-11-06",
-  "observedUtc": "2026-11-06T11:46:31.262402+00:00",
+  "observedUtc": "2026-11-06T12:19:26.333421+00:00",
   "planVersion": "v0.89",
   "productionCommit": "effd3115e95e696077a13038f3bb0616362eac5d",
   "testCommit": "effd3115e95e696077a13038f3bb0616362eac5d",
@@ -475,8 +475,8 @@
     "musl": {
       "id": 42209498984,
       "head_sha": "effd3115e95e696077a13038f3bb0616362eac5d",
-      "status": "in_progress",
-      "conclusion": null,
+      "status": "completed",
+      "conclusion": "success",
       "html_url": "https://github.com/29583855/dukto-next/actions/runs/42209498984"
     },
     "native": {
@@ -500,9 +500,29 @@
   "globalHistoryGcComplete": false,
   "localMusl": {
     "remoteRoot": "/home/dukto/data-file-r90",
-    "status": "building",
-    "passed": null,
-    "sourceSnapshotSha256": "2a6056588072aefe4105a490102a34b8e5bc6f7d05551e006e033263369d9fee"
+    "status": "completed",
+    "passed": false,
+    "sourceSnapshotSha256": "2a6056588072aefe4105a490102a34b8e5bc6f7d05551e006e033263369d9fee",
+    "evidence": {
+      "path": "docs/validation/2026-11-06/data-file-r90-musl/receipt.json",
+      "sha256": "a18e72246ca98a44f29b7ab01d7fa9c20f332c7dd58dd5647383a2abba0e9cc6"
+    },
+    "coreTargetsPassed": 22,
+    "coreTargetsTotal": 23,
+    "failedOriginalCases": [
+      {
+        "target": "CoreTests",
+        "case": "discoveryYieldsAndRejectsMalformedGoodbye",
+        "message": "'observedAtTimer >= 0' returned FALSE. ()"
+      },
+      {
+        "target": "CoreTests",
+        "case": "discoveryAggregatesAddresses",
+        "message": "'(peer().isEmpty())' returned FALSE. ()"
+      }
+    ],
+    "originalFailureRetained": true,
+    "frozenBuildInputsMatchExactGit": 201
   },
   "releaseQualified": false,
   "deliveryComplete": false,
@@ -635,5 +655,12 @@
     "sha256": "497ae55920ccdcee25856864d6f4ac50365f918b8f43920073b8c56f485522b3"
   },
   "macosOriginalPackagesVerified": true,
-  "macosScreenshotsViewed": 4
+  "macosScreenshotsViewed": 4,
+  "muslEvidence": {
+    "path": "docs/validation/2026-11-06/data-file-r90-musl-terminal/receipt.json",
+    "sha256": "80bc47a50373e641d574ec4ad0cebca72ee8e4f995cc30fedeb7a3c0d8dca282"
+  },
+  "muslOriginalReportsVerified": true,
+  "muslCoreTargets": 23,
+  "muslProtocolReports": 44
 }

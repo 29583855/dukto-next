@@ -1,0 +1,60 @@
+{
+  "date": "2026-11-06",
+  "productionCommit": "effd3115e95e696077a13038f3bb0616362eac5d",
+  "frozenBuildInputsMatchExactGit": 201,
+  "frozenManifest": {
+    "path": "docs/validation/2026-11-06/data-file-r90-musl/results/source-manifest.json",
+    "sha256": "e27a0cafac37d64df3079cf6616b8f5d67d92f155b4805d560135a45311a9167"
+  },
+  "snapshotSha256": "2a6056588072aefe4105a490102a34b8e5bc6f7d05551e006e033263369d9fee",
+  "driver": {
+    "path": "docs/validation/2026-11-06/data-file-r90-musl/driver-result.json",
+    "sha256": "34a719f6fa1d57a5af0c3159b1b39dacaf1769809cd90db30162eb7ed8d06472"
+  },
+  "driverMetadataCorrection": {
+    "originalPublicSkipEnabled": false,
+    "actualPublicSkipEnabled": true,
+    "reason": "driver hard-coded metadata disagrees with frozen R87+ production; original retained"
+  },
+  "coreTargetsPassed": 22,
+  "coreTargetsTotal": 23,
+  "failedOriginalCases": [
+    {
+      "target": "CoreTests",
+      "case": "discoveryYieldsAndRejectsMalformedGoodbye",
+      "message": "'observedAtTimer >= 0' returned FALSE. ()"
+    },
+    {
+      "target": "CoreTests",
+      "case": "discoveryAggregatesAddresses",
+      "message": "'(peer().isEmpty())' returned FALSE. ()"
+    }
+  ],
+  "ctest": {
+    "path": "docs/validation/2026-11-06/data-file-r90-musl/results/ctest.log",
+    "sha256": "63c49d1b4dfaaa5d742250603cf0d07e2587fc3e58a5b4f79736a963f8967cfa"
+  },
+  "fileExchangePassedRows": 208,
+  "protocolReportsPassed": [
+    {
+      "path": "docs/validation/2026-11-06/data-file-r90-musl/results/legacy.json",
+      "sha256": "920dce2257d131f5d3657c374019111045acccad1788d82769b38c454f6421b2"
+    },
+    {
+      "path": "docs/validation/2026-11-06/data-file-r90-musl/results/parallel-transfer.json",
+      "sha256": "32109faf87a10122aec1b1ef5315f4825aa566dd4e1e48d3407895e632a08eba"
+    },
+    {
+      "path": "docs/validation/2026-11-06/data-file-r90-musl/results/conflict-overwrite.json",
+      "sha256": "4d669aa2a1e90311713d880e862e3d4d25109dd43c163be7f3ecae5ad94995c2"
+    }
+  ],
+  "unchangedBinaries": {
+    "path": "docs/validation/2026-11-06/data-file-r90-musl/results/binaries-before.sha256",
+    "sha256": "272fd28f32e317655c9b8cfb82efc6bf3b27071510d6fa3bedd3d4531d95215e"
+  },
+  "wholeSuitePassed": false,
+  "rootCauseProvenForThisWholeRun": false,
+  "releaseQualified": false,
+  "deliveryComplete": false
+}
