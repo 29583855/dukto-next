@@ -1,0 +1,161 @@
+{
+  "date": "2026-11-06",
+  "observedUtc": "2026-11-06T00:51:38.126936+00:00",
+  "planVersion": "v0.72",
+  "productionCommit": "dab7c0e25585504f9ea38bd5cff5c61e51efe9f9",
+  "testCommit": "234a5d2debbd4ca38573c959f93e1f81f0729f39",
+  "productionUnchangedByTestCommits": true,
+  "windows": {
+    "coreTargetsEach": 21,
+    "exchangeCasesEachIncludingLifecycle": 190,
+    "protocolReportsEach": 9,
+    "evidence": {
+      "path": "docs/validation/2026-11-06/tls-disk-r72-windows/summary.json",
+      "sha256": "a37d8f97ff835b36f217182c215948c1dc8d06a182caf18e6505e5755a6d3aec"
+    }
+  },
+  "ubuntuActualEnospc": {
+    "reports": 6,
+    "directions": 12,
+    "errorCode": 5,
+    "policies": [
+      "rename",
+      "overwrite"
+    ],
+    "channels": [
+      1,
+      4,
+      16
+    ],
+    "evidence": {
+      "path": "docs/validation/2026-11-06/tls-disk-r72-focused-native/summary.json",
+      "sha256": "4062c981942b8363e36419c390f2651216c1b483515a19673dcef611258ed90c"
+    }
+  },
+  "protocols": {
+    "muslCore": 21,
+    "muslProtocols": 40,
+    "ubuntuProtocols": 40,
+    "allAvailableOriginalHashesVerified": true,
+    "evidence": {
+      "path": "docs/validation/2026-11-06/terminal-r72-protocol-proof-v1.json",
+      "sha256": "659a77fc54eedfdc35ff0dd70ac8091295d09d9f69ddc588a0bd883bdc2dd62f"
+    }
+  },
+  "macCandidates": {
+    "sourceCommit": "dab7c0e25585504f9ea38bd5cff5c61e51efe9f9",
+    "bothCompiledAndDeployed": true,
+    "bothPayloadsAnd253SourceInputsVerified": true,
+    "armRuntimeFiveReportsPassed": true,
+    "intelOverwriteRecoveryCheckpointFailed": true,
+    "bothPackagesQualified": false,
+    "evidence": {
+      "path": "docs/validation/2026-11-06/terminal-r72-mac-failed/receipt.json",
+      "sha256": "588a3aeee59b83854f34f7f66c3c7f475602a8d7e800030848086851cab17e14"
+    },
+    "intelSameOriginalPackageRecheck": {
+      "fiveReportsVerified": true,
+      "firstFailureCauseResolved": false,
+      "evidence": {
+        "path": "docs/validation/2026-11-06/terminal-r72-intel-recheck/verified-summary.json",
+        "sha256": "2149d8c6db4ba8c910b3f19a36f2264fc4167c8ed4aa26068f7e61c164bffe42"
+      }
+    }
+  },
+  "nativeFixture": {
+    "initialBothMacCorePassed": 20,
+    "initialBothMacCoreExpected": 21,
+    "initialFailure": "new terminal test TLS timeout before assertions",
+    "fiveSecondDiagnosticAlsoFailed": true,
+    "originalTimeoutRestoredMs": 2000,
+    "fix": "pump Qt/TLS events in the fixture while awaiting data disconnect",
+    "windowsBoundaryRowsEach": 40,
+    "windowsEvidence": {
+      "path": "docs/validation/2026-11-06/terminal-fixture-r73-pump-windows/summary.json",
+      "sha256": "7b8e0e52316571621295e076bd90118909e7fd8b8dd95a1fe0408f16340e7c82"
+    },
+    "nativeRevalidationPending": false,
+    "firstFailureEvidence": {
+      "path": "docs/validation/2026-11-06/terminal-r72-native-observation/observation-1.json",
+      "sha256": "499e2cb9398003a9f7573e6c783b0b3a6d62ab158841813bbd91bc57fb18038c"
+    },
+    "diagnosticFailureEvidence": {
+      "path": "docs/validation/2026-11-06/terminal-fixture-r73-native/superseded-receipt.json",
+      "sha256": "7dee6fd21792a886c3c34acbae41e413a05d447714c69792b24b3fbb900cef2f"
+    },
+    "fourCoreSuitesPassed": true,
+    "coreTargetsEach": 21,
+    "exchangeCasesEachIncludingLifecycle": 190,
+    "finalEvidence": {
+      "path": "docs/validation/2026-11-06/terminal-fixture-r73-pump-native/verified-summary.json",
+      "sha256": "503bb608a7f144943c5bb59281e76367695a60ced8f5ad051974ac764b29fe3a"
+    }
+  },
+  "recoveryDiagnostics": {
+    "boundedFailureSelfcheckPassed": true,
+    "originalWindowsEightRecoveriesPassed": true,
+    "evidence": {
+      "path": "docs/validation/2026-11-06/recovery-diagnostics-r73-windows/summary.json",
+      "sha256": "3e880bcd601d3d17097f00ae6c9014154da217bd5e0b61de5c96566e01064f3b"
+    }
+  },
+  "sourceAudit": {
+    "files": 182,
+    "findings": 0,
+    "cxx14AndFormattingPassed": true,
+    "evidence": {
+      "path": "docs/validation/2026-11-06/terminal-fixture-r73-source-audit.json",
+      "sha256": "df2ccb0dc79a79baf69c89a7cfdaeb39dc0ead1482d483bc382b3d855f68c5e5"
+    }
+  },
+  "runs": {
+    "nativeOriginal": {
+      "sourceCommit": "dab7c0e25585504f9ea38bd5cff5c61e51efe9f9",
+      "runId": 42135946545,
+      "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42135946545",
+      "status": "in_progress",
+      "workflowConclusion": null
+    },
+    "musl": {
+      "sourceCommit": "dab7c0e25585504f9ea38bd5cff5c61e51efe9f9",
+      "runId": 42135996839,
+      "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42135996839",
+      "status": "completed",
+      "workflowConclusion": "success"
+    },
+    "focused": {
+      "sourceCommit": "dab7c0e25585504f9ea38bd5cff5c61e51efe9f9",
+      "runId": 42135992803,
+      "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42135992803",
+      "status": "completed",
+      "workflowConclusion": "success"
+    },
+    "macPackages": {
+      "sourceCommit": "dab7c0e25585504f9ea38bd5cff5c61e51efe9f9",
+      "runId": 42136000531,
+      "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42136000531",
+      "status": "completed",
+      "workflowConclusion": "failure"
+    },
+    "nativeFixture": {
+      "sourceCommit": "234a5d2debbd4ca38573c959f93e1f81f0729f39",
+      "runId": 42139150179,
+      "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42139150179",
+      "status": "in_progress",
+      "workflowConclusion": null
+    },
+    "macPackageRecheck": {
+      "sourceCommit": "0dd5853a6442450964b91b986cab4693f3c2d978",
+      "runId": 42138790167,
+      "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42138790167",
+      "status": "completed",
+      "workflowConclusion": "success"
+    }
+  },
+  "publishedMacPackagesRemainD973": true,
+  "firstFailuresRetained": true,
+  "publicSkipEnabled": false,
+  "releaseQualified": false,
+  "deliveryComplete": false,
+  "nativeFullProtocolPending": true
+}
