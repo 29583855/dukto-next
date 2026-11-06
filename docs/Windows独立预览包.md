@@ -1,10 +1,18 @@
 # Windows 独立预览包
 
-当前R98采用精确b2e4659源码，包含当前接收分页、资源授信、服务器上传下载及恢复/冲突处理。C++14/Qt5，GUI与CLI均可独立运行。
+当前R100采用精确ed4f5cf源码，包含发送预检、草稿恢复、剪贴板状态修正及服务器上传下载/恢复。C++14/Qt5，GUI与CLI均可独立运行。
 
 更新日期：2026-11-07。当前为开发预览，完整主计划和正式发布继续。
 
-## 当前R98预览包（2026-11-07）
+## 当前R100预览包（2026-11-07）
+
+`dist/windows-preview-20261107-r100-clipboard/DuktoNext-windows-x64-preview.zip`，SHA-256：`9493422a2ed44af4ba62368a87a597e1fce8e5d12e46fd928dbe2bb0795dc3ac`。精确源码`ed4f5cf08c96f04671e49e5138eda8ce1790ead3`，338份应用源码全集与Git逐字节一致。新增发送UTF-8预检、拒绝保留草稿及剪贴板进度不重读，GUI/独立CLI和Qt5/OpenSSL依赖均在包内。
+
+实际ZIP在中文空格目录、仅系统PATH下通过GUI启动、CLI、16通道双向、会话/排队/重试/最终确认/fail/overwrite和4→8恢复。实际430×700首次说明截图已查看，中文、按钮和接收就绪正常。完整原生交互和选择器仍另验。
+
+R100四平台CI各23核心及88份Qt原件已收验；双Mac各保留一条明确Darwin XFAIL。完整协议和长期继续按真实终态收验。24个未变依赖的364部署文件、53许可按公开摘要固定的验签原件核对，本次未重新验签。[部署原件及独立视觉回执](validation/2026-11-07/clipboard-r100-windows-package/qualified-receipt.json)固定全部程序/来源；干净系统、对应第三方源码重建和正式签名发布未完成。R98冻结CLI长测不被此包替换。
+
+## R98预览包（历史，2026-11-07）
 
 `dist/windows-preview-20261107-r98-exit-state/DuktoNext-windows-x64-preview.zip`，SHA-256：`99f007bb1daf11a87750ecbb0435b5f0ccc617ce3baf9566efb77c72add77a82`。源码`b2e4659b347c65eef24c8e568e07e96a2d6ff2d7`；333份应用源码全集与精确Git逐字节一致，GUI/CLI绑定实际构建。
 

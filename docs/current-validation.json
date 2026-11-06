@@ -1,5 +1,5 @@
 {
-  "observedUtc": "2026-11-06T19:58:23.209480+00:00",
+  "observedUtc": "2026-11-06T20:11:50.752554+00:00",
   "productionCommit": "ed4f5cf08c96f04671e49e5138eda8ce1790ead3",
   "testCommit": "ed4f5cf08c96f04671e49e5138eda8ce1790ead3",
   "packages": [
@@ -169,8 +169,8 @@
         "sha256": "4d6bfa64b0e9f32abf949edc3a088e64607a94b68b083b39788234a783265f96"
       }
     },
-    "windows": "r25 current production; system PATH migration and four current feature suites passed",
-    "windowsZipSha256": "529b14ec96e57e2e1735f896efe2eaab243b034aa7616a6462b725411f325c9c"
+    "windows": "R100 actual ZIP relocated with system-only PATH; GUI, independent CLI, 16-channel duplex and original recovery/business suites passed",
+    "windowsZipSha256": "9493422a2ed44af4ba62368a87a597e1fce8e5d12e46fd928dbe2bb0795dc3ac"
   },
   "apfsPhysical": {
     "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42043472400",
@@ -224,7 +224,7 @@
   "releaseQualified": false,
   "deliveryComplete": false,
   "planVersion": "v0.100",
-  "currentSourceStage": "R100 published; both macOS GUI/CLI compilation outputs verified; complete native regression pending; independent R98 Ubuntu soak started after 20 rounds",
+  "currentSourceStage": "R100 four native cores and clipboard QML qualified; dual macOS compilation and Windows deployment verified; complete protocol and long tests remain pending",
   "nativeMusl": {
     "sourceCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
     "productionCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
@@ -977,15 +977,18 @@
     }
   ],
   "windowsPreview": {
-    "sourceCommit": "b2e4659b347c65eef24c8e568e07e96a2d6ff2d7",
-    "sourceFiles": 333,
+    "sourceCommit": "ed4f5cf08c96f04671e49e5138eda8ce1790ead3",
+    "sourceFiles": 338,
     "buildInputsVerified": 210,
     "binaries": {
       "dukto-cli.exe": "2fdecefae477b2415dd9282964eee85ece9d50e582027fe2012f2828a91c394b",
-      "dukto-gui.exe": "65a0e7fd766f1b4837c9057b228cb38637b633efbe222fa89cfa5ff5d232bede"
+      "dukto-gui.exe": "2fca8aa53478ddb192fb7cdad5c31120d564431bcb74c02cc753bf23cd2e4499"
     },
     "allFrozenInputsUnchanged": true,
-    "coreEvidence": "docs\\validation\\2026-11-07\\exit-state-r98-full-windows\\verified-receipt.json",
+    "guiAndUnchangedCoreEvidence": "docs\\validation\\2026-11-07\\clipboard-r100-qualified\\verified-receipt.json",
+    "guiTargetsRechecked": 4,
+    "existingCoreBinariesUnchanged": 19,
+    "freshFull23TargetsRun": false,
     "cases": [
       {
         "name": "deploy",
@@ -1001,19 +1004,19 @@
     "cleanSystemQualified": false,
     "releaseQualified": false,
     "deliveryComplete": false,
-    "archive": "dist/windows-preview-20261107-r98-exit-state/DuktoNext-windows-x64-preview.zip",
-    "archiveSha256": "99f007bb1daf11a87750ecbb0435b5f0ccc617ce3baf9566efb77c72add77a82",
-    "sourceFilesVerified": 333,
+    "archive": "dist/windows-preview-20261107-r100-clipboard/DuktoNext-windows-x64-preview.zip",
+    "archiveSha256": "9493422a2ed44af4ba62368a87a597e1fce8e5d12e46fd928dbe2bb0795dc3ac",
+    "sourceFilesVerified": 338,
     "allSourceBlobsMatchExactGitCommit": true,
     "signedDependencyFiles": 364,
     "signedDependencyPackages": 24,
     "signedLicenseFiles": 53,
     "runtimeEvidence": {
-      "path": "docs/validation/2026-11-07/exit-state-r98-windows-package/runtime.json",
-      "sha256": "a7d5e883076eb851dba35d1dd931423daf146ec40c9c459e28496793462bd922"
+      "path": "docs/validation/2026-11-07/clipboard-r100-windows-package/runtime.json",
+      "sha256": "cda1b623f48af87ef8425e43c92382e8d287ef45ee5e98a5188c701b7f6b6a7a"
     },
     "dependencyEvidence": {
-      "path": "docs/validation/2026-11-07/exit-state-r98-windows-package/signed-payload-map.json",
+      "path": "docs/validation/2026-11-07/clipboard-r100-windows-package/signed-payload-map.json",
       "sha256": "c8dd750c403080de87b91edb21b5d99f563b5f819523891b78476ddadcc2f298"
     },
     "screenshotsViewed": true,
@@ -1021,8 +1024,20 @@
     "freshSignatureVerificationPerformed": false,
     "missingOriginalR12InventoryRestored": false,
     "correspondingThirdPartySourceComplete": false,
+    "originalVerifiedReceipt": {
+      "path": "docs/validation/2026-11-07/clipboard-r100-windows-package/verified-receipt.json",
+      "sha256": "dd29eb3d7507253287197a0d803d4245cf10b903fa8511bf228f425ff71647a7"
+    },
+    "visualReview": {
+      "path": "docs/validation/2026-11-07/clipboard-r100-windows-package/visual-review.json",
+      "sha256": "b3a8158e0051a167ea96d31c6ebbd6c8b8231fae8d21a75b89942a5138d0b391"
+    },
     "screenshotsReviewed": 1,
-    "screenshotReviewScope": "Actual Windows deployed first-launch dialog: Chinese and controls visible; avatar listener unavailable notice retained; full GUI/native selectors remain unqualified"
+    "fourPlatformCoreEvidence": {
+      "path": "docs/validation/2026-11-07/clipboard-r100-native-core/receipt.json",
+      "sha256": "bc3fa5996462b9b8a660751e9de2374a4c48d2e0f34cee6f5e2a0e00334b185d"
+    },
+    "fullNativeProtocolRegressionQualified": false
   },
   "linuxPreview": {
     "package": {
@@ -19742,7 +19757,7 @@
   "clipboardAvailabilityR100": {
     "manifest": {
       "path": "docs/ci-verification-20261107-r100.json",
-      "sha256": "7dec3e7f5c8b805b1cab6e7f57a5e42495349eb93119a43c27fccc36f36fed55"
+      "sha256": "1329469de3f449d653bc590cd2ea460dbea44927bb403730463ec738231b4324"
     },
     "windowsEvidence": {
       "path": "docs/validation/2026-11-07/clipboard-r100-qualified/verified-receipt.json",
@@ -19757,7 +19772,12 @@
       "status": "in_progress",
       "conclusion": null,
       "html_url": "https://github.com/29583855/dukto-next/actions/runs/42282812778"
-    }
+    },
+    "nativeCoreEvidence": {
+      "path": "docs/validation/2026-11-07/clipboard-r100-native-core/receipt.json",
+      "sha256": "bc3fa5996462b9b8a660751e9de2374a4c48d2e0f34cee6f5e2a0e00334b185d"
+    },
+    "nativeCoreQualified": true
   },
   "previousProductionBeforeR100": {
     "productionCommit": "a316e4a4f947ac9a53aa6dd4477eb5b8e2a7fb38",
@@ -19833,6 +19853,105 @@
     "evidence": {
       "path": "docs/validation/2026-11-07/linux-r98-stability-launch/receipt.json",
       "sha256": "d29beaa0291ca0a222c9ca6a805a32e693e7ea89162d3f4df0b092891753fe35"
+    }
+  },
+  "windowsPreviewBeforeR100": {
+    "sourceCommit": "b2e4659b347c65eef24c8e568e07e96a2d6ff2d7",
+    "sourceFiles": 333,
+    "buildInputsVerified": 210,
+    "binaries": {
+      "dukto-cli.exe": "2fdecefae477b2415dd9282964eee85ece9d50e582027fe2012f2828a91c394b",
+      "dukto-gui.exe": "65a0e7fd766f1b4837c9057b228cb38637b633efbe222fa89cfa5ff5d232bede"
+    },
+    "allFrozenInputsUnchanged": true,
+    "coreEvidence": "docs\\validation\\2026-11-07\\exit-state-r98-full-windows\\verified-receipt.json",
+    "cases": [
+      {
+        "name": "deploy",
+        "exitCode": 0
+      },
+      {
+        "name": "relocated-system-path-runtime",
+        "exitCode": 0
+      }
+    ],
+    "completed": true,
+    "passed": true,
+    "cleanSystemQualified": false,
+    "releaseQualified": false,
+    "deliveryComplete": false,
+    "archive": "dist/windows-preview-20261107-r98-exit-state/DuktoNext-windows-x64-preview.zip",
+    "archiveSha256": "99f007bb1daf11a87750ecbb0435b5f0ccc617ce3baf9566efb77c72add77a82",
+    "sourceFilesVerified": 333,
+    "allSourceBlobsMatchExactGitCommit": true,
+    "signedDependencyFiles": 364,
+    "signedDependencyPackages": 24,
+    "signedLicenseFiles": 53,
+    "runtimeEvidence": {
+      "path": "docs/validation/2026-11-07/exit-state-r98-windows-package/runtime.json",
+      "sha256": "a7d5e883076eb851dba35d1dd931423daf146ec40c9c459e28496793462bd922"
+    },
+    "dependencyEvidence": {
+      "path": "docs/validation/2026-11-07/exit-state-r98-windows-package/signed-payload-map.json",
+      "sha256": "c8dd750c403080de87b91edb21b5d99f563b5f819523891b78476ddadcc2f298"
+    },
+    "screenshotsViewed": true,
+    "signatureVerificationReusedFromPriorReceipt": true,
+    "freshSignatureVerificationPerformed": false,
+    "missingOriginalR12InventoryRestored": false,
+    "correspondingThirdPartySourceComplete": false,
+    "screenshotsReviewed": 1,
+    "screenshotReviewScope": "Actual Windows deployed first-launch dialog: Chinese and controls visible; avatar listener unavailable notice retained; full GUI/native selectors remain unqualified"
+  },
+  "nativeCoreR100": {
+    "sourceCommit": "ed4f5cf08c96f04671e49e5138eda8ce1790ead3",
+    "evidence": {
+      "path": "docs/validation/2026-11-07/clipboard-r100-native-core/receipt.json",
+      "sha256": "bc3fa5996462b9b8a660751e9de2374a4c48d2e0f34cee6f5e2a0e00334b185d"
+    },
+    "runners": 4,
+    "coreTargetsEach": 23,
+    "qtReports": 88,
+    "explicitDarwinExpectedFailures": 2
+  },
+  "previewPackageRunsR100": {
+    "macos-package.yml": {
+      "observedUtc": "2026-11-06T20:10:20.157239+00:00",
+      "sourceCommit": "ed4f5cf08c96f04671e49e5138eda8ce1790ead3",
+      "sourceRef": "package-r100-20261107",
+      "workflow": "macos-package.yml",
+      "buildInputsVerified": 210,
+      "workflowSha256": "5a6dd31a022fef419ecad2d417d30f8d9e6df5b0501d9b1231a14749022b6bea",
+      "nativeCoreQualificationSha256": "bc3fa5996462b9b8a660751e9de2374a4c48d2e0f34cee6f5e2a0e00334b185d",
+      "qualificationGate": "four native cores and clipboard QML verified; independent package migration follows",
+      "fullNativeProtocolRegressionQualified": false,
+      "dispatchAttempted": true,
+      "responseReceived": true,
+      "releaseQualified": false,
+      "deliveryComplete": false,
+      "runId": 42286046864,
+      "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42286046864",
+      "status": "queued",
+      "conclusion": null
+    },
+    "linux-package.yml": {
+      "observedUtc": "2026-11-06T20:10:50.372882+00:00",
+      "sourceCommit": "ed4f5cf08c96f04671e49e5138eda8ce1790ead3",
+      "sourceRef": "package-r100-20261107",
+      "workflow": "linux-package.yml",
+      "buildInputsVerified": 210,
+      "workflowSha256": "3e48c31a48a18857003bb9072399ca66dc0954c3c5b29797b15ba9691060d304",
+      "nativeCoreQualificationSha256": "bc3fa5996462b9b8a660751e9de2374a4c48d2e0f34cee6f5e2a0e00334b185d",
+      "qualificationGate": "four native cores and clipboard QML verified; independent package migration follows",
+      "fullNativeProtocolRegressionQualified": false,
+      "dispatchAttempted": true,
+      "responseReceived": true,
+      "releaseQualified": false,
+      "deliveryComplete": false,
+      "runId": 42286121325,
+      "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42286121325",
+      "status": "in_progress",
+      "conclusion": null
     }
   }
 }

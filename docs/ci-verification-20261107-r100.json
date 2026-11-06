@@ -1,6 +1,6 @@
 {
   "planVersion": "v0.100",
-  "observedUtc": "2026-11-06T19:58:23.209480+00:00",
+  "observedUtc": "2026-11-06T20:11:50.752554+00:00",
   "basedOnSourceCommit": "a316e4a4f947ac9a53aa6dd4477eb5b8e2a7fb38",
   "buildInputs": [
     {
@@ -879,5 +879,85 @@
     "path": "docs/validation/2026-11-07/clipboard-r100-macos-compiled/receipt.json",
     "sha256": "3df6e0a0a5e2ad532a93788fb50b38f82c66b6e14419edff5edc9c4a7e6ab18c"
   },
-  "fullNativeRegressionQualified": false
+  "fullNativeRegressionQualified": false,
+  "nativeCoreEvidence": {
+    "path": "docs/validation/2026-11-07/clipboard-r100-native-core/receipt.json",
+    "sha256": "bc3fa5996462b9b8a660751e9de2374a4c48d2e0f34cee6f5e2a0e00334b185d"
+  },
+  "nativeCoreTargetsEach": 23,
+  "nativeCoreRunners": 4,
+  "nativeOriginalQtReports": 88,
+  "explicitDarwinExpectedFailureCount": 2,
+  "clipboardQmlFourPlatformsQualified": true,
+  "windowsPackage": {
+    "sourceCommit": "ed4f5cf08c96f04671e49e5138eda8ce1790ead3",
+    "sourceFiles": 338,
+    "buildInputsVerified": 210,
+    "binaries": {
+      "dukto-cli.exe": "2fdecefae477b2415dd9282964eee85ece9d50e582027fe2012f2828a91c394b",
+      "dukto-gui.exe": "2fca8aa53478ddb192fb7cdad5c31120d564431bcb74c02cc753bf23cd2e4499"
+    },
+    "allFrozenInputsUnchanged": true,
+    "guiAndUnchangedCoreEvidence": "docs\\validation\\2026-11-07\\clipboard-r100-qualified\\verified-receipt.json",
+    "guiTargetsRechecked": 4,
+    "existingCoreBinariesUnchanged": 19,
+    "freshFull23TargetsRun": false,
+    "cases": [
+      {
+        "name": "deploy",
+        "exitCode": 0
+      },
+      {
+        "name": "relocated-system-path-runtime",
+        "exitCode": 0
+      }
+    ],
+    "completed": true,
+    "passed": true,
+    "cleanSystemQualified": false,
+    "releaseQualified": false,
+    "deliveryComplete": false,
+    "archive": "dist/windows-preview-20261107-r100-clipboard/DuktoNext-windows-x64-preview.zip",
+    "archiveSha256": "9493422a2ed44af4ba62368a87a597e1fce8e5d12e46fd928dbe2bb0795dc3ac",
+    "sourceFilesVerified": 338,
+    "allSourceBlobsMatchExactGitCommit": true,
+    "signedDependencyFiles": 364,
+    "signedDependencyPackages": 24,
+    "signedLicenseFiles": 53,
+    "runtimeEvidence": {
+      "path": "docs/validation/2026-11-07/clipboard-r100-windows-package/runtime.json",
+      "sha256": "cda1b623f48af87ef8425e43c92382e8d287ef45ee5e98a5188c701b7f6b6a7a"
+    },
+    "dependencyEvidence": {
+      "path": "docs/validation/2026-11-07/clipboard-r100-windows-package/signed-payload-map.json",
+      "sha256": "c8dd750c403080de87b91edb21b5d99f563b5f819523891b78476ddadcc2f298"
+    },
+    "screenshotsViewed": true,
+    "signatureVerificationReusedFromPriorReceipt": true,
+    "freshSignatureVerificationPerformed": false,
+    "missingOriginalR12InventoryRestored": false,
+    "correspondingThirdPartySourceComplete": false,
+    "originalVerifiedReceipt": {
+      "path": "docs/validation/2026-11-07/clipboard-r100-windows-package/verified-receipt.json",
+      "sha256": "dd29eb3d7507253287197a0d803d4245cf10b903fa8511bf228f425ff71647a7"
+    },
+    "visualReview": {
+      "path": "docs/validation/2026-11-07/clipboard-r100-windows-package/visual-review.json",
+      "sha256": "b3a8158e0051a167ea96d31c6ebbd6c8b8231fae8d21a75b89942a5138d0b391"
+    },
+    "screenshotsReviewed": 1,
+    "fourPlatformCoreEvidence": {
+      "path": "docs/validation/2026-11-07/clipboard-r100-native-core/receipt.json",
+      "sha256": "bc3fa5996462b9b8a660751e9de2374a4c48d2e0f34cee6f5e2a0e00334b185d"
+    },
+    "fullNativeProtocolRegressionQualified": false
+  },
+  "windowsPackageEvidence": {
+    "path": "docs/validation/2026-11-07/clipboard-r100-windows-package/qualified-receipt.json",
+    "sha256": "0f151961686b96970a620a3a1a2984b363989c5743d9c57990302b05d036edf3"
+  },
+  "macosLinuxPackageDispatch": {
+    "path": "docs/validation/2026-11-07/clipboard-r100-native-core/package-dispatch-observation.json",
+    "sha256": "08893badd3a75965b069c77cd6d4f33a4c7be89867ebc370423b7321a2754694"
+  }
 }
