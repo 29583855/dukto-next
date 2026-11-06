@@ -207,7 +207,7 @@ class FileExchangeTests final : public QObject {
                                  {"manifest", QString::fromLatin1(hash.toHex())},
                                  {"token", QString(64, 'a')},
                                  {"lanes", "1"}};
-        // 日期：2026-11-06；五秒TLS准备不计入三秒故障观察；原生信任初始化耗时单独留档。
+        // 日期：2026-11-06；阶段耗时独立留档；原两秒通道预算不变，失败计时从数据断开开始。
         QElapsedTimer timeline;
         timeline.start();
         std::atomic<qint64> disconnectedAt{-1};
@@ -216,7 +216,7 @@ class FileExchangeTests final : public QObject {
         lane.operation = [&](qintptr descriptor) {
             // 日期：2026-11-06；TLS认证和加入完成后先关闭数据连接，控制错误此时尚未发出。
             {
-                dukto::next::SecureChannel peer(5000);
+                dukto::next::SecureChannel peer(2000);
                 qInfo() << "terminal fixture lane TLS begin" << timeline.elapsed();
                 peer.accept(descriptor, service.configuration());
                 qInfo() << "terminal fixture lane TLS ready" << timeline.elapsed();
@@ -241,15 +241,17 @@ class FileExchangeTests final : public QObject {
         std::atomic_bool lateFailureWritten{false};
         control.operation = [&](qintptr descriptor) {
             // 日期：2026-11-06；控制晚300ms返回真实Failure，不凭数据断线猜测错误码。
-            dukto::next::SecureChannel peer(5000);
+            dukto::next::SecureChannel peer(2000);
             qInfo() << "terminal fixture control TLS begin" << timeline.elapsed();
             peer.accept(descriptor, service.configuration());
             qInfo() << "terminal fixture control TLS ready" << timeline.elapsed();
             QElapsedTimer deadline;
             deadline.start();
             while (!disconnected.load()) {
-                if (deadline.elapsed() > 5000)
+                if (deadline.elapsed() > 2000)
                     throw dukto::Error(dukto::ExitCode::Network, "fixture lane deadline", "test");
+                // 日期：2026-11-06；SecureTransport完成本端握手后仍须泵送尾部TLS事件，不能休眠饿死对端。
+                peer.checkpoint("fixture-lane-wait");
                 QThread::msleep(1);
             }
             QThread::msleep(300);
@@ -258,10 +260,10 @@ class FileExchangeTests final : public QObject {
                     if (reported == -3) {
                         peer.write(dukto::next::Type::Completed, 2, {{"ordinary", true}});
                     } else if (reported == -4) {
-                        // 日期：2026-11-06；合法busy持续四秒；失败观察仍须在生产三秒总期限结束。
+                        // 日期：2026-11-06；合法busy不断续发仍须在原两秒总期限结束。
                         QElapsedTimer busy;
                         busy.start();
-                        while (busy.elapsed() < 4000) {
+                        while (busy.elapsed() < 2500) {
                             peer.write(dukto::next::Type::TaskState, 2, {{"state", "busy"}});
                             QThread::msleep(50);
                         }
@@ -293,13 +295,13 @@ class FileExchangeTests final : public QObject {
         QString stage;
         qint64 failureElapsed = -1;
         {
-            dukto::next::SecureChannel peer(5000);
+            dukto::next::SecureChannel peer(2000);
             qInfo() << "terminal fixture client TLS begin" << timeline.elapsed();
             peer.connectTo("127.0.0.1", control.serverPort(), "127.0.0.1",
                            QSslConfiguration::defaultConfiguration(), profile.fingerprint);
             qInfo() << "terminal fixture client TLS ready" << timeline.elapsed();
             dukto::ParallelTransfer transfer(ticket, Task, hash, false);
-            transfer.startClients(profile, 5000, &manifest);
+            transfer.startClients(profile, 2000, &manifest);
             try {
                 transfer.sendTree(peer, manifest, 2);
             } catch (const dukto::Error &error) {
@@ -319,7 +321,7 @@ class FileExchangeTests final : public QObject {
                          : (reported == -1 || reported == -3 ? 6 : (reported == -2 ? 2 : 3));
         QCOMPARE(code, expected);
         if (reported == -4)
-            QVERIFY(failureElapsed >= 3000 && failureElapsed < 4000);
+            QVERIFY(failureElapsed >= 2000 && failureElapsed < 4000);
         if (reported > 0) {
             QCOMPARE(stage, QString("receive"));
             QVERIFY(lateFailureWritten.load());
