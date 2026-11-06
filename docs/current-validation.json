@@ -1,5 +1,5 @@
 {
-  "observedUtc": "2026-11-06T17:44:04.374540+00:00",
+  "observedUtc": "2026-11-06T17:49:19.287325+00:00",
   "productionCommit": "88f33b2c83f2950307c362fb64c693f7e9e5929d",
   "testCommit": "88f33b2c83f2950307c362fb64c693f7e9e5929d",
   "packages": [
@@ -214,7 +214,7 @@
   "releaseQualified": false,
   "deliveryComplete": false,
   "planVersion": "v0.95",
-  "currentSourceStage": "R98 CI guard bound to reviewed exit fixture; prior dual Mac precompile failure preserved; Windows/Linux targeted passed; new native Mac pending",
+  "currentSourceStage": "R98 approved Mac guard passed and native compilation running; R96 original three platforms 23 core each/142 protocols verified, ARM capacity retry in progress",
   "nativeMusl": {
     "sourceCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
     "productionCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
@@ -16284,7 +16284,19 @@
       "sha256": "a16e9176ce6218d0964fca8ec4851d5b6aeb44c502fa1f68c320c816f8c7ac59"
     },
     "independentUbuntuGroupExitStillFailed": true,
-    "independentUbuntuExitRootCauseProven": false
+    "independentUbuntuExitRootCauseProven": false,
+    "fullNativeAttemptOneEvidence": {
+      "path": "docs/validation/2026-11-07/boundary-r96-native-terminal/attempt-1-partial-verification.json",
+      "sha256": "53add111278edb16205f019e65c0c8a7f0dcfbb60c3ba1d2dec6833bdaa34df5"
+    },
+    "fullNativeOriginalAttemptConclusion": "failure",
+    "fullNativeRemainingThreeCoreTargetsEach": 23,
+    "fullNativeRemainingThreeProtocolReports": 142,
+    "fullNativeArmRetryAccepted": true,
+    "fullNativeArmRetryEvidence": {
+      "path": "docs/validation/2026-11-07/boundary-r96-native-terminal/r96-arm-capacity-terminal-retry.json",
+      "sha256": "896965f97418229cee940d233943069c2f9223c72b3bed6568c4f90ee3967fe3"
+    }
   },
   "nativeListenerRegressionR96": {
     "id": 42251051894,
@@ -17507,12 +17519,12 @@
       "sha256": "872c369563c6beb92b4421968bdf88a82f6621aae9bcad048f3a3fe316c7c56a"
     }
   },
-  "currentSourceCommit": "38f2384524bfdefa2ffefcc4c737224185a53266",
+  "currentSourceCommit": "b2e4659b347c65eef24c8e568e07e96a2d6ff2d7",
   "productionImplementationUnchangedFrom": "88f33b2c83f2950307c362fb64c693f7e9e5929d",
   "nativeRegressionGuardR98": {
     "date": "2026-11-07",
     "planVersion": "v0.97",
-    "sourceCommitPending": true,
+    "sourceCommitPending": false,
     "previousSourceCommit": "38f2384524bfdefa2ffefcc4c737224185a53266",
     "productionImplementationUnchangedFrom": "88f33b2c83f2950307c362fb64c693f7e9e5929d",
     "approvedExitTestCommit": "38f2384524bfdefa2ffefcc4c737224185a53266",
@@ -18388,6 +18400,18 @@
     },
     "nativeMacRegressionPending": true,
     "releaseQualified": false,
-    "deliveryComplete": false
+    "deliveryComplete": false,
+    "sourceCommit": "b2e4659b347c65eef24c8e568e07e96a2d6ff2d7",
+    "productionCommit": "b2e4659b347c65eef24c8e568e07e96a2d6ff2d7",
+    "observedUtc": "2026-11-06T17:49:19.287325+00:00",
+    "runs": {
+      "listenerRegression": {
+        "id": 42264789875,
+        "head_sha": "b2e4659b347c65eef24c8e568e07e96a2d6ff2d7",
+        "status": "in_progress",
+        "conclusion": null,
+        "html_url": "https://github.com/29583855/dukto-next/actions/runs/42264789875"
+      }
+    }
   }
 }
