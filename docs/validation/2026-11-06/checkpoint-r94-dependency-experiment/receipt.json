@@ -1,0 +1,78 @@
+{
+  "date": "2026-11-06",
+  "original": {
+    "gate": "CheckpointGate",
+    "seconds": 0.75,
+    "timeoutSeconds": 0.75,
+    "minimumDurableBytes": 4194304,
+    "confirmedBeforeCleanup": null,
+    "failure": "AssertionError(('no durable checkpoint before fault', 4194304, {'direction': 'upload', 'accepting': True, 'released': False, 'streams': [{'index': 0, 'limit': 4325376, 'reserved': 147456, 'forwarded': 147456, 'waiting': False, 'finished': False, 'grants': 1}, {'index': 1, 'limit': 131072, 'reserved': 131072, 'forwarded': 131072, 'waiting': True, 'finished': False, 'grants': 0}], 'scope': 'opaque TLS forwarding barrier; forwarded bytes include protocol overhead'}))",
+    "evidenceBeforeCleanup": {
+      "direction": "upload",
+      "accepting": true,
+      "released": false,
+      "streams": [
+        {
+          "index": 0,
+          "limit": 4325376,
+          "reserved": 147456,
+          "forwarded": 147456,
+          "waiting": false,
+          "finished": false,
+          "grants": 1
+        },
+        {
+          "index": 1,
+          "limit": 131072,
+          "reserved": 131072,
+          "forwarded": 131072,
+          "waiting": true,
+          "finished": false,
+          "grants": 0
+        }
+      ],
+      "scope": "opaque TLS forwarding barrier; forwarded bytes include protocol overhead"
+    }
+  },
+  "experimental": {
+    "gate": "RotatingGate",
+    "seconds": 0.062,
+    "timeoutSeconds": 0.75,
+    "minimumDurableBytes": 4194304,
+    "confirmedBeforeCleanup": 4194304,
+    "failure": null,
+    "evidenceBeforeCleanup": {
+      "direction": "upload",
+      "accepting": false,
+      "released": false,
+      "streams": [
+        {
+          "index": 0,
+          "limit": 4325376,
+          "reserved": 147456,
+          "forwarded": 147456,
+          "waiting": false,
+          "finished": true,
+          "grants": 1
+        },
+        {
+          "index": 1,
+          "limit": 4325376,
+          "reserved": 147456,
+          "forwarded": 147456,
+          "waiting": false,
+          "finished": true,
+          "grants": 1
+        }
+      ],
+      "scope": "opaque TLS forwarding barrier; forwarded bytes include protocol overhead"
+    }
+  },
+  "originalGateSha256": "7a5e976bdcbb3b102bcc7f6b87028866cf4e3439ad876eb4957fd21f60fbcc5e",
+  "crossStreamDependencyStarvationReproduced": true,
+  "productionSourceModified": false,
+  "syntheticScenarioOnly": true,
+  "r93MacOSRootCauseProven": false,
+  "releaseQualified": false,
+  "deliveryComplete": false
+}
