@@ -438,6 +438,96 @@ class CoreTests final : public QObject {
         QVERIFY(!QFileInfo::exists(root.filePath("cancelled.bin")));
         QCOMPARE(QDir(root.path()).entryList({"*.part"}, QDir::Files | QDir::Hidden).size(), 0);
     }
+#ifdef Q_OS_WIN
+    // 日期：2026-11-06；真实ACL拒绝创建覆盖短暂解除及持续拒绝，不能把权限错误当作普通锁竞争。
+    void reservationCreatePermission_data() {
+        QTest::addColumn<bool>("release");
+        QTest::newRow("short-denial") << true;
+        QTest::newRow("persistent-denial") << false;
+    }
+
+    // 日期：2026-11-06；只改自有临时目录FILE_ADD_FILE权限，恢复原ACL后才执行任何结果断言。
+    void reservationCreatePermission() {
+        QFETCH(bool, release);
+        QTemporaryDir root;
+        const auto native = QDir::toNativeSeparators(root.path());
+        DWORD needed = 0;
+        GetFileSecurityW(reinterpret_cast<LPCWSTR>(native.utf16()), DACL_SECURITY_INFORMATION,
+                         nullptr, 0, &needed);
+        QVERIFY(needed > 0 && needed < 65536);
+        QByteArray original(static_cast<int>(needed), 0);
+        QVERIFY(GetFileSecurityW(reinterpret_cast<LPCWSTR>(native.utf16()),
+                                 DACL_SECURITY_INFORMATION, original.data(), needed, &needed));
+        SECURITY_DESCRIPTOR_CONTROL control = 0;
+        DWORD revision = 0;
+        QVERIFY(GetSecurityDescriptorControl(
+            reinterpret_cast<PSECURITY_DESCRIPTOR>(original.data()), &control, &revision));
+        const auto restore = [&]() {
+            // 日期：2026-11-06；只恢复本测试保存的DACL，保留原继承保护位，不修改父目录。
+            const auto flags =
+                DACL_SECURITY_INFORMATION |
+                ((control & SE_DACL_PROTECTED) ? PROTECTED_DACL_SECURITY_INFORMATION
+                                               : UNPROTECTED_DACL_SECURITY_INFORMATION);
+            return bool(SetFileSecurityW(reinterpret_cast<LPCWSTR>(native.utf16()), flags,
+                                         reinterpret_cast<PSECURITY_DESCRIPTOR>(original.data())));
+        };
+        PSECURITY_DESCRIPTOR denied = nullptr;
+        QVERIFY(ConvertStringSecurityDescriptorToSecurityDescriptorW(
+            L"D:P(D;;0x2;;;WD)(A;;FA;;;WD)", SDDL_REVISION_1, &denied, nullptr));
+        const bool applied = SetFileSecurityW(
+            reinterpret_cast<LPCWSTR>(native.utf16()),
+            DACL_SECURITY_INFORMATION | PROTECTED_DACL_SECURITY_INFORMATION, denied);
+        LocalFree(denied);
+        QVERIFY(applied);
+        bool restoredByWorker = !release;
+        QThread *worker = nullptr;
+        if (release) {
+            worker = QThread::create([&]() {
+                // 日期：2026-11-06；真实拒绝持续40ms，生产预约必须在固定总预算中等待解除。
+                QThread::msleep(40);
+                restoredByWorker = restore();
+            });
+            worker->start();
+        }
+        bool acquired = false;
+        int code = 0;
+        QString stage;
+        QElapsedTimer elapsed;
+        elapsed.start();
+        try {
+            dukto::TargetReservation reservation(root.filePath("permission.bin"));
+            acquired = reservation.acquired();
+        } catch (const dukto::Error &error) {
+            code = static_cast<int>(error.code);
+            stage = error.stage;
+        } catch (...) {
+            code = -1;
+        }
+        const auto duration = elapsed.elapsed();
+        if (worker) {
+            worker->wait();
+            delete worker;
+        }
+        const bool restored = restore();
+        QVERIFY(restored && restoredByWorker);
+        if (release) {
+            QVERIFY2(
+                acquired,
+                qPrintable(QString("code=%1 stage=%2 ms=%3").arg(code).arg(stage).arg(duration)));
+            QCOMPARE(code, 0);
+            QVERIFY(duration >= 30);
+        } else {
+            QVERIFY(!acquired);
+            QCOMPARE(code, 5);
+            QCOMPARE(stage, QString("conflict"));
+            QVERIFY(duration >= 90);
+        }
+        QVERIFY(duration < 2000);
+        dukto::TargetReservation healthy(root.filePath("permission.bin"));
+        QVERIFY(healthy.acquired());
+    }
+#endif
+
     // 日期：2026-11-06；八个工作线程同时独占提交同名文件，各自内容及唯一名称必须保留。
     void concurrentExclusiveCommits() {
         QTemporaryDir root;

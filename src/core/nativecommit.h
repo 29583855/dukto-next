@@ -96,7 +96,7 @@ void removeReceivedTemporary(const QString &path, const QByteArray &identity, bo
 // 预约文件位于目标父目录；仅协调本程序的新执行者，不宣称文件系统具有路径 CAS。
 class TargetReservation final {
   public:
-    // 日期：2026-11-05；固定父目录，按规范文件名预约一个目标；不等待活动执行者。
+    // 日期：2026-11-06；固定父目录；活动锁不等待；Windows短暂创建权限错误最多重试100ms。
     explicit TargetReservation(const QString &destination);
     // 日期：2026-11-05；先移除本任务锁文件，再释放父目录；死进程由 QLockFile 身份检测接管。
     ~TargetReservation();

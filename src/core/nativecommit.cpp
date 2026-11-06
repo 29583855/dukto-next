@@ -616,7 +616,7 @@ void removeReceivedTemporary(const QString &path, const QByteArray &identity, bo
 #endif
 }
 
-// 日期：2026-11-05；同名的 NFC/大小写别名使用同一预约，Linux 额外串行不影响安全性。
+// 日期：2026-11-06；同名别名共用预约；Windows短暂创建拒绝有界重试，持续失败保留分类。
 TargetReservation::TargetReservation(const QString &destination) {
     const QFileInfo information(destination);
     if (!QDir::isAbsolutePath(destination) || information.fileName().isEmpty())
@@ -635,9 +635,37 @@ TargetReservation::TargetReservation(const QString &destination) {
         new QLockFile(QDir(information.absolutePath())
                           .filePath(".dukto-target-" + QString::fromLatin1(key) + ".lock")));
     lock_->setStaleLockTime(0);
+#ifdef Q_OS_WIN
+    // 日期：2026-11-06；Qt5在CREATE_NEW拒绝后再查询存在性，解锁竞争可被误归为PermissionError。
+    // 仅该分类以10ms间隔重试，总预算100ms/最多11次；正常活动锁立即返回，UnknownError绝不重试。
+    QElapsedTimer elapsed;
+    elapsed.start();
+    for (int attempt = 0;; ++attempt) {
+        acquired_ = lock_->tryLock(0);
+        if (acquired_ || lock_->error() != QLockFile::PermissionError || attempt >= 10)
+            break;
+        const qint64 remaining = 100 - elapsed.elapsed();
+        if (remaining <= 0)
+            break;
+        QThread::msleep(static_cast<unsigned long>(qMin<qint64>(10, remaining)));
+    }
+#else
     acquired_ = lock_->tryLock(0);
-    if (!acquired_ && lock_->error() != QLockFile::LockFailedError)
-        throw Error(ExitCode::Disk, QStringLiteral("无法创建目标预约"), "conflict");
+#endif
+    if (!acquired_ && lock_->error() != QLockFile::LockFailedError) {
+        const auto qtError = static_cast<int>(lock_->error());
+#ifdef Q_OS_WIN
+        const auto observed = GetLastError();
+        throw Error(ExitCode::Disk,
+                    QStringLiteral("reservation-create qt-lock-error=%1 observed-win-error=%2")
+                        .arg(qtError)
+                        .arg(observed),
+                    "conflict");
+#else
+        throw Error(ExitCode::Disk, QStringLiteral("无法创建目标预约，Qt错误码 %1").arg(qtError),
+                    "conflict");
+#endif
+    }
 }
 
 // 日期：2026-11-05；成员逆序析构，QLockFile 在固定父目录释放前清理自己持有的锁。
