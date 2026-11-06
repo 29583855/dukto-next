@@ -426,9 +426,8 @@
     },
     "native": {
       "id": 42201439317,
-      "head_sha": "463521a9301016f36c0d80f8e6704faedce403a2",
-      "status": "in_progress",
-      "conclusion": null,
+      "status": "completed",
+      "conclusion": "failure",
       "html_url": "https://github.com/29583855/dukto-next/actions/runs/42201439317"
     }
   },
@@ -580,5 +579,22 @@
     "path": "docs/validation/2026-11-06/private-read-r88-musl-terminal/receipt.json",
     "sha256": "400e2d41d6d489219bcb4bae6b33d84d5593e86b3a3b8f27e0db63ba4ddd1a79"
   },
-  "muslOriginalReportsVerified": true
+  "muslOriginalReportsVerified": true,
+  "nativeTerminalEvidence": {
+    "path": "docs/validation/2026-11-06/private-read-r88-native-failure/receipt.json",
+    "sha256": "183ab18863dac2abb2934f8ac9032358f12b9217b9735c21f0ba0aa7a6207535"
+  },
+  "nativeWholeSuitePassed": false,
+  "nativeWindowsFailure": [
+    {
+      "name": "conflict-skip",
+      "exitCode": 1,
+      "seconds": 164.613,
+      "report": "build\\conflict-skip.json",
+      "reportCreated": false,
+      "passed": false
+    }
+  ],
+  "nativeWindowsPassingOriginalReportsVerified": 47,
+  "nativeWindowsFailureRootCauseProven": false
 }

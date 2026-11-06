@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "E:\project\dukto\tests\parallel_isolation_integration.py", line 247, in <module>
+    main()
+  File "E:\project\dukto\tests\parallel_isolation_integration.py", line 218, in main
+    assert max(item["threads"] for item in samples) <= baseline["threads"] + 1, samples
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: [{'rss': 30408704, 'threads': 6, 'handlesOrFds': 241}, {'rss': 29872128, 'threads': 6, 'handlesOrFds': 241}, {'rss': 29990912, 'threads': 6, 'handlesOrFds': 241}, {'rss': 30142464, 'threads': 6, 'handlesOrFds': 241}, {'rss': 30199808, 'threads': 6, 'handlesOrFds': 241}, {'rss': 30310400, 'threads': 6, 'handlesOrFds': 241}, {'rss': 30318592, 'threads': 6, 'handlesOrFds': 241}, {'rss': 30298112, 'threads': 6, 'handlesOrFds': 241}, {'rss': 30064640, 'threads': 6, 'handlesOrFds': 241}, {'rss': 30199808, 'threads': 6, 'handlesOrFds': 241}, {'rss': 30105600, 'threads': 8, 'handlesOrFds': 242}, {'rss': 30453760, 'threads': 8, 'handlesOrFds': 242}]

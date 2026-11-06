@@ -1,0 +1,73 @@
+{
+  "date": "2026-11-06",
+  "observedUtc": "2026-11-06T11:54:00.039026+00:00",
+  "planVersion": "v0.90",
+  "productionCommit": "effd3115e95e696077a13038f3bb0616362eac5d",
+  "testCommit": null,
+  "testCommitPending": true,
+  "localEvidence": {
+    "path": "docs/validation/2026-11-06/thread-idle-r91e-windows/receipt.json",
+    "sha256": "0e7f39b4d22a4ef024b6d306f815e07ce3c4a307fa7f3d90b19200224574d581"
+  },
+  "testInputs": [
+    {
+      "path": "tests/idle_resources.py",
+      "sha256": "41aab48478ff12962ecc2500c9d61429178a2390a4138bb62fa724f95791310c"
+    },
+    {
+      "path": "tests/parallel_isolation_integration.py",
+      "sha256": "4e5dcdc59f069e6cd4049d70a5d83234c95ea63b707d9f26748c3f05fea61400"
+    }
+  ],
+  "numericGuardsUnchanged": [
+    "assert max(item[\"handlesOrFds\"] for item in samples) <= baseline[\"handlesOrFds\"] + 8, samples",
+    "assert max(item[\"threads\"] for item in samples) <= baseline[\"threads\"] + 1, samples",
+    "assert samples[-1][\"rss\"] <= baseline[\"rss\"] + 8 * 1024 * 1024, samples"
+  ],
+  "windowsSystemPoolSettlingLimitSeconds": 60,
+  "windowsObservationTimingChanged": true,
+  "productionFilesChanged": false,
+  "formalIsolationTestsBothPassed": true,
+  "actualApplicationThreadsRefused": {
+    "path": "docs/validation/2026-11-06/thread-idle-r91e-windows/application-thread-refusal.json",
+    "sha256": "6d0e0f258964e16326a0b56c21a4b45f29296fe4253590f81dd611a2f1f5f096"
+  },
+  "actualNativePoolSettling": {
+    "path": "docs/validation/2026-11-06/thread-idle-r91f-system-pool/receipt.json",
+    "sha256": "7eef6fd9569dc5c4515872d3343544c789afe5ea30e0e524721bf6e82976bee9"
+  },
+  "nativePoolThreads": [
+    5,
+    10,
+    5
+  ],
+  "originalSameBinaryDiagnosis": {
+    "path": "docs/validation/2026-11-06/data-file-r90-isolation-thread-lifecycle-ucrt/receipt.json",
+    "sha256": "416a5308566b89e612c85de409d8f086809666450ac5a127ada9b5fc52a1eea8"
+  },
+  "sameSymptomFailureReproduced": true,
+  "ntdllSymbolEvidence": {
+    "path": "docs/validation/2026-11-06/data-file-r90-ntdll-pdb-v2/receipt.json",
+    "sha256": "5f5d3c518fb1a9f6745289ef7106b812517fced56bb40135dc2ae33b046f5f4f"
+  },
+  "reproducedNewThreadsSymbol": "TppWorkerThread",
+  "originalFailedInstanceRootCauseProven": false,
+  "originalR90WholeSuitePassed": false,
+  "originalFailuresRetained": true,
+  "posixHelperOnly": {
+    "path": "docs/validation/2026-11-06/thread-idle-r91e-posix-helper.json",
+    "sha256": "ac223cc8019fc4ca53d0961552ea404dfcd05e14264b3c18efca145993901778"
+  },
+  "macOSPreviewEvidence": {
+    "path": "docs/validation/2026-11-06/data-file-r90-macos-package-terminal/receipt.json",
+    "sha256": "497ae55920ccdcee25856864d6f4ac50365f918b8f43920073b8c56f485522b3"
+  },
+  "releaseQualified": false,
+  "deliveryComplete": false,
+  "productionFilesMatchR90": 91,
+  "changedExistingEncodingBomNewlinePreserved": true,
+  "nativeThreadIdReuseRefused": {
+    "path": "docs/validation/2026-11-06/thread-idle-r91-native-id-reuse.json",
+    "sha256": "5a09201ecda75c45adf7cdd9a21b9bfe1e9ab03222aaa0431c5ccd7b65c4898c"
+  }
+}

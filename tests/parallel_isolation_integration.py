@@ -12,7 +12,7 @@ import subprocess
 import tempfile
 import time
 
-import psutil
+from idle_resources import idle_sample
 
 from process_output import JsonOutputDrain
 from service_integration import free_port, run
@@ -95,14 +95,6 @@ def completed(operation):
     assert code == 0 and not error, (code, error, events)
     assert events[-1]["event"] == "transfer-completed" and events[-1]["state"] == "completed", events
     return events[-1]
-
-
-# 日期：2026-11-05；仅在任务全部退出后测空闲资源，避免把活动线程/连接峰值误判成泄漏。
-def idle_sample(process):
-    item = psutil.Process(process.pid)
-    time.sleep(0.3)
-    return {"rss": item.memory_info().rss, "threads": item.num_threads(),
-            "handlesOrFds": item.num_handles() if os.name == "nt" else item.num_fds()}
 
 
 # 日期：2026-11-05；隔离目录、独立身份及回环服务，不改共享配置或触碰旧版长时测试。
@@ -212,7 +204,7 @@ def main():
                                                    "--remote-path", destination.name, "--threads", "4"])
                 assert digest(destination / small.name) == small_sha
                 if index >= 3:
-                    samples.append(idle_sample(server))
+                    samples.append(idle_sample(server, samples[0] if samples else None))
             baseline = samples[0]
             assert max(item["handlesOrFds"] for item in samples) <= baseline["handlesOrFds"] + 8, samples
             assert max(item["threads"] for item in samples) <= baseline["threads"] + 1, samples

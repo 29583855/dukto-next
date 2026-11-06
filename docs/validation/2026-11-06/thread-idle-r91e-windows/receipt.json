@@ -1,0 +1,92 @@
+{
+  "date": "2026-11-06",
+  "productionCommit": "effd3115e95e696077a13038f3bb0616362eac5d",
+  "inputs": [
+    {
+      "path": "tests/idle_resources.py",
+      "sha256": "41aab48478ff12962ecc2500c9d61429178a2390a4138bb62fa724f95791310c"
+    },
+    {
+      "path": "tests/parallel_isolation_integration.py",
+      "sha256": "4e5dcdc59f069e6cd4049d70a5d83234c95ea63b707d9f26748c3f05fea61400"
+    }
+  ],
+  "numericGuardsUnchanged": [
+    "assert max(item[\"handlesOrFds\"] for item in samples) <= baseline[\"handlesOrFds\"] + 8, samples",
+    "assert max(item[\"threads\"] for item in samples) <= baseline[\"threads\"] + 1, samples",
+    "assert samples[-1][\"rss\"] <= baseline[\"rss\"] + 8 * 1024 * 1024, samples"
+  ],
+  "windowsSystemPoolSettlingLimitSeconds": 60,
+  "applicationThreadRefusal": {
+    "path": "docs/validation/2026-11-06/thread-idle-r91e-windows/application-thread-refusal.json",
+    "sha256": "6d0e0f258964e16326a0b56c21a4b45f29296fe4253590f81dd611a2f1f5f096"
+  },
+  "firstR90FailureRetained": true,
+  "originalTestChanged": true,
+  "toolchains": [
+    {
+      "toolchain": "ucrt",
+      "binary": {
+        "path": "build/windows-ucrt/dukto-cli.exe",
+        "sha256": "9f35cb9c3d66a1fc44d825b51bbe1a693bdacc0986ac454cbf6c11db171a4184"
+      },
+      "exitCode": 0,
+      "passed": true,
+      "seconds": 33.359,
+      "report": {
+        "path": "docs/validation/2026-11-06/thread-idle-r91e-windows/ucrt/parallel-isolation.json",
+        "sha256": "10d029422f7f988f0d6fb0291ab4a01dc533241f0c3fe0d13d9526244329dff8"
+      },
+      "keptSamples": 12,
+      "settledWindowsSamples": 0,
+      "sampledThreads": [
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        5,
+        7,
+        7,
+        7
+      ],
+      "rawThreadPeak": 7
+    },
+    {
+      "toolchain": "msvc",
+      "binary": {
+        "path": "build/windows/Release/dukto-cli.exe",
+        "sha256": "1b1835bcabd839581fa95812167b3c8cd3e2d3d73d1171646cc43611fa81878b"
+      },
+      "exitCode": 0,
+      "passed": true,
+      "seconds": 34.984,
+      "report": {
+        "path": "docs/validation/2026-11-06/thread-idle-r91e-windows/msvc/parallel-isolation.json",
+        "sha256": "5e85b6f916c3ef1abddca84fc6d5e19719a8f6280f675b900259f668b6354840"
+      },
+      "keptSamples": 12,
+      "settledWindowsSamples": 0,
+      "sampledThreads": [
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "rawThreadPeak": 6
+    }
+  ],
+  "passed": true,
+  "deliveryComplete": false
+}

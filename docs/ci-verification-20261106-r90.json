@@ -1,6 +1,6 @@
 {
   "date": "2026-11-06",
-  "observedUtc": "2026-11-06T11:22:46.258509+00:00",
+  "observedUtc": "2026-11-06T11:46:31.262402+00:00",
   "planVersion": "v0.89",
   "productionCommit": "effd3115e95e696077a13038f3bb0616362eac5d",
   "testCommit": "effd3115e95e696077a13038f3bb0616362eac5d",
@@ -468,8 +468,8 @@
     "macosPackage": {
       "id": 42209504177,
       "head_sha": "effd3115e95e696077a13038f3bb0616362eac5d",
-      "status": "queued",
-      "conclusion": null,
+      "status": "completed",
+      "conclusion": "success",
       "html_url": "https://github.com/29583855/dukto-next/actions/runs/42209504177"
     },
     "musl": {
@@ -487,12 +487,12 @@
       "html_url": "https://github.com/29583855/dukto-next/actions/runs/42209440924"
     }
   },
-  "currentMacPackageSourceCommit": "cd2f6fa83c96f966ffa19a56f1e7f75d86df2085",
+  "currentMacPackageSourceCommit": "effd3115e95e696077a13038f3bb0616362eac5d",
   "currentMacPackageEvidence": {
-    "path": "docs/validation/2026-11-06/legacy-buffer-r89-macos-package-terminal/receipt.json",
-    "sha256": "6ee719333517183c7b9a23c0f4eef97b82ecccebc2a2c7b6f02063e9a69d65a8"
+    "path": "docs/validation/2026-11-06/data-file-r90-macos-package-terminal/receipt.json",
+    "sha256": "497ae55920ccdcee25856864d6f4ac50365f918b8f43920073b8c56f485522b3"
   },
-  "newMacPackagePending": true,
+  "newMacPackagePending": false,
   "transferDataFileLimit": 32,
   "allHandleBudgetComplete": false,
   "allR6BuffersAccounted": false,
@@ -505,5 +505,135 @@
     "sourceSnapshotSha256": "2a6056588072aefe4105a490102a34b8e5bc6f7d05551e006e033263369d9fee"
   },
   "releaseQualified": false,
-  "deliveryComplete": false
+  "deliveryComplete": false,
+  "macosPackages": [
+    {
+      "applicationSourceFiles": 302,
+      "allSourceBlobsMatchExactGitCommit": true,
+      "verifiedPayloadFiles": 1547,
+      "verifiedLinks": 71,
+      "guiCli": [
+        {
+          "path": "Dukto Next.app/Contents/MacOS/dukto-cli",
+          "sha256": "0dccc9effbea8b34219456a085d6b7d80bfd4de0347f9363080cc4651a66d748",
+          "executable": true
+        },
+        {
+          "path": "Dukto Next.app/Contents/MacOS/dukto-gui",
+          "sha256": "8d7a7988acb7f43d517dc8dca97e1ce81eeddb61cb1731773c108bddd67c2899",
+          "executable": true
+        }
+      ],
+      "signature": "adhoc",
+      "developerIdSigned": false,
+      "notarized": false,
+      "runtimeReports": [
+        {
+          "path": "build/package-runtime-cli.json",
+          "sha256": "39cd46c04d0667384eed44501aeb3141826cac8cbd1cd3fb318c4cc717b58fe0",
+          "passed": true
+        },
+        {
+          "path": "build/package-runtime-transfer16.json",
+          "sha256": "837192e5f005cf3c89055986ef227abdf192996214618603edabdfbcf89b23a8",
+          "passed": true
+        },
+        {
+          "path": "build/package-runtime-overwrite.json",
+          "sha256": "3fa2b830f522424c8a8b596268ed692fd9df3ad2984060b7a55fba3cd192e727",
+          "passed": true
+        },
+        {
+          "path": "build/package-runtime-overwrite-recovery.json",
+          "sha256": "c407bdcc7e739ce1283e66cbc5c7a64c9e7a1966bff7c397f55ca535eac09b43",
+          "passed": true
+        },
+        {
+          "path": "build/package-runtime-recovery4to8.json",
+          "sha256": "a04839a635e3bbc5fab146d12f5164c1577ab3b80788756075057de86fa7741b",
+          "passed": true
+        }
+      ],
+      "runtimeMigrationQualified": true,
+      "mainWindowNavigationPassed": true,
+      "systemPathOnly": true,
+      "screenshot": "docs/validation/2026-11-06/data-file-r90-macos-package-terminal/macos-preview-ARM64/build/package-runtime.png",
+      "navigationScreenshot": "docs/validation/2026-11-06/data-file-r90-macos-package-terminal/macos-preview-ARM64/build/main-window-navigation/native/Testing/QtTest/main-server-430x700.png",
+      "architecture": "arm64",
+      "archive": "DuktoNext-macos-arm64-preview.tar.gz",
+      "sha256": "a908aa3c1be2aff449e88799783349b0b8641f0494a54164f4c8939f5f97d657",
+      "sourceCommit": "effd3115e95e696077a13038f3bb0616362eac5d",
+      "artifactId": 13498163832,
+      "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42209504177/artifacts/13498163832",
+      "zipSha256": "fb9b3384438adc0055036693d6c86278b9fa50eba2a0da6ff1e3e3b3a76ec507",
+      "localArchive": "dist/macos-preview-20261106-r90-data-file/macos-preview-ARM64/package-output/DuktoNext-macos-arm64-preview.tar.gz"
+    },
+    {
+      "applicationSourceFiles": 302,
+      "allSourceBlobsMatchExactGitCommit": true,
+      "verifiedPayloadFiles": 1705,
+      "verifiedLinks": 71,
+      "guiCli": [
+        {
+          "path": "Dukto Next.app/Contents/MacOS/dukto-cli",
+          "sha256": "918c1bfd5083afef41a8d93289ee76fa4da3b2bc9c66577005155db5a4b6fbda",
+          "executable": true
+        },
+        {
+          "path": "Dukto Next.app/Contents/MacOS/dukto-gui",
+          "sha256": "22d7d6525732b5d99f035c55a138858142305e3b9f866bbfbf633d692d9d3089",
+          "executable": true
+        }
+      ],
+      "signature": "adhoc",
+      "developerIdSigned": false,
+      "notarized": false,
+      "runtimeReports": [
+        {
+          "path": "build/package-runtime-cli.json",
+          "sha256": "358350b16bb7b6eae34da768e5956fd9fde47cab8a9f29c5add47f755faaac40",
+          "passed": true
+        },
+        {
+          "path": "build/package-runtime-transfer16.json",
+          "sha256": "837192e5f005cf3c89055986ef227abdf192996214618603edabdfbcf89b23a8",
+          "passed": true
+        },
+        {
+          "path": "build/package-runtime-overwrite.json",
+          "sha256": "b266c5c30e147c8c95c979c4e6ddfdeddaf989674335e46040d4c77a196a7cfd",
+          "passed": true
+        },
+        {
+          "path": "build/package-runtime-overwrite-recovery.json",
+          "sha256": "9a79563d5a063bc4b4f9e46042b6cdafaaad0f30695f808fac36a7879c511bc0",
+          "passed": true
+        },
+        {
+          "path": "build/package-runtime-recovery4to8.json",
+          "sha256": "b86a75f17241ec6c7904cdbcfd967dd61d70d1277b8e0c4c5205dd6936f14cf3",
+          "passed": true
+        }
+      ],
+      "runtimeMigrationQualified": true,
+      "mainWindowNavigationPassed": true,
+      "systemPathOnly": true,
+      "screenshot": "docs/validation/2026-11-06/data-file-r90-macos-package-terminal/macos-preview-X64/build/package-runtime.png",
+      "navigationScreenshot": "docs/validation/2026-11-06/data-file-r90-macos-package-terminal/macos-preview-X64/build/main-window-navigation/native/Testing/QtTest/main-server-430x700.png",
+      "architecture": "x86_64",
+      "archive": "DuktoNext-macos-x86_64-preview.tar.gz",
+      "sha256": "2fb1986e68e1eea9d1fbb5786f8e87c34e4448796134656af03ec89fa9c1e47e",
+      "sourceCommit": "effd3115e95e696077a13038f3bb0616362eac5d",
+      "artifactId": 13498943356,
+      "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42209504177/artifacts/13498943356",
+      "zipSha256": "d7b2cde69d71c4ddebddfe1352af897c3f85c58604654bc44e3c2553641a9aa3",
+      "localArchive": "dist/macos-preview-20261106-r90-data-file/macos-preview-X64/package-output/DuktoNext-macos-x86_64-preview.tar.gz"
+    }
+  ],
+  "macosEvidence": {
+    "path": "docs/validation/2026-11-06/data-file-r90-macos-package-terminal/receipt.json",
+    "sha256": "497ae55920ccdcee25856864d6f4ac50365f918b8f43920073b8c56f485522b3"
+  },
+  "macosOriginalPackagesVerified": true,
+  "macosScreenshotsViewed": 4
 }
