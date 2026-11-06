@@ -1,0 +1,41 @@
+{
+  "date": "2026-11-05",
+  "passed": true,
+  "scope": "owned temporary APFS image cleanup",
+  "forced": false,
+  "budgetSeconds": 20,
+  "maximumAttempts": 8,
+  "ownershipVerified": true,
+  "mount": "/Users/runner/work/_temp/dukto-overwrite-4-mount",
+  "image": "/Users/runner/work/_temp/dukto-overwrite-4-limited.dmg",
+  "attempts": [
+    {
+      "attempt": 1,
+      "device": "/dev/disk2",
+      "exitCode": 0,
+      "stdout": "\"disk2\" ejected.\n",
+      "stderr": ""
+    }
+  ],
+  "observations": [
+    {
+      "attached": true,
+      "devices": [
+        "/dev/disk2",
+        "/dev/disk3",
+        "/dev/disk2s1",
+        "/dev/disk3s1"
+      ],
+      "mountPoints": [
+        "/Users/runner/work/_temp/dukto-overwrite-4-mount"
+      ]
+    },
+    {
+      "attached": false,
+      "devices": [],
+      "mountPoints": []
+    }
+  ],
+  "completion": "owned image absent and mount released",
+  "elapsedSeconds": 0.209
+}

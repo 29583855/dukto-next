@@ -1,5 +1,5 @@
 {
-  "observedUtc": "2026-11-06T20:55:47.381098+00:00",
+  "observedUtc": "2026-11-06T21:13:50.580085+00:00",
   "productionCommit": "ed4f5cf08c96f04671e49e5138eda8ce1790ead3",
   "testCommit": "ed4f5cf08c96f04671e49e5138eda8ce1790ead3",
   "packages": [
@@ -214,7 +214,7 @@
   "releaseQualified": false,
   "deliveryComplete": false,
   "planVersion": "v0.100",
-  "currentSourceStage": "R100 deployed GUI/independent CLI packages verified on Windows, macOS ARM/Intel and Linux X11/Wayland; whole protocols and long-test qualification pending",
+  "currentSourceStage": "R100 current packages and dual macOS APFS disk subset verified; first native run artifact upload failed on Intel, only that job retried; full delivery and long tests remain pending",
   "nativeMusl": {
     "sourceCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
     "productionCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
@@ -19754,7 +19754,7 @@
   "clipboardAvailabilityR100": {
     "manifest": {
       "path": "docs/ci-verification-20261107-r100.json",
-      "sha256": "2519f8444a35c43c7c40c2f6029d883d4b968677f8911021fa995a5fa52fffba"
+      "sha256": "bca3ae14da9a81b917634cb45a701bef6ab22cb8c48e7cdbd2db1a3d36b3622c"
     },
     "windowsEvidence": {
       "path": "docs/validation/2026-11-07/clipboard-r100-qualified/verified-receipt.json",
@@ -19768,7 +19768,8 @@
       "head_sha": "ed4f5cf08c96f04671e49e5138eda8ce1790ead3",
       "status": "in_progress",
       "conclusion": null,
-      "html_url": "https://github.com/29583855/dukto-next/actions/runs/42282812778"
+      "html_url": "https://github.com/29583855/dukto-next/actions/runs/42282812778",
+      "run_attempt": 2
     },
     "nativeCoreEvidence": {
       "path": "docs/validation/2026-11-07/clipboard-r100-native-core/receipt.json",
@@ -20177,5 +20178,37 @@
     "peerDisconnectRecoveryContentVerified": true,
     "originalSenderAbortStillPending": true,
     "wholeF18Qualified": false
+  },
+  "macOSDiskR100": {
+    "sourceCommit": "ed4f5cf08c96f04671e49e5138eda8ce1790ead3",
+    "evidence": {
+      "path": "docs/validation/2026-11-07/clipboard-r100-macos-disk-terminal/receipt.json",
+      "sha256": "6fce8d25ee87e062429853f4f2c1a1dc77d923589f19ea654743785ab9836431"
+    },
+    "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42293178190",
+    "nativeArchitectures": 2,
+    "businessReports": 14,
+    "cleanupReports": 14,
+    "tlsDirections": 24,
+    "physicalEnospcAndOriginalProtectionVerified": true,
+    "ownedImagesNormallyDetached": true,
+    "completeDiskFaultMatrixQualified": false
+  },
+  "nativeR100FirstAttempt": {
+    "evidence": {
+      "path": "docs/validation/2026-11-07/clipboard-r100-native-terminal/first-attempt-qualified-subset.json",
+      "sha256": "e8d94142d447c3e67165dc2450a2b272a71ad34ae3ab0c1d02f6909bd2a9edbe"
+    },
+    "conclusion": "failure",
+    "failedStep": "Preserve validation logs",
+    "failureJobId": 128115892367,
+    "failureCategory": "GitHub artifact service CreateArtifact request timed out after five attempts",
+    "verifiedOriginalProtocolReports": 142,
+    "intelBusinessMetadataPassedButOriginalProtocolReportsMissing": true,
+    "wholeRegressionQualified": false,
+    "intelOnlyRetry": {
+      "path": "docs/validation/2026-11-07/clipboard-r100-native-terminal/retry-start-observation.json",
+      "sha256": "9df1e50b372b1bfe2f2cf07e83ebd7eb366cba6fffc0271b065b1e2fbfae8c8b"
+    }
   }
 }

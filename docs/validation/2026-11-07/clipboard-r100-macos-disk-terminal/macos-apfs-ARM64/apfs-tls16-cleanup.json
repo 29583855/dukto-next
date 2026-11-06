@@ -1,0 +1,41 @@
+{
+  "date": "2026-11-05",
+  "passed": true,
+  "scope": "owned temporary APFS image cleanup",
+  "forced": false,
+  "budgetSeconds": 20,
+  "maximumAttempts": 8,
+  "ownershipVerified": true,
+  "mount": "/Users/runner/work/_temp/dukto-tls16-mount",
+  "image": "/Users/runner/work/_temp/dukto-tls16-limited.dmg",
+  "attempts": [
+    {
+      "attempt": 1,
+      "device": "/dev/disk5",
+      "exitCode": 0,
+      "stdout": "\"disk5\" ejected.\n",
+      "stderr": ""
+    }
+  ],
+  "observations": [
+    {
+      "attached": true,
+      "devices": [
+        "/dev/disk5",
+        "/dev/disk6",
+        "/dev/disk5s1",
+        "/dev/disk6s1"
+      ],
+      "mountPoints": [
+        "/Users/runner/work/_temp/dukto-tls16-mount"
+      ]
+    },
+    {
+      "attached": false,
+      "devices": [],
+      "mountPoints": []
+    }
+  ],
+  "completion": "owned image absent and mount released",
+  "elapsedSeconds": 0.189
+}

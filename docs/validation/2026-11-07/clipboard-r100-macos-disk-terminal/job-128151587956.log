@@ -1,0 +1,738 @@
+﻿2026-11-06T21:01:08.0319430Z Current runner version: '2.338.2'
+2026-11-06T21:01:08.0336390Z ##[group]Runner Image Provisioner
+2026-11-06T21:01:08.0336900Z Hosted Compute Agent
+2026-11-06T21:01:08.0337260Z Version: 20261103.629
+2026-11-06T21:01:08.0337680Z Commit: 15dbd9ccb5dbf34fae002b6ed1a2670f52df37bc
+2026-11-06T21:01:08.0338170Z Build Date: 2026-11-03T17:26:59Z
+2026-11-06T21:01:08.0338600Z Worker ID: {c987fd99-565a-49e5-9fab-773837c29e22}
+2026-11-06T21:01:08.0339080Z Region: westus
+2026-11-06T21:01:08.0339490Z Cloud: MacCloud
+2026-11-06T21:01:08.0339860Z ##[endgroup]
+2026-11-06T21:01:08.0340810Z ##[group]Operating System
+2026-11-06T21:01:08.0341200Z macOS
+2026-11-06T21:01:08.0341540Z 15.8.2
+2026-11-06T21:01:08.0341860Z 24H232
+2026-11-06T21:01:08.0342210Z ##[endgroup]
+2026-11-06T21:01:08.0342560Z ##[group]Runner Image
+2026-11-06T21:01:08.0342930Z Image: macos-15-arm64
+2026-11-06T21:01:08.0343290Z Version: 20261104.0514.1
+2026-11-06T21:01:08.0344110Z Included Software: https://github.com/actions/runner-images/blob/macos-15-arm64/20261104.0514/images/macos/macos-15-arm64-Readme.md
+2026-11-06T21:01:08.0345450Z Image Release: https://github.com/actions/runner-images/releases/tag/macos-15-arm64%2F20261104.0514
+2026-11-06T21:01:08.0346160Z ##[endgroup]
+2026-11-06T21:01:08.0346980Z ##[group]GITHUB_TOKEN Permissions
+2026-11-06T21:01:08.0348330Z Contents: read
+2026-11-06T21:01:08.0348710Z Metadata: read
+2026-11-06T21:01:08.0349070Z Packages: read
+2026-11-06T21:01:08.0349430Z ##[endgroup]
+2026-11-06T21:01:08.0350880Z Secret source: Actions
+2026-11-06T21:01:08.0351440Z Cache mode: write
+2026-11-06T21:01:08.0351960Z Prepare workflow directory
+2026-11-06T21:01:08.0577270Z Prepare all required actions
+2026-11-06T21:01:08.0619820Z Getting action download info
+2026-11-06T21:01:08.3693990Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-11-06T21:01:08.5773400Z Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+2026-11-06T21:01:08.6894530Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-11-06T21:01:08.8618280Z Complete job name: disk (macos-15)
+2026-11-06T21:01:08.9131990Z ##[group]Run actions/checkout@v4
+2026-11-06T21:01:08.9132540Z with:
+2026-11-06T21:01:08.9132870Z   repository: 29583855/dukto-next
+2026-11-06T21:01:08.9135740Z   token: ***
+2026-11-06T21:01:08.9136060Z   ssh-strict: true
+2026-11-06T21:01:08.9136370Z   ssh-user: git
+2026-11-06T21:01:08.9136700Z   persist-credentials: true
+2026-11-06T21:01:08.9137040Z   clean: true
+2026-11-06T21:01:08.9137370Z   sparse-checkout-cone-mode: true
+2026-11-06T21:01:08.9137750Z   fetch-depth: 1
+2026-11-06T21:01:08.9138070Z   fetch-tags: false
+2026-11-06T21:01:08.9138390Z   show-progress: true
+2026-11-06T21:01:08.9138720Z   lfs: false
+2026-11-06T21:01:08.9139020Z   submodules: false
+2026-11-06T21:01:08.9139350Z   set-safe-directory: true
+2026-11-06T21:01:08.9139730Z   allow-unsafe-pr-checkout: false
+2026-11-06T21:01:08.9140200Z ##[endgroup]
+2026-11-06T21:01:09.2776630Z Syncing repository: 29583855/dukto-next
+2026-11-06T21:01:09.2778120Z ##[group]Getting Git version info
+2026-11-06T21:01:09.2778740Z Working directory is '/Users/runner/work/dukto-next/dukto-next'
+2026-11-06T21:01:09.2779690Z [command]/opt/homebrew/bin/git version
+2026-11-06T21:01:09.2995990Z git version 2.56.0
+2026-11-06T21:01:09.3007480Z ##[endgroup]
+2026-11-06T21:01:09.3014010Z Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/63b2eb6d-854d-4ac8-9b37-46080b5b3bbe/.gitconfig'
+2026-11-06T21:01:09.3019920Z Temporarily overriding HOME='/Users/runner/work/_temp/63b2eb6d-854d-4ac8-9b37-46080b5b3bbe' before making global git config changes
+2026-11-06T21:01:09.3020900Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-06T21:01:09.3023450Z [command]/opt/homebrew/bin/git config --global --add safe.directory /Users/runner/work/dukto-next/dukto-next
+2026-11-06T21:01:09.3140770Z Deleting the contents of '/Users/runner/work/dukto-next/dukto-next'
+2026-11-06T21:01:09.3144600Z ##[group]Initializing the repository
+2026-11-06T21:01:09.3150970Z [command]/opt/homebrew/bin/git init /Users/runner/work/dukto-next/dukto-next
+2026-11-06T21:01:09.3394390Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-11-06T21:01:09.3395300Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-11-06T21:01:09.3396110Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-11-06T21:01:09.3396970Z hint: call:
+2026-11-06T21:01:09.3397470Z hint:
+2026-11-06T21:01:09.3397940Z hint: 	git config --global init.defaultBranch <name>
+2026-11-06T21:01:09.3398510Z hint:
+2026-11-06T21:01:09.3398960Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-11-06T21:01:09.3399660Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-11-06T21:01:09.3400210Z hint:
+2026-11-06T21:01:09.3400540Z hint: 	git branch -m <name>
+2026-11-06T21:01:09.3400910Z hint:
+2026-11-06T21:01:09.3401640Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-11-06T21:01:09.3408950Z Initialized empty Git repository in /Users/runner/work/dukto-next/dukto-next/.git/
+2026-11-06T21:01:09.3414420Z [command]/opt/homebrew/bin/git remote add origin https://github.com/29583855/dukto-next
+2026-11-06T21:01:09.3488760Z ##[endgroup]
+2026-11-06T21:01:09.3489420Z ##[group]Disabling automatic garbage collection
+2026-11-06T21:01:09.3491270Z [command]/opt/homebrew/bin/git config --local gc.auto 0
+2026-11-06T21:01:09.3554670Z ##[endgroup]
+2026-11-06T21:01:09.3555380Z ##[group]Setting up auth
+2026-11-06T21:01:09.3559200Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-06T21:01:09.3624130Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-06T21:01:09.4776420Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-06T21:01:09.4836950Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-06T21:01:09.5575390Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-06T21:01:09.5627980Z [command]/opt/homebrew/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-06T21:01:09.6366860Z [command]/opt/homebrew/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-11-06T21:01:09.6428400Z ##[endgroup]
+2026-11-06T21:01:09.6429210Z ##[group]Fetching the repository
+2026-11-06T21:01:09.6434200Z [command]/opt/homebrew/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +ed4f5cf08c96f04671e49e5138eda8ce1790ead3:refs/tags/package-r100-20261107
+2026-11-06T21:01:12.2618380Z From https://github.com/29583855/dukto-next
+2026-11-06T21:01:12.2623160Z  * [new ref]         ed4f5cf08c96f04671e49e5138eda8ce1790ead3 -> package-r100-20261107
+2026-11-06T21:01:12.2627650Z ##[endgroup]
+2026-11-06T21:01:12.2628990Z ##[group]Determining the checkout info
+2026-11-06T21:01:12.2630560Z ##[endgroup]
+2026-11-06T21:01:12.2631490Z [command]/opt/homebrew/bin/git sparse-checkout disable
+2026-11-06T21:01:12.2712920Z [command]/opt/homebrew/bin/git config --local --unset-all extensions.worktreeConfig
+2026-11-06T21:01:12.2790390Z ##[group]Checking out the ref
+2026-11-06T21:01:12.2792020Z [command]/opt/homebrew/bin/git checkout --progress --force refs/tags/package-r100-20261107
+2026-11-06T21:01:13.3795270Z Updating files:  81% (6606/8135)
+2026-11-06T21:01:13.4259020Z Updating files:  82% (6671/8135)
+2026-11-06T21:01:13.4361970Z Updating files:  83% (6753/8135)
+2026-11-06T21:01:13.4474530Z Updating files:  84% (6834/8135)
+2026-11-06T21:01:13.4607390Z Updating files:  85% (6915/8135)
+2026-11-06T21:01:13.4718750Z Updating files:  86% (6997/8135)
+2026-11-06T21:01:13.4823200Z Updating files:  87% (7078/8135)
+2026-11-06T21:01:13.4925470Z Updating files:  88% (7159/8135)
+2026-11-06T21:01:13.5005090Z Updating files:  89% (7241/8135)
+2026-11-06T21:01:13.5112050Z Updating files:  90% (7322/8135)
+2026-11-06T21:01:13.5221830Z Updating files:  91% (7403/8135)
+2026-11-06T21:01:13.5342450Z Updating files:  92% (7485/8135)
+2026-11-06T21:01:13.5492430Z Updating files:  93% (7566/8135)
+2026-11-06T21:01:13.5576190Z Updating files:  94% (7647/8135)
+2026-11-06T21:01:13.5666300Z Updating files:  95% (7729/8135)
+2026-11-06T21:01:13.5778750Z Updating files:  96% (7810/8135)
+2026-11-06T21:01:13.5889000Z Updating files:  97% (7891/8135)
+2026-11-06T21:01:13.5971300Z Updating files:  98% (7973/8135)
+2026-11-06T21:01:13.6061210Z Updating files:  99% (8054/8135)
+2026-11-06T21:01:13.6062400Z Updating files: 100% (8135/8135)
+2026-11-06T21:01:13.6063310Z Updating files: 100% (8135/8135), done.
+2026-11-06T21:01:13.6200180Z HEAD is now at ed4f5cf fix: decouple clipboard availability from transfer progress
+2026-11-06T21:01:13.6218070Z ##[endgroup]
+2026-11-06T21:01:13.6343090Z [command]/opt/homebrew/bin/git log -1 --format=%H
+2026-11-06T21:01:13.6411370Z ed4f5cf08c96f04671e49e5138eda8ce1790ead3
+2026-11-06T21:01:13.6701970Z ##[group]Run actions/setup-python@v5
+2026-11-06T21:01:13.6702210Z with:
+2026-11-06T21:01:13.6702400Z   python-version: 3.12
+2026-11-06T21:01:13.6702580Z   check-latest: false
+2026-11-06T21:01:13.6704650Z   token: ***
+2026-11-06T21:01:13.6704800Z   update-environment: true
+2026-11-06T21:01:13.6704990Z   allow-prereleases: false
+2026-11-06T21:01:13.6705170Z   freethreaded: false
+2026-11-06T21:01:13.6705320Z ##[endgroup]
+2026-11-06T21:01:13.8193510Z ##[group]Installed versions
+2026-11-06T21:01:13.8282780Z (node:1087) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-06T21:01:13.8283520Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-06T21:01:13.8284000Z Successfully set up CPython (3.12.10)
+2026-11-06T21:01:13.8284570Z ##[endgroup]
+2026-11-06T21:01:13.8364130Z ##[group]Run python -m unittest discover -s tests -p macos_disk_cleanup_tests.py -v
+2026-11-06T21:01:13.8364710Z [36;1mpython -m unittest discover -s tests -p macos_disk_cleanup_tests.py -v[0m
+2026-11-06T21:01:13.8422090Z shell: /bin/bash -e {0}
+2026-11-06T21:01:13.8422370Z env:
+2026-11-06T21:01:13.8422660Z   pythonLocation: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-06T21:01:13.8423120Z   PKG_CONFIG_PATH: /Users/runner/hostedtoolcache/Python/3.12.10/arm64/lib/pkgconfig
+2026-11-06T21:01:13.8423560Z   Python_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-06T21:01:13.8423930Z   Python2_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-06T21:01:13.8424380Z   Python3_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-06T21:01:13.8424710Z ##[endgroup]
+2026-11-06T21:01:14.3439960Z test_absent_image_but_mount_present_refused (macos_disk_cleanup_tests.CleanupTests.test_absent_image_but_mount_present_refused) ... ok
+2026-11-06T21:01:14.3468760Z test_info_failure_propagates (macos_disk_cleanup_tests.CleanupTests.test_info_failure_propagates) ... ok
+2026-11-06T21:01:14.3475870Z test_initial_ownership_required (macos_disk_cleanup_tests.CleanupTests.test_initial_ownership_required) ... ok
+2026-11-06T21:01:14.3498140Z test_nonzero_requires_actual_absence (macos_disk_cleanup_tests.CleanupTests.test_nonzero_requires_actual_absence) ... ok
+2026-11-06T21:01:14.3521490Z test_partial_unmount_retries_device (macos_disk_cleanup_tests.CleanupTests.test_partial_unmount_retries_device) ... ok
+2026-11-06T21:01:14.3541280Z test_reassigned_device_is_not_reused (macos_disk_cleanup_tests.CleanupTests.test_reassigned_device_is_not_reused) ... ok
+2026-11-06T21:01:14.3578530Z test_success_exit_with_attached_image_is_failure (macos_disk_cleanup_tests.CleanupTests.test_success_exit_with_attached_image_is_failure) ... ok
+2026-11-06T21:01:14.3589000Z 
+2026-11-06T21:01:14.3589480Z ----------------------------------------------------------------------
+2026-11-06T21:01:14.3590100Z Ran 7 tests in 0.017s
+2026-11-06T21:01:14.3590440Z 
+2026-11-06T21:01:14.3590740Z OK
+2026-11-06T21:01:14.3733070Z ##[group]Run brew install qt@5 openssl@3
+2026-11-06T21:01:14.3733370Z [36;1mbrew install qt@5 openssl@3[0m
+2026-11-06T21:01:14.3733690Z [36;1mecho "CMAKE_PREFIX_PATH=$(brew --prefix qt@5)" >> "$GITHUB_ENV"[0m
+2026-11-06T21:01:14.3734130Z [36;1mecho "OPENSSL_ROOT_DIR=$(brew --prefix openssl@3)" >> "$GITHUB_ENV"[0m
+2026-11-06T21:01:14.3734510Z [36;1mecho "$(brew --prefix qt@5)/bin" >> "$GITHUB_PATH"[0m
+2026-11-06T21:01:14.3770740Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-06T21:01:14.3771010Z env:
+2026-11-06T21:01:14.3771260Z   pythonLocation: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-06T21:01:14.3771700Z   PKG_CONFIG_PATH: /Users/runner/hostedtoolcache/Python/3.12.10/arm64/lib/pkgconfig
+2026-11-06T21:01:14.3772210Z   Python_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-06T21:01:14.3772590Z   Python2_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-06T21:01:14.3773050Z   Python3_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-06T21:01:14.3773340Z ##[endgroup]
+2026-11-06T21:01:15.8997380Z [33mWarning:[0m openssl@3 3.5.9 is already installed and up-to-date.
+2026-11-06T21:01:15.8997840Z To reinstall 3.5.9, run:
+2026-11-06T21:01:15.8998050Z   brew reinstall openssl@3
+2026-11-06T21:01:15.9975730Z ##[warning]qt@5 has been deprecated because it is not supported upstream! It will be disabled on 2027-05-19.
+2026-11-06T21:01:16.0288380Z [32m==>[0m [1mDownloading bottle manifests[0m
+2026-11-06T21:01:16.5211210Z ✔︎ Bottle Manifest qt@5 (5.15.19)
+2026-11-06T21:01:16.7067370Z [34m==>[0m [1mWould install 1 formula:[0m
+2026-11-06T21:01:16.7067670Z qt@5 5.15.19
+2026-11-06T21:01:16.7068440Z [34m==>[0m [1mWould install 1 dependency for qt@5:[0m
+2026-11-06T21:01:16.7068940Z md4c 0.6.0
+2026-11-06T21:01:16.7340200Z [32m==>[0m [1mFetching downloads for: [32mqt@5[39m[0m
+2026-11-06T21:01:17.0726550Z ✔︎ Bottle Manifest md4c (0.6.0)
+2026-11-06T21:01:18.4650800Z ✔︎ Bottle md4c (0.6.0)
+2026-11-06T21:01:21.3768920Z ✔︎ Bottle qt@5 (5.15.19)
+2026-11-06T21:01:21.4425910Z [32m==>[0m [1mInstalling qt@5 dependency: [32mmd4c[39m (0.6.0)[0m
+2026-11-06T21:01:21.4451020Z [34m==>[0m [1mPouring md4c--0.6.0.arm64_sequoia.bottle.tar.gz[0m
+2026-11-06T21:01:22.6939840Z 🍺  /opt/homebrew/Cellar/md4c/0.6.0: 20 files, 307.1KB
+2026-11-06T21:01:22.6941940Z [32m==>[0m [1mInstalling [32mqt@5[39m[0m
+2026-11-06T21:01:22.6944360Z [34m==>[0m [1mPouring qt@5--5.15.19.arm64_sequoia.bottle.tar.gz[0m
+2026-11-06T21:01:30.7386090Z 🍺  /opt/homebrew/Cellar/qt@5/5.15.19: 10,541 files, 192.3MB
+2026-11-06T21:01:30.7388030Z [32m==>[0m [1mCaveats[0m
+2026-11-06T21:01:30.7389880Z [34m==>[0m [1mqt@5[0m
+2026-11-06T21:01:30.7391060Z We agreed to the Qt open source license for you.
+2026-11-06T21:01:30.7391750Z If this is unacceptable you should uninstall.
+2026-11-06T21:01:30.7392140Z 
+2026-11-06T21:01:30.7392540Z You can add Homebrew's Qt to QtCreator's "Qt Versions" in:
+2026-11-06T21:01:30.7393380Z   Preferences > Qt Versions > Link with Qt...
+2026-11-06T21:01:30.7394020Z pressing "Choose..." and selecting as the Qt installation path:
+2026-11-06T21:01:30.7394670Z   /opt/homebrew/opt/qt@5
+2026-11-06T21:01:30.7395110Z 
+2026-11-06T21:01:30.7395540Z QtWebEngine is no longer included as its Chromium has unfixed vulnerabilities.
+2026-11-06T21:01:30.9698780Z ##[group]Run cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DDUKTO_BUILD_TESTS=OFF
+2026-11-06T21:01:30.9699440Z [36;1mcmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DDUKTO_BUILD_TESTS=OFF[0m
+2026-11-06T21:01:31.0895300Z shell: /bin/bash -e {0}
+2026-11-06T21:01:31.0895730Z env:
+2026-11-06T21:01:31.0896160Z   pythonLocation: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-06T21:01:31.0902870Z   PKG_CONFIG_PATH: /Users/runner/hostedtoolcache/Python/3.12.10/arm64/lib/pkgconfig
+2026-11-06T21:01:31.0903360Z   Python_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-06T21:01:31.0903850Z   Python2_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-06T21:01:31.0904300Z   Python3_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-06T21:01:31.0904730Z   CMAKE_PREFIX_PATH: /opt/homebrew/opt/qt@5
+2026-11-06T21:01:31.0905040Z   OPENSSL_ROOT_DIR: /opt/homebrew/opt/openssl@3
+2026-11-06T21:01:31.0905420Z ##[endgroup]
+2026-11-06T21:01:33.0198690Z -- The CXX compiler identification is AppleClang 17.0.0.17000013
+2026-11-06T21:01:33.4577880Z -- Detecting CXX compiler ABI info
+2026-11-06T21:01:34.0081530Z -- Detecting CXX compiler ABI info - done
+2026-11-06T21:01:34.0231690Z -- Check for working CXX compiler: /usr/bin/c++ - skipped
+2026-11-06T21:01:34.0238220Z -- Detecting CXX compile features
+2026-11-06T21:01:34.0245900Z -- Detecting CXX compile features - done
+2026-11-06T21:01:34.1161510Z -- Found OpenSSL: /opt/homebrew/opt/openssl@3/lib/libcrypto.dylib (found suitable version "3.5.9", minimum required is "1.1.1") found components: Crypto
+2026-11-06T21:01:35.6398170Z -- Configuring done (4.2s)
+2026-11-06T21:01:36.2284830Z -- Generating done (0.6s)
+2026-11-06T21:01:36.2290470Z -- Build files have been written to: /Users/runner/work/dukto-next/dukto-next/build
+2026-11-06T21:01:36.2425250Z ##[group]Run cmake --build build --target dukto-cli --parallel 4
+2026-11-06T21:01:36.2425730Z [36;1mcmake --build build --target dukto-cli --parallel 4[0m
+2026-11-06T21:01:36.2464430Z shell: /bin/bash -e {0}
+2026-11-06T21:01:36.2464660Z env:
+2026-11-06T21:01:36.2465010Z   pythonLocation: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-06T21:01:36.2465560Z   PKG_CONFIG_PATH: /Users/runner/hostedtoolcache/Python/3.12.10/arm64/lib/pkgconfig
+2026-11-06T21:01:36.2466050Z   Python_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-06T21:01:36.2466640Z   Python2_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-06T21:01:36.2467240Z   Python3_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-06T21:01:36.2467620Z   CMAKE_PREFIX_PATH: /opt/homebrew/opt/qt@5
+2026-11-06T21:01:36.2467990Z   OPENSSL_ROOT_DIR: /opt/homebrew/opt/openssl@3
+2026-11-06T21:01:36.2468280Z ##[endgroup]
+2026-11-06T21:01:36.3448760Z [  0%] Built target dukto-core_autogen_timestamp_deps
+2026-11-06T21:01:36.3712160Z [  2%] Automatic MOC for target dukto-core
+2026-11-06T21:01:37.3645430Z [  2%] Built target dukto-core_autogen
+2026-11-06T21:01:37.3938750Z [  4%] Building CXX object CMakeFiles/dukto-core.dir/dukto-core_autogen/mocs_compilation.cpp.o
+2026-11-06T21:01:37.4049750Z [  6%] Building CXX object CMakeFiles/dukto-core.dir/src/core/error.cpp.o
+2026-11-06T21:01:37.4052420Z [  8%] Building CXX object CMakeFiles/dukto-core.dir/src/core/files.cpp.o
+2026-11-06T21:01:37.4095030Z [ 10%] Building CXX object CMakeFiles/dukto-core.dir/src/core/nativecommit.cpp.o
+2026-11-06T21:01:38.4997160Z In file included from /Users/runner/work/dukto-next/dukto-next/build/dukto-core_autogen/mocs_compilation.cpp:3:
+2026-11-06T21:01:38.5109030Z In file included from /Users/runner/work/dukto-next/dukto-next/build/dukto-core_autogen/PRMOGMWJPH/moc_legacy.cpp:10:
+2026-11-06T21:01:38.5275810Z /Users/runner/work/dukto-next/dukto-next/build/dukto-core_autogen/PRMOGMWJPH/../../../src/core/legacy.h:60:10: warning: 'dukto::LegacyJob::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-06T21:01:38.5410340Z    60 |     void event(const QJsonObject &event);
+2026-11-06T21:01:38.5516060Z       |          ^
+2026-11-06T21:01:38.5627460Z /opt/homebrew/opt/qt@5/lib/QtCore.framework/Headers/qthread.h:111:10: note: hidden overloaded virtual function 'QThread::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-06T21:01:38.5739370Z   111 |     bool event(QEvent *event) override;
+2026-11-06T21:01:38.5866500Z       |          ^
+2026-11-06T21:01:38.6021790Z In file included from /Users/runner/work/dukto-next/dukto-next/build/dukto-core_autogen/mocs_compilation.cpp:3:
+2026-11-06T21:01:38.6123830Z In file included from /Users/runner/work/dukto-next/dukto-next/build/dukto-core_autogen/PRMOGMWJPH/moc_legacy.cpp:10:
+2026-11-06T21:01:38.6226180Z /Users/runner/work/dukto-next/dukto-next/build/dukto-core_autogen/PRMOGMWJPH/../../../src/core/legacy.h:94:10: warning: 'dukto::LegacyListener::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-06T21:01:38.6228650Z [ 12%] Building CXX object CMakeFiles/dukto-core.dir/src/core/sourcefile.cpp.o
+2026-11-06T21:01:38.6327410Z    94 |     void event(const QJsonObject &event);
+2026-11-06T21:01:38.6428990Z       |          ^
+2026-11-06T21:01:38.6532570Z /opt/homebrew/opt/qt@5/lib/QtCore.framework/Headers/qobject.h:138:18: note: hidden overloaded virtual function 'QObject::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-06T21:01:38.6636700Z   138 |     virtual bool event(QEvent *event);
+2026-11-06T21:01:38.6740120Z       |                  ^
+2026-11-06T21:01:38.6842980Z In file included from /Users/runner/work/dukto-next/dukto-next/build/dukto-core_autogen/mocs_compilation.cpp:4:
+2026-11-06T21:01:38.6943370Z In file included from /Users/runner/work/dukto-next/dukto-next/build/dukto-core_autogen/PRMOGMWJPH/moc_service.cpp:10:
+2026-11-06T21:01:38.7047040Z /Users/runner/work/dukto-next/dukto-next/build/dukto-core_autogen/PRMOGMWJPH/../../../src/core/service.h:114:10: warning: 'dukto::ServiceWorker::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-06T21:01:38.7146980Z   114 |     void event(const QJsonObject &event);
+2026-11-06T21:01:38.7248190Z       |          ^
+2026-11-06T21:01:38.7350630Z /opt/homebrew/opt/qt@5/lib/QtCore.framework/Headers/qthread.h:111:10: note: hidden overloaded virtual function 'QThread::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-06T21:01:38.7449830Z   111 |     bool event(QEvent *event) override;
+2026-11-06T21:01:38.7551710Z       |          ^
+2026-11-06T21:01:38.7653340Z In file included from /Users/runner/work/dukto-next/dukto-next/build/dukto-core_autogen/mocs_compilation.cpp:4:
+2026-11-06T21:01:38.7754250Z In file included from /Users/runner/work/dukto-next/dukto-next/build/dukto-core_autogen/PRMOGMWJPH/moc_service.cpp:10:
+2026-11-06T21:01:38.7856110Z /Users/runner/work/dukto-next/dukto-next/build/dukto-core_autogen/PRMOGMWJPH/../../../src/core/service.h:140:10: warning: 'dukto::ServiceListener::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-06T21:01:38.7956050Z   140 |     void event(const QJsonObject &event);
+2026-11-06T21:01:38.8078720Z       |          ^
+2026-11-06T21:01:38.8180940Z /opt/homebrew/opt/qt@5/lib/QtCore.framework/Headers/qobject.h:138:18: note: hidden overloaded virtual function 'QObject::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-06T21:01:38.8281090Z   138 |     virtual bool event(QEvent *event);
+2026-11-06T21:01:38.8382270Z       |                  ^
+2026-11-06T21:01:38.8483920Z 4 warnings generated.
+2026-11-06T21:01:38.8686000Z [ 14%] Building CXX object CMakeFiles/dukto-core.dir/src/core/protocol.cpp.o
+2026-11-06T21:01:38.9389310Z [ 16%] Building CXX object CMakeFiles/dukto-core.dir/src/core/securechannel.cpp.o
+2026-11-06T21:01:39.1200510Z [ 18%] Building CXX object CMakeFiles/dukto-core.dir/src/core/buffercredit.cpp.o
+2026-11-06T21:01:40.1432940Z [ 20%] Building CXX object CMakeFiles/dukto-core.dir/src/core/filecredit.cpp.o
+2026-11-06T21:01:40.2997300Z [ 22%] Building CXX object CMakeFiles/dukto-core.dir/src/core/sqlitecache.cpp.o
+2026-11-06T21:01:40.3413780Z [ 24%] Building CXX object CMakeFiles/dukto-core.dir/src/core/privatestore.cpp.o
+2026-11-06T21:01:41.0773380Z [ 26%] Building CXX object CMakeFiles/dukto-core.dir/src/core/identity.cpp.o
+2026-11-06T21:01:41.1478750Z [ 28%] Building CXX object CMakeFiles/dukto-core.dir/src/core/auth.cpp.o
+2026-11-06T21:01:41.2322480Z [ 30%] Building CXX object CMakeFiles/dukto-core.dir/src/core/sessionpolicy.cpp.o
+2026-11-06T21:01:41.4310630Z [ 32%] Building CXX object CMakeFiles/dukto-core.dir/src/core/transferscheduler.cpp.o
+2026-11-06T21:01:42.1634890Z [ 34%] Building CXX object CMakeFiles/dukto-core.dir/src/core/transferoperation.cpp.o
+2026-11-06T21:01:42.4163620Z [ 36%] Building CXX object CMakeFiles/dukto-core.dir/src/core/service.cpp.o
+2026-11-06T21:01:42.4264850Z [ 38%] Building CXX object CMakeFiles/dukto-core.dir/src/core/shares.cpp.o
+2026-11-06T21:01:42.6998350Z [ 40%] Building CXX object CMakeFiles/dukto-core.dir/src/core/browse.cpp.o
+2026-11-06T21:01:42.9790260Z In file included from /Users/runner/work/dukto-next/dukto-next/src/core/transferoperation.cpp:2:
+2026-11-06T21:01:42.9891120Z /Users/runner/work/dukto-next/dukto-next/src/core/service.h:114:10: warning: 'dukto::ServiceWorker::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-06T21:01:42.9992300Z   114 |     void event(const QJsonObject &event);
+2026-11-06T21:01:43.0093070Z       |          ^
+2026-11-06T21:01:43.0194810Z /opt/homebrew/opt/qt@5/lib/QtCore.framework/Headers/qthread.h:111:10: note: hidden overloaded virtual function 'QThread::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-06T21:01:43.0294540Z   111 |     bool event(QEvent *event) override;
+2026-11-06T21:01:43.0396930Z       |          ^
+2026-11-06T21:01:43.0497420Z In file included from /Users/runner/work/dukto-next/dukto-next/src/core/transferoperation.cpp:2:
+2026-11-06T21:01:43.0605610Z /Users/runner/work/dukto-next/dukto-next/src/core/service.h:140:10: warning: 'dukto::ServiceListener::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-06T21:01:43.0706260Z   140 |     void event(const QJsonObject &event);
+2026-11-06T21:01:43.0807710Z       |          ^
+2026-11-06T21:01:43.0908760Z /opt/homebrew/opt/qt@5/lib/QtCore.framework/Headers/qobject.h:138:18: note: hidden overloaded virtual function 'QObject::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-06T21:01:43.1009190Z   138 |     virtual bool event(QEvent *event);
+2026-11-06T21:01:43.1110480Z       |                  ^
+2026-11-06T21:01:43.1569540Z In file included from /Users/runner/work/dukto-next/dukto-next/src/core/service.cpp:1:
+2026-11-06T21:01:43.1678070Z /Users/runner/work/dukto-next/dukto-next/src/core/service.h:114:10: warning: 'dukto::ServiceWorker::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-06T21:01:43.1779550Z   114 |     void event(const QJsonObject &event);
+2026-11-06T21:01:43.1881180Z       |          ^
+2026-11-06T21:01:43.1983330Z /opt/homebrew/opt/qt@5/lib/QtCore.framework/Headers/qthread.h:111:10: note: hidden overloaded virtual function 'QThread::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-06T21:01:43.2085150Z   111 |     bool event(QEvent *event) override;
+2026-11-06T21:01:43.2186620Z       |          ^
+2026-11-06T21:01:43.2287940Z In file included from /Users/runner/work/dukto-next/dukto-next/src/core/service.cpp:1:
+2026-11-06T21:01:43.2389820Z /Users/runner/work/dukto-next/dukto-next/src/core/service.h:140:10: warning: 'dukto::ServiceListener::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-06T21:01:43.2491690Z   140 |     void event(const QJsonObject &event);
+2026-11-06T21:01:43.2593110Z       |          ^
+2026-11-06T21:01:43.2694950Z /opt/homebrew/opt/qt@5/lib/QtCore.framework/Headers/qobject.h:138:18: note: hidden overloaded virtual function 'QObject::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-06T21:01:43.2796600Z   138 |     virtual bool event(QEvent *event);
+2026-11-06T21:01:43.2797260Z [ 42%] Building CXX object CMakeFiles/dukto-core.dir/src/core/strongmanifest.cpp.o
+2026-11-06T21:01:43.2898580Z       |                  ^
+2026-11-06T21:01:43.3000180Z 2 warnings generated.
+2026-11-06T21:01:43.4412360Z [ 44%] Building CXX object CMakeFiles/dukto-core.dir/src/core/uploadmanifest.cpp.o
+2026-11-06T21:01:43.9561200Z [ 46%] Building CXX object CMakeFiles/dukto-core.dir/src/core/dispositionjournal.cpp.o
+2026-11-06T21:01:44.1942660Z In file included from /Users/runner/work/dukto-next/dukto-next/src/core/uploadmanifest.cpp:4:
+2026-11-06T21:01:44.2044240Z /Users/runner/work/dukto-next/dukto-next/src/core/service.h:114:10: warning: 'dukto::ServiceWorker::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-06T21:01:44.2144860Z   114 |     void event(const QJsonObject &event);
+2026-11-06T21:01:44.2246510Z       |          ^
+2026-11-06T21:01:44.2348900Z /opt/homebrew/opt/qt@5/lib/QtCore.framework/Headers/qthread.h:111:10: note: hidden overloaded virtual function 'QThread::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-06T21:01:44.2448540Z   111 |     bool event(QEvent *event) override;
+2026-11-06T21:01:44.2550190Z       |          ^
+2026-11-06T21:01:44.2651520Z In file included from /Users/runner/work/dukto-next/dukto-next/src/core/uploadmanifest.cpp:4:
+2026-11-06T21:01:44.2753330Z /Users/runner/work/dukto-next/dukto-next/src/core/service.h:140:10: warning: 'dukto::ServiceListener::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-06T21:01:44.2853360Z   140 |     void event(const QJsonObject &event);
+2026-11-06T21:01:44.2955640Z       |          ^
+2026-11-06T21:01:44.3055950Z /opt/homebrew/opt/qt@5/lib/QtCore.framework/Headers/qobject.h:138:18: note: hidden overloaded virtual function 'QObject::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-06T21:01:44.3155780Z   138 |     virtual bool event(QEvent *event);
+2026-11-06T21:01:44.3257530Z       |                  ^
+2026-11-06T21:01:44.3358430Z 2 warnings generated.
+2026-11-06T21:01:44.3358860Z [ 48%] Building CXX object CMakeFiles/dukto-core.dir/src/core/taskstore.cpp.o
+2026-11-06T21:01:44.5190050Z 2 warnings generated.
+2026-11-06T21:01:44.5372640Z [ 50%] Building CXX object CMakeFiles/dukto-core.dir/src/core/transferitems.cpp.o
+2026-11-06T21:01:44.6276220Z [ 52%] Building CXX object CMakeFiles/dukto-core.dir/src/core/durablereceive.cpp.o
+2026-11-06T21:01:45.1170270Z [ 54%] Building CXX object CMakeFiles/dukto-core.dir/src/core/receivetree.cpp.o
+2026-11-06T21:01:45.8905600Z [ 56%] Building CXX object CMakeFiles/dukto-core.dir/src/core/receiveskip.cpp.o
+2026-11-06T21:01:46.6314920Z [ 58%] Building CXX object CMakeFiles/dukto-core.dir/src/core/receiveskipfinal.cpp.o
+2026-11-06T21:01:47.0406180Z [ 60%] Building CXX object CMakeFiles/dukto-core.dir/src/core/transferdisposition.cpp.o
+2026-11-06T21:01:47.4270900Z [ 62%] Building CXX object CMakeFiles/dukto-core.dir/src/core/fileexchange.cpp.o
+2026-11-06T21:01:48.0051080Z [ 64%] Building CXX object CMakeFiles/dukto-core.dir/src/core/paralleltransfer.cpp.o
+2026-11-06T21:01:48.3067610Z [ 66%] Building CXX object CMakeFiles/dukto-core.dir/src/core/transferservice.cpp.o
+2026-11-06T21:01:48.5117990Z [ 68%] Building CXX object CMakeFiles/dukto-core.dir/src/core/transferclient.cpp.o
+2026-11-06T21:01:49.0590970Z In file included from /Users/runner/work/dukto-next/dukto-next/src/core/paralleltransfer.cpp:5:
+2026-11-06T21:01:49.0692900Z /Users/runner/work/dukto-next/dukto-next/src/core/service.h:114:10: warning: 'dukto::ServiceWorker::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-06T21:01:49.0792930Z   114 |     void event(const QJsonObject &event);
+2026-11-06T21:01:49.0894540Z       |          ^
+2026-11-06T21:01:49.0995440Z /opt/homebrew/opt/qt@5/lib/QtCore.framework/Headers/qthread.h:111:10: note: hidden overloaded virtual function 'QThread::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-06T21:01:49.1096220Z   111 |     bool event(QEvent *event) override;
+2026-11-06T21:01:49.1197200Z       |          ^
+2026-11-06T21:01:49.1297760Z In file included from /Users/runner/work/dukto-next/dukto-next/src/core/paralleltransfer.cpp:5:
+2026-11-06T21:01:49.1398930Z /Users/runner/work/dukto-next/dukto-next/src/core/service.h:140:10: warning: 'dukto::ServiceListener::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-06T21:01:49.1500530Z   140 |     void event(const QJsonObject &event);
+2026-11-06T21:01:49.1562130Z       |          ^
+2026-11-06T21:01:49.1563180Z /opt/homebrew/opt/qt@5/lib/QtCore.framework/Headers/qobject.h:138:18: note: hidden overloaded virtual function 'QObject::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-06T21:01:49.1570280Z   138 |     virtual bool event(QEvent *event);
+2026-11-06T21:01:49.1570850Z       |                  ^
+2026-11-06T21:01:49.5062990Z [ 70%] Building CXX object CMakeFiles/dukto-core.dir/src/core/transferprogress.cpp.o
+2026-11-06T21:01:49.5365730Z In file included from /Users/runner/work/dukto-next/dukto-next/src/core/transferclient.cpp:6:
+2026-11-06T21:01:49.5467730Z /Users/runner/work/dukto-next/dukto-next/src/core/service.h:114:10: warning: 'dukto::ServiceWorker::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-06T21:01:49.5569430Z   114 |     void event(const QJsonObject &event);
+2026-11-06T21:01:49.5669740Z       |          ^
+2026-11-06T21:01:49.5776180Z /opt/homebrew/opt/qt@5/lib/QtCore.framework/Headers/qthread.h:111:10: note: hidden overloaded virtual function 'QThread::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-06T21:01:49.5809730Z   111 |     bool event(QEvent *event) override;
+2026-11-06T21:01:49.5810460Z       |          ^
+2026-11-06T21:01:49.5811340Z In file included from /Users/runner/work/dukto-next/dukto-next/src/core/transferclient.cpp:6:
+2026-11-06T21:01:49.5812650Z /Users/runner/work/dukto-next/dukto-next/src/core/service.h:140:10: warning: 'dukto::ServiceListener::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-06T21:01:49.5813540Z   140 |     void event(const QJsonObject &event);
+2026-11-06T21:01:49.5813950Z       |          ^
+2026-11-06T21:01:49.5841120Z /opt/homebrew/opt/qt@5/lib/QtCore.framework/Headers/qobject.h:138:18: note: hidden overloaded virtual function 'QObject::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-06T21:01:49.5942710Z   138 |     virtual bool event(QEvent *event);
+2026-11-06T21:01:49.6043870Z       |                  ^
+2026-11-06T21:01:51.0994120Z [ 72%] Building CXX object CMakeFiles/dukto-core.dir/src/core/transferaccounting.cpp.o
+2026-11-06T21:01:51.1500270Z [ 74%] Building CXX object CMakeFiles/dukto-core.dir/src/core/manifest.cpp.o
+2026-11-06T21:01:51.6781620Z 2 warnings generated.
+2026-11-06T21:01:51.6983830Z [ 76%] Building CXX object CMakeFiles/dukto-core.dir/src/core/legacy.cpp.o
+2026-11-06T21:01:52.2624960Z 2 warnings generated.
+2026-11-06T21:01:52.2825580Z [ 78%] Building CXX object CMakeFiles/dukto-core.dir/src/core/tcplistener.cpp.o
+2026-11-06T21:01:52.4446360Z [ 80%] Building CXX object CMakeFiles/dukto-core.dir/src/core/discovery.cpp.o
+2026-11-06T21:01:52.5651060Z [ 82%] Building CXX object CMakeFiles/dukto-core.dir/src/core/endpoint.cpp.o
+2026-11-06T21:01:52.7571880Z In file included from /Users/runner/work/dukto-next/dukto-next/src/core/legacy.cpp:1:
+2026-11-06T21:01:52.7673130Z /Users/runner/work/dukto-next/dukto-next/src/core/legacy.h:60:10: warning: 'dukto::LegacyJob::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-06T21:01:52.7773400Z    60 |     void event(const QJsonObject &event);
+2026-11-06T21:01:52.7874680Z       |          ^
+2026-11-06T21:01:52.7975820Z /opt/homebrew/opt/qt@5/lib/QtCore.framework/Headers/qthread.h:111:10: note: hidden overloaded virtual function 'QThread::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-06T21:01:52.8075760Z   111 |     bool event(QEvent *event) override;
+2026-11-06T21:01:52.8176960Z       |          ^
+2026-11-06T21:01:52.8277530Z In file included from /Users/runner/work/dukto-next/dukto-next/src/core/legacy.cpp:1:
+2026-11-06T21:01:52.8378640Z /Users/runner/work/dukto-next/dukto-next/src/core/legacy.h:94:10: warning: 'dukto::LegacyListener::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-06T21:01:52.8478550Z    94 |     void event(const QJsonObject &event);
+2026-11-06T21:01:52.8579880Z       |          ^
+2026-11-06T21:01:52.8681170Z /opt/homebrew/opt/qt@5/lib/QtCore.framework/Headers/qobject.h:138:18: note: hidden overloaded virtual function 'QObject::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-06T21:01:52.8781650Z   138 |     virtual bool event(QEvent *event);
+2026-11-06T21:01:52.8883020Z       |                  ^
+2026-11-06T21:01:53.3511920Z [ 84%] Building CXX object CMakeFiles/dukto-core.dir/src/core/updates.cpp.o
+2026-11-06T21:01:53.6232640Z [ 86%] Building CXX object CMakeFiles/dukto-core.dir/src/core/catalog.cpp.o
+2026-11-06T21:01:53.7445840Z 2 warnings generated.
+2026-11-06T21:01:54.3571690Z [ 88%] Linking CXX static library libdukto-core.a
+2026-11-06T21:01:55.6044560Z [ 88%] Built target dukto-core
+2026-11-06T21:01:55.6316680Z [ 88%] Built target dukto-cli_autogen_timestamp_deps
+2026-11-06T21:01:55.6541720Z [ 90%] Automatic MOC for target dukto-cli
+2026-11-06T21:01:55.7014090Z [ 90%] Built target dukto-cli_autogen
+2026-11-06T21:01:55.7273810Z [ 92%] Building CXX object CMakeFiles/dukto-cli.dir/dukto-cli_autogen/mocs_compilation.cpp.o
+2026-11-06T21:01:55.7275630Z [ 94%] Building CXX object CMakeFiles/dukto-cli.dir/src/cli/main.cpp.o
+2026-11-06T21:01:55.7357220Z [ 96%] Building CXX object CMakeFiles/dukto-cli.dir/src/cli/input.cpp.o
+2026-11-06T21:01:55.7378490Z [ 98%] Building CXX object CMakeFiles/dukto-cli.dir/src/cli/servicecommands.cpp.o
+2026-11-06T21:01:56.2974900Z In file included from /Users/runner/work/dukto-next/dukto-next/src/cli/main.cpp:7:
+2026-11-06T21:01:56.3076940Z /Users/runner/work/dukto-next/dukto-next/src/core/legacy.h:60:10: warning: 'dukto::LegacyJob::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-06T21:01:56.3199900Z    60 |     void event(const QJsonObject &event);
+2026-11-06T21:01:56.3301190Z       |          ^
+2026-11-06T21:01:56.3402810Z /opt/homebrew/opt/qt@5/lib/QtCore.framework/Headers/qthread.h:111:10: note: hidden overloaded virtual function 'QThread::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-06T21:01:56.3504760Z   111 |     bool event(QEvent *event) override;
+2026-11-06T21:01:56.3606280Z       |          ^
+2026-11-06T21:01:56.3635300Z In file included from /Users/runner/work/dukto-next/dukto-next/src/cli/main.cpp:7:
+2026-11-06T21:01:56.3636630Z /Users/runner/work/dukto-next/dukto-next/src/core/legacy.h:94:10: warning: 'dukto::LegacyListener::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-06T21:01:56.3637500Z    94 |     void event(const QJsonObject &event);
+2026-11-06T21:01:56.3637900Z       |          ^
+2026-11-06T21:01:56.3638820Z /opt/homebrew/opt/qt@5/lib/QtCore.framework/Headers/qobject.h:138:18: note: hidden overloaded virtual function 'QObject::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-06T21:01:56.3639800Z   138 |     virtual bool event(QEvent *event);
+2026-11-06T21:01:56.3640340Z       |                  ^
+2026-11-06T21:01:56.3641070Z In file included from /Users/runner/work/dukto-next/dukto-next/src/cli/servicecommands.cpp:6:
+2026-11-06T21:01:56.3642060Z /Users/runner/work/dukto-next/dukto-next/src/core/service.h:114:10: warning: 'dukto::ServiceWorker::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-06T21:01:56.3642820Z   114 |     void event(const QJsonObject &event);
+2026-11-06T21:01:56.3643280Z       |          ^
+2026-11-06T21:01:56.3644140Z /opt/homebrew/opt/qt@5/lib/QtCore.framework/Headers/qthread.h:111:10: note: hidden overloaded virtual function 'QThread::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-06T21:01:56.3645090Z   111 |     bool event(QEvent *event) override;
+2026-11-06T21:01:56.3646410Z       |          ^
+2026-11-06T21:01:56.3647000Z In file included from /Users/runner/work/dukto-next/dukto-next/src/cli/servicecommands.cpp:6:
+2026-11-06T21:01:56.3648000Z /Users/runner/work/dukto-next/dukto-next/src/core/service.h:140:10: warning: 'dukto::ServiceListener::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-06T21:01:56.3648820Z   140 |     void event(const QJsonObject &event);
+2026-11-06T21:01:56.3649250Z       |          ^
+2026-11-06T21:01:56.3650020Z /opt/homebrew/opt/qt@5/lib/QtCore.framework/Headers/qobject.h:138:18: note: hidden overloaded virtual function 'QObject::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-06T21:01:56.3650930Z   138 |     virtual bool event(QEvent *event);
+2026-11-06T21:01:56.3651380Z       |                  ^
+2026-11-06T21:01:57.3020160Z 2 warnings generated.
+2026-11-06T21:01:57.3520450Z 2 warnings generated.
+2026-11-06T21:01:57.3674300Z [100%] Linking CXX executable dukto-cli
+2026-11-06T21:01:57.4763770Z [100%] Built target dukto-cli
+2026-11-06T21:01:57.5062140Z ##[group]Run image="$RUNNER_TEMP/dukto-r6-limited.dmg"
+2026-11-06T21:01:57.5062670Z [36;1mimage="$RUNNER_TEMP/dukto-r6-limited.dmg"[0m
+2026-11-06T21:01:57.5063020Z [36;1mmount="$RUNNER_TEMP/dukto-r6-mount"[0m
+2026-11-06T21:01:57.5063430Z [36;1mtest ! -e "$image"[0m
+2026-11-06T21:01:57.5063670Z [36;1mmkdir "$mount"[0m
+2026-11-06T21:01:57.5064060Z [36;1mhdiutil create -size 256m -fs APFS -volname Dukto-R6-Limited "$image"[0m
+2026-11-06T21:01:57.5064550Z [36;1mhdiutil attach -nobrowse -mountpoint "$mount" "$image"[0m
+2026-11-06T21:01:57.5064900Z [36;1msource scripts/ci_macos_disk_cleanup.sh[0m
+2026-11-06T21:01:57.5065350Z [36;1mtrap 'dukto_macos_cleanup "$?" "$mount" "$image" "build/apfs-r6-cleanup.json"' EXIT[0m
+2026-11-06T21:01:57.5065850Z [36;1mdiskutil info -plist "$mount" > build/apfs-r6-filesystem.log[0m
+2026-11-06T21:01:57.5066430Z [36;1mcapacity=$(python -c 'import os,sys; s=os.statvfs(sys.argv[1]); print(s.f_blocks*s.f_frsize)' "$mount")[0m
+2026-11-06T21:01:57.5067300Z [36;1mpython -X utf8 tests/disk_integration.py build/dukto-cli --limited-directory "$mount" --filesystem-bytes "$capacity" --report build/apfs-r6-disk.json[0m
+2026-11-06T21:01:57.5116600Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-06T21:01:57.5116950Z env:
+2026-11-06T21:01:57.5117330Z   pythonLocation: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-06T21:01:57.5117780Z   PKG_CONFIG_PATH: /Users/runner/hostedtoolcache/Python/3.12.10/arm64/lib/pkgconfig
+2026-11-06T21:01:57.5118280Z   Python_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-06T21:01:57.5118710Z   Python2_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-06T21:01:57.5119190Z   Python3_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-06T21:01:57.5119590Z   CMAKE_PREFIX_PATH: /opt/homebrew/opt/qt@5
+2026-11-06T21:01:57.5119940Z   OPENSSL_ROOT_DIR: /opt/homebrew/opt/openssl@3
+2026-11-06T21:01:57.5120290Z ##[endgroup]
+2026-11-06T21:01:58.6805490Z created: /Users/runner/work/_temp/dukto-r6-limited.dmg
+2026-11-06T21:01:59.0859780Z /dev/disk5          	GUID_partition_scheme          	
+2026-11-06T21:01:59.1034760Z /dev/disk5s1        	Apple_APFS                     	
+2026-11-06T21:01:59.1135760Z /dev/disk6          	EF57347C-0000-11AA-AA11-0030654	
+2026-11-06T21:01:59.1139280Z /dev/disk6s1        	41504653-0000-11AA-AA11-0030654	/Users/runner/work/_temp/dukto-r6-mount
+2026-11-06T21:01:59.8082320Z {
+2026-11-06T21:01:59.8082780Z   "passed": true,
+2026-11-06T21:01:59.8083140Z   "filesystemBytes": 268394496,
+2026-11-06T21:01:59.8083690Z   "kernelError": "ENOSPC",
+2026-11-06T21:01:59.8084050Z   "preflight": {
+2026-11-06T21:01:59.8084400Z     "passed": true,
+2026-11-06T21:01:59.8084720Z     "receiverExitCode": 5,
+2026-11-06T21:01:59.8085160Z     "stage": "space",
+2026-11-06T21:01:59.8085440Z     "noTemporaryCreated": true
+2026-11-06T21:01:59.8087020Z   },
+2026-11-06T21:01:59.8087300Z   "receiverExitCode": 5,
+2026-11-06T21:01:59.8087620Z   "originalPreserved": true,
+2026-11-06T21:01:59.8088000Z   "temporaryCleaned": true,
+2026-11-06T21:01:59.8088250Z   "nextReceivePassed": true,
+2026-11-06T21:01:59.8088560Z   "failureResult": {
+2026-11-06T21:01:59.8089040Z     "catalog": "/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/dukto-enospc-state-99zmz88n/receipts.sqlite",
+2026-11-06T21:01:59.8089610Z     "code": 5,
+2026-11-06T21:01:59.8089810Z     "elapsedMs": "169",
+2026-11-06T21:01:59.8090180Z     "event": "error",
+2026-11-06T21:01:59.8090420Z     "eventVersion": 1,
+2026-11-06T21:01:59.8090750Z     "message": "No space left on device",
+2026-11-06T21:01:59.8091230Z     "rateBytesPerSecond": "0",
+2026-11-06T21:01:59.8091480Z     "stage": "write",
+2026-11-06T21:01:59.8091830Z     "taskId": "11ad0a3d-12c6-4914-a8a9-622aa43e9e68"
+2026-11-06T21:01:59.8092160Z   },
+2026-11-06T21:01:59.8092450Z   "exhaustion": {
+2026-11-06T21:01:59.8092690Z     "fillerBytes": 260698112,
+2026-11-06T21:01:59.8093010Z     "physicalBytes": 260698112,
+2026-11-06T21:01:59.8094340Z     "method": "Darwin F_PREALLOCATE physical reservation",
+2026-11-06T21:01:59.8094820Z     "kernelError": "ENOSPC",
+2026-11-06T21:01:59.8095090Z     "elapsedSeconds": 0.127
+2026-11-06T21:01:59.8095410Z   },
+2026-11-06T21:01:59.8095730Z   "date": "2026-11-04"
+2026-11-06T21:01:59.8095930Z }
+2026-11-06T21:01:59.8096090Z 
+2026-11-06T21:02:00.0242520Z {"date": "2026-11-05", "passed": true, "scope": "owned temporary APFS image cleanup", "forced": false, "budgetSeconds": 20, "maximumAttempts": 8, "ownershipVerified": true, "mount": "/Users/runner/work/_temp/dukto-r6-mount", "image": "/Users/runner/work/_temp/dukto-r6-limited.dmg", "attempts": [{"attempt": 1, "device": "/dev/disk5", "exitCode": 0, "stdout": "\"disk5\" ejected.\n", "stderr": ""}], "observations": [{"attached": true, "devices": ["/dev/disk5", "/dev/disk6", "/dev/disk5s1", "/dev/disk6s1"], "mountPoints": ["/Users/runner/work/_temp/dukto-r6-mount"]}, {"attached": false, "devices": [], "mountPoints": []}], "completion": "owned image absent and mount released", "elapsedSeconds": 0.151}
+2026-11-06T21:02:00.0372080Z ##[group]Run image="$RUNNER_TEMP/dukto-tls4-limited.dmg"
+2026-11-06T21:02:00.0372930Z [36;1mimage="$RUNNER_TEMP/dukto-tls4-limited.dmg"[0m
+2026-11-06T21:02:00.0373510Z [36;1mmount="$RUNNER_TEMP/dukto-tls4-mount"[0m
+2026-11-06T21:02:00.0373950Z [36;1mtest ! -e "$image"[0m
+2026-11-06T21:02:00.0374270Z [36;1mmkdir "$mount"[0m
+2026-11-06T21:02:00.0374770Z [36;1mhdiutil create -size 256m -fs APFS -volname Dukto-TLS4-Limited "$image"[0m
+2026-11-06T21:02:00.0375320Z [36;1mhdiutil attach -nobrowse -mountpoint "$mount" "$image"[0m
+2026-11-06T21:02:00.0376240Z [36;1msource scripts/ci_macos_disk_cleanup.sh[0m
+2026-11-06T21:02:00.0377040Z [36;1mtrap 'dukto_macos_cleanup "$?" "$mount" "$image" "build/apfs-tls4-cleanup.json"' EXIT[0m
+2026-11-06T21:02:00.0377730Z [36;1mdiskutil info -plist "$mount" > build/apfs-tls4-filesystem.log[0m
+2026-11-06T21:02:00.0378790Z [36;1mcapacity=$(python -c 'import os,sys; s=os.statvfs(sys.argv[1]); print(s.f_blocks*s.f_frsize)' "$mount")[0m
+2026-11-06T21:02:00.0380030Z [36;1mpython -X utf8 tests/parallel_disk_integration.py build/dukto-cli --limited-directory "$mount" --filesystem-bytes "$capacity" --threads 4 --report build/apfs-tls4-disk.json[0m
+2026-11-06T21:02:00.0500520Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-06T21:02:00.0500880Z env:
+2026-11-06T21:02:00.0501280Z   pythonLocation: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-06T21:02:00.0501830Z   PKG_CONFIG_PATH: /Users/runner/hostedtoolcache/Python/3.12.10/arm64/lib/pkgconfig
+2026-11-06T21:02:00.0502410Z   Python_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-06T21:02:00.0502930Z   Python2_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-06T21:02:00.0503380Z   Python3_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-06T21:02:00.0503830Z   CMAKE_PREFIX_PATH: /opt/homebrew/opt/qt@5
+2026-11-06T21:02:00.0504640Z   OPENSSL_ROOT_DIR: /opt/homebrew/opt/openssl@3
+2026-11-06T21:02:00.0505010Z ##[endgroup]
+2026-11-06T21:02:01.1841440Z created: /Users/runner/work/_temp/dukto-tls4-limited.dmg
+2026-11-06T21:02:01.5675250Z /dev/disk5          	GUID_partition_scheme          	
+2026-11-06T21:02:01.5796220Z /dev/disk5s1        	Apple_APFS                     	
+2026-11-06T21:02:01.5897540Z /dev/disk6          	EF57347C-0000-11AA-AA11-0030654	
+2026-11-06T21:02:01.5922540Z /dev/disk6s1        	41504653-0000-11AA-AA11-0030654	/Users/runner/work/_temp/dukto-tls4-mount
+2026-11-06T21:02:07.1034550Z upload: durable 4194304, exhausting dedicated filesystem
+2026-11-06T21:02:07.2820450Z upload: actual ENOSPC refused publication; releasing filler
+2026-11-06T21:02:19.3883060Z upload: content, original protection and recovery passed
+2026-11-06T21:02:24.6277980Z download: durable 4194304, exhausting dedicated filesystem
+2026-11-06T21:02:25.0108910Z download: actual ENOSPC refused publication; releasing filler
+2026-11-06T21:02:35.5060420Z download: content, original protection and recovery passed
+2026-11-06T21:02:35.6366160Z Parallel TLS disk-full and recovery passed
+2026-11-06T21:02:36.0476550Z {"date": "2026-11-05", "passed": true, "scope": "owned temporary APFS image cleanup", "forced": false, "budgetSeconds": 20, "maximumAttempts": 8, "ownershipVerified": true, "mount": "/Users/runner/work/_temp/dukto-tls4-mount", "image": "/Users/runner/work/_temp/dukto-tls4-limited.dmg", "attempts": [{"attempt": 1, "device": "/dev/disk5", "exitCode": 0, "stdout": "\"disk5\" ejected.\n", "stderr": ""}], "observations": [{"attached": true, "devices": ["/dev/disk5", "/dev/disk6", "/dev/disk5s1", "/dev/disk6s1"], "mountPoints": ["/Users/runner/work/_temp/dukto-tls4-mount"]}, {"attached": false, "devices": [], "mountPoints": []}], "completion": "owned image absent and mount released", "elapsedSeconds": 0.289}
+2026-11-06T21:02:36.0678160Z ##[group]Run image="$RUNNER_TEMP/dukto-tls16-limited.dmg"
+2026-11-06T21:02:36.0679550Z [36;1mimage="$RUNNER_TEMP/dukto-tls16-limited.dmg"[0m
+2026-11-06T21:02:36.0680430Z [36;1mmount="$RUNNER_TEMP/dukto-tls16-mount"[0m
+2026-11-06T21:02:36.0681560Z [36;1mtest ! -e "$image"[0m
+2026-11-06T21:02:36.0681990Z [36;1mmkdir "$mount"[0m
+2026-11-06T21:02:36.0682370Z [36;1mhdiutil create -size 256m -fs APFS -volname Dukto-TLS16-Limited "$image"[0m
+2026-11-06T21:02:36.0682900Z [36;1mhdiutil attach -nobrowse -mountpoint "$mount" "$image"[0m
+2026-11-06T21:02:36.0683250Z [36;1msource scripts/ci_macos_disk_cleanup.sh[0m
+2026-11-06T21:02:36.0683730Z [36;1mtrap 'dukto_macos_cleanup "$?" "$mount" "$image" "build/apfs-tls16-cleanup.json"' EXIT[0m
+2026-11-06T21:02:36.0684240Z [36;1mdiskutil info -plist "$mount" > build/apfs-tls16-filesystem.log[0m
+2026-11-06T21:02:36.0684960Z [36;1mcapacity=$(python -c 'import os,sys; s=os.statvfs(sys.argv[1]); print(s.f_blocks*s.f_frsize)' "$mount")[0m
+2026-11-06T21:02:36.0685870Z [36;1mpython -X utf8 tests/parallel_disk_integration.py build/dukto-cli --limited-directory "$mount" --filesystem-bytes "$capacity" --threads 16 --report build/apfs-tls16-disk.json[0m
+2026-11-06T21:02:36.0997430Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-06T21:02:36.0997800Z env:
+2026-11-06T21:02:36.0998140Z   pythonLocation: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-06T21:02:36.0998650Z   PKG_CONFIG_PATH: /Users/runner/hostedtoolcache/Python/3.12.10/arm64/lib/pkgconfig
+2026-11-06T21:02:36.0999140Z   Python_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-06T21:02:36.0999630Z   Python2_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-06T21:02:36.1000150Z   Python3_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-06T21:02:36.1000520Z   CMAKE_PREFIX_PATH: /opt/homebrew/opt/qt@5
+2026-11-06T21:02:36.1000960Z   OPENSSL_ROOT_DIR: /opt/homebrew/opt/openssl@3
+2026-11-06T21:02:36.1001260Z ##[endgroup]
+2026-11-06T21:02:37.2580150Z created: /Users/runner/work/_temp/dukto-tls16-limited.dmg
+2026-11-06T21:02:37.6512020Z /dev/disk5          	GUID_partition_scheme          	
+2026-11-06T21:02:37.6641570Z /dev/disk5s1        	Apple_APFS                     	
+2026-11-06T21:02:37.6729520Z /dev/disk6          	EF57347C-0000-11AA-AA11-0030654	
+2026-11-06T21:02:37.6831070Z /dev/disk6s1        	41504653-0000-11AA-AA11-0030654	/Users/runner/work/_temp/dukto-tls16-mount
+2026-11-06T21:02:44.2429140Z upload: durable 4194304, exhausting dedicated filesystem
+2026-11-06T21:02:44.5317790Z upload: actual ENOSPC refused publication; releasing filler
+2026-11-06T21:02:51.8746140Z upload: content, original protection and recovery passed
+2026-11-06T21:02:56.7297230Z download: durable 4194304, exhausting dedicated filesystem
+2026-11-06T21:02:57.0048460Z download: actual ENOSPC refused publication; releasing filler
+2026-11-06T21:03:12.0424880Z download: content, original protection and recovery passed
+2026-11-06T21:03:12.1480930Z Parallel TLS disk-full and recovery passed
+2026-11-06T21:03:12.4862840Z {"date": "2026-11-05", "passed": true, "scope": "owned temporary APFS image cleanup", "forced": false, "budgetSeconds": 20, "maximumAttempts": 8, "ownershipVerified": true, "mount": "/Users/runner/work/_temp/dukto-tls16-mount", "image": "/Users/runner/work/_temp/dukto-tls16-limited.dmg", "attempts": [{"attempt": 1, "device": "/dev/disk5", "exitCode": 0, "stdout": "\"disk5\" ejected.\n", "stderr": ""}], "observations": [{"attached": true, "devices": ["/dev/disk5", "/dev/disk6", "/dev/disk5s1", "/dev/disk6s1"], "mountPoints": ["/Users/runner/work/_temp/dukto-tls16-mount"]}, {"attached": false, "devices": [], "mountPoints": []}], "completion": "owned image absent and mount released", "elapsedSeconds": 0.189}
+2026-11-06T21:03:12.5095630Z ##[group]Run for channels in 1 4 16; do
+2026-11-06T21:03:12.5096400Z [36;1mfor channels in 1 4 16; do[0m
+2026-11-06T21:03:12.5096930Z [36;1m  image="$RUNNER_TEMP/dukto-overwrite-$channels-limited.dmg"[0m
+2026-11-06T21:03:12.5097480Z [36;1m  mount="$RUNNER_TEMP/dukto-overwrite-$channels-mount"[0m
+2026-11-06T21:03:12.5098440Z [36;1m  test ! -e "$image"[0m
+2026-11-06T21:03:12.5099780Z [36;1m  mkdir "$mount"[0m
+2026-11-06T21:03:12.5100960Z [36;1m  hdiutil create -size 256m -fs APFS -volname "Dukto-Overwrite-$channels" "$image"[0m
+2026-11-06T21:03:12.5102610Z [36;1m  hdiutil attach -nobrowse -mountpoint "$mount" "$image"[0m
+2026-11-06T21:03:12.5103870Z [36;1m  source scripts/ci_macos_disk_cleanup.sh[0m
+2026-11-06T21:03:12.5105240Z [36;1m  trap 'dukto_macos_cleanup "$?" "$mount" "$image" "build/apfs-overwrite-$channels-cleanup.json"' EXIT[0m
+2026-11-06T21:03:12.5107180Z [36;1m  diskutil info -plist "$mount" > "build/apfs-overwrite-$channels-filesystem.log"[0m
+2026-11-06T21:03:12.5109260Z [36;1m  capacity=$(python -c 'import os,sys; s=os.statvfs(sys.argv[1]); print(s.f_blocks*s.f_frsize)' "$mount")[0m
+2026-11-06T21:03:12.5113000Z [36;1m  python -u -X utf8 tests/parallel_disk_integration.py build/dukto-cli --limited-directory "$mount" --filesystem-bytes "$capacity" --threads "$channels" --on-conflict overwrite --report "build/apfs-overwrite-$channels-disk.json"[0m
+2026-11-06T21:03:12.5115620Z [36;1m  trap - EXIT[0m
+2026-11-06T21:03:12.5116670Z [36;1m  dukto_macos_cleanup 0 "$mount" "$image" "build/apfs-overwrite-$channels-cleanup.json"[0m
+2026-11-06T21:03:12.5117950Z [36;1mdone[0m
+2026-11-06T21:03:12.5191960Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-06T21:03:12.5192520Z env:
+2026-11-06T21:03:12.5192870Z   pythonLocation: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-06T21:03:12.5193510Z   PKG_CONFIG_PATH: /Users/runner/hostedtoolcache/Python/3.12.10/arm64/lib/pkgconfig
+2026-11-06T21:03:12.5194020Z   Python_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-06T21:03:12.5194600Z   Python2_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-06T21:03:12.5195130Z   Python3_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-06T21:03:12.5196580Z   CMAKE_PREFIX_PATH: /opt/homebrew/opt/qt@5
+2026-11-06T21:03:12.5197590Z   OPENSSL_ROOT_DIR: /opt/homebrew/opt/openssl@3
+2026-11-06T21:03:12.5204400Z ##[endgroup]
+2026-11-06T21:03:13.6677610Z created: /Users/runner/work/_temp/dukto-overwrite-1-limited.dmg
+2026-11-06T21:03:14.0687300Z /dev/disk5          	GUID_partition_scheme          	
+2026-11-06T21:03:14.0813260Z /dev/disk5s1        	Apple_APFS                     	
+2026-11-06T21:03:14.0894670Z /dev/disk6          	EF57347C-0000-11AA-AA11-0030654	
+2026-11-06T21:03:14.0898040Z /dev/disk6s1        	41504653-0000-11AA-AA11-0030654	/Users/runner/work/_temp/dukto-overwrite-1-mount
+2026-11-06T21:03:19.5359790Z upload: durable 4194304, exhausting dedicated filesystem
+2026-11-06T21:03:20.1420030Z upload: actual ENOSPC refused publication; releasing filler
+2026-11-06T21:03:56.7201540Z upload: content, original protection and recovery passed
+2026-11-06T21:04:01.5776650Z download: durable 4194304, exhausting dedicated filesystem
+2026-11-06T21:04:02.1597400Z download: actual ENOSPC refused publication; releasing filler
+2026-11-06T21:04:38.6757500Z download: content, original protection and recovery passed
+2026-11-06T21:04:38.7966900Z Parallel TLS disk-full and recovery passed
+2026-11-06T21:04:39.2679930Z {"date": "2026-11-05", "passed": true, "scope": "owned temporary APFS image cleanup", "forced": false, "budgetSeconds": 20, "maximumAttempts": 8, "ownershipVerified": true, "mount": "/Users/runner/work/_temp/dukto-overwrite-1-mount", "image": "/Users/runner/work/_temp/dukto-overwrite-1-limited.dmg", "attempts": [{"attempt": 1, "device": "/dev/disk5", "exitCode": 0, "stdout": "\"disk5\" ejected.\n", "stderr": ""}], "observations": [{"attached": true, "devices": ["/dev/disk5", "/dev/disk6", "/dev/disk5s1", "/dev/disk6s1"], "mountPoints": ["/Users/runner/work/_temp/dukto-overwrite-1-mount"]}, {"attached": false, "devices": [], "mountPoints": []}], "completion": "owned image absent and mount released", "elapsedSeconds": 0.277}
+2026-11-06T21:04:40.3148350Z created: /Users/runner/work/_temp/dukto-overwrite-4-limited.dmg
+2026-11-06T21:04:40.6433550Z /dev/disk5          	GUID_partition_scheme          	
+2026-11-06T21:04:40.6535230Z /dev/disk5s1        	Apple_APFS                     	
+2026-11-06T21:04:40.6667700Z /dev/disk6          	EF57347C-0000-11AA-AA11-0030654	
+2026-11-06T21:04:40.6769220Z /dev/disk6s1        	41504653-0000-11AA-AA11-0030654	/Users/runner/work/_temp/dukto-overwrite-4-mount
+2026-11-06T21:04:45.2821130Z upload: durable 4194304, exhausting dedicated filesystem
+2026-11-06T21:04:45.5424260Z upload: actual ENOSPC refused publication; releasing filler
+2026-11-06T21:04:57.7144020Z upload: content, original protection and recovery passed
+2026-11-06T21:05:03.0941990Z download: durable 4194304, exhausting dedicated filesystem
+2026-11-06T21:05:03.4809610Z download: actual ENOSPC refused publication; releasing filler
+2026-11-06T21:05:13.9064410Z download: content, original protection and recovery passed
+2026-11-06T21:05:14.0587100Z Parallel TLS disk-full and recovery passed
+2026-11-06T21:05:14.3451800Z {"date": "2026-11-05", "passed": true, "scope": "owned temporary APFS image cleanup", "forced": false, "budgetSeconds": 20, "maximumAttempts": 8, "ownershipVerified": true, "mount": "/Users/runner/work/_temp/dukto-overwrite-4-mount", "image": "/Users/runner/work/_temp/dukto-overwrite-4-limited.dmg", "attempts": [{"attempt": 1, "device": "/dev/disk5", "exitCode": 0, "stdout": "\"disk5\" ejected.\n", "stderr": ""}], "observations": [{"attached": true, "devices": ["/dev/disk5", "/dev/disk6", "/dev/disk5s1", "/dev/disk6s1"], "mountPoints": ["/Users/runner/work/_temp/dukto-overwrite-4-mount"]}, {"attached": false, "devices": [], "mountPoints": []}], "completion": "owned image absent and mount released", "elapsedSeconds": 0.193}
+2026-11-06T21:05:15.4077350Z created: /Users/runner/work/_temp/dukto-overwrite-16-limited.dmg
+2026-11-06T21:05:15.7910000Z /dev/disk5          	GUID_partition_scheme          	
+2026-11-06T21:05:15.8063620Z /dev/disk5s1        	Apple_APFS                     	
+2026-11-06T21:05:15.8180870Z /dev/disk6          	EF57347C-0000-11AA-AA11-0030654	
+2026-11-06T21:05:15.8306100Z /dev/disk6s1        	41504653-0000-11AA-AA11-0030654	/Users/runner/work/_temp/dukto-overwrite-16-mount
+2026-11-06T21:05:21.5563610Z upload: durable 4194304, exhausting dedicated filesystem
+2026-11-06T21:05:22.0733020Z upload: actual ENOSPC refused publication; releasing filler
+2026-11-06T21:05:35.3924070Z upload: content, original protection and recovery passed
+2026-11-06T21:05:42.9347170Z download: durable 4194304, exhausting dedicated filesystem
+2026-11-06T21:05:43.1867880Z download: actual ENOSPC refused publication; releasing filler
+2026-11-06T21:05:47.9507860Z download: content, original protection and recovery passed
+2026-11-06T21:05:48.0194300Z Parallel TLS disk-full and recovery passed
+2026-11-06T21:05:48.3556740Z {"date": "2026-11-05", "passed": true, "scope": "owned temporary APFS image cleanup", "forced": false, "budgetSeconds": 20, "maximumAttempts": 8, "ownershipVerified": true, "mount": "/Users/runner/work/_temp/dukto-overwrite-16-mount", "image": "/Users/runner/work/_temp/dukto-overwrite-16-limited.dmg", "attempts": [{"attempt": 1, "device": "/dev/disk5", "exitCode": 0, "stdout": "\"disk5\" ejected.\n", "stderr": ""}], "observations": [{"attached": true, "devices": ["/dev/disk5", "/dev/disk6", "/dev/disk5s1", "/dev/disk6s1"], "mountPoints": ["/Users/runner/work/_temp/dukto-overwrite-16-mount"]}, {"attached": false, "devices": [], "mountPoints": []}], "completion": "owned image absent and mount released", "elapsedSeconds": 0.248}
+2026-11-06T21:05:48.3854420Z ##[group]Run image="$RUNNER_TEMP/dukto-tls1-limited.dmg"
+2026-11-06T21:05:48.3855190Z [36;1mimage="$RUNNER_TEMP/dukto-tls1-limited.dmg"[0m
+2026-11-06T21:05:48.3855630Z [36;1mmount="$RUNNER_TEMP/dukto-tls1-mount"[0m
+2026-11-06T21:05:48.3855960Z [36;1mtest ! -e "$image"[0m
+2026-11-06T21:05:48.3856330Z [36;1mmkdir "$mount"[0m
+2026-11-06T21:05:48.3857530Z [36;1mhdiutil create -size 256m -fs APFS -volname Dukto-TLS1-Limited "$image"[0m
+2026-11-06T21:05:48.3858930Z [36;1mhdiutil attach -nobrowse -mountpoint "$mount" "$image"[0m
+2026-11-06T21:05:48.3860000Z [36;1msource scripts/ci_macos_disk_cleanup.sh[0m
+2026-11-06T21:05:48.3861520Z [36;1mtrap 'dukto_macos_cleanup "$?" "$mount" "$image" "build/apfs-tls1-cleanup.json"' EXIT[0m
+2026-11-06T21:05:48.3862940Z [36;1mdiskutil info -plist "$mount" > build/apfs-tls1-filesystem.log[0m
+2026-11-06T21:05:48.3864380Z [36;1mcapacity=$(python -c 'import os,sys; s=os.statvfs(sys.argv[1]); print(s.f_blocks*s.f_frsize)' "$mount")[0m
+2026-11-06T21:05:48.3867310Z [36;1mpython -u -X utf8 tests/parallel_disk_integration.py build/dukto-cli --limited-directory "$mount" --filesystem-bytes "$capacity" --threads 1 --report build/apfs-tls1-disk.json[0m
+2026-11-06T21:05:48.4280180Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-06T21:05:48.4281140Z env:
+2026-11-06T21:05:48.4281780Z   pythonLocation: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-06T21:05:48.4283190Z   PKG_CONFIG_PATH: /Users/runner/hostedtoolcache/Python/3.12.10/arm64/lib/pkgconfig
+2026-11-06T21:05:48.4284400Z   Python_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-06T21:05:48.4285740Z   Python2_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-06T21:05:48.4287090Z   Python3_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-06T21:05:48.4288230Z   CMAKE_PREFIX_PATH: /opt/homebrew/opt/qt@5
+2026-11-06T21:05:48.4288880Z   OPENSSL_ROOT_DIR: /opt/homebrew/opt/openssl@3
+2026-11-06T21:05:48.4289990Z ##[endgroup]
+2026-11-06T21:05:49.5751250Z created: /Users/runner/work/_temp/dukto-tls1-limited.dmg
+2026-11-06T21:05:49.9864440Z /dev/disk5          	GUID_partition_scheme          	
+2026-11-06T21:05:50.0035900Z /dev/disk5s1        	Apple_APFS                     	
+2026-11-06T21:05:50.0176460Z /dev/disk6          	EF57347C-0000-11AA-AA11-0030654	
+2026-11-06T21:05:50.0301110Z /dev/disk6s1        	41504653-0000-11AA-AA11-0030654	/Users/runner/work/_temp/dukto-tls1-mount
+2026-11-06T21:05:55.4086850Z upload: durable 4194304, exhausting dedicated filesystem
+2026-11-06T21:05:56.2184750Z upload: actual ENOSPC refused publication; releasing filler
+2026-11-06T21:06:37.1483940Z upload: content, original protection and recovery passed
+2026-11-06T21:06:44.8033810Z download: durable 4194304, exhausting dedicated filesystem
+2026-11-06T21:06:45.3868810Z download: actual ENOSPC refused publication; releasing filler
+2026-11-06T21:07:19.0840270Z download: content, original protection and recovery passed
+2026-11-06T21:07:19.1234460Z Parallel TLS disk-full and recovery passed
+2026-11-06T21:07:19.4842540Z {"date": "2026-11-05", "passed": true, "scope": "owned temporary APFS image cleanup", "forced": false, "budgetSeconds": 20, "maximumAttempts": 8, "ownershipVerified": true, "mount": "/Users/runner/work/_temp/dukto-tls1-mount", "image": "/Users/runner/work/_temp/dukto-tls1-limited.dmg", "attempts": [{"attempt": 1, "device": "/dev/disk5", "exitCode": 0, "stdout": "\"disk5\" ejected.\n", "stderr": ""}], "observations": [{"attached": true, "devices": ["/dev/disk5", "/dev/disk6", "/dev/disk5s1", "/dev/disk6s1"], "mountPoints": ["/Users/runner/work/_temp/dukto-tls1-mount"]}, {"attached": false, "devices": [], "mountPoints": []}], "completion": "owned image absent and mount released", "elapsedSeconds": 0.217}
+2026-11-06T21:07:19.5110630Z ##[group]Run actions/upload-artifact@v4
+2026-11-06T21:07:19.5111160Z with:
+2026-11-06T21:07:19.5111450Z   name: macos-apfs-ARM64
+2026-11-06T21:07:19.5111690Z   path: build/*.json
+build/*.log
+
+2026-11-06T21:07:19.5112020Z   if-no-files-found: warn
+2026-11-06T21:07:19.5112280Z   compression-level: 6
+2026-11-06T21:07:19.5112600Z   overwrite: false
+2026-11-06T21:07:19.5112850Z   include-hidden-files: false
+2026-11-06T21:07:19.5113160Z env:
+2026-11-06T21:07:19.5113490Z   pythonLocation: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-06T21:07:19.5114070Z   PKG_CONFIG_PATH: /Users/runner/hostedtoolcache/Python/3.12.10/arm64/lib/pkgconfig
+2026-11-06T21:07:19.5114690Z   Python_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-06T21:07:19.5115160Z   Python2_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-06T21:07:19.5115700Z   Python3_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-06T21:07:19.5116200Z   CMAKE_PREFIX_PATH: /opt/homebrew/opt/qt@5
+2026-11-06T21:07:19.5116580Z   OPENSSL_ROOT_DIR: /opt/homebrew/opt/openssl@3
+2026-11-06T21:07:19.5116880Z ##[endgroup]
+2026-11-06T21:07:19.9586100Z (node:8334) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-06T21:07:19.9594860Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-06T21:07:19.9751630Z With the provided path, there will be 21 files uploaded
+2026-11-06T21:07:19.9753250Z Artifact name is valid!
+2026-11-06T21:07:19.9754030Z Root directory input is valid!
+2026-11-06T21:07:20.2728080Z Beginning upload of artifact content to blob storage
+2026-11-06T21:07:20.3314080Z (node:8334) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-11-06T21:07:20.5320430Z Uploaded bytes 18908
+2026-11-06T21:07:20.5772220Z Finished uploading artifact content to blob storage!
+2026-11-06T21:07:20.5773840Z SHA256 digest of uploaded artifact zip is c5ad1e13443506bac6daf166b159dd14c21a5dd27b6a1a2530ab01e6b225064d
+2026-11-06T21:07:20.5775420Z Finalizing artifact upload
+2026-11-06T21:07:21.0052640Z Artifact macos-apfs-ARM64.zip successfully finalized. Artifact ID 13540373564
+2026-11-06T21:07:21.0055760Z Artifact macos-apfs-ARM64 has been successfully uploaded! Final size is 18908 bytes. Artifact ID is 13540373564
+2026-11-06T21:07:21.0077520Z Artifact download URL: https://github.com/29583855/dukto-next/actions/runs/42293178190/artifacts/13540373564
+2026-11-06T21:07:21.0348040Z Post job cleanup.
+2026-11-06T21:07:21.1789320Z (node:8336) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-06T21:07:21.1795610Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-06T21:07:21.1913190Z Post job cleanup.
+2026-11-06T21:07:21.3081470Z [command]/opt/homebrew/bin/git version
+2026-11-06T21:07:21.3286620Z git version 2.56.0
+2026-11-06T21:07:21.3305120Z Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/0e4df047-fbe6-464f-94a6-414c22e40b89/.gitconfig'
+2026-11-06T21:07:21.3316620Z Temporarily overriding HOME='/Users/runner/work/_temp/0e4df047-fbe6-464f-94a6-414c22e40b89' before making global git config changes
+2026-11-06T21:07:21.3318480Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-06T21:07:21.3320930Z [command]/opt/homebrew/bin/git config --global --add safe.directory /Users/runner/work/dukto-next/dukto-next
+2026-11-06T21:07:21.3488220Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-06T21:07:21.3580200Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-06T21:07:21.5091170Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-06T21:07:21.5182980Z http.https://github.com/.extraheader
+2026-11-06T21:07:21.5193130Z [command]/opt/homebrew/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-11-06T21:07:21.5280760Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-06T21:07:21.6248580Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-06T21:07:21.6325300Z [command]/opt/homebrew/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-06T21:07:21.7704260Z Cleaning up orphan processes
+2026-11-06T21:07:23.5397470Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-python@v5, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
