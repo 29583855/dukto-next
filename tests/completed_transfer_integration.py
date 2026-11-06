@@ -35,6 +35,125 @@ def task_row(server, task):
     return row
 
 
+# 日期：2026-11-06；冻结自有接收目录的内容、名称和原生身份，拒绝后不允许产生part或新目录。
+def target_snapshot(root):
+    result = {}
+    for path in [root, *sorted(root.rglob("*"))]:
+        info = path.stat()
+        result[path.relative_to(root).as_posix()] = [path.is_dir(), info.st_dev, info.st_ino,
+            info.st_mtime_ns, None if path.is_dir() else info.st_size,
+            None if path.is_dir() else digest(path)]
+    return result
+
+
+# 日期：2026-11-06；客户端只读核验原接收；保留旧模式派生处置重建，原接收缺项/损坏/外来对象必须拒绝。
+def local_history(executable, client, operation, destination, task, records):
+    local = client / "transfers"
+    manifest = local / f"download-{task}.sqlite"
+    ledger = local / f"disposition-{task}.sqlite"
+    receiver = local / f"receive-{task}.sqlite"
+    evidence = [manifest, ledger, receiver]
+    assert all(path.is_file() for path in evidence)
+    failures = []
+
+    # 日期：2026-11-06；在每个攻击变更完成后冻结样本，只读失败不得新增库或改变其余原件。
+    def unchanged_failure(attack):
+        hashes = {path.name: digest(path) for path in evidence if path.exists()}
+        names = {path.name for path in local.iterdir()}
+        targets = target_snapshot(destination)
+        result = refused(executable, client, operation)
+        assert hashes == {path.name: digest(path) for path in evidence if path.exists()}
+        assert names == {path.name for path in local.iterdir()}
+        assert targets == target_snapshot(destination), attack
+        failures.append({"attack": "client-" + attack, **result, "readOnly": True})
+
+    for path in [manifest, receiver]:
+        hidden = path.with_suffix(".hidden")
+        path.rename(hidden)
+        try:
+            unchanged_failure("missing-" + path.name.split("-")[0])
+            assert not path.exists()
+        finally:
+            # 日期：2026-11-06；仅清理测试自有缺库样本被错误重建的文件，保留原始拒绝断言异常。
+            if path.exists():
+                path.unlink()
+            hidden.rename(path)
+    payload_record, = [item for item in records if item["entry"]["path"].endswith("/资料/payload.bin")]
+    directory_record, = [item for item in records if item["entry"]["path"].endswith("/资料/空目录")]
+    current = destination / payload_record["path"]
+    directory = destination / directory_record["path"]
+    with current.open("r+b") as output:
+        original = output.read(1)
+        output.seek(0)
+        output.write(bytes([original[0] ^ 0xff]))
+    try:
+        unchanged_failure("same-length-corruption")
+    finally:
+        with current.open("r+b") as output:
+            output.write(original)
+    for name, path in [("missing-file", current), ("missing-directory", directory)]:
+        hidden = path.with_name(path.name + ".hidden")
+        path.rename(hidden)
+        try:
+            unchanged_failure(name)
+            assert not path.exists()
+        finally:
+            hidden.rename(path)
+    hidden = current.with_name(current.name + ".original")
+    current.rename(hidden)
+    shutil.copyfile(hidden, current)
+    try:
+        assert digest(current) == digest(hidden)
+        unchanged_failure("same-content-foreign-object")
+    finally:
+        current.unlink()
+        hidden.rename(current)
+    mutations = [(ledger, "corrupt-disposition-item", "UPDATE items SET spec=X'7b7d' WHERE id=?", payload_record["entry"]["id"]),
+                 (receiver, "missing-file-record", "DELETE FROM files WHERE id=?", payload_record["entry"]["id"]),
+                 (receiver, "missing-directory-record", "DELETE FROM directories WHERE id=?", directory_record["entry"]["id"]),
+                 (receiver, "unfinished-file-record", "UPDATE files SET state='receiving' WHERE id=?", payload_record["entry"]["id"])]
+    for path, attack, sql, item in mutations:
+        original = path.read_bytes()
+        try:
+            with closing(sqlite3.connect(path)) as db:
+                db.execute(sql, (int(item),))
+                db.commit()
+            unchanged_failure(attack)
+        finally:
+            path.write_bytes(original)
+    # 日期：2026-11-06；旧模式缺失派生处置或只有合法前缀时可由完整原接收重建；原接收和目标始终不变。
+    for complete_missing in [True, False]:
+        original = ledger.read_bytes()
+        saved = ledger.with_suffix(".saved")
+        if complete_missing:
+            ledger.rename(saved)
+        else:
+            with closing(sqlite3.connect(ledger)) as db:
+                db.execute("DELETE FROM items WHERE id=(SELECT MAX(id) FROM items)")
+                db.commit()
+        hashes = {path.name: digest(path) for path in [manifest, receiver]}
+        targets = target_snapshot(destination)
+        try:
+            assert transfer(executable, client, operation)["taskId"] == task
+            assert hashes == {path.name: digest(path) for path in [manifest, receiver]}
+            assert targets == target_snapshot(destination)
+            with closing(sqlite3.connect(f"{ledger.as_uri()}?mode=ro", uri=True)) as db:
+                assert db.execute("SELECT COUNT(*) FROM items").fetchone()[0] == len(records)
+        finally:
+            if complete_missing:
+                if ledger.exists():
+                    ledger.unlink()
+                saved.rename(ledger)
+            else:
+                ledger.write_bytes(original)
+    hashes = {path.name: digest(path) for path in evidence}
+    targets = target_snapshot(destination)
+    assert transfer(executable, client, operation)["taskId"] == task
+    assert hashes == {path.name: digest(path) for path in evidence}
+    assert targets == target_snapshot(destination)
+    return failures
+
+
 # 日期：2026-11-06；跨页Unicode/空项/大文件及三策略分别走1/4/16通道，两方向独立验证。
 def case(executable, root, server, client, shared, channels, conflict, direction):
     key = f"history-{direction}-{channels}-{conflict}"
@@ -125,9 +244,13 @@ def case(executable, root, server, client, shared, channels, conflict, direction
     assert digest(current) == expected_sha
     if conflict == "rename":
         assert (destination / source.name / "资料/payload.bin").read_bytes() == b"original-user-data"
+    local_failures = local_history(executable, client, operation, destination, task, records) if direction == "download" else []
+    assert task_row(server, task) == history
+    assert hashes == {path.name: digest(path) for path in evidence}
     return {"direction": direction, "channels": channels, "conflict": conflict, "taskId": task,
             "entries": len(records), "attacks": failures, "currentContentVerified": True,
-            "historyUnchanged": True, "evidenceByteHashesUnchanged": True, "restoredRetryPassed": True}
+            "historyUnchanged": True, "evidenceByteHashesUnchanged": True, "restoredRetryPassed": True,
+            "localHistoryAttacks": local_failures, "localEvidenceAndTargetsUnchanged": direction == "download"}
 
 
 # 日期：2026-11-06；服务仅监听回环，关闭后确认输出无错误，所有原报告独立保存。
@@ -165,7 +288,7 @@ def main():
     report.parent.mkdir(parents=True, exist_ok=True)
     report.write_text(json.dumps({"date": "2026-11-06", "passed": True, "cases": cases,
                                  "executableSha256": digest(Path(executable)), "scriptSha256": digest(Path(__file__)),
-                                 "scope": "current server content on repeated transfer; immutable historical task evidence"},
+                                 "scope": "current server and client content on repeated transfer; immutable historical task/receive/disposition evidence"},
                                 ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 

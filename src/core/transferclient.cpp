@@ -153,7 +153,7 @@ QJsonObject completedTask(next::SecureChannel &channel, quint64 correlation, con
     return value;
 }
 
-// 日期：2026-11-05；任务确认丢失后重试，必须核对全部完成总计并重查本地同一清单和文件日志。
+// 日期：2026-11-06；只读核验原接收证据；旧模式可据完整证明补齐派生处置，必需计量任务禁止降级。
 QJsonObject verifyLocalDownload(PrivateStore &local, const QUuid &id, const QString &destination,
                                 const QJsonObject &task, const std::atomic_bool *cancel,
                                 ConflictPolicy conflict, const std::function<void()> &pulse = {}) {
@@ -171,26 +171,49 @@ QJsonObject verifyLocalDownload(PrivateStore &local, const QUuid &id, const QStr
     };
     StrongManifest manifest(local, "download-" + key + ".sqlite", false, check);
     checkCompletedSummary(task, manifest.summary());
-    DurableReceive receiver(local, "receive-" + key + ".sqlite", id, manifest, destination,
-                            conflict);
-    // 日期：2026-11-06；确认丢失恢复逐项重验后补齐历史处置；已有不一致日志不能改写。
-    DispositionJournal outcomes(local, "disposition-" + key + ".sqlite", id, manifest,
-                                conflictPolicyName(conflict), check);
-    const auto count = next::decimal(manifest.summary()["entries"], 10000000);
-    for (quint64 file = 1; file <= count; ++file) {
-        const auto entry = manifest.entry(file);
-        auto target = receiver.prepare(file, check);
-        if (!entry.directory) {
-            receiver.open(file, target, check);
-            if (receiver.state() != "completed")
-                throw Error(ExitCode::Integrity, QStringLiteral("本地下载尚未持久完成"),
-                            "transfer");
-            // 日期：2026-11-06；完成日志保存的是实际发布名称，重命名文件不能退回原始预约名称。
-            target = receiver.finish(check);
-        }
-        outcomes.append(file, target, "copied");
+    const auto outcomeName = "disposition-" + key + ".sqlite";
+    const auto entries = next::decimal(manifest.summary()["entries"], 10000000);
+    std::unique_ptr<DispositionJournal> outcomes;
+    quint64 recorded = 0;
+    if (local.exists(outcomeName)) {
+        outcomes.reset(new DispositionJournal(local, outcomeName, id, manifest,
+                                              conflictPolicyName(conflict), check, true));
+        recorded = next::decimal(outcomes->summary(false, check)["processedEntries"], entries);
     }
-    return outcomes.summary(true, check);
+    const bool incomplete = !outcomes || recorded != entries;
+    if (incomplete && (conflict == ConflictPolicy::Skip || task.contains("accountingVersion")))
+        throw Error(ExitCode::Integrity, QStringLiteral("显式计量任务缺少完整原处置证据"),
+                    "completion");
+    DurableReceive::verifyCompleted(
+        local, "receive-" + key + ".sqlite", id, manifest, destination, conflict, check, {},
+        [&](quint64 file, const DurableReceive::Preparation &result) {
+            // 日期：2026-11-06；先只读核对完整接收和已有前缀；路径或跳过根不一致时禁止补写。
+            if (!outcomes || file > recorded)
+                return;
+            const auto item = outcomes->item(file);
+            const auto skippedRoot = result.skipped ? next::decimal(item["skippedRoot"], file) : 0;
+            if (item["path"] != result.path ||
+                item["disposition"] != (result.skipped ? "skipped" : "copied") ||
+                skippedRoot != result.skippedRoot)
+                throw Error(ExitCode::Integrity, QStringLiteral("本地完成接收与原处置不同"),
+                            "completion");
+        });
+    if (incomplete) {
+        // 日期：2026-11-06；旧模式全部只读核验通过后才打开派生日志；第二遍有界重验，不改写原接收库或目标。
+        outcomes.reset();
+        outcomes.reset(new DispositionJournal(local, outcomeName, id, manifest,
+                                              conflictPolicyName(conflict), check));
+        DurableReceive::verifyCompleted(
+            local, "receive-" + key + ".sqlite", id, manifest, destination, conflict, check, {},
+            [&](quint64 file, const DurableReceive::Preparation &result) {
+                // 日期：2026-11-06；每项仍须是本次重新核验的复制结果，不能由旧数字或文件存在性补造。
+                if (result.skipped || result.skippedRoot)
+                    throw Error(ExitCode::Integrity, QStringLiteral("旧模式不能补写跳过处置"),
+                                "completion");
+                outcomes->append(file, result.path, "copied");
+            });
+    }
+    return outcomes->summary(true, check);
 }
 } // namespace
 
