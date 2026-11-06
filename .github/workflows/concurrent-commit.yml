@@ -1,0 +1,49 @@
+name: Diagnose native Windows concurrent exclusive commits
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  concurrent-commit:
+    runs-on: windows-2022
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: jurplel/install-qt-action@v4
+        with:
+          version: '5.15.2'
+          arch: win64_msvc2019_64
+          cache: true
+      # 日期：2026-11-06；使用原生产依赖与C++14核心，目标精简不改变被测提交实现。
+      - name: Prepare native TLS development runtime
+        shell: pwsh
+        run: |
+          python scripts/ci_tls_runtime.py
+          "$PWD/.tools/openssl/Library/bin" >> $env:GITHUB_PATH
+      - name: Configure C++14 core tests
+        run: cmake -S . -B build -DDUKTO_BUILD_GUI=OFF -DDUKTO_BUILD_TESTS=ON
+      - name: Compile original core tests with exception diagnostics
+        id: compile
+        run: cmake --build build --config Release --parallel 4 --target core-tests
+      # 日期：2026-11-06；每轮仍是原八线程独占、内容与唯一性断言；失败不重试、不吞掉。
+      - name: Repeat concurrent exclusive commits under bounded process contention
+        if: "!cancelled() && steps.compile.outcome == 'success'"
+        run: python -X utf8 -u scripts/ci_concurrent_commits.py build/Release/core-tests.exe --rounds 128 --jobs 4 --output build/concurrent-commits
+      - name: Preserve source and binary identities
+        if: always()
+        shell: pwsh
+        run: |
+          git rev-parse HEAD > build/source-commit.txt
+          Get-FileHash build/Release/core-tests.exe, tests/core_tests.cpp, src/core/files.cpp, src/core/nativecommit.cpp | Format-List | Out-File build/source-and-binary-hashes.txt -Encoding utf8
+      - name: Preserve every original round and failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: concurrent-exclusive-commit-windows
+          path: |
+            build/concurrent-commits/
+            build/source-commit.txt
+            build/source-and-binary-hashes.txt

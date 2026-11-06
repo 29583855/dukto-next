@@ -295,7 +295,19 @@ def main():
                     error = failure(active_transfer)
                     active_transfer = None
                     stopped = stopped_task(server, live_task)
-                    assert error["code"] in (3, 4) and stopped["state"] == "interrupted"
+                    # 日期：2026-11-06；原断言前保存非秘密字段；失败不能只留下AssertionError而丢失实际分类。
+                    observation = {"direction": direction, "channels": 4, "taskId": live_task,
+                                   "checkpoint": checkpoint, "errorCode": error.get("code"),
+                                   "errorStage": error.get("stage"), "serverStoppedState": stopped.get("state"),
+                                   "secondsToStop": round(time.monotonic() - started, 3)}
+                    Path(args.report).write_text(json.dumps({
+                        "date": "2026-11-06", "passed": False, "completed": False,
+                        "phase": "live credential rotation stop assertion", "observation": observation,
+                        "completedLiveCases": live_cases, "checks": checks,
+                        "executableSha256": hashlib.sha256(Path(executable).read_bytes()).hexdigest(),
+                        "testScriptSha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest()},
+                        ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+                    assert error["code"] in (3, 4) and stopped["state"] == "interrupted", observation
                     seconds = round(time.monotonic() - started, 3)
                     assert seconds < 15
                     assert digest(original) == original_sha

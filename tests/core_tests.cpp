@@ -438,20 +438,25 @@ class CoreTests final : public QObject {
         QVERIFY(!QFileInfo::exists(root.filePath("cancelled.bin")));
         QCOMPARE(QDir(root.path()).entryList({"*.part"}, QDir::Files | QDir::Hidden).size(), 0);
     }
-    // 日期：2026-11-04；八个工作线程同时独占提交同名文件，各自内容及唯一名称必须保留。
+    // 日期：2026-11-06；八个工作线程同时独占提交同名文件，各自内容及唯一名称必须保留。
     void concurrentExclusiveCommits() {
         QTemporaryDir root;
         const auto target = root.filePath(QStringLiteral("并发.txt"));
         std::array<QString, 8> paths;
         std::array<std::exception_ptr, 8> errors;
+        std::array<QString, 8> phases;
         std::array<QThread *, 8> workers;
         for (int index = 0; index < 8; ++index) {
             workers[index] = QThread::create([&, index]() {
-                // 日期：2026-11-04；线程内捕获异常，所有线程结束后由测试主线程报告失败。
+                // 日期：2026-11-06；线程内捕获异常，所有线程结束后由测试主线程报告失败。
                 try {
+                    phases[index] = "create";
                     dukto::IncomingFile incoming(target);
+                    phases[index] = "write";
                     dukto::writeAll(incoming.device(), QByteArray::number(index));
+                    phases[index] = "commit";
                     paths[index] = incoming.commit();
+                    phases[index] = "duplicate-commit";
                     try {
                         incoming.commit();
                         throw std::runtime_error("duplicate commit unexpectedly succeeded");
@@ -467,9 +472,27 @@ class CoreTests final : public QObject {
             worker->wait();
             delete worker;
         }
+        QStringList failures;
+        for (int index = 0; index < 8; ++index) {
+            if (!errors[index])
+                continue;
+            QString detail;
+            try {
+                std::rethrow_exception(errors[index]);
+            } catch (const dukto::Error &error) {
+                detail = QString("code=%1 stage=%2 message=%3")
+                             .arg(static_cast<int>(error.code))
+                             .arg(error.stage, error.message.left(1024));
+            } catch (const std::exception &error) {
+                detail = QString::fromUtf8(error.what()).left(1024);
+            } catch (...) {
+                detail = "unknown exception";
+            }
+            failures.append(QString("worker=%1 phase=%2 %3").arg(index).arg(phases[index], detail));
+        }
+        QVERIFY2(failures.isEmpty(), qPrintable(failures.join('\n')));
         QSet<QString> names;
         for (int index = 0; index < 8; ++index) {
-            QVERIFY(!errors[index]);
             names.insert(paths[index]);
             QFile file(paths[index]);
             QVERIFY(file.open(QIODevice::ReadOnly));
