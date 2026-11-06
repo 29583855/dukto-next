@@ -1,0 +1,239 @@
+{
+  "date": "2026-11-06",
+  "observedUtc": "2026-11-06T07:47:39.280837+00:00",
+  "planVersion": "v0.81",
+  "productionCommit": "f78cdea4fc6f1f587fd0cdf0b8620c4de8988ec4",
+  "testCommit": "f78cdea4fc6f1f587fd0cdf0b8620c4de8988ec4",
+  "sourceAudit": {
+    "sourceCommit": "f78cdea4fc6f1f587fd0cdf0b8620c4de8988ec4",
+    "allBuildInputsMatchExactCommit": true,
+    "buildInputs": 195,
+    "snapshot": {
+      "path": ".cache/source-skip-items-r83c.tar.gz",
+      "sha256": "7efdfb2f5d3c4b36d85a01b81e6644c500b68f5f466c42b077ec8a1df0d213d4"
+    }
+  },
+  "windows": [
+    {
+      "toolchain": "ucrt",
+      "producerStageFullCtest": {
+        "path": "docs/validation/2026-11-06/skip-items-r83-full-cores/ucrt/ctest.log",
+        "sha256": "a79992cd968f9930eeb92724f14da0810c3c361e5aec4ed7363d4c243a78c043"
+      },
+      "producerStageFullCtestCount": 23,
+      "finalParserIncrementalSuite": {
+        "path": "docs/validation/2026-11-06/skip-items-r83-second-build/ucrt/transfer-items-tests.xml",
+        "sha256": "dca0d59b2546aec132cf9cd2edeb2ad75c7b2100ee8abbad07749b0445cdc8a8"
+      },
+      "finalParserSuiteCountIncludingLifecycle": 10,
+      "finalParserProtocolReports": [
+        {
+          "path": "docs/validation/2026-11-06/skip-items-r83-second-build/ucrt/post-build-protocols/task_items_integration.json",
+          "sha256": "3cf7be2ee6d11dd2b238b3f7b2309583c03ab6d10ef3d09cdde9df87cbffadcf"
+        },
+        {
+          "path": "docs/validation/2026-11-06/skip-items-r83-second-build/ucrt/post-build-protocols/item_failures_integration.json",
+          "sha256": "8460f8f3ffb5dcf8b96fd66a5c1fa1a5cec750d602123e497a0f08081aee6e87"
+        },
+        {
+          "path": "docs/validation/2026-11-06/skip-items-r83-second-build/ucrt/post-build-protocols/upload_receipt_integration.json",
+          "sha256": "0efaa336b3b437deaf047204aa20a78471cef53828493d549fcabc358d227e6e"
+        }
+      ]
+    },
+    {
+      "toolchain": "msvc",
+      "producerStageFullCtest": {
+        "path": "docs/validation/2026-11-06/skip-items-r83-full-cores/msvc/ctest.log",
+        "sha256": "165dc424b867892d339ec78cf9d19404bb1fba0e8ceaec09beb1e5fa11f23cad"
+      },
+      "producerStageFullCtestCount": 23,
+      "finalParserIncrementalSuite": {
+        "path": "docs/validation/2026-11-06/skip-items-r83-second-build/msvc/transfer-items-tests.xml",
+        "sha256": "8fdad474c46b756bfe2c1be5be21046d8591c72fccb0cdc909668c0419325711"
+      },
+      "finalParserSuiteCountIncludingLifecycle": 10,
+      "finalParserProtocolReports": [
+        {
+          "path": "docs/validation/2026-11-06/skip-items-r83-second-build/msvc/post-build-protocols/task_items_integration.json",
+          "sha256": "cf2ab7c4cf4da43bad2ba5b0ebf761f4e0a0930b44fb4da9b4839c095cb9ff97"
+        },
+        {
+          "path": "docs/validation/2026-11-06/skip-items-r83-second-build/msvc/post-build-protocols/item_failures_integration.json",
+          "sha256": "0e834daa390ac9ad32b520955df6fa927f4b34091a1eb9fe538331f9f5edaefa"
+        },
+        {
+          "path": "docs/validation/2026-11-06/skip-items-r83-second-build/msvc/post-build-protocols/upload_receipt_integration.json",
+          "sha256": "f3d3fe7d05ab78bc28f8703de613688adf51b36fb09f78666bf0b9f0189f1e4a"
+        }
+      ]
+    }
+  ],
+  "runs": {
+    "native": {
+      "id": 42179407285,
+      "head_sha": "f78cdea4fc6f1f587fd0cdf0b8620c4de8988ec4",
+      "status": "in_progress",
+      "conclusion": null,
+      "html_url": "https://github.com/29583855/dukto-next/actions/runs/42179407285"
+    },
+    "musl": {
+      "id": 42180309127,
+      "head_sha": "f78cdea4fc6f1f587fd0cdf0b8620c4de8988ec4",
+      "status": "in_progress",
+      "conclusion": null,
+      "html_url": "https://github.com/29583855/dukto-next/actions/runs/42180309127"
+    },
+    "macosPackage": {
+      "id": 42179652376,
+      "head_sha": "f78cdea4fc6f1f587fd0cdf0b8620c4de8988ec4",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/29583855/dukto-next/actions/runs/42179652376"
+    }
+  },
+  "macosPackages": [
+    {
+      "applicationSourceFiles": 283,
+      "allSourceBlobsMatchExactGitCommit": true,
+      "verifiedPayloadFiles": 1547,
+      "verifiedLinks": 71,
+      "guiCli": [
+        {
+          "path": "Dukto Next.app/Contents/MacOS/dukto-cli",
+          "sha256": "0fdb6b73aba62508ca1cc03fc21cf6e819aff20e92266521cb55146d68dac771",
+          "executable": true
+        },
+        {
+          "path": "Dukto Next.app/Contents/MacOS/dukto-gui",
+          "sha256": "94aa67eb8e3f57c92300fde52701036758aedf68ca9f141985df407e873cae92",
+          "executable": true
+        }
+      ],
+      "signature": "adhoc",
+      "developerIdSigned": false,
+      "notarized": false,
+      "runtimeReports": [
+        {
+          "path": "build/package-runtime-cli.json",
+          "sha256": "221fbdf619e0196571f10f2c394eb045bab92634e296982456c5ba625b6452d5",
+          "passed": true
+        },
+        {
+          "path": "build/package-runtime-transfer16.json",
+          "sha256": "837192e5f005cf3c89055986ef227abdf192996214618603edabdfbcf89b23a8",
+          "passed": true
+        },
+        {
+          "path": "build/package-runtime-overwrite.json",
+          "sha256": "58af2f6e4823f960321e0df66de705c35ac15d9014799082375372726cd868f4",
+          "passed": true
+        },
+        {
+          "path": "build/package-runtime-overwrite-recovery.json",
+          "sha256": "371ec94bf26712fb0a8630d49f6999f1114c936bd8c325a77d0f6a2cf389d5d2",
+          "passed": true
+        },
+        {
+          "path": "build/package-runtime-recovery4to8.json",
+          "sha256": "17fd81a8de72ff25dea0b35fc058236008db972caced902cac0588b9b25b022b",
+          "passed": true
+        }
+      ],
+      "runtimeMigrationQualified": true,
+      "mainWindowNavigationPassed": true,
+      "systemPathOnly": true,
+      "screenshot": "docs/validation/2026-11-06/skip-items-r83-macos-package-terminal/macos-preview-ARM64/build/package-runtime.png",
+      "navigationScreenshot": "docs/validation/2026-11-06/skip-items-r83-macos-package-terminal/macos-preview-ARM64/build/main-window-navigation/native/Testing/QtTest/main-server-430x700.png",
+      "architecture": "arm64",
+      "archive": "DuktoNext-macos-arm64-preview.tar.gz",
+      "sha256": "a634ff55e71c9f44cd756ffe3313ffea453e5875437a88920cae9072995d1575",
+      "sourceCommit": "f78cdea4fc6f1f587fd0cdf0b8620c4de8988ec4",
+      "artifactId": 13485177601,
+      "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42179652376/artifacts/13485177601",
+      "zipSha256": "5de98a27c28ecb5a7fb9fa449aa1b54dce41e4c0ee4a7f6088d7a41a6b28f6be",
+      "localArchive": "dist/macos-preview-20261106-r83-skip-items/macos-preview-ARM64/package-output/DuktoNext-macos-arm64-preview.tar.gz"
+    },
+    {
+      "applicationSourceFiles": 283,
+      "allSourceBlobsMatchExactGitCommit": true,
+      "verifiedPayloadFiles": 1705,
+      "verifiedLinks": 71,
+      "guiCli": [
+        {
+          "path": "Dukto Next.app/Contents/MacOS/dukto-cli",
+          "sha256": "6e0be09246270bd5dae86a76cf44d663d3f9daf50f7d2573c59ff3a596dcebc3",
+          "executable": true
+        },
+        {
+          "path": "Dukto Next.app/Contents/MacOS/dukto-gui",
+          "sha256": "c998e96e950a46cac218ddce7c12b8bf66e8efa2bf9bcd8e0d1dd3df9367487b",
+          "executable": true
+        }
+      ],
+      "signature": "adhoc",
+      "developerIdSigned": false,
+      "notarized": false,
+      "runtimeReports": [
+        {
+          "path": "build/package-runtime-cli.json",
+          "sha256": "9b5ed02d80c3a0e49c06e9be45ad0c169d05a9915a989338a964fb16822d31aa",
+          "passed": true
+        },
+        {
+          "path": "build/package-runtime-transfer16.json",
+          "sha256": "837192e5f005cf3c89055986ef227abdf192996214618603edabdfbcf89b23a8",
+          "passed": true
+        },
+        {
+          "path": "build/package-runtime-overwrite.json",
+          "sha256": "9d7fbee1fdbf31adb4fbfb05d813c0cbf396ceffa051a9f5be92cac558ff751d",
+          "passed": true
+        },
+        {
+          "path": "build/package-runtime-overwrite-recovery.json",
+          "sha256": "e2887e5532c1be8ee243b6d86f23683aee8b6fd9acb429ccb63d148756d278e7",
+          "passed": true
+        },
+        {
+          "path": "build/package-runtime-recovery4to8.json",
+          "sha256": "2f4a97c2d0c2cda9de8dbe4b46a19c3f57d22b400993bee2082b0274a9ff71b6",
+          "passed": true
+        }
+      ],
+      "runtimeMigrationQualified": true,
+      "mainWindowNavigationPassed": true,
+      "systemPathOnly": true,
+      "screenshot": "docs/validation/2026-11-06/skip-items-r83-macos-package-terminal/macos-preview-X64/build/package-runtime.png",
+      "navigationScreenshot": "docs/validation/2026-11-06/skip-items-r83-macos-package-terminal/macos-preview-X64/build/main-window-navigation/native/Testing/QtTest/main-server-430x700.png",
+      "architecture": "x86_64",
+      "archive": "DuktoNext-macos-x86_64-preview.tar.gz",
+      "sha256": "7fd23239a8ec6bd4a1a368444e636d253fe4ad9803db8203e27bf2ee810e7bc8",
+      "sourceCommit": "f78cdea4fc6f1f587fd0cdf0b8620c4de8988ec4",
+      "artifactId": 13484444702,
+      "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42179652376/artifacts/13484444702",
+      "zipSha256": "c233bf9fe085bd311d5448ba76851d6cf753e29a7ae489747790fa84a8f7b3e3",
+      "localArchive": "dist/macos-preview-20261106-r83-skip-items/macos-preview-X64/package-output/DuktoNext-macos-x86_64-preview.tar.gz"
+    }
+  ],
+  "macosEvidence": {
+    "path": "docs/validation/2026-11-06/skip-items-r83-macos-package-terminal/receipt.json",
+    "sha256": "9e9acfa8a03b2f80e96fae9dd00cd68c243b75952fa27cdc817198afcfe3df46"
+  },
+  "macosOriginalPackagesVerified": true,
+  "macosScreenshotsViewed": 4,
+  "knownIssue": "Internal uncleaned skip queries publish committing with skippedRoot; client rejects this combination. Follow-up R84 fixes it. Public skip remains disabled.",
+  "previousR82LocalAlpineVm": {
+    "sourceCommit": "8e9077854085a842261abf2b030a83d945545822",
+    "ctestPassed": 21,
+    "ctestTotal": 22,
+    "reproducedDiscoveryFailures": 2,
+    "evidence": {
+      "path": "docs/validation/2026-11-06/client-accounting-r82-musl/driver-result.json",
+      "sha256": "118625237ff67391a6d2e865e4f1cc998ac563d722f81ea0d08b83872a05e8f2"
+    }
+  },
+  "publicSkipEnabled": false,
+  "releaseQualified": false,
+  "deliveryComplete": false
+}

@@ -212,7 +212,9 @@ QJsonObject itemInfo(QSqlDatabase database, const StrongEntry &entry, bool failu
                 }
                 item["target"] = entry.relative;
                 item["disposition"] = cleaned ? "skipped" : "committing";
-                item["skippedRoot"] = decision["skippedRoot"];
+                // 日期：2026-11-06；未清理完成只发布committing，跳过根仅属于最终跳过结果。
+                if (cleaned)
+                    item["skippedRoot"] = decision["skippedRoot"];
                 item["confirmedBytes"] = "0";
             } else if (!received) {
                 if (completed)

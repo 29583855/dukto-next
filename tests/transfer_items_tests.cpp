@@ -136,6 +136,11 @@ QJsonObject page(dukto::PrivateStore &store, dukto::StrongManifest &manifest, co
     const auto sourceBefore = dukto::hashFile(source);
     const auto result =
         dukto::transferItems(store, task(manifest, state), "source.sqlite", output, after);
+    quint64 expectedId = after;
+    for (const auto &value : result["entries"].toArray()) {
+        // 日期：2026-11-06；真实服务输出须通过共用客户端解析，不只逐字段核对测试期望。
+        dukto::validateTransferItem(value.toObject(), dukto::ConflictPolicy::Skip, ++expectedId);
+    }
     if (dukto::hashFile(journal) != before || dukto::hashFile(source) != sourceBefore)
         throw dukto::Error(dukto::ExitCode::Integrity, "query wrote evidence", "test");
     return result;
@@ -286,10 +291,15 @@ class TransferItemsTests final : public QObject {
             write(output + "/file", "original");
             QVERIFY_EXCEPTION_THROWN(receiver.finishDisposition([&]() {
                 // 日期：2026-11-06；只在真实提交的最终决定可查询后中断，保留临时清理状态。
-                const auto item = page(store, manifest, output, "transferring")["entries"]
-                                      .toArray()[0]
-                                      .toObject();
-                if (item.contains("skippedRoot"))
+                bool committed = false;
+                change(temporary.filePath("private/") + Journal, [&](QSqlDatabase database) {
+                    // 日期：2026-11-06；独立只读SQL确认原最终记录已提交，不依赖公开字段。
+                    QSqlQuery query(database);
+                    if (!query.exec("SELECT cleaned FROM skip_final WHERE id=1"))
+                        throw dukto::Error(dukto::ExitCode::Disk, "fixture final read", "test");
+                    committed = query.next() && query.value(0).toInt() == 0;
+                });
+                if (committed)
                     throw dukto::Error(dukto::ExitCode::Cancelled, "before cleanup", "test");
             }),
                                      dukto::Error);
@@ -297,7 +307,7 @@ class TransferItemsTests final : public QObject {
         const auto item =
             page(store, manifest, output, "interrupted")["entries"].toArray()[0].toObject();
         QCOMPARE(item["disposition"], QJsonValue("committing"));
-        QCOMPARE(item["skippedRoot"], QJsonValue("1"));
+        QVERIFY(!item.contains("skippedRoot"));
         QCOMPARE(item["confirmedBytes"], QJsonValue("0"));
         QVERIFY_EXCEPTION_THROWN(page(store, manifest, output), dukto::Error);
         const auto parts = QDir(output).entryList({".dukto-*.part"}, QDir::Hidden | QDir::Files);
