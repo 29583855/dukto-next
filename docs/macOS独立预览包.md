@@ -1,6 +1,17 @@
 # macOS独立开发预览包
 
+R113精确`400e0621745dc250b3390ad01a5e9f47dfc924a4`已上传，修复跳过目录的接收/维护交错恢复。Apple Silicon/Intel C++14 GUI及独立CLI均已编译并核验归档；四平台核心已验3/4。部署附件仍待完整收验，完整协议与整体交付继续按实际原件验收。
+
 R111精确`dfe245b502f586e7df7219e8fb0d5e4030a6b032`已在Apple Silicon和Intel原生环境以C++14/Qt5编译GUI及独立CLI；四平台各26个CTest和目录专项各49条已验，完整协议Ubuntu通过，Apple Silicon 46/47、overwrite-faults原失败保留，Intel 45/47（凭据轮换与会话恢复失败），Windows完整协议51/51且终态success。R111含Qt5/OpenSSL预览[构建42363743119](https://github.com/29583855/dukto-next/actions/runs/42363743119)双架构终态success，系统PATH迁移与包内运行报告已验。
+
+## R113原生编译归档
+
+双架构官方ZIP、内部tar摘要、源码提交、LICENSE、Mach-O架构及执行权限均通过。[回执](validation/2026-11-07/skip-reconcile-r113-macos-compiled/receipt.json)。这是编译归档，需要匹配Qt5/OpenSSL运行依赖。
+
+| 架构 | 下载 | 官方ZIP SHA-256 | 内部tar.gz SHA-256 |
+| --- | --- | --- | --- |
+| arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42368086270/artifacts/13572920192) | `8e12a442314fe331fc3a01e94503971668c66f88459a94f930642b972feb493d` | `59f1329ab42fa2949d060c0431024ed15979df5bcf53a214a17ebf895577092e` |
+| x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42368086270/artifacts/13572870643) | `57a9cc640fab14a63152b8bbc43d4b467b9a550a0e5322976891db1bbbcc2f2b` | `14f254b5ed464d69b7031e50c82f7edb1a8d3cfe4c6d35321925507cf3d4e9c3` |
 
 ## R111最新含依赖预览
 
