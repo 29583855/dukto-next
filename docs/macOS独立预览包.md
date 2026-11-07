@@ -1,5 +1,29 @@
 # macOS独立开发预览包
 
+R123精确d7895420四原生目录关联各12条通过，完整核心已验4/4；双Mac GUI/独立CLI和含Qt5/OpenSSL包、迁移及五项业务和四截图已验，下载更新至R123。独立Ubuntu12条通过。R122 ARM完整协议保留暂停后超时失败。生产总预算、自动GC及完整交付继续。
+
+## R123含依赖开发预览
+
+精确源码`d78954207cfcd21e07f5ba56c9153b36b3b2cc18`；[逐层回执](validation/2026-11-08/state-domain-r123-macos-package/receipt.json)。开发adhoc签名，正式签名/公证和最低干净系统继续。
+
+| 架构 | 下载 | 官方ZIP SHA-256 | 内部tar.gz SHA-256 |
+| --- | --- | --- | --- |
+| arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42409861288/artifacts/13589505948) | 1855984e04ff78576b9af490ad045544706271b7fe0e542dc461a0491aecb990 | d6180af59710cc24080c156c9fe26ea29010f3377f7d2c88dc12ef7dea44e28f |
+| x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42409861288/artifacts/13589442253) | 4e7e4a04521602aafe61e047477b90399097909919ab6d3f73ed70cefaa19c39 | b8213a14c0130baafa6a7439e99d6416749c49504c89586cd55677f74a0a31eb |
+
+本机副本：dist/macos-preview-20261108-r123-state-domain/。解压和独立CLI用法见下文。
+
+Intel首次启动截图出现头像端口不可用、使用默认图标的回退提示；接收端口就绪，迁移传输/恢复专项通过。该观察保留在截图回执中。
+
+## R123原生编译归档
+
+[回执](validation/2026-11-08/state-domain-r123-macos-compiled/receipt.json)。
+
+| 架构 | 下载 | 内部tar.gz SHA-256 |
+| --- | --- | --- |
+| arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42409848282/artifacts/13589410666) | 40ebfbe384120953fab4fec78f5644e2d978e6227841620e49fe4489a76d1a7b |
+| x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42409848282/artifacts/13589571253) | 1e1290c08208248b580ce00a2a8ed8a0476d28a5032bf0e5566a8645050c59d4 |
+
 R122精确15bd1d0c的四原生账本专项各23条通过；完整核心已验4/4。双Mac GUI/独立CLI及含Qt5/OpenSSL包、迁移运行、五项业务与四截图已验，下载已更新。独立Ubuntu仍在新目录构建。R121四原生完整协议全部通过。生产总预算、自动GC与完整交付仍未完成。
 
 R121应用源d924ba5c、CI源30169754的四原生状态专项和各30完整核心已验；双Mac GUI/独立CLI、含Qt5/OpenSSL包、迁移运行及四张截图已验，下载已更新。完整协议终态已验4/4；独立Ubuntu干净构建及15条状态专项已验。R120四原生完整协议全部终态通过。跨进程总预算、自动GC及完整交付仍未完成。
@@ -22,7 +46,7 @@ R111精确`dfe245b502f586e7df7219e8fb0d5e4030a6b032`已在Apple Silicon和Intel�
 
 R115仅修正面板测试的读取时序，产品应用输入与R114完全一致。双Mac各两轮完整面板专项已通过，四轮各7方法；原Intel失败日志继续保留。[专项回执](validation/2026-11-07/panel-timing-r115-macos/receipt.json)。
 
-## R122含依赖开发预览
+## R122含依赖开发预览（历史）
 
 精确源码`15bd1d0c5e0a484a28da9a1596af726b512d5b8a`；[逐层回执](validation/2026-11-08/state-budget-r122-macos-package/receipt.json)。双架构GUI/独立CLI、Qt5/OpenSSL部署、迁移运行、每包五项实际业务及四截图已验。开发adhoc签名，正式签名/公证及最低干净系统继续。
 

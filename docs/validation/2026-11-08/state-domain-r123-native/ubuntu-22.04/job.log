@@ -1,0 +1,752 @@
+﻿2026-11-07T20:11:27.7305615Z Current runner version: '2.338.2'
+2026-11-07T20:11:27.7327921Z ##[group]Runner Image Provisioner
+2026-11-07T20:11:27.7328794Z Hosted Compute Agent
+2026-11-07T20:11:27.7329258Z Version: 20261028.624
+2026-11-07T20:11:27.7329793Z Commit: 54898b74c23fde5556c9b3c3a2290865feef0dfe
+2026-11-07T20:11:27.7330381Z Build Date: 2026-10-28T21:51:42Z
+2026-11-07T20:11:27.7330953Z Worker ID: {d361aaea-207f-4395-aa08-960f2e68b556}
+2026-11-07T20:11:27.7331520Z Region: centralus
+2026-11-07T20:11:27.7331944Z Cloud: Azure
+2026-11-07T20:11:27.7332392Z ##[endgroup]
+2026-11-07T20:11:27.7333593Z ##[group]Operating System
+2026-11-07T20:11:27.7334078Z Ubuntu
+2026-11-07T20:11:27.7334541Z 22.04.5
+2026-11-07T20:11:27.7334940Z LTS
+2026-11-07T20:11:27.7335409Z ##[endgroup]
+2026-11-07T20:11:27.7335858Z ##[group]Runner Image
+2026-11-07T20:11:27.7336306Z Image: ubuntu-22.04
+2026-11-07T20:11:27.7336777Z Version: 20261101.347.1
+2026-11-07T20:11:27.7337790Z Included Software: https://github.com/actions/runner-images/blob/ubuntu22/20261101.347/images/ubuntu/Ubuntu2204-Readme.md
+2026-11-07T20:11:27.7339311Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu22%2F20261101.347
+2026-11-07T20:11:27.7340080Z ##[endgroup]
+2026-11-07T20:11:27.7341111Z ##[group]GITHUB_TOKEN Permissions
+2026-11-07T20:11:27.7342780Z Contents: read
+2026-11-07T20:11:27.7343580Z Metadata: read
+2026-11-07T20:11:27.7344014Z Packages: read
+2026-11-07T20:11:27.7344470Z ##[endgroup]
+2026-11-07T20:11:27.7346282Z Secret source: Actions
+2026-11-07T20:11:27.7347068Z Cache mode: write
+2026-11-07T20:11:27.7347625Z Prepare workflow directory
+2026-11-07T20:11:27.7555714Z Prepare all required actions
+2026-11-07T20:11:27.7584101Z Getting action download info
+2026-11-07T20:11:27.9841443Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-11-07T20:11:28.1832387Z Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+2026-11-07T20:11:28.3313012Z Download action repository 'jurplel/install-qt-action@v4' (SHA:b344308e4483fc892e0d27b3cd1b173ebdd95f06)
+2026-11-07T20:11:29.6790461Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-11-07T20:11:29.9011319Z Getting action download info
+2026-11-07T20:11:29.9944938Z Download action repository 'actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1' (SHA:ece7cb06caefa5fff74198d8649806c4678c61a1)
+2026-11-07T20:11:30.1836832Z Complete job name: budget (ubuntu-22.04)
+2026-11-07T20:11:30.2366500Z ##[group]Run actions/checkout@v4
+2026-11-07T20:11:30.2367173Z with:
+2026-11-07T20:11:30.2367633Z   repository: 29583855/dukto-next
+2026-11-07T20:11:30.2372583Z   token: ***
+2026-11-07T20:11:30.2373032Z   ssh-strict: true
+2026-11-07T20:11:30.2373495Z   ssh-user: git
+2026-11-07T20:11:30.2373967Z   persist-credentials: true
+2026-11-07T20:11:30.2374479Z   clean: true
+2026-11-07T20:11:30.2374961Z   sparse-checkout-cone-mode: true
+2026-11-07T20:11:30.2375520Z   fetch-depth: 1
+2026-11-07T20:11:30.2376002Z   fetch-tags: false
+2026-11-07T20:11:30.2376483Z   show-progress: true
+2026-11-07T20:11:30.2376953Z   lfs: false
+2026-11-07T20:11:30.2377394Z   submodules: false
+2026-11-07T20:11:30.2377869Z   set-safe-directory: true
+2026-11-07T20:11:30.2378411Z   allow-unsafe-pr-checkout: false
+2026-11-07T20:11:30.2379098Z ##[endgroup]
+2026-11-07T20:11:30.3462996Z Syncing repository: 29583855/dukto-next
+2026-11-07T20:11:30.3465190Z ##[group]Getting Git version info
+2026-11-07T20:11:30.3466468Z Working directory is '/home/runner/work/dukto-next/dukto-next'
+2026-11-07T20:11:30.3468133Z [command]/usr/bin/git version
+2026-11-07T20:11:30.3469102Z git version 2.56.0
+2026-11-07T20:11:30.3471811Z ##[endgroup]
+2026-11-07T20:11:30.3476926Z Temporarily overriding HOME='/home/runner/work/_temp/7e414d71-ee16-426f-956b-c413e35d7234' before making global git config changes
+2026-11-07T20:11:30.3479532Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-07T20:11:30.3481574Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/dukto-next/dukto-next
+2026-11-07T20:11:30.3495399Z Deleting the contents of '/home/runner/work/dukto-next/dukto-next'
+2026-11-07T20:11:30.3500549Z ##[group]Initializing the repository
+2026-11-07T20:11:30.3501923Z [command]/usr/bin/git init /home/runner/work/dukto-next/dukto-next
+2026-11-07T20:11:30.3577444Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-11-07T20:11:30.3579726Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-11-07T20:11:30.3581843Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-11-07T20:11:30.3583141Z hint: call:
+2026-11-07T20:11:30.3584367Z hint:
+2026-11-07T20:11:30.3585454Z hint: 	git config --global init.defaultBranch <name>
+2026-11-07T20:11:30.3586916Z hint:
+2026-11-07T20:11:30.3588065Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-11-07T20:11:30.3613869Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-11-07T20:11:30.3615052Z hint:
+2026-11-07T20:11:30.3615650Z hint: 	git branch -m <name>
+2026-11-07T20:11:30.3616168Z hint:
+2026-11-07T20:11:30.3616860Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-11-07T20:11:30.3617962Z Initialized empty Git repository in /home/runner/work/dukto-next/dukto-next/.git/
+2026-11-07T20:11:30.3620160Z [command]/usr/bin/git remote add origin https://github.com/29583855/dukto-next
+2026-11-07T20:11:30.3626661Z ##[endgroup]
+2026-11-07T20:11:30.3628159Z ##[group]Disabling automatic garbage collection
+2026-11-07T20:11:30.3629648Z [command]/usr/bin/git config --local gc.auto 0
+2026-11-07T20:11:30.3649522Z ##[endgroup]
+2026-11-07T20:11:30.3650867Z ##[group]Setting up auth
+2026-11-07T20:11:30.3654276Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-07T20:11:30.3673100Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-07T20:11:30.3852814Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-07T20:11:30.3873117Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-07T20:11:30.3972989Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-07T20:11:30.3990497Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-07T20:11:30.4083426Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-11-07T20:11:30.4104836Z ##[endgroup]
+2026-11-07T20:11:30.4105690Z ##[group]Fetching the repository
+2026-11-07T20:11:30.4110695Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +d78954207cfcd21e07f5ba56c9153b36b3b2cc18:refs/remotes/origin/main
+2026-11-07T20:11:37.3513049Z From https://github.com/29583855/dukto-next
+2026-11-07T20:11:37.3513481Z  * [new ref]           d78954207cfcd21e07f5ba56c9153b36b3b2cc18 -> origin/main
+2026-11-07T20:11:37.3515513Z ##[endgroup]
+2026-11-07T20:11:37.3515933Z ##[group]Determining the checkout info
+2026-11-07T20:11:37.3517283Z ##[endgroup]
+2026-11-07T20:11:37.3521198Z [command]/usr/bin/git sparse-checkout disable
+2026-11-07T20:11:37.3544425Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-11-07T20:11:37.3558310Z ##[group]Checking out the ref
+2026-11-07T20:11:37.3560644Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-11-07T20:11:38.3890329Z Updating files:  71% (24166/33913)
+2026-11-07T20:11:38.3984632Z Updating files:  72% (24418/33913)
+2026-11-07T20:11:38.4048123Z Updating files:  73% (24757/33913)
+2026-11-07T20:11:38.4196881Z Updating files:  74% (25096/33913)
+2026-11-07T20:11:38.4385380Z Updating files:  75% (25435/33913)
+2026-11-07T20:11:38.4556041Z Updating files:  76% (25774/33913)
+2026-11-07T20:11:38.4736248Z Updating files:  77% (26114/33913)
+2026-11-07T20:11:38.4899812Z Updating files:  78% (26453/33913)
+2026-11-07T20:11:38.5030000Z Updating files:  79% (26792/33913)
+2026-11-07T20:11:38.5165618Z Updating files:  80% (27131/33913)
+2026-11-07T20:11:38.5354553Z Updating files:  81% (27470/33913)
+2026-11-07T20:11:38.5512600Z Updating files:  82% (27809/33913)
+2026-11-07T20:11:38.5626724Z Updating files:  83% (28148/33913)
+2026-11-07T20:11:38.5743286Z Updating files:  84% (28487/33913)
+2026-11-07T20:11:38.5799591Z Updating files:  85% (28827/33913)
+2026-11-07T20:11:38.5883322Z Updating files:  86% (29166/33913)
+2026-11-07T20:11:38.5977920Z Updating files:  87% (29505/33913)
+2026-11-07T20:11:38.6044541Z Updating files:  88% (29844/33913)
+2026-11-07T20:11:38.6189692Z Updating files:  89% (30183/33913)
+2026-11-07T20:11:38.6283818Z Updating files:  90% (30522/33913)
+2026-11-07T20:11:38.6379426Z Updating files:  91% (30861/33913)
+2026-11-07T20:11:38.6428791Z Updating files:  92% (31200/33913)
+2026-11-07T20:11:38.6501152Z Updating files:  93% (31540/33913)
+2026-11-07T20:11:38.6639535Z Updating files:  94% (31879/33913)
+2026-11-07T20:11:38.6690490Z Updating files:  95% (32218/33913)
+2026-11-07T20:11:38.6779555Z Updating files:  96% (32557/33913)
+2026-11-07T20:11:38.6873274Z Updating files:  97% (32896/33913)
+2026-11-07T20:11:38.6935255Z Updating files:  98% (33235/33913)
+2026-11-07T20:11:38.7097881Z Updating files:  99% (33574/33913)
+2026-11-07T20:11:38.7098092Z Updating files: 100% (33913/33913)
+2026-11-07T20:11:38.7098244Z Updating files: 100% (33913/33913), done.
+2026-11-07T20:11:38.7339093Z Switched to a new branch 'main'
+2026-11-07T20:11:38.7339457Z branch 'main' set up to track 'origin/main'.
+2026-11-07T20:11:38.7370026Z ##[endgroup]
+2026-11-07T20:11:38.7394252Z [command]/usr/bin/git log -1 --format=%H
+2026-11-07T20:11:38.7406215Z d78954207cfcd21e07f5ba56c9153b36b3b2cc18
+2026-11-07T20:11:38.7594961Z ##[group]Run actions/setup-python@v5
+2026-11-07T20:11:38.7595128Z with:
+2026-11-07T20:11:38.7595242Z   python-version: 3.12
+2026-11-07T20:11:38.7595365Z   check-latest: false
+2026-11-07T20:11:38.7596712Z   token: ***
+2026-11-07T20:11:38.7596827Z   update-environment: true
+2026-11-07T20:11:38.7596962Z   allow-prereleases: false
+2026-11-07T20:11:38.7597090Z   freethreaded: false
+2026-11-07T20:11:38.7597211Z ##[endgroup]
+2026-11-07T20:11:38.8404562Z ##[group]Installed versions
+2026-11-07T20:11:38.8716290Z (node:1933) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-07T20:11:38.8716675Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-07T20:11:38.8717139Z Successfully set up CPython (3.12.16)
+2026-11-07T20:11:38.8717528Z ##[endgroup]
+2026-11-07T20:11:38.8831912Z ##[group]Run sudo apt-get update && sudo apt-get install -y qtbase5-dev qtbase5-private-dev libssl-dev libqt5sql5-sqlite
+2026-11-07T20:11:38.8832713Z [36;1msudo apt-get update && sudo apt-get install -y qtbase5-dev qtbase5-private-dev libssl-dev libqt5sql5-sqlite[0m
+2026-11-07T20:11:38.8974854Z shell: /usr/bin/bash -e {0}
+2026-11-07T20:11:38.8975060Z env:
+2026-11-07T20:11:38.8975228Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-07T20:11:38.8975478Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.16/x64/lib/pkgconfig
+2026-11-07T20:11:38.8975708Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-07T20:11:38.8975932Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-07T20:11:38.8976133Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-07T20:11:38.8976336Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.16/x64/lib
+2026-11-07T20:11:38.8976516Z ##[endgroup]
+2026-11-07T20:11:39.0481813Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+2026-11-07T20:11:39.0846187Z Get:6 https://packages.microsoft.com/ubuntu/22.04/prod jammy InRelease [3632 B]
+2026-11-07T20:11:39.1160521Z Hit:2 http://azure.archive.ubuntu.com/ubuntu jammy InRelease
+2026-11-07T20:11:39.1176228Z Get:3 http://azure.archive.ubuntu.com/ubuntu jammy-updates InRelease [128 kB]
+2026-11-07T20:11:39.1189781Z Get:4 http://azure.archive.ubuntu.com/ubuntu jammy-backports InRelease [127 kB]
+2026-11-07T20:11:39.1198370Z Get:5 http://azure.archive.ubuntu.com/ubuntu jammy-security InRelease [129 kB]
+2026-11-07T20:11:39.1767190Z Get:7 https://packages.microsoft.com/ubuntu/22.04/prod jammy/main amd64 Packages [1040 kB]
+2026-11-07T20:11:39.1980694Z Get:8 https://packages.microsoft.com/ubuntu/22.04/prod jammy/main arm64 Packages [767 kB]
+2026-11-07T20:11:39.2669308Z Get:9 http://azure.archive.ubuntu.com/ubuntu jammy-updates/main amd64 Packages [3963 kB]
+2026-11-07T20:11:39.2799126Z Get:10 http://azure.archive.ubuntu.com/ubuntu jammy-updates/main Translation-en [582 kB]
+2026-11-07T20:11:39.2820039Z Get:11 http://azure.archive.ubuntu.com/ubuntu jammy-updates/restricted amd64 Packages [6815 kB]
+2026-11-07T20:11:39.3059848Z Get:12 http://azure.archive.ubuntu.com/ubuntu jammy-updates/restricted Translation-en [1310 kB]
+2026-11-07T20:11:39.3560374Z Get:13 http://azure.archive.ubuntu.com/ubuntu jammy-updates/universe amd64 Packages [1291 kB]
+2026-11-07T20:11:39.3600337Z Get:14 http://azure.archive.ubuntu.com/ubuntu jammy-updates/universe Translation-en [327 kB]
+2026-11-07T20:11:39.3617841Z Get:15 http://azure.archive.ubuntu.com/ubuntu jammy-updates/multiverse amd64 Packages [86.1 kB]
+2026-11-07T20:11:39.3621782Z Get:16 http://azure.archive.ubuntu.com/ubuntu jammy-updates/multiverse Translation-en [16.5 kB]
+2026-11-07T20:11:39.3635908Z Get:17 http://azure.archive.ubuntu.com/ubuntu jammy-security/main amd64 Packages [3675 kB]
+2026-11-07T20:11:39.3732880Z Get:18 http://azure.archive.ubuntu.com/ubuntu jammy-security/main Translation-en [513 kB]
+2026-11-07T20:11:39.4172865Z Get:19 http://azure.archive.ubuntu.com/ubuntu jammy-security/restricted amd64 Packages [6545 kB]
+2026-11-07T20:11:39.4393462Z Get:20 http://azure.archive.ubuntu.com/ubuntu jammy-security/restricted Translation-en [1257 kB]
+2026-11-07T20:11:39.4435252Z Get:21 http://azure.archive.ubuntu.com/ubuntu jammy-security/universe amd64 Packages [1057 kB]
+2026-11-07T20:11:39.4470825Z Get:22 http://azure.archive.ubuntu.com/ubuntu jammy-security/universe Translation-en [238 kB]
+2026-11-07T20:11:39.4483497Z Get:23 http://azure.archive.ubuntu.com/ubuntu jammy-security/multiverse amd64 Packages [79.6 kB]
+2026-11-07T20:11:39.4490707Z Get:24 http://azure.archive.ubuntu.com/ubuntu jammy-security/multiverse Translation-en [13.6 kB]
+2026-11-07T20:11:46.6281734Z Fetched 30.0 MB in 2s (12.9 MB/s)
+2026-11-07T20:11:47.6416424Z Reading package lists...
+2026-11-07T20:11:47.6812698Z Reading package lists...
+2026-11-07T20:11:47.9246777Z Building dependency tree...
+2026-11-07T20:11:47.9255372Z Reading state information...
+2026-11-07T20:11:48.0855042Z libssl-dev is already the newest version (3.0.2-0ubuntu1.30).
+2026-11-07T20:11:48.0855661Z The following additional packages will be installed:
+2026-11-07T20:11:48.0856236Z   gir1.2-gudev-1.0 libdouble-conversion3 libegl-dev libegl-mesa0 libegl1
+2026-11-07T20:11:48.0856848Z   libevdev-dev libevdev2 libgl-dev libglu1-mesa libglu1-mesa-dev libglx-dev
+2026-11-07T20:11:48.0857435Z   libgudev-1.0-dev libinput-bin libinput-dev libinput10 libmd4c0 libmtdev-dev
+2026-11-07T20:11:48.0858101Z   libmtdev1 libopengl0 libqt5concurrent5 libqt5core5a libqt5dbus5 libqt5gui5
+2026-11-07T20:11:48.0858912Z   libqt5network5 libqt5opengl5 libqt5opengl5-dev libqt5printsupport5
+2026-11-07T20:11:48.0859492Z   libqt5sql5 libqt5svg5 libqt5test5 libqt5widgets5 libqt5xml5 libudev-dev
+2026-11-07T20:11:48.0860064Z   libvulkan-dev libwacom-bin libwacom-common libwacom-dev libwacom9
+2026-11-07T20:11:48.0860600Z   libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0
+2026-11-07T20:11:48.0861205Z   libxcb-shape0 libxcb-util1 libxcb-xinerama0 libxcb-xinput0 libxcb-xkb1
+2026-11-07T20:11:48.0863192Z   libxkbcommon-dev libxkbcommon-x11-0 qt5-gtk-platformtheme qt5-qmake
+2026-11-07T20:11:48.0864251Z   qt5-qmake-bin qtbase5-dev-tools qtchooser qttranslations5-l10n
+2026-11-07T20:11:48.0873255Z Suggested packages:
+2026-11-07T20:11:48.0873540Z   libevdev-doc qt5-image-formats-plugins qtwayland5 default-libmysqlclient-dev
+2026-11-07T20:11:48.0873837Z   firebird-dev
+2026-11-07T20:11:48.1524156Z The following NEW packages will be installed:
+2026-11-07T20:11:48.1524499Z   gir1.2-gudev-1.0 libdouble-conversion3 libegl-dev libegl-mesa0 libegl1
+2026-11-07T20:11:48.1524825Z   libevdev-dev libevdev2 libgl-dev libglu1-mesa libglu1-mesa-dev libglx-dev
+2026-11-07T20:11:48.1525140Z   libgudev-1.0-dev libinput-bin libinput-dev libinput10 libmd4c0 libmtdev-dev
+2026-11-07T20:11:48.1525489Z   libmtdev1 libopengl0 libqt5concurrent5 libqt5core5a libqt5dbus5 libqt5gui5
+2026-11-07T20:11:48.1525783Z   libqt5network5 libqt5opengl5 libqt5opengl5-dev libqt5printsupport5
+2026-11-07T20:11:48.1526023Z   libqt5sql5 libqt5sql5-sqlite libqt5svg5 libqt5test5 libqt5widgets5
+2026-11-07T20:11:48.1526928Z   libqt5xml5 libudev-dev libvulkan-dev libwacom-bin libwacom-common
+2026-11-07T20:11:48.1527645Z   libwacom-dev libwacom9 libxcb-icccm4 libxcb-image0 libxcb-keysyms1
+2026-11-07T20:11:48.1528261Z   libxcb-render-util0 libxcb-shape0 libxcb-util1 libxcb-xinerama0
+2026-11-07T20:11:48.1531621Z   libxcb-xinput0 libxcb-xkb1 libxkbcommon-dev libxkbcommon-x11-0
+2026-11-07T20:11:48.1532173Z   qt5-gtk-platformtheme qt5-qmake qt5-qmake-bin qtbase5-dev qtbase5-dev-tools
+2026-11-07T20:11:48.1532655Z   qtbase5-private-dev qtchooser qttranslations5-l10n
+2026-11-07T20:11:48.1642521Z 0 upgraded, 58 newly installed, 0 to remove and 34 not upgraded.
+2026-11-07T20:11:48.1642850Z Need to get 19.4 MB of archives.
+2026-11-07T20:11:48.1643145Z After this operation, 111 MB of additional disk space will be used.
+2026-11-07T20:11:48.1643521Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+2026-11-07T20:11:48.2083398Z Get:2 http://azure.archive.ubuntu.com/ubuntu jammy/universe amd64 libdouble-conversion3 amd64 3.1.7-4 [39.0 kB]
+2026-11-07T20:11:48.2395047Z Get:3 http://azure.archive.ubuntu.com/ubuntu jammy-updates/universe amd64 libqt5core5a amd64 5.15.3+dfsg-2ubuntu0.2 [2006 kB]
+2026-11-07T20:11:48.2744138Z Get:4 http://azure.archive.ubuntu.com/ubuntu jammy-updates/main amd64 libegl-mesa0 amd64 23.2.1-1ubuntu3.1~22.04.4 [118 kB]
+2026-11-07T20:11:48.3024590Z Get:5 http://azure.archive.ubuntu.com/ubuntu jammy/main amd64 libegl1 amd64 1.4.0-1 [28.6 kB]
+2026-11-07T20:11:48.3304204Z Get:6 http://azure.archive.ubuntu.com/ubuntu jammy/main amd64 libevdev2 amd64 1.12.1+dfsg-1 [39.5 kB]
+2026-11-07T20:11:48.3580465Z Get:7 http://azure.archive.ubuntu.com/ubuntu jammy/main amd64 libmtdev1 amd64 1.1.6-1build4 [14.5 kB]
+2026-11-07T20:11:48.3860311Z Get:8 http://azure.archive.ubuntu.com/ubuntu jammy/main amd64 libwacom-common all 2.2.0-1 [54.3 kB]
+2026-11-07T20:11:48.4138522Z Get:9 http://azure.archive.ubuntu.com/ubuntu jammy/main amd64 libwacom9 amd64 2.2.0-1 [22.0 kB]
+2026-11-07T20:11:48.4415051Z Get:10 http://azure.archive.ubuntu.com/ubuntu jammy-updates/main amd64 libinput-bin amd64 1.20.0-1ubuntu0.4 [20.4 kB]
+2026-11-07T20:11:48.4691028Z Get:11 http://azure.archive.ubuntu.com/ubuntu jammy-updates/main amd64 libinput10 amd64 1.20.0-1ubuntu0.4 [131 kB]
+2026-11-07T20:11:48.4975958Z Get:12 http://azure.archive.ubuntu.com/ubuntu jammy/universe amd64 libmd4c0 amd64 0.4.8-1 [42.0 kB]
+2026-11-07T20:11:48.5253232Z Get:13 http://azure.archive.ubuntu.com/ubuntu jammy-updates/universe amd64 libqt5dbus5 amd64 5.15.3+dfsg-2ubuntu0.2 [222 kB]
+2026-11-07T20:11:48.5542544Z Get:14 http://azure.archive.ubuntu.com/ubuntu jammy-updates/universe amd64 libqt5network5 amd64 5.15.3+dfsg-2ubuntu0.2 [731 kB]
+2026-11-07T20:11:48.5869686Z Get:15 http://azure.archive.ubuntu.com/ubuntu jammy/main amd64 libxcb-icccm4 amd64 0.4.1-1.1build2 [11.5 kB]
+2026-11-07T20:11:48.6146863Z Get:16 http://azure.archive.ubuntu.com/ubuntu jammy/main amd64 libxcb-util1 amd64 0.4.0-1build2 [11.4 kB]
+2026-11-07T20:11:48.6424180Z Get:17 http://azure.archive.ubuntu.com/ubuntu jammy/main amd64 libxcb-image0 amd64 0.4.0-2 [11.5 kB]
+2026-11-07T20:11:48.6703940Z Get:18 http://azure.archive.ubuntu.com/ubuntu jammy/main amd64 libxcb-keysyms1 amd64 0.4.0-1build3 [8746 B]
+2026-11-07T20:11:48.6985964Z Get:19 http://azure.archive.ubuntu.com/ubuntu jammy/main amd64 libxcb-render-util0 amd64 0.3.9-1build3 [10.3 kB]
+2026-11-07T20:11:48.7741222Z Get:20 http://azure.archive.ubuntu.com/ubuntu jammy/main amd64 libxcb-shape0 amd64 1.14-3ubuntu3 [6158 B]
+2026-11-07T20:11:48.8015592Z Get:21 http://azure.archive.ubuntu.com/ubuntu jammy/main amd64 libxcb-xinerama0 amd64 1.14-3ubuntu3 [5414 B]
+2026-11-07T20:11:48.8294543Z Get:22 http://azure.archive.ubuntu.com/ubuntu jammy/main amd64 libxcb-xinput0 amd64 1.14-3ubuntu3 [34.3 kB]
+2026-11-07T20:11:48.8572699Z Get:23 http://azure.archive.ubuntu.com/ubuntu jammy/main amd64 libxcb-xkb1 amd64 1.14-3ubuntu3 [32.8 kB]
+2026-11-07T20:11:48.8850647Z Get:24 http://azure.archive.ubuntu.com/ubuntu jammy/main amd64 libxkbcommon-x11-0 amd64 1.4.0-1 [14.4 kB]
+2026-11-07T20:11:48.9131330Z Get:25 http://azure.archive.ubuntu.com/ubuntu jammy-updates/universe amd64 libqt5gui5 amd64 5.15.3+dfsg-2ubuntu0.2 [3722 kB]
+2026-11-07T20:11:48.9718457Z Get:26 http://azure.archive.ubuntu.com/ubuntu jammy-updates/universe amd64 libqt5widgets5 amd64 5.15.3+dfsg-2ubuntu0.2 [2561 kB]
+2026-11-07T20:11:49.0083159Z Get:27 http://azure.archive.ubuntu.com/ubuntu jammy/universe amd64 libqt5svg5 amd64 5.15.3-1 [149 kB]
+2026-11-07T20:11:49.0364970Z Get:28 http://azure.archive.ubuntu.com/ubuntu jammy/main amd64 gir1.2-gudev-1.0 amd64 1:237-2build1 [3792 B]
+2026-11-07T20:11:49.0642553Z Get:29 http://azure.archive.ubuntu.com/ubuntu jammy/main amd64 libglx-dev amd64 1.4.0-1 [14.1 kB]
+2026-11-07T20:11:49.0920589Z Get:30 http://azure.archive.ubuntu.com/ubuntu jammy/main amd64 libgl-dev amd64 1.4.0-1 [101 kB]
+2026-11-07T20:11:49.1203516Z Get:31 http://azure.archive.ubuntu.com/ubuntu jammy/main amd64 libegl-dev amd64 1.4.0-1 [18.0 kB]
+2026-11-07T20:11:49.1482498Z Get:32 http://azure.archive.ubuntu.com/ubuntu jammy/main amd64 libopengl0 amd64 1.4.0-1 [36.5 kB]
+2026-11-07T20:11:49.1761226Z Get:33 http://azure.archive.ubuntu.com/ubuntu jammy/main amd64 libglu1-mesa amd64 9.0.2-1 [145 kB]
+2026-11-07T20:11:49.2040638Z Get:34 http://azure.archive.ubuntu.com/ubuntu jammy/main amd64 libglu1-mesa-dev amd64 9.0.2-1 [231 kB]
+2026-11-07T20:11:49.2326974Z Get:35 http://azure.archive.ubuntu.com/ubuntu jammy-updates/main amd64 libudev-dev amd64 249.11-0ubuntu3.23 [20.7 kB]
+2026-11-07T20:11:49.2604484Z Get:36 http://azure.archive.ubuntu.com/ubuntu jammy/main amd64 libgudev-1.0-dev amd64 1:237-2build1 [27.1 kB]
+2026-11-07T20:11:49.2893935Z Get:37 http://azure.archive.ubuntu.com/ubuntu jammy/main amd64 libmtdev-dev amd64 1.1.6-1build4 [5110 B]
+2026-11-07T20:11:49.3168207Z Get:38 http://azure.archive.ubuntu.com/ubuntu jammy-updates/universe amd64 libqt5concurrent5 amd64 5.15.3+dfsg-2ubuntu0.2 [36.3 kB]
+2026-11-07T20:11:49.3860997Z Get:39 http://azure.archive.ubuntu.com/ubuntu jammy-updates/universe amd64 libqt5opengl5 amd64 5.15.3+dfsg-2ubuntu0.2 [153 kB]
+2026-11-07T20:11:49.4141694Z Get:40 http://azure.archive.ubuntu.com/ubuntu jammy-updates/universe amd64 libqt5printsupport5 amd64 5.15.3+dfsg-2ubuntu0.2 [214 kB]
+2026-11-07T20:11:49.4425452Z Get:41 http://azure.archive.ubuntu.com/ubuntu jammy-updates/universe amd64 libqt5sql5 amd64 5.15.3+dfsg-2ubuntu0.2 [123 kB]
+2026-11-07T20:11:49.4704441Z Get:42 http://azure.archive.ubuntu.com/ubuntu jammy-updates/universe amd64 libqt5test5 amd64 5.15.3+dfsg-2ubuntu0.2 [152 kB]
+2026-11-07T20:11:49.4984761Z Get:43 http://azure.archive.ubuntu.com/ubuntu jammy-updates/universe amd64 libqt5xml5 amd64 5.15.3+dfsg-2ubuntu0.2 [124 kB]
+2026-11-07T20:11:49.5265378Z Get:44 http://azure.archive.ubuntu.com/ubuntu jammy/main amd64 libvulkan-dev amd64 1.3.204.1-2 [892 kB]
+2026-11-07T20:11:49.5571698Z Get:45 http://azure.archive.ubuntu.com/ubuntu jammy-updates/universe amd64 qt5-qmake-bin amd64 5.15.3+dfsg-2ubuntu0.2 [1126 kB]
+2026-11-07T20:11:49.5886581Z Get:46 http://azure.archive.ubuntu.com/ubuntu jammy/universe amd64 qtchooser amd64 66-2build1 [24.7 kB]
+2026-11-07T20:11:49.6161530Z Get:47 http://azure.archive.ubuntu.com/ubuntu jammy-updates/universe amd64 qt5-qmake amd64 5.15.3+dfsg-2ubuntu0.2 [208 kB]
+2026-11-07T20:11:49.6445931Z Get:48 http://azure.archive.ubuntu.com/ubuntu jammy-updates/universe amd64 qtbase5-dev-tools amd64 5.15.3+dfsg-2ubuntu0.2 [819 kB]
+2026-11-07T20:11:49.6746146Z Get:49 http://azure.archive.ubuntu.com/ubuntu jammy-updates/universe amd64 qtbase5-dev amd64 5.15.3+dfsg-2ubuntu0.2 [1135 kB]
+2026-11-07T20:11:49.7061212Z Get:50 http://azure.archive.ubuntu.com/ubuntu jammy-updates/universe amd64 libqt5opengl5-dev amd64 5.15.3+dfsg-2ubuntu0.2 [42.3 kB]
+2026-11-07T20:11:49.7336386Z Get:51 http://azure.archive.ubuntu.com/ubuntu jammy-updates/universe amd64 libqt5sql5-sqlite amd64 5.15.3+dfsg-2ubuntu0.2 [53.0 kB]
+2026-11-07T20:11:49.7617080Z Get:52 http://azure.archive.ubuntu.com/ubuntu jammy/main amd64 libwacom-bin amd64 2.2.0-1 [13.6 kB]
+2026-11-07T20:11:49.7903784Z Get:53 http://azure.archive.ubuntu.com/ubuntu jammy/main amd64 libwacom-dev amd64 2.2.0-1 [7528 B]
+2026-11-07T20:11:49.8183064Z Get:54 http://azure.archive.ubuntu.com/ubuntu jammy/main amd64 libxkbcommon-dev amd64 1.4.0-1 [54.9 kB]
+2026-11-07T20:11:49.8463508Z Get:55 http://azure.archive.ubuntu.com/ubuntu jammy-updates/universe amd64 qt5-gtk-platformtheme amd64 5.15.3+dfsg-2ubuntu0.2 [130 kB]
+2026-11-07T20:11:49.9240055Z Get:56 http://azure.archive.ubuntu.com/ubuntu jammy/main amd64 libevdev-dev amd64 1.12.1+dfsg-1 [55.1 kB]
+2026-11-07T20:11:49.9535676Z Get:57 http://azure.archive.ubuntu.com/ubuntu jammy-updates/main amd64 libinput-dev amd64 1.20.0-1ubuntu0.4 [31.0 kB]
+2026-11-07T20:11:49.9827447Z Get:58 http://azure.archive.ubuntu.com/ubuntu jammy-updates/universe amd64 qtbase5-private-dev amd64 5.15.3+dfsg-2ubuntu0.2 [1365 kB]
+2026-11-07T20:11:50.0186454Z Get:59 http://azure.archive.ubuntu.com/ubuntu jammy/universe amd64 qttranslations5-l10n all 5.15.3-1 [1983 kB]
+2026-11-07T20:11:50.2597322Z Fetched 19.4 MB in 2s (10.4 MB/s)
+2026-11-07T20:11:50.2959297Z Selecting previously unselected package libdouble-conversion3:amd64.
+2026-11-07T20:11:50.4108338Z (Reading database ... 
+2026-11-07T20:11:50.4108890Z (Reading database ... 5%
+2026-11-07T20:11:50.4109100Z (Reading database ... 10%
+2026-11-07T20:11:50.4109306Z (Reading database ... 15%
+2026-11-07T20:11:50.4109451Z (Reading database ... 20%
+2026-11-07T20:11:50.4109570Z (Reading database ... 25%
+2026-11-07T20:11:50.4109686Z (Reading database ... 30%
+2026-11-07T20:11:50.4109805Z (Reading database ... 35%
+2026-11-07T20:11:50.4109930Z (Reading database ... 40%
+2026-11-07T20:11:50.4110048Z (Reading database ... 45%
+2026-11-07T20:11:50.4110166Z (Reading database ... 50%
+2026-11-07T20:11:50.5742059Z (Reading database ... 55%
+2026-11-07T20:11:50.8836820Z (Reading database ... 60%
+2026-11-07T20:11:51.4690749Z (Reading database ... 65%
+2026-11-07T20:11:51.7811966Z (Reading database ... 70%
+2026-11-07T20:11:52.8860923Z (Reading database ... 75%
+2026-11-07T20:11:53.7033627Z (Reading database ... 80%
+2026-11-07T20:11:54.5982090Z (Reading database ... 85%
+2026-11-07T20:11:55.4523326Z (Reading database ... 90%
+2026-11-07T20:11:56.2966023Z (Reading database ... 95%
+2026-11-07T20:11:56.2966248Z (Reading database ... 100%
+2026-11-07T20:11:56.2966449Z (Reading database ... 263778 files and directories currently installed.)
+2026-11-07T20:11:56.3012545Z Preparing to unpack .../00-libdouble-conversion3_3.1.7-4_amd64.deb ...
+2026-11-07T20:11:56.3052696Z Unpacking libdouble-conversion3:amd64 (3.1.7-4) ...
+2026-11-07T20:11:56.3233475Z Selecting previously unselected package libqt5core5a:amd64.
+2026-11-07T20:11:56.3325308Z Preparing to unpack .../01-libqt5core5a_5.15.3+dfsg-2ubuntu0.2_amd64.deb ...
+2026-11-07T20:11:56.3414844Z Unpacking libqt5core5a:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
+2026-11-07T20:11:56.3954907Z Selecting previously unselected package libegl-mesa0:amd64.
+2026-11-07T20:11:56.4047212Z Preparing to unpack .../02-libegl-mesa0_23.2.1-1ubuntu3.1~22.04.4_amd64.deb ...
+2026-11-07T20:11:56.4052636Z Unpacking libegl-mesa0:amd64 (23.2.1-1ubuntu3.1~22.04.4) ...
+2026-11-07T20:11:56.4264972Z Selecting previously unselected package libegl1:amd64.
+2026-11-07T20:11:56.4355827Z Preparing to unpack .../03-libegl1_1.4.0-1_amd64.deb ...
+2026-11-07T20:11:56.4361441Z Unpacking libegl1:amd64 (1.4.0-1) ...
+2026-11-07T20:11:56.4537058Z Selecting previously unselected package libevdev2:amd64.
+2026-11-07T20:11:56.4631574Z Preparing to unpack .../04-libevdev2_1.12.1+dfsg-1_amd64.deb ...
+2026-11-07T20:11:56.4637386Z Unpacking libevdev2:amd64 (1.12.1+dfsg-1) ...
+2026-11-07T20:11:56.4751977Z Selecting previously unselected package libmtdev1:amd64.
+2026-11-07T20:11:56.4844353Z Preparing to unpack .../05-libmtdev1_1.1.6-1build4_amd64.deb ...
+2026-11-07T20:11:56.4849891Z Unpacking libmtdev1:amd64 (1.1.6-1build4) ...
+2026-11-07T20:11:56.4959005Z Selecting previously unselected package libwacom-common.
+2026-11-07T20:11:56.5050346Z Preparing to unpack .../06-libwacom-common_2.2.0-1_all.deb ...
+2026-11-07T20:11:56.5055473Z Unpacking libwacom-common (2.2.0-1) ...
+2026-11-07T20:11:56.5442186Z Selecting previously unselected package libwacom9:amd64.
+2026-11-07T20:11:56.5536424Z Preparing to unpack .../07-libwacom9_2.2.0-1_amd64.deb ...
+2026-11-07T20:11:56.5541855Z Unpacking libwacom9:amd64 (2.2.0-1) ...
+2026-11-07T20:11:56.5649067Z Selecting previously unselected package libinput-bin.
+2026-11-07T20:11:56.5741651Z Preparing to unpack .../08-libinput-bin_1.20.0-1ubuntu0.4_amd64.deb ...
+2026-11-07T20:11:56.5747412Z Unpacking libinput-bin (1.20.0-1ubuntu0.4) ...
+2026-11-07T20:11:56.5872241Z Selecting previously unselected package libinput10:amd64.
+2026-11-07T20:11:56.5963775Z Preparing to unpack .../09-libinput10_1.20.0-1ubuntu0.4_amd64.deb ...
+2026-11-07T20:11:56.5969394Z Unpacking libinput10:amd64 (1.20.0-1ubuntu0.4) ...
+2026-11-07T20:11:56.6083056Z Selecting previously unselected package libmd4c0:amd64.
+2026-11-07T20:11:56.6174052Z Preparing to unpack .../10-libmd4c0_0.4.8-1_amd64.deb ...
+2026-11-07T20:11:56.6179322Z Unpacking libmd4c0:amd64 (0.4.8-1) ...
+2026-11-07T20:11:56.6290682Z Selecting previously unselected package libqt5dbus5:amd64.
+2026-11-07T20:11:56.6381270Z Preparing to unpack .../11-libqt5dbus5_5.15.3+dfsg-2ubuntu0.2_amd64.deb ...
+2026-11-07T20:11:56.6386897Z Unpacking libqt5dbus5:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
+2026-11-07T20:11:56.6506822Z Selecting previously unselected package libqt5network5:amd64.
+2026-11-07T20:11:56.6596878Z Preparing to unpack .../12-libqt5network5_5.15.3+dfsg-2ubuntu0.2_amd64.deb ...
+2026-11-07T20:11:56.6601846Z Unpacking libqt5network5:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
+2026-11-07T20:11:56.6820589Z Selecting previously unselected package libxcb-icccm4:amd64.
+2026-11-07T20:11:56.6911177Z Preparing to unpack .../13-libxcb-icccm4_0.4.1-1.1build2_amd64.deb ...
+2026-11-07T20:11:56.6916736Z Unpacking libxcb-icccm4:amd64 (0.4.1-1.1build2) ...
+2026-11-07T20:11:56.7023135Z Selecting previously unselected package libxcb-util1:amd64.
+2026-11-07T20:11:56.7120942Z Preparing to unpack .../14-libxcb-util1_0.4.0-1build2_amd64.deb ...
+2026-11-07T20:11:56.7126578Z Unpacking libxcb-util1:amd64 (0.4.0-1build2) ...
+2026-11-07T20:11:56.7232348Z Selecting previously unselected package libxcb-image0:amd64.
+2026-11-07T20:11:56.7322049Z Preparing to unpack .../15-libxcb-image0_0.4.0-2_amd64.deb ...
+2026-11-07T20:11:56.7327608Z Unpacking libxcb-image0:amd64 (0.4.0-2) ...
+2026-11-07T20:11:56.7428032Z Selecting previously unselected package libxcb-keysyms1:amd64.
+2026-11-07T20:11:56.7517312Z Preparing to unpack .../16-libxcb-keysyms1_0.4.0-1build3_amd64.deb ...
+2026-11-07T20:11:56.7523598Z Unpacking libxcb-keysyms1:amd64 (0.4.0-1build3) ...
+2026-11-07T20:11:56.7630726Z Selecting previously unselected package libxcb-render-util0:amd64.
+2026-11-07T20:11:56.7720182Z Preparing to unpack .../17-libxcb-render-util0_0.3.9-1build3_amd64.deb ...
+2026-11-07T20:11:56.7725729Z Unpacking libxcb-render-util0:amd64 (0.3.9-1build3) ...
+2026-11-07T20:11:56.7828416Z Selecting previously unselected package libxcb-shape0:amd64.
+2026-11-07T20:11:56.7917289Z Preparing to unpack .../18-libxcb-shape0_1.14-3ubuntu3_amd64.deb ...
+2026-11-07T20:11:56.7922610Z Unpacking libxcb-shape0:amd64 (1.14-3ubuntu3) ...
+2026-11-07T20:11:56.8028083Z Selecting previously unselected package libxcb-xinerama0:amd64.
+2026-11-07T20:11:56.8117576Z Preparing to unpack .../19-libxcb-xinerama0_1.14-3ubuntu3_amd64.deb ...
+2026-11-07T20:11:56.8123614Z Unpacking libxcb-xinerama0:amd64 (1.14-3ubuntu3) ...
+2026-11-07T20:11:56.8227011Z Selecting previously unselected package libxcb-xinput0:amd64.
+2026-11-07T20:11:56.8315627Z Preparing to unpack .../20-libxcb-xinput0_1.14-3ubuntu3_amd64.deb ...
+2026-11-07T20:11:56.8322179Z Unpacking libxcb-xinput0:amd64 (1.14-3ubuntu3) ...
+2026-11-07T20:11:56.8428286Z Selecting previously unselected package libxcb-xkb1:amd64.
+2026-11-07T20:11:56.8517891Z Preparing to unpack .../21-libxcb-xkb1_1.14-3ubuntu3_amd64.deb ...
+2026-11-07T20:11:56.8523582Z Unpacking libxcb-xkb1:amd64 (1.14-3ubuntu3) ...
+2026-11-07T20:11:56.8629731Z Selecting previously unselected package libxkbcommon-x11-0:amd64.
+2026-11-07T20:11:56.8719231Z Preparing to unpack .../22-libxkbcommon-x11-0_1.4.0-1_amd64.deb ...
+2026-11-07T20:11:56.8725192Z Unpacking libxkbcommon-x11-0:amd64 (1.4.0-1) ...
+2026-11-07T20:11:56.8842247Z Selecting previously unselected package libqt5gui5:amd64.
+2026-11-07T20:11:56.8933326Z Preparing to unpack .../23-libqt5gui5_5.15.3+dfsg-2ubuntu0.2_amd64.deb ...
+2026-11-07T20:11:56.8965714Z Unpacking libqt5gui5:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
+2026-11-07T20:11:56.9848372Z Selecting previously unselected package libqt5widgets5:amd64.
+2026-11-07T20:11:56.9942360Z Preparing to unpack .../24-libqt5widgets5_5.15.3+dfsg-2ubuntu0.2_amd64.deb ...
+2026-11-07T20:11:56.9946821Z Unpacking libqt5widgets5:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
+2026-11-07T20:11:57.0429023Z Selecting previously unselected package libqt5svg5:amd64.
+2026-11-07T20:11:57.0522503Z Preparing to unpack .../25-libqt5svg5_5.15.3-1_amd64.deb ...
+2026-11-07T20:11:57.0526978Z Unpacking libqt5svg5:amd64 (5.15.3-1) ...
+2026-11-07T20:11:57.0630317Z Selecting previously unselected package gir1.2-gudev-1.0:amd64.
+2026-11-07T20:11:57.0722299Z Preparing to unpack .../26-gir1.2-gudev-1.0_1%3a237-2build1_amd64.deb ...
+2026-11-07T20:11:57.0726670Z Unpacking gir1.2-gudev-1.0:amd64 (1:237-2build1) ...
+2026-11-07T20:11:57.0819824Z Selecting previously unselected package libglx-dev:amd64.
+2026-11-07T20:11:57.0911095Z Preparing to unpack .../27-libglx-dev_1.4.0-1_amd64.deb ...
+2026-11-07T20:11:57.0915350Z Unpacking libglx-dev:amd64 (1.4.0-1) ...
+2026-11-07T20:11:57.1215345Z Selecting previously unselected package libgl-dev:amd64.
+2026-11-07T20:11:57.1307458Z Preparing to unpack .../28-libgl-dev_1.4.0-1_amd64.deb ...
+2026-11-07T20:11:57.1312337Z Unpacking libgl-dev:amd64 (1.4.0-1) ...
+2026-11-07T20:11:57.1428953Z Selecting previously unselected package libegl-dev:amd64.
+2026-11-07T20:11:57.1518686Z Preparing to unpack .../29-libegl-dev_1.4.0-1_amd64.deb ...
+2026-11-07T20:11:57.1523341Z Unpacking libegl-dev:amd64 (1.4.0-1) ...
+2026-11-07T20:11:57.1625857Z Selecting previously unselected package libopengl0:amd64.
+2026-11-07T20:11:57.1714122Z Preparing to unpack .../30-libopengl0_1.4.0-1_amd64.deb ...
+2026-11-07T20:11:57.1719368Z Unpacking libopengl0:amd64 (1.4.0-1) ...
+2026-11-07T20:11:57.1820696Z Selecting previously unselected package libglu1-mesa:amd64.
+2026-11-07T20:11:57.1909148Z Preparing to unpack .../31-libglu1-mesa_9.0.2-1_amd64.deb ...
+2026-11-07T20:11:57.1914212Z Unpacking libglu1-mesa:amd64 (9.0.2-1) ...
+2026-11-07T20:11:57.2008895Z Selecting previously unselected package libglu1-mesa-dev:amd64.
+2026-11-07T20:11:57.2097847Z Preparing to unpack .../32-libglu1-mesa-dev_9.0.2-1_amd64.deb ...
+2026-11-07T20:11:57.2102510Z Unpacking libglu1-mesa-dev:amd64 (9.0.2-1) ...
+2026-11-07T20:11:57.2209869Z Selecting previously unselected package libudev-dev:amd64.
+2026-11-07T20:11:57.2298317Z Preparing to unpack .../33-libudev-dev_249.11-0ubuntu3.23_amd64.deb ...
+2026-11-07T20:11:57.2310771Z Unpacking libudev-dev:amd64 (249.11-0ubuntu3.23) ...
+2026-11-07T20:11:57.2576473Z Selecting previously unselected package libgudev-1.0-dev:amd64.
+2026-11-07T20:11:57.2666639Z Preparing to unpack .../34-libgudev-1.0-dev_1%3a237-2build1_amd64.deb ...
+2026-11-07T20:11:57.2671661Z Unpacking libgudev-1.0-dev:amd64 (1:237-2build1) ...
+2026-11-07T20:11:57.3066003Z Selecting previously unselected package libmtdev-dev:amd64.
+2026-11-07T20:11:57.3156370Z Preparing to unpack .../35-libmtdev-dev_1.1.6-1build4_amd64.deb ...
+2026-11-07T20:11:57.3161183Z Unpacking libmtdev-dev:amd64 (1.1.6-1build4) ...
+2026-11-07T20:11:57.3258041Z Selecting previously unselected package libqt5concurrent5:amd64.
+2026-11-07T20:11:57.3347368Z Preparing to unpack .../36-libqt5concurrent5_5.15.3+dfsg-2ubuntu0.2_amd64.deb ...
+2026-11-07T20:11:57.3351828Z Unpacking libqt5concurrent5:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
+2026-11-07T20:11:57.3453272Z Selecting previously unselected package libqt5opengl5:amd64.
+2026-11-07T20:11:57.3562985Z Preparing to unpack .../37-libqt5opengl5_5.15.3+dfsg-2ubuntu0.2_amd64.deb ...
+2026-11-07T20:11:57.3571000Z Unpacking libqt5opengl5:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
+2026-11-07T20:11:57.3752943Z Selecting previously unselected package libqt5printsupport5:amd64.
+2026-11-07T20:11:57.3887735Z Preparing to unpack .../38-libqt5printsupport5_5.15.3+dfsg-2ubuntu0.2_amd64.deb ...
+2026-11-07T20:11:57.3893411Z Unpacking libqt5printsupport5:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
+2026-11-07T20:11:57.4231550Z Selecting previously unselected package libqt5sql5:amd64.
+2026-11-07T20:11:57.4416127Z Preparing to unpack .../39-libqt5sql5_5.15.3+dfsg-2ubuntu0.2_amd64.deb ...
+2026-11-07T20:11:57.4422353Z Unpacking libqt5sql5:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
+2026-11-07T20:11:57.4538828Z Selecting previously unselected package libqt5test5:amd64.
+2026-11-07T20:11:57.4636877Z Preparing to unpack .../40-libqt5test5_5.15.3+dfsg-2ubuntu0.2_amd64.deb ...
+2026-11-07T20:11:57.4641994Z Unpacking libqt5test5:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
+2026-11-07T20:11:57.4754498Z Selecting previously unselected package libqt5xml5:amd64.
+2026-11-07T20:11:57.4850742Z Preparing to unpack .../41-libqt5xml5_5.15.3+dfsg-2ubuntu0.2_amd64.deb ...
+2026-11-07T20:11:57.4855885Z Unpacking libqt5xml5:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
+2026-11-07T20:11:57.4959412Z Selecting previously unselected package libvulkan-dev:amd64.
+2026-11-07T20:11:57.5054572Z Preparing to unpack .../42-libvulkan-dev_1.3.204.1-2_amd64.deb ...
+2026-11-07T20:11:57.5059481Z Unpacking libvulkan-dev:amd64 (1.3.204.1-2) ...
+2026-11-07T20:11:57.5919188Z Selecting previously unselected package qt5-qmake-bin.
+2026-11-07T20:11:57.6011944Z Preparing to unpack .../43-qt5-qmake-bin_5.15.3+dfsg-2ubuntu0.2_amd64.deb ...
+2026-11-07T20:11:57.6016413Z Unpacking qt5-qmake-bin (5.15.3+dfsg-2ubuntu0.2) ...
+2026-11-07T20:11:57.6285098Z Selecting previously unselected package qtchooser.
+2026-11-07T20:11:57.6378798Z Preparing to unpack .../44-qtchooser_66-2build1_amd64.deb ...
+2026-11-07T20:11:57.6383037Z Unpacking qtchooser (66-2build1) ...
+2026-11-07T20:11:57.6501526Z Selecting previously unselected package qt5-qmake:amd64.
+2026-11-07T20:11:57.6591598Z Preparing to unpack .../45-qt5-qmake_5.15.3+dfsg-2ubuntu0.2_amd64.deb ...
+2026-11-07T20:11:57.6595834Z Unpacking qt5-qmake:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
+2026-11-07T20:11:57.7206599Z Selecting previously unselected package qtbase5-dev-tools.
+2026-11-07T20:11:57.7301391Z Preparing to unpack .../46-qtbase5-dev-tools_5.15.3+dfsg-2ubuntu0.2_amd64.deb ...
+2026-11-07T20:11:57.7305579Z Unpacking qtbase5-dev-tools (5.15.3+dfsg-2ubuntu0.2) ...
+2026-11-07T20:11:57.7596928Z Selecting previously unselected package qtbase5-dev:amd64.
+2026-11-07T20:11:57.7690165Z Preparing to unpack .../47-qtbase5-dev_5.15.3+dfsg-2ubuntu0.2_amd64.deb ...
+2026-11-07T20:11:57.7694109Z Unpacking qtbase5-dev:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
+2026-11-07T20:11:58.0562895Z Selecting previously unselected package libqt5opengl5-dev:amd64.
+2026-11-07T20:11:58.0665312Z Preparing to unpack .../48-libqt5opengl5-dev_5.15.3+dfsg-2ubuntu0.2_amd64.deb ...
+2026-11-07T20:11:58.0669685Z Unpacking libqt5opengl5-dev:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
+2026-11-07T20:11:58.0780027Z Selecting previously unselected package libqt5sql5-sqlite:amd64.
+2026-11-07T20:11:58.0872067Z Preparing to unpack .../49-libqt5sql5-sqlite_5.15.3+dfsg-2ubuntu0.2_amd64.deb ...
+2026-11-07T20:11:58.0876403Z Unpacking libqt5sql5-sqlite:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
+2026-11-07T20:11:58.0973809Z Selecting previously unselected package libwacom-bin.
+2026-11-07T20:11:58.1063771Z Preparing to unpack .../50-libwacom-bin_2.2.0-1_amd64.deb ...
+2026-11-07T20:11:58.1067562Z Unpacking libwacom-bin (2.2.0-1) ...
+2026-11-07T20:11:58.1233859Z Selecting previously unselected package libwacom-dev:amd64.
+2026-11-07T20:11:58.1324883Z Preparing to unpack .../51-libwacom-dev_2.2.0-1_amd64.deb ...
+2026-11-07T20:11:58.1328525Z Unpacking libwacom-dev:amd64 (2.2.0-1) ...
+2026-11-07T20:11:58.1417579Z Selecting previously unselected package libxkbcommon-dev:amd64.
+2026-11-07T20:11:58.1507032Z Preparing to unpack .../52-libxkbcommon-dev_1.4.0-1_amd64.deb ...
+2026-11-07T20:11:58.1511945Z Unpacking libxkbcommon-dev:amd64 (1.4.0-1) ...
+2026-11-07T20:11:58.1610032Z Selecting previously unselected package qt5-gtk-platformtheme:amd64.
+2026-11-07T20:11:58.1699340Z Preparing to unpack .../53-qt5-gtk-platformtheme_5.15.3+dfsg-2ubuntu0.2_amd64.deb ...
+2026-11-07T20:11:58.1704431Z Unpacking qt5-gtk-platformtheme:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
+2026-11-07T20:11:58.1803341Z Selecting previously unselected package libevdev-dev:amd64.
+2026-11-07T20:11:58.1891804Z Preparing to unpack .../54-libevdev-dev_1.12.1+dfsg-1_amd64.deb ...
+2026-11-07T20:11:58.1896254Z Unpacking libevdev-dev:amd64 (1.12.1+dfsg-1) ...
+2026-11-07T20:11:58.1989887Z Selecting previously unselected package libinput-dev:amd64.
+2026-11-07T20:11:58.2078156Z Preparing to unpack .../55-libinput-dev_1.20.0-1ubuntu0.4_amd64.deb ...
+2026-11-07T20:11:58.2082958Z Unpacking libinput-dev:amd64 (1.20.0-1ubuntu0.4) ...
+2026-11-07T20:11:58.2209597Z Selecting previously unselected package qtbase5-private-dev:amd64.
+2026-11-07T20:11:58.2297686Z Preparing to unpack .../56-qtbase5-private-dev_5.15.3+dfsg-2ubuntu0.2_amd64.deb ...
+2026-11-07T20:11:58.2301899Z Unpacking qtbase5-private-dev:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
+2026-11-07T20:11:58.3761663Z Selecting previously unselected package qttranslations5-l10n.
+2026-11-07T20:11:58.3862680Z Preparing to unpack .../57-qttranslations5-l10n_5.15.3-1_all.deb ...
+2026-11-07T20:11:58.3867575Z Unpacking qttranslations5-l10n (5.15.3-1) ...
+2026-11-07T20:11:58.5567678Z Setting up libdouble-conversion3:amd64 (3.1.7-4) ...
+2026-11-07T20:11:58.5581299Z Setting up libvulkan-dev:amd64 (1.3.204.1-2) ...
+2026-11-07T20:11:58.5595850Z Setting up libxcb-xinput0:amd64 (1.14-3ubuntu3) ...
+2026-11-07T20:11:58.5608553Z Setting up libxkbcommon-dev:amd64 (1.4.0-1) ...
+2026-11-07T20:11:58.5621591Z Setting up libxcb-keysyms1:amd64 (0.4.0-1build3) ...
+2026-11-07T20:11:58.5633537Z Setting up libxcb-shape0:amd64 (1.14-3ubuntu3) ...
+2026-11-07T20:11:58.5645371Z Setting up libxcb-render-util0:amd64 (0.3.9-1build3) ...
+2026-11-07T20:11:58.5657125Z Setting up libxcb-icccm4:amd64 (0.4.1-1.1build2) ...
+2026-11-07T20:11:58.5672132Z Setting up libopengl0:amd64 (1.4.0-1) ...
+2026-11-07T20:11:58.5684127Z Setting up libxcb-util1:amd64 (0.4.0-1build2) ...
+2026-11-07T20:11:58.5695930Z Setting up libxcb-xkb1:amd64 (1.14-3ubuntu3) ...
+2026-11-07T20:11:58.5707486Z Setting up libxcb-image0:amd64 (0.4.0-2) ...
+2026-11-07T20:11:58.5719172Z Setting up libegl-mesa0:amd64 (23.2.1-1ubuntu3.1~22.04.4) ...
+2026-11-07T20:11:58.5729961Z Setting up libxcb-xinerama0:amd64 (1.14-3ubuntu3) ...
+2026-11-07T20:11:58.5740753Z Setting up qttranslations5-l10n (5.15.3-1) ...
+2026-11-07T20:11:58.5753720Z Setting up qt5-qmake-bin (5.15.3+dfsg-2ubuntu0.2) ...
+2026-11-07T20:11:58.5767328Z Setting up gir1.2-gudev-1.0:amd64 (1:237-2build1) ...
+2026-11-07T20:11:58.5779350Z Setting up libxkbcommon-x11-0:amd64 (1.4.0-1) ...
+2026-11-07T20:11:58.5790770Z Setting up libudev-dev:amd64 (249.11-0ubuntu3.23) ...
+2026-11-07T20:11:58.5802047Z Setting up libqt5core5a:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
+2026-11-07T20:11:58.5835754Z Setting up libmtdev1:amd64 (1.1.6-1build4) ...
+2026-11-07T20:11:58.5847641Z Setting up libqt5dbus5:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
+2026-11-07T20:11:58.5859476Z Setting up libegl1:amd64 (1.4.0-1) ...
+2026-11-07T20:11:58.5873672Z Setting up libmd4c0:amd64 (0.4.8-1) ...
+2026-11-07T20:11:58.5884944Z Setting up libglx-dev:amd64 (1.4.0-1) ...
+2026-11-07T20:11:58.5897181Z Setting up libglu1-mesa:amd64 (9.0.2-1) ...
+2026-11-07T20:11:58.5910355Z Setting up libqt5test5:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
+2026-11-07T20:11:58.5922310Z Setting up libevdev2:amd64 (1.12.1+dfsg-1) ...
+2026-11-07T20:11:58.5934092Z Setting up libqt5concurrent5:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
+2026-11-07T20:11:58.5945309Z Setting up libgl-dev:amd64 (1.4.0-1) ...
+2026-11-07T20:11:58.5956864Z Setting up qtchooser (66-2build1) ...
+2026-11-07T20:11:58.5971329Z Setting up libwacom-common (2.2.0-1) ...
+2026-11-07T20:11:58.5982957Z Setting up qt5-qmake:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
+2026-11-07T20:11:58.5995327Z Setting up libegl-dev:amd64 (1.4.0-1) ...
+2026-11-07T20:11:58.6006617Z Setting up libevdev-dev:amd64 (1.12.1+dfsg-1) ...
+2026-11-07T20:11:58.6018863Z Setting up libwacom9:amd64 (2.2.0-1) ...
+2026-11-07T20:11:58.6030962Z Setting up libmtdev-dev:amd64 (1.1.6-1build4) ...
+2026-11-07T20:11:58.6041895Z Setting up libgudev-1.0-dev:amd64 (1:237-2build1) ...
+2026-11-07T20:11:58.6053044Z Setting up libqt5network5:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
+2026-11-07T20:11:58.6065599Z Setting up libinput-bin (1.20.0-1ubuntu0.4) ...
+2026-11-07T20:11:58.6076870Z Setting up libqt5sql5:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
+2026-11-07T20:11:58.6088010Z Setting up qtbase5-dev-tools (5.15.3+dfsg-2ubuntu0.2) ...
+2026-11-07T20:11:58.6098758Z Setting up libqt5xml5:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
+2026-11-07T20:11:58.6109476Z Setting up libglu1-mesa-dev:amd64 (9.0.2-1) ...
+2026-11-07T20:11:58.6120158Z Setting up libwacom-bin (2.2.0-1) ...
+2026-11-07T20:11:58.6130794Z Setting up libinput10:amd64 (1.20.0-1ubuntu0.4) ...
+2026-11-07T20:11:58.6141551Z Setting up libwacom-dev:amd64 (2.2.0-1) ...
+2026-11-07T20:11:58.6152702Z Setting up libqt5sql5-sqlite:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
+2026-11-07T20:11:58.6166844Z Setting up libqt5gui5:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
+2026-11-07T20:11:58.6198266Z Setting up libqt5widgets5:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
+2026-11-07T20:11:58.6209473Z Setting up qt5-gtk-platformtheme:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
+2026-11-07T20:11:58.6221086Z Setting up libqt5printsupport5:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
+2026-11-07T20:11:58.6231914Z Setting up libinput-dev:amd64 (1.20.0-1ubuntu0.4) ...
+2026-11-07T20:11:58.6242872Z Setting up qtbase5-dev:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
+2026-11-07T20:11:58.6254199Z Setting up libqt5opengl5:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
+2026-11-07T20:11:58.6268327Z Setting up qtbase5-private-dev:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
+2026-11-07T20:11:58.6279346Z Setting up libqt5opengl5-dev:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
+2026-11-07T20:11:58.6290223Z Setting up libqt5svg5:amd64 (5.15.3-1) ...
+2026-11-07T20:11:58.6305516Z Processing triggers for udev (249.11-0ubuntu3.23) ...
+2026-11-07T20:11:58.9459094Z Processing triggers for libc-bin (2.35-0ubuntu3.15) ...
+2026-11-07T20:12:10.3715026Z Processing triggers for man-db (2.10.2-1) ...
+2026-11-07T20:12:10.3772491Z Not building database; man-db/auto-update is not 'true'.
+2026-11-07T20:12:11.1955803Z 
+2026-11-07T20:12:11.1956740Z Running kernel seems to be up-to-date.
+2026-11-07T20:12:11.1957141Z 
+2026-11-07T20:12:11.1957315Z No services need to be restarted.
+2026-11-07T20:12:11.1957541Z 
+2026-11-07T20:12:11.1957710Z No containers need to be restarted.
+2026-11-07T20:12:11.1957945Z 
+2026-11-07T20:12:11.1958140Z No user sessions are running outdated binaries.
+2026-11-07T20:12:11.1958398Z 
+2026-11-07T20:12:11.1958790Z No VM guests are running outdated hypervisor (qemu) binaries on this host.
+2026-11-07T20:12:12.3956105Z ##[group]Run cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DDUKTO_BUILD_GUI=OFF
+2026-11-07T20:12:12.3956524Z [36;1mcmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DDUKTO_BUILD_GUI=OFF[0m
+2026-11-07T20:12:12.3982661Z shell: /usr/bin/bash -e {0}
+2026-11-07T20:12:12.3982814Z env:
+2026-11-07T20:12:12.3982978Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-07T20:12:12.3983211Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.16/x64/lib/pkgconfig
+2026-11-07T20:12:12.3983432Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-07T20:12:12.3983632Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-07T20:12:12.3983831Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-07T20:12:12.3984038Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.16/x64/lib
+2026-11-07T20:12:12.3984211Z ##[endgroup]
+2026-11-07T20:12:13.1106849Z -- The C compiler identification is GNU 11.4.0
+2026-11-07T20:12:13.5193838Z -- The CXX compiler identification is GNU 11.4.0
+2026-11-07T20:12:13.6040915Z -- Detecting C compiler ABI info
+2026-11-07T20:12:13.6987299Z -- Detecting C compiler ABI info - done
+2026-11-07T20:12:13.7086214Z -- Check for working C compiler: /usr/bin/cc - skipped
+2026-11-07T20:12:13.7133808Z -- Detecting C compile features
+2026-11-07T20:12:13.7174028Z -- Detecting C compile features - done
+2026-11-07T20:12:13.7420928Z -- Detecting CXX compiler ABI info
+2026-11-07T20:12:13.7995552Z -- Detecting CXX compiler ABI info - done
+2026-11-07T20:12:13.8102511Z -- Check for working CXX compiler: /usr/bin/c++ - skipped
+2026-11-07T20:12:13.8104536Z -- Detecting CXX compile features
+2026-11-07T20:12:13.8108532Z -- Detecting CXX compile features - done
+2026-11-07T20:12:13.9044745Z -- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found suitable version "3.0.2", minimum required is "1.1.1") found components: Crypto
+2026-11-07T20:12:13.9930649Z -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+2026-11-07T20:12:14.1583527Z -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+2026-11-07T20:12:14.1590841Z -- Found Threads: TRUE
+2026-11-07T20:12:14.1616396Z -- Configuring done (1.6s)
+2026-11-07T20:12:14.2345621Z -- Generating done (0.1s)
+2026-11-07T20:12:14.2437993Z -- Build files have been written to: /home/runner/work/dukto-next/dukto-next/build
+2026-11-07T20:12:14.2538308Z ##[group]Run cmake --build build --config Release --target dukto-cli state-domain-tests --parallel 4
+2026-11-07T20:12:14.2538853Z [36;1mcmake --build build --config Release --target dukto-cli state-domain-tests --parallel 4[0m
+2026-11-07T20:12:14.2564933Z shell: /usr/bin/bash -e {0}
+2026-11-07T20:12:14.2565065Z env:
+2026-11-07T20:12:14.2565210Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-07T20:12:14.2565435Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.16/x64/lib/pkgconfig
+2026-11-07T20:12:14.2565656Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-07T20:12:14.2565855Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-07T20:12:14.2566053Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-07T20:12:14.2566269Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.16/x64/lib
+2026-11-07T20:12:14.2566438Z ##[endgroup]
+2026-11-07T20:12:14.2807161Z [  0%] Building C object CMakeFiles/dukto-sqlite.dir/src/core/sqliteplatform.c.o
+2026-11-07T20:12:47.3288805Z [  2%] Linking C static library libdukto-sqlite.a
+2026-11-07T20:12:47.6582057Z [  2%] Built target dukto-sqlite
+2026-11-07T20:12:47.6615816Z [  2%] Built target dukto-sql-driver_autogen_timestamp_deps
+2026-11-07T20:12:47.6648150Z [  5%] Automatic MOC for target dukto-sql-driver
+2026-11-07T20:12:48.2132472Z [  5%] Built target dukto-sql-driver_autogen
+2026-11-07T20:12:48.2171470Z [  5%] Building CXX object CMakeFiles/dukto-sql-driver.dir/dukto-sql-driver_autogen/mocs_compilation.cpp.o
+2026-11-07T20:12:48.2172216Z [  8%] Building CXX object CMakeFiles/dukto-sql-driver.dir/src/core/sqliteruntime.cpp.o
+2026-11-07T20:12:48.2172780Z [  8%] Building CXX object CMakeFiles/dukto-sql-driver.dir/src/core/sqlitevfs.cpp.o
+2026-11-07T20:12:48.2173218Z [ 11%] Building CXX object CMakeFiles/dukto-sql-driver.dir/third-party/sqlite-runtime/qt-5.15.2/qsql_sqlite.cpp.o
+2026-11-07T20:12:49.4597176Z [ 11%] Linking CXX static library libdukto-sql-driver.a
+2026-11-07T20:12:49.5074021Z [ 11%] Built target dukto-sql-driver
+2026-11-07T20:12:49.5107953Z [ 11%] Built target dukto-core_autogen_timestamp_deps
+2026-11-07T20:12:49.5141014Z [ 14%] Automatic MOC for target dukto-core
+2026-11-07T20:12:49.7117783Z [ 14%] Built target dukto-core_autogen
+2026-11-07T20:12:49.7164240Z [ 17%] Building CXX object CMakeFiles/dukto-core.dir/dukto-core_autogen/mocs_compilation.cpp.o
+2026-11-07T20:12:49.7164938Z [ 17%] Building CXX object CMakeFiles/dukto-core.dir/src/core/error.cpp.o
+2026-11-07T20:12:49.7165672Z [ 20%] Building CXX object CMakeFiles/dukto-core.dir/src/core/diagnostics.cpp.o
+2026-11-07T20:12:49.7166115Z [ 20%] Building CXX object CMakeFiles/dukto-core.dir/src/core/files.cpp.o
+2026-11-07T20:12:50.3399877Z [ 23%] Building CXX object CMakeFiles/dukto-core.dir/src/core/nativecommit.cpp.o
+2026-11-07T20:12:50.6269793Z [ 23%] Building CXX object CMakeFiles/dukto-core.dir/src/core/sourcefile.cpp.o
+2026-11-07T20:12:50.6960034Z [ 26%] Building CXX object CMakeFiles/dukto-core.dir/src/core/protocol.cpp.o
+2026-11-07T20:12:50.7780097Z [ 26%] Building CXX object CMakeFiles/dukto-core.dir/src/core/securechannel.cpp.o
+2026-11-07T20:12:51.4689795Z [ 29%] Building CXX object CMakeFiles/dukto-core.dir/src/core/buffercredit.cpp.o
+2026-11-07T20:12:51.5639975Z [ 29%] Building CXX object CMakeFiles/dukto-core.dir/src/core/filecredit.cpp.o
+2026-11-07T20:12:51.6169972Z [ 32%] Building CXX object CMakeFiles/dukto-core.dir/src/core/sqlitecache.cpp.o
+2026-11-07T20:12:51.9869983Z [ 32%] Building CXX object CMakeFiles/dukto-core.dir/src/core/privatestore.cpp.o
+2026-11-07T20:12:52.1239962Z [ 35%] Building CXX object CMakeFiles/dukto-core.dir/src/core/stateinventory.cpp.o
+2026-11-07T20:12:52.1990548Z [ 35%] Building CXX object CMakeFiles/dukto-core.dir/src/core/statebudget.cpp.o
+2026-11-07T20:12:52.2569967Z [ 38%] Building CXX object CMakeFiles/dukto-core.dir/src/core/statedomain.cpp.o
+2026-11-07T20:12:52.9771719Z [ 38%] Building CXX object CMakeFiles/dukto-core.dir/src/core/identity.cpp.o
+2026-11-07T20:12:53.0602512Z [ 41%] Building CXX object CMakeFiles/dukto-core.dir/src/core/auth.cpp.o
+2026-11-07T20:12:53.1536663Z [ 44%] Building CXX object CMakeFiles/dukto-core.dir/src/core/sessionpolicy.cpp.o
+2026-11-07T20:12:53.4109865Z [ 44%] Building CXX object CMakeFiles/dukto-core.dir/src/core/transferscheduler.cpp.o
+2026-11-07T20:12:53.8512454Z [ 47%] Building CXX object CMakeFiles/dukto-core.dir/src/core/transferoperation.cpp.o
+2026-11-07T20:12:54.1779775Z [ 47%] Building CXX object CMakeFiles/dukto-core.dir/src/core/service.cpp.o
+2026-11-07T20:12:54.4039949Z [ 50%] Building CXX object CMakeFiles/dukto-core.dir/src/core/shares.cpp.o
+2026-11-07T20:12:54.7589990Z [ 50%] Building CXX object CMakeFiles/dukto-core.dir/src/core/browse.cpp.o
+2026-11-07T20:12:54.8801171Z [ 52%] Building CXX object CMakeFiles/dukto-core.dir/src/core/strongmanifest.cpp.o
+2026-11-07T20:12:55.4242970Z [ 52%] Building CXX object CMakeFiles/dukto-core.dir/src/core/uploadmanifest.cpp.o
+2026-11-07T20:12:56.0299954Z [ 55%] Building CXX object CMakeFiles/dukto-core.dir/src/core/dispositionjournal.cpp.o
+2026-11-07T20:12:56.2339932Z [ 55%] Building CXX object CMakeFiles/dukto-core.dir/src/core/taskstore.cpp.o
+2026-11-07T20:12:56.2947245Z [ 58%] Building CXX object CMakeFiles/dukto-core.dir/src/core/expiredtaskcleanup.cpp.o
+2026-11-07T20:12:57.1319937Z [ 58%] Building CXX object CMakeFiles/dukto-core.dir/src/core/clientdownloadcleanup.cpp.o
+2026-11-07T20:12:57.3219914Z [ 61%] Building CXX object CMakeFiles/dukto-core.dir/src/core/directorycleanup.cpp.o
+2026-11-07T20:12:57.6829818Z [ 61%] Building CXX object CMakeFiles/dukto-core.dir/src/core/transferitems.cpp.o
+2026-11-07T20:12:58.0489649Z [ 64%] Building CXX object CMakeFiles/dukto-core.dir/src/core/durablereceive.cpp.o
+2026-11-07T20:12:58.6849768Z [ 64%] Building CXX object CMakeFiles/dukto-core.dir/src/core/receivetree.cpp.o
+2026-11-07T20:12:58.8109751Z [ 67%] Building CXX object CMakeFiles/dukto-core.dir/src/core/receiveskip.cpp.o
+2026-11-07T20:12:59.5844910Z [ 67%] Building CXX object CMakeFiles/dukto-core.dir/src/core/receiveskipfinal.cpp.o
+2026-11-07T20:12:59.8786430Z [ 70%] Building CXX object CMakeFiles/dukto-core.dir/src/core/transferdisposition.cpp.o
+2026-11-07T20:13:00.0489851Z [ 70%] Building CXX object CMakeFiles/dukto-core.dir/src/core/fileexchange.cpp.o
+2026-11-07T20:13:00.5920023Z [ 73%] Building CXX object CMakeFiles/dukto-core.dir/src/core/paralleltransfer.cpp.o
+2026-11-07T20:13:00.7011422Z [ 73%] Building CXX object CMakeFiles/dukto-core.dir/src/core/transferservice.cpp.o
+2026-11-07T20:13:00.8110386Z [ 76%] Building CXX object CMakeFiles/dukto-core.dir/src/core/transferclient.cpp.o
+2026-11-07T20:13:01.6650018Z [ 76%] Building CXX object CMakeFiles/dukto-core.dir/src/core/transferprogress.cpp.o
+2026-11-07T20:13:02.6290144Z [ 79%] Building CXX object CMakeFiles/dukto-core.dir/src/core/transferaccounting.cpp.o
+2026-11-07T20:13:02.9729982Z [ 79%] Building CXX object CMakeFiles/dukto-core.dir/src/core/manifest.cpp.o
+2026-11-07T20:13:03.2319903Z [ 82%] Building CXX object CMakeFiles/dukto-core.dir/src/core/legacy.cpp.o
+2026-11-07T20:13:03.3969855Z [ 85%] Building CXX object CMakeFiles/dukto-core.dir/src/core/tcplistener.cpp.o
+2026-11-07T20:13:03.5606781Z [ 85%] Building CXX object CMakeFiles/dukto-core.dir/src/core/discovery.cpp.o
+2026-11-07T20:13:03.8079706Z [ 88%] Building CXX object CMakeFiles/dukto-core.dir/src/core/endpoint.cpp.o
+2026-11-07T20:13:03.9949934Z [ 88%] Building CXX object CMakeFiles/dukto-core.dir/src/core/updates.cpp.o
+2026-11-07T20:13:04.5172911Z [ 91%] Building CXX object CMakeFiles/dukto-core.dir/src/core/catalog.cpp.o
+2026-11-07T20:13:05.3753335Z [ 91%] Linking CXX static library libdukto-core.a
+2026-11-07T20:13:05.4505438Z [ 91%] Built target dukto-core
+2026-11-07T20:13:05.4541604Z [ 91%] Built target dukto-cli_autogen_timestamp_deps
+2026-11-07T20:13:05.4576902Z [ 91%] Automatic MOC for target dukto-cli
+2026-11-07T20:13:05.4655062Z [ 91%] Built target dukto-cli_autogen
+2026-11-07T20:13:05.4696364Z [ 94%] Building CXX object CMakeFiles/dukto-cli.dir/dukto-cli_autogen/mocs_compilation.cpp.o
+2026-11-07T20:13:05.4697093Z [ 94%] Building CXX object CMakeFiles/dukto-cli.dir/src/cli/main.cpp.o
+2026-11-07T20:13:05.4697480Z [ 97%] Building CXX object CMakeFiles/dukto-cli.dir/src/cli/input.cpp.o
+2026-11-07T20:13:05.4697893Z [ 97%] Building CXX object CMakeFiles/dukto-cli.dir/src/cli/servicecommands.cpp.o
+2026-11-07T20:13:07.6292180Z [100%] Linking CXX executable dukto-cli
+2026-11-07T20:13:07.7635705Z [100%] Built target dukto-cli
+2026-11-07T20:13:07.7797737Z [  3%] Built target dukto-sqlite
+2026-11-07T20:13:07.7830891Z [  3%] Built target dukto-sql-driver_autogen_timestamp_deps
+2026-11-07T20:13:07.7883370Z [  6%] Built target dukto-sql-driver_autogen
+2026-11-07T20:13:07.7948974Z [ 12%] Built target dukto-sql-driver
+2026-11-07T20:13:07.7982896Z [ 12%] Built target dukto-core_autogen_timestamp_deps
+2026-11-07T20:13:07.8045542Z [ 15%] Built target dukto-core_autogen
+2026-11-07T20:13:07.8393918Z [ 93%] Built target dukto-core
+2026-11-07T20:13:07.8427179Z [ 93%] Built target state-domain-tests_autogen_timestamp_deps
+2026-11-07T20:13:07.8460097Z [ 96%] Automatic MOC for target state-domain-tests
+2026-11-07T20:13:08.0900596Z [ 96%] Built target state-domain-tests_autogen
+2026-11-07T20:13:08.0937872Z [ 96%] Building CXX object CMakeFiles/state-domain-tests.dir/state-domain-tests_autogen/mocs_compilation.cpp.o
+2026-11-07T20:13:08.0939158Z [100%] Building CXX object CMakeFiles/state-domain-tests.dir/tests/state_domain_tests.cpp.o
+2026-11-07T20:13:09.4844609Z [100%] Linking CXX executable state-domain-tests
+2026-11-07T20:13:09.5748799Z [100%] Built target state-domain-tests
+2026-11-07T20:13:09.5794343Z ##[group]Run python -X utf8 scripts/ci_state_domain.py --build build --configuration Release
+2026-11-07T20:13:09.5794728Z [36;1mpython -X utf8 scripts/ci_state_domain.py --build build --configuration Release[0m
+2026-11-07T20:13:09.5821910Z shell: /usr/bin/bash -e {0}
+2026-11-07T20:13:09.5822052Z env:
+2026-11-07T20:13:09.5822203Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-07T20:13:09.5822447Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.16/x64/lib/pkgconfig
+2026-11-07T20:13:09.5822683Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-07T20:13:09.5822897Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-07T20:13:09.5823128Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-07T20:13:09.5823345Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.16/x64/lib
+2026-11-07T20:13:09.5823525Z ##[endgroup]
+2026-11-07T20:13:10.5894257Z {"sourceCommit": "d78954207cfcd21e07f5ba56c9153b36b3b2cc18", "architecture": "x86_64", "testExitCode": 0, "rowsPassed": 12, "binaryUnchanged": true, "sourceInputsUnchanged": true, "passed": true}
+2026-11-07T20:13:10.6017490Z ##[group]Run actions/upload-artifact@v4
+2026-11-07T20:13:10.6017651Z with:
+2026-11-07T20:13:10.6017765Z   name: state-domain-ubuntu-22.04
+2026-11-07T20:13:10.6017992Z   path: build/state-domain-regression/**
+build/Testing/**
+build/CMakeCache.txt
+
+2026-11-07T20:13:10.6018214Z   if-no-files-found: warn
+2026-11-07T20:13:10.6018342Z   compression-level: 6
+2026-11-07T20:13:10.6018455Z   overwrite: false
+2026-11-07T20:13:10.6018573Z   include-hidden-files: false
+2026-11-07T20:13:10.6018777Z env:
+2026-11-07T20:13:10.6018913Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-07T20:13:10.6019139Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.16/x64/lib/pkgconfig
+2026-11-07T20:13:10.6019359Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-07T20:13:10.6019556Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-07T20:13:10.6019751Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-07T20:13:10.6019964Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.16/x64/lib
+2026-11-07T20:13:10.6020132Z ##[endgroup]
+2026-11-07T20:13:10.6997042Z (node:3646) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-07T20:13:10.6997690Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-07T20:13:10.7063528Z Multiple search paths detected. Calculating the least common ancestor of all paths
+2026-11-07T20:13:10.7064689Z The least common ancestor is /home/runner/work/dukto-next/dukto-next/build. This will be the root directory of the artifact
+2026-11-07T20:13:10.7065212Z With the provided path, there will be 6 files uploaded
+2026-11-07T20:13:10.7065908Z Artifact name is valid!
+2026-11-07T20:13:10.7066429Z Root directory input is valid!
+2026-11-07T20:13:10.9755643Z Beginning upload of artifact content to blob storage
+2026-11-07T20:13:10.9920130Z (node:3646) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-11-07T20:13:11.1854219Z Uploaded bytes 18885
+2026-11-07T20:13:11.2274472Z Finished uploading artifact content to blob storage!
+2026-11-07T20:13:11.2274968Z SHA256 digest of uploaded artifact zip is b674f16223056a08706152ab46640c30506fa9206d40f1cfe5762b9d5eef0ac8
+2026-11-07T20:13:11.2282397Z Finalizing artifact upload
+2026-11-07T20:13:11.6154698Z Artifact state-domain-ubuntu-22.04.zip successfully finalized. Artifact ID 13588652719
+2026-11-07T20:13:11.6155181Z Artifact state-domain-ubuntu-22.04 has been successfully uploaded! Final size is 18885 bytes. Artifact ID is 13588652719
+2026-11-07T20:13:11.6160153Z Artifact download URL: https://github.com/29583855/dukto-next/actions/runs/42409838142/artifacts/13588652719
+2026-11-07T20:13:11.6269856Z Post job cleanup.
+2026-11-07T20:13:11.6945387Z (node:3660) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-07T20:13:11.6945797Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-07T20:13:11.7072985Z Post job cleanup.
+2026-11-07T20:13:11.7595413Z [command]/usr/bin/git version
+2026-11-07T20:13:11.7620966Z git version 2.56.0
+2026-11-07T20:13:11.7642692Z Temporarily overriding HOME='/home/runner/work/_temp/8cf17cb6-3718-41cc-bb6c-2a84375429e4' before making global git config changes
+2026-11-07T20:13:11.7643539Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-07T20:13:11.7646004Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/dukto-next/dukto-next
+2026-11-07T20:13:11.7670088Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-07T20:13:11.7689682Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-07T20:13:11.7863717Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-07T20:13:11.7881023Z http.https://github.com/.extraheader
+2026-11-07T20:13:11.7888007Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-11-07T20:13:11.7919531Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-07T20:13:11.8087001Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-07T20:13:11.8110680Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-07T20:13:11.8366604Z Cleaning up orphan processes
+2026-11-07T20:13:11.8546576Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-python@v5, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

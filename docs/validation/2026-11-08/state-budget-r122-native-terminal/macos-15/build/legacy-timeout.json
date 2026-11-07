@@ -1,0 +1,85 @@
+{
+  "date": "2026-11-05",
+  "passed": false,
+  "executableSha256": "3d3011d13b4f5a06606b4905bda32a8c054c8f77cb6ec610846e69912c2aa6f6",
+  "scriptSha256": "203345719c62625bf8d83020f87d0a1b6afea56481f76ff7cd6e41841d9e04f8",
+  "cases": [
+    {
+      "name": "buffered-valid",
+      "expected": 0,
+      "exitCode": 0,
+      "seconds": 6.532,
+      "lastEvent": {
+        "bytes": "21",
+        "catalog": "/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/dukto-r6-timeout-oxj2v6c0/buffered-valid/.state/receipts.sqlite",
+        "elapsedMs": "6524",
+        "entries": "1",
+        "event": "result",
+        "eventVersion": 1,
+        "path": "/private/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/dukto-r6-timeout-oxj2v6c0/buffered-valid/buffered.bin",
+        "peer": "127.0.0.1",
+        "rateBytesPerSecond": "3",
+        "stage": "received",
+        "taskId": "9dea15f1-298c-461d-b147-dda610b7b26e"
+      },
+      "stderr": "",
+      "pausedSeconds": 6,
+      "receiverTimeoutSeconds": 5,
+      "passed": true,
+      "contentVerified": true
+    },
+    {
+      "name": "buffered-invalid-text",
+      "expected": 6,
+      "exitCode": 3,
+      "seconds": 6.468,
+      "lastEvent": {
+        "code": 3,
+        "elapsedMs": "6466",
+        "event": "error",
+        "eventVersion": 1,
+        "message": "连接或传输无进展超时",
+        "rateBytesPerSecond": "0",
+        "stage": "transfer"
+      },
+      "stderr": "",
+      "pausedSeconds": 6,
+      "receiverTimeoutSeconds": 5,
+      "passed": false
+    },
+    {
+      "name": "silent-stall",
+      "exitCode": 3,
+      "seconds": 5.043,
+      "lastEvent": {
+        "code": 3,
+        "elapsedMs": "5041",
+        "event": "error",
+        "eventVersion": 1,
+        "message": "连接或传输无进展超时",
+        "rateBytesPerSecond": "0",
+        "stage": "transfer"
+      },
+      "stderr": "",
+      "receiverTimeoutSeconds": 5,
+      "passed": true
+    },
+    {
+      "name": "partial-stall",
+      "exitCode": 3,
+      "seconds": 5.02,
+      "lastEvent": {
+        "code": 3,
+        "elapsedMs": "5018",
+        "event": "error",
+        "eventVersion": 1,
+        "message": "连接或传输无进展超时",
+        "rateBytesPerSecond": "0",
+        "stage": "transfer"
+      },
+      "stderr": "",
+      "receiverTimeoutSeconds": 5,
+      "passed": true
+    }
+  ]
+}
