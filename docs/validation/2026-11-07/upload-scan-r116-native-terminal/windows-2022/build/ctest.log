@@ -1,0 +1,96 @@
+[OUTPUT] 
+Internal ctest changing into directory: D:/a/dukto-next/dukto-next/build
+
+[HANDLER_OUTPUT] 
+Test project D:/a/dukto-next/dukto-next/build
+
+      Start  1: core-tests
+ 1/27 Test  #1: core-tests .......................   Passed    9.82 sec
+      Start  2: upload-scan-cleanup-tests
+ 2/27 Test  #2: upload-scan-cleanup-tests ........***Failed    0.94 sec
+A crash occurred in D:\a\dukto-next\dukto-next\build\Release\upload-scan-cleanup-tests.exe.
+Function time: 843ms Total time: 843ms
+
+Exception address: 0x00007FFEF2D8F22C
+Exception code   : 0xe06d7363
+Nearby symbol    : RaiseException
+
+Stack:
+#  1: QTest::toString() - 0x00007FFED19BB390
+#  2: UnhandledExceptionFilter() - 0x00007FFEF2E00650
+#  3: memset() - 0x00007FFEF5767080
+#  4: _C_specific_handler() - 0x00007FFEF574F120
+#  5: _chkstk() - 0x00007FFEF57651A0
+#  6: RtlVirtualUnwind2() - 0x00007FFEF56F15E0
+#  7: RtlRaiseException() - 0x00007FFEF570F930
+#  8: RaiseException() - 0x00007FFEF2D8F1C0
+#  9: Unable to obtain symbol
+# 10: RtlCaptureContext2() - 0x00007FFEF5764680
+# 11: QTest::qRun() - 0x00007FFED19B9710
+# 12: QTest::qExec() - 0x00007FFED19B74E0
+# 13: Unable to obtain symbol
+# 14: Unable to obtain symbol
+# 15: BaseThreadInitThunk() - 0x00007FFEF46A4F70
+# 16: RtlUserThreadStart() - 0x00007FFEF573EDA0
+
+
+      Start  3: discovery-identity-tests
+ 3/27 Test  #3: discovery-identity-tests .........   Passed    0.59 sec
+      Start  4: protocol-tests
+ 4/27 Test  #4: protocol-tests ...................   Passed    0.03 sec
+      Start  5: buffer-credit-tests
+ 5/27 Test  #5: buffer-credit-tests ..............   Passed    6.66 sec
+      Start  6: sqlite-cache-tests
+ 6/27 Test  #6: sqlite-cache-tests ...............   Passed    0.55 sec
+      Start  7: identity-tests
+ 7/27 Test  #7: identity-tests ...................   Passed    9.07 sec
+      Start  8: browse-tests
+ 8/27 Test  #8: browse-tests .....................   Passed    0.68 sec
+      Start  9: strong-manifest-tests
+ 9/27 Test  #9: strong-manifest-tests ............   Passed   11.83 sec
+      Start 10: disposition-journal-tests
+10/27 Test #10: disposition-journal-tests ........   Passed   22.09 sec
+      Start 11: transfer-accounting-tests
+11/27 Test #11: transfer-accounting-tests ........   Passed    0.02 sec
+      Start 12: task-store-tests
+12/27 Test #12: task-store-tests .................   Passed    8.96 sec
+      Start 13: expired-task-cleanup-tests
+13/27 Test #13: expired-task-cleanup-tests .......   Passed   24.45 sec
+      Start 14: client-download-cleanup-tests
+14/27 Test #14: client-download-cleanup-tests ....   Passed   18.23 sec
+      Start 15: directory-cleanup-tests
+15/27 Test #15: directory-cleanup-tests ..........   Passed   54.60 sec
+      Start 16: transfer-items-tests
+16/27 Test #16: transfer-items-tests .............   Passed   28.60 sec
+      Start 17: transfer-operation-tests
+17/27 Test #17: transfer-operation-tests .........   Passed    5.47 sec
+      Start 18: transfer-scheduler-tests
+18/27 Test #18: transfer-scheduler-tests .........   Passed    0.01 sec
+      Start 19: durable-receive-tests
+19/27 Test #19: durable-receive-tests ............   Passed   34.37 sec
+      Start 20: receive-skip-tests
+20/27 Test #20: receive-skip-tests ...............   Passed   26.57 sec
+      Start 21: file-exchange-tests
+21/27 Test #21: file-exchange-tests ..............   Passed  248.38 sec
+      Start 22: runtime-probe
+22/27 Test #22: runtime-probe ....................   Passed    0.02 sec
+      Start 23: updates-tests
+23/27 Test #23: updates-tests ....................   Passed    0.84 sec
+      Start 24: controller-tests
+24/27 Test #24: controller-tests .................   Passed    6.62 sec
+      Start 25: avatars-tests
+25/27 Test #25: avatars-tests ....................   Passed    6.15 sec
+      Start 26: ui-tests
+26/27 Test #26: ui-tests .........................   Passed   11.30 sec
+      Start 27: server-panel-tests
+27/27 Test #27: server-panel-tests ...............   Passed   69.19 sec
+
+96% tests passed, 1 tests failed out of 27
+
+Total Test time (real) = 606.09 sec
+
+The following tests FAILED:
+	  2 - upload-scan-cleanup-tests (Failed)
+[ERROR_MESSAGE] 
+Errors while running CTest
+

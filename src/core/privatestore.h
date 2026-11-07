@@ -2,7 +2,9 @@
 
 #include "nativecommit.h"
 #include <QByteArray>
+#include <QJsonObject>
 #include <QString>
+#include <functional>
 #include <memory>
 
 namespace dukto {
@@ -30,6 +32,8 @@ class PrivateStore final {
     QString directory() const;
     // 日期：2026-11-07；维护调用方显式核对独占模式，普通状态实例不能冒充维护所有者。
     bool maintenance() const;
+    // 日期：2026-11-07；独占维护时按后缀计量直接普通文件及SQLite旁路，不读取正文或授予删除资格。
+    QJsonObject storageUsage(const std::function<void()> &check = {}) const;
 
   private:
     // 日期：2026-11-07；内部共用原生对象核验，普通调用不能选择日志所有者策略。

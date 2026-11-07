@@ -13,6 +13,13 @@
 #endif
 
 namespace dukto {
+struct NativeDirectoryEntry {
+    enum class Kind { Regular, Directory, Link, Other };
+    QString name;
+    Kind kind = Kind::Other;
+    qint64 bytes = 0;
+    quint64 links = 0;
+};
 #ifdef Q_OS_WIN
 class NativeDirectoryLock final {
   public:
@@ -22,6 +29,8 @@ class NativeDirectoryLock final {
     ~NativeDirectoryLock();
     // 日期：2026-11-04；返回原生目录身份和修改时间，分页快照用它检测目录变化。
     QByteArray stamp() const;
+    // 日期：2026-11-07；逐项原生属性枚举，不跟随链接、不递归、不累积目录列表；目录变化即拒绝。
+    void visitEntries(const std::function<void(const NativeDirectoryEntry &)> &visitor) const;
     // 日期：2026-11-04；只返回卷/文件 ID，不含会随目录内容变化的时间戳，供持久目录预约。
     QByteArray identity() const;
     NativeDirectoryLock(const NativeDirectoryLock &) = delete;
@@ -45,6 +54,8 @@ class PosixDirectory final {
     void verify() const;
     // 日期：2026-11-04；以固定描述符读取 dev/inode 和纳秒修改/状态时间，不重新跟随路径。
     QByteArray stamp() const;
+    // 日期：2026-11-07；逐项原生属性枚举，不跟随链接、不递归、不累积目录列表；目录变化即拒绝。
+    void visitEntries(const std::function<void(const NativeDirectoryEntry &)> &visitor) const;
     // 日期：2026-11-04；只返回设备/inode，供恢复时核对本任务已创建的目录对象。
     QByteArray identity() const;
     // 日期：2026-11-04；相对固定父目录打开普通源文件，不跟随最后分量链接，也不阻塞在 FIFO。

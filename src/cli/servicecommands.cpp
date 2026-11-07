@@ -74,6 +74,29 @@ int runServiceCommand(const QCommandLineParser &parser, const QStringList &argum
                       const std::function<bool()> &interrupted) {
     auto command = arguments.value(0);
     const bool resuming = command == "resume";
+    if ((command == "client" || command == "serve") && arguments.value(1) == "storage") {
+        const QStringList allowed{"state-directory", "j", "json", "non-interactive"};
+        for (const auto &option : parser.optionNames())
+            if (!allowed.contains(option) || parser.values(option).size() > 1 ||
+                parser.optionNames().count(option) > 1)
+                throw dukto::Error(dukto::ExitCode::Config,
+                                   QStringLiteral("状态占用查询选项无效或重复"), "arguments");
+        if (arguments.size() != 2 ||
+            (parser.isSet("state-directory") && parser.value("state-directory").isEmpty()))
+            throw dukto::Error(dukto::ExitCode::Config,
+                               QStringLiteral("用法：client|serve storage --state-directory 目录"),
+                               "arguments");
+        dukto::PrivateStore store(
+            QDir(stateDirectory).filePath(command == "client" ? "transfers" : "service"), false,
+            dukto::PrivateStore::Use::Maintenance);
+        output(store.storageUsage([&]() {
+            // 日期：2026-11-07；每个枚举项检查进程信号，不写入部分结果或修改任何数据库。
+            if (interrupted())
+                throw dukto::Error(dukto::ExitCode::Cancelled, QStringLiteral("状态占用查询已中断"),
+                                   "storage");
+        }));
+        return 0;
+    }
     if (command == "client" && arguments.value(1) == "scan-cleanup") {
         const auto operation = arguments.value(2);
         const QUuid request(parser.value("request-id"));

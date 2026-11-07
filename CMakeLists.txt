@@ -34,6 +34,7 @@ add_library(dukto-core
     src/core/filecredit.cpp
     src/core/sqlitecache.cpp
     src/core/privatestore.cpp
+    src/core/stateinventory.cpp
     src/core/identity.cpp
     src/core/auth.cpp
     src/core/sessionpolicy.cpp
@@ -106,6 +107,9 @@ if(DUKTO_BUILD_TESTS)
     add_executable(upload-scan-cleanup-tests tests/upload_scan_cleanup_tests.cpp)
     target_link_libraries(upload-scan-cleanup-tests PRIVATE dukto-core Qt5::Test)
     dukto_add_qt_test(upload-scan-cleanup-tests)
+    add_executable(state-storage-tests tests/state_storage_tests.cpp)
+    target_link_libraries(state-storage-tests PRIVATE dukto-core Qt5::Test)
+    dukto_add_qt_test(state-storage-tests)
     # 日期：2026-11-05；单独诊断系统主机名查询成本，不注册为放宽 UDP 门槛的替代测试。
     add_executable(discovery-signature-probe tests/discovery_signature_probe.cpp)
     target_link_libraries(discovery-signature-probe PRIVATE Qt5::Core Qt5::Network)

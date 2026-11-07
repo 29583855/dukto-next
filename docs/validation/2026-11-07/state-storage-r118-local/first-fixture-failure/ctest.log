@@ -1,0 +1,49 @@
+Test project E:/project/dukto/build/windows
+    Start 1: core-tests
+1/5 Test #1: core-tests .......................   Passed    7.82 sec
+    Start 2: upload-scan-cleanup-tests
+2/5 Test #2: upload-scan-cleanup-tests ........   Passed    3.66 sec
+    Start 3: state-storage-tests
+3/5 Test #3: state-storage-tests ..............***Exception: SegFault  2.24 sec
+A crash occurred in E:\project\dukto\build\windows\Release\state-storage-tests.exe.
+Function time: 1827ms Total time: 2050ms
+
+Exception address: 0x00007FFB29CE043A
+Exception code   : 0xc0000005
+Nearby symbol    : QJsonObject::valueAt
+
+Stack:
+#  1: QTest::toString() - 0x00007FFB7EAEB390
+#  2: UnhandledExceptionFilter() - 0x00007FFBB729F2F0
+#  3: strncpy() - 0x00007FFBB9AA8110
+#  4: _C_specific_handler() - 0x00007FFBB9A64B00
+#  5: _chkstk() - 0x00007FFBB9AA6410
+#  6: RtlWow64GetCurrentMachine() - 0x00007FFBB9A03A10
+#  7: KiUserExceptionDispatcher() - 0x00007FFBB9AA5DC0
+#  8: QJsonObject::valueAt() - 0x00007FFB29CE0410
+#  9: QJsonValueRef::toValue() - 0x00007FFB29CE3F40
+# 10: Unable to obtain symbol
+# 11: QMetaMethod::invoke() - 0x00007FFB29C78550
+# 12: QTest::ignoreMessage() - 0x00007FFB7EAE5020
+# 13: QTest::ignoreMessage() - 0x00007FFB7EAE5020
+# 14: QTest::ignoreMessage() - 0x00007FFB7EAE5020
+# 15: QTest::qRun() - 0x00007FFB7EAE9710
+# 16: QTest::qExec() - 0x00007FFB7EAE74E0
+# 17: Unable to obtain symbol
+# 18: Unable to obtain symbol
+# 19: BaseThreadInitThunk() - 0x00007FFBB829DD90
+# 20: RtlUserThreadStart() - 0x00007FFBB99BEE20
+
+
+    Start 7: sqlite-cache-tests
+4/5 Test #7: sqlite-cache-tests ...............   Passed    0.13 sec
+    Start 8: identity-tests
+5/5 Test #8: identity-tests ...................   Passed    3.65 sec
+
+80% tests passed, 1 tests failed out of 5
+
+Total Test time (real) =  17.51 sec
+
+The following tests FAILED:
+	  3 - state-storage-tests (SEGFAULT)
+Errors while running CTest

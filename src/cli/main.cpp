@@ -184,6 +184,21 @@ void output(const QJsonObject &event, bool json) {
                        ? QString("?")
                        : QString::number(event.value("etaSeconds").toDouble(), 'f', 0))
                << QStringLiteral(" s（仍需最终校验和提交）\n");
+    } else if (event.value("event") == "state-storage") {
+        const auto directory =
+            QJsonDocument(QJsonArray{event["stateDirectory"]}).toJson(QJsonDocument::Compact);
+        stream << QString::fromUtf8(directory) << '\n' << event["message"].toString() << '\n';
+        stream << event["regularFiles"].toString() << " files, " << event["logicalBytes"].toString()
+               << " B\n";
+        for (const auto &value : event["categories"].toArray()) {
+            const auto group = value.toObject();
+            stream << group["kind"].toString() << ": " << group["files"].toString() << " files, "
+                   << group["logicalBytes"].toString() << " B\n";
+        }
+        stream << "excluded directories=" << event["excludedDirectories"].toString()
+               << ", links=" << event["excludedLinks"].toString()
+               << ", special=" << event["excludedSpecial"].toString()
+               << "; hard-linked names=" << event["hardLinkedNames"].toString() << '\n';
     } else if (event.value("event") == "doctor") {
         stream << event.value("message").toString() << '\n';
         for (const auto &value : event.value("checks").toArray()) {
@@ -330,8 +345,9 @@ int runApplication(int argc, char **argv) {
                    "serve / client / pair / auth / rotate / profile-info / trust / list / "
                    "upload / download / tasks / task "
                    "/ task-items / pause / cancel / resume / doctor / config / help");
-    parser.addPositionalArgument("arguments", "config show / config set <key> <value>",
-                                 "[arguments...]");
+    parser.addPositionalArgument(
+        "arguments", "config show / config set <key> <value> / client storage / serve storage",
+        "[arguments...]");
     parser.addOptions(
         {{{"j", "json"}, QStringLiteral("输出 UTF-8 JSONL")},
          {"to", QStringLiteral("发送目标 IP 或主机名"), "host"},
