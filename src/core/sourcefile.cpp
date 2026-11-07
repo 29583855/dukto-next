@@ -151,6 +151,16 @@ QByteArray SourceFile::objectIdentity() const {
     return objectIdentity_;
 }
 
+// 日期：2026-11-07；只比较原生对象身份；同对象的内容修改不能借此成为可重试的配置换代。
+bool SourceFile::pathReplaced() const {
+#ifdef Q_OS_WIN
+    // 日期：2026-11-07；Windows已禁止删除共享，路径换代等待仍由原有打开/替换预算处理。
+    return false;
+#else
+    return fileIdentity(parent_->fileInformation(name_), false) != objectIdentity_;
+#endif
+}
+
 // 日期：2026-11-05；两种模式共用普通文件类型、原生对象和固定路径检查，严格模式再比较内容元数据。
 void SourceFile::verifyIdentity(bool contents) const {
     const auto &expected = contents ? identity_ : objectIdentity_;

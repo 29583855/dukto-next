@@ -1,0 +1,20 @@
+cmake_minimum_required(VERSION 3.20)
+project(PrivateReadValidation LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_AUTOMOC ON)
+find_package(Qt5 5.15 REQUIRED COMPONENTS Core Network Test)
+add_library(candidate STATIC src/core/sourcefile.cpp src/core/privatestore.cpp)
+target_include_directories(candidate PUBLIC src)
+target_link_libraries(candidate PUBLIC Qt5::Core Qt5::Network)
+target_sources(candidate PRIVATE
+  /home/dukto/private-read-r113-diagnostic/build/CMakeFiles/dukto-core.dir/src/core/error.cpp.o
+  /home/dukto/private-read-r113-diagnostic/build/CMakeFiles/dukto-core.dir/src/core/files.cpp.o
+  /home/dukto/private-read-r113-diagnostic/build/CMakeFiles/dukto-core.dir/src/core/nativecommit.cpp.o
+  /home/dukto/private-read-r113-diagnostic/build/CMakeFiles/dukto-core.dir/src/core/filecredit.cpp.o
+)
+add_executable(probe probe.cpp)
+target_link_libraries(probe PRIVATE candidate)
+add_executable(private-read-tests q.cpp)
+target_link_libraries(private-read-tests PRIVATE candidate Qt5::Test)

@@ -344,24 +344,40 @@ qint64 PrivateStore::validateFile(const QString &name) const {
     return size;
 }
 
-// 日期：2026-11-04；文件不得超过调用方预算，不用 readAll；读取前后均检查固定对象。
+// 日期：2026-11-07；私有配置最多重读五个完整换代，普通源/同对象修改/不安全路径均不重试。
 QByteArray PrivateStore::read(const QString &name, qint64 maximum) const {
     verify();
     if (maximum <= 0 || maximum > 1024 * 1024)
         throw Error(ExitCode::Config, QStringLiteral("私有状态读取预算无效"), "identity");
-    SourceFile source(path(name), SourceFile::OpenPolicy::PrivateState);
-    // 日期：2026-11-06；共享占用等待后再次核对根ACL，随后仍核对已打开文件的所有者和类型。
-    verify();
-    auto &file = source.device();
-    verifyFile(file);
-    if (file.size() > maximum)
-        throw Error(ExitCode::Config, QStringLiteral("私有状态文件超过预算"), "identity");
-    const auto bytes = file.read(maximum + 1);
-    if (file.error() != QFileDevice::NoError || bytes.size() > maximum ||
-        bytes.size() != file.size())
-        throw Error(ExitCode::Disk, QStringLiteral("私有状态文件读取失败"), "identity");
-    source.verify();
-    return bytes;
+    for (int attempt = 1;; ++attempt) {
+        SourceFile source(path(name), SourceFile::OpenPolicy::PrivateState);
+        // 日期：2026-11-07；每次从新句柄重验根ACL、文件所有者、类型与大小，不复用旧换代正文。
+        verify();
+        auto &file = source.device();
+        verifyFile(file);
+        if (file.size() > maximum)
+            throw Error(ExitCode::Config, QStringLiteral("私有状态文件超过预算"), "identity");
+        const auto bytes = file.read(maximum + 1);
+        if (file.error() != QFileDevice::NoError || bytes.size() > maximum ||
+            bytes.size() != file.size())
+            throw Error(ExitCode::Disk, QStringLiteral("私有状态文件读取失败"), "identity");
+        try {
+            source.verify();
+        } catch (const Error &error) {
+            if (error.code != ExitCode::Integrity || error.stage != "read" ||
+                !source.pathReplaced())
+                throw;
+            verify();
+            if (attempt >= 5)
+                throw Error(ExitCode::Integrity,
+                            QStringLiteral("私有状态在读取期间连续替换，请重试"), "read-busy");
+            // 日期：2026-11-07；continue先销毁旧正文与句柄，最多保留一次有界读取，不积累换代缓存。
+            continue;
+        }
+        verify();
+        verifyFile(file);
+        return bytes;
+    }
 }
 
 // 日期：2026-11-04；临时文件名不可预测，Windows 继承受保护根 ACL，POSIX 独占创建 0600。

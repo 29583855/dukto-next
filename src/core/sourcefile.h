@@ -26,6 +26,9 @@ class SourceFile final {
     QByteArray objectIdentity() const;
 
   private:
+    friend class PrivateStore;
+    // 日期：2026-11-07；只供私有配置读取识别原子换代，固定父目录与普通类型仍严格核验。
+    bool pathReplaced() const;
     // 日期：2026-11-05；普通文件和路径身份始终验证，内容元数据只在严格源读取时要求稳定。
     void verifyIdentity(bool contents) const;
     std::unique_ptr<DataFileCredit> credit_;

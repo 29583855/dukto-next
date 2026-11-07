@@ -1,5 +1,5 @@
 {
-  "observedUtc": "2026-11-07T11:38:40.620037+00:00",
+  "observedUtc": "2026-11-07T12:06:08.565209+00:00",
   "planVersion": "v0.113",
   "sourceCommit": "400e0621745dc250b3390ad01a5e9f47dfc924a4",
   "sourceTree": "69e80c74ff4fe580c929c86e5382b06571b91700",
@@ -1230,7 +1230,7 @@
     },
     {
       "path": "docs/validation/2026-11-07/skip-reconcile-r113-native-core/receipt.json",
-      "sha256": "6062e25b9c0fa9c32a698b11caebe460200d114724e4c4fc1928ee8fe52e73bc"
+      "sha256": "133c3f386f7e8760d0f1d53b988eea113320f57924c46707065594a313fa3c9d"
     },
     {
       "path": "docs/validation/2026-11-07/skip-reconcile-r113-macos-compiled/receipt.json",
@@ -1238,15 +1238,19 @@
     },
     {
       "path": "docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/receipt.json",
-      "sha256": "8a9a41c0bddbf6dd0ce8dad8c19f1a4acb4c21f02b08187891d929d954a5ae62"
+      "sha256": "286bae6d080935b28921580dfa1ed4a857a3edff7c20706b95ef6f6ffa6056ac"
     },
     {
       "path": "docs/validation/2026-11-07/skip-reconcile-r113-macos-package/receipt.json",
-      "sha256": "18dd2fd4dfc3547be73d5f0c3c9c355329773bd5ab0ed8e995d5fb163195287d"
+      "sha256": "f4cea71987ab5029b3b4a69ff16b5ec5d859bb26b62854cf90784f71a37a0f05"
     },
     {
       "path": "docs/validation/2026-11-07/skip-reconcile-r113-local/source-audit.json",
       "sha256": "671f5dc0d6c838fea1177a83359211fbbbf419df47fb779c02695117eb84b983"
+    },
+    {
+      "path": "docs/validation/2026-11-07/skip-reconcile-r113-macos-package-retry/receipt.json",
+      "sha256": "527e1d2bb6599e271846c623fda86a496397343e33567f499c306ec2b2d02824"
     }
   ],
   "localWindowsToolchainsQualified": 2,
@@ -1261,13 +1265,13 @@
   "macosPackageRun": {
     "id": 42368208979,
     "head_sha": "400e0621745dc250b3390ad01a5e9f47dfc924a4",
-    "status": "in_progress",
-    "conclusion": null,
+    "status": "completed",
+    "conclusion": "success",
     "html_url": "https://github.com/29583855/dukto-next/actions/runs/42368208979"
   },
-  "nativeCoreQualificationPending": true,
+  "nativeCoreQualificationPending": false,
   "nativeProtocolQualificationPending": true,
-  "macosDeploymentQualificationPending": true,
+  "macosDeploymentQualificationPending": false,
   "limitations": [
     "R111 ARM overwrite-faults and Intel credential-rotation/session-expiry failures remain retained and unresolved",
     "Unknown-identity temporary objects, general GC and global disk budgets remain incomplete",
@@ -1275,13 +1279,14 @@
   ],
   "deliveryComplete": false,
   "releaseQualified": false,
-  "nativeCoreQualified": false,
+  "nativeCoreQualified": true,
   "nativeCoreVerifiedRunners": [
     "ubuntu-22.04",
     "macos-15",
-    "macos-15-intel"
+    "macos-15-intel",
+    "windows-2022"
   ],
   "nativeProtocolQualified": false,
   "macosCompiledArchitecturesVerified": 2,
-  "macosDeploymentQualified": false
+  "macosDeploymentQualified": true
 }

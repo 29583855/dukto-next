@@ -1,8 +1,19 @@
 # macOS独立开发预览包
 
-R113精确`400e0621745dc250b3390ad01a5e9f47dfc924a4`已上传，修复跳过目录的接收/维护交错恢复。Apple Silicon/Intel C++14 GUI及独立CLI均已编译并核验归档；四平台核心已验3/4。部署附件仍待完整收验，完整协议与整体交付继续按实际原件验收。
+R113精确`400e0621745dc250b3390ad01a5e9f47dfc924a4`已上传，修复跳过目录的接收/维护交错恢复。Apple Silicon/Intel C++14 GUI及独立CLI均已编译并核验归档；四平台核心已验4/4。双架构包和截图均已验，完整协议与整体交付继续按实际原件验收。
 
 R111精确`dfe245b502f586e7df7219e8fb0d5e4030a6b032`已在Apple Silicon和Intel原生环境以C++14/Qt5编译GUI及独立CLI；四平台各26个CTest和目录专项各49条已验，完整协议Ubuntu通过，Apple Silicon 46/47、overwrite-faults原失败保留，Intel 45/47（凭据轮换与会话恢复失败），Windows完整协议51/51且终态success。R111含Qt5/OpenSSL预览[构建42363743119](https://github.com/29583855/dukto-next/actions/runs/42363743119)双架构终态success，系统PATH迁移与包内运行报告已验。
+
+## R113最新含依赖预览
+
+双架构Qt5/OpenSSL运行依赖、各372份应用源码、全部载荷与框架链接均逐件核验。两包各五项真实CLI/传输报告、系统PATH迁移、Cocoa导航及150%/200%高DPI通过；四张首页/服务器截图已查看。本机副本在`dist/macos-preview-20261107-r113-skip-reconcile/`。[回执](validation/2026-11-07/skip-reconcile-r113-macos-package-retry/receipt.json)。
+
+| 架构 | Actions下载 | 官方ZIP SHA-256 | 内部tar.gz SHA-256 |
+| --- | --- | --- | --- |
+| arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42368208979/artifacts/13572073615) | `7f798d6f1be047bfe856ce10e86cce8d8187c0c5b8be6d9838b83560e0ce747a` | `106d95a80c4760b709fa2451e98ccc5df2b76a9a6e0b733e10505ec9299c288b` |
+| x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42368208979/artifacts/13573099177) | `5e4c2b93823aac62c59f18249a3a86d35ffd6381c040b04e5ed19653958f81a5` | `4e514239a92848f07ed45d0dbf5f2a580998ff9bdfbff37e90cd1d06d45cf87f` |
+
+这是adhoc签名开发预览；正式签名、公证、干净系统与完整项目交付仍待验。下方保留R111历史包及原失败，打包成功不覆盖完整协议失败。
 
 ## R113原生编译归档
 
@@ -13,7 +24,7 @@ R111精确`dfe245b502f586e7df7219e8fb0d5e4030a6b032`已在Apple Silicon和Intel�
 | arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42368086270/artifacts/13572920192) | `8e12a442314fe331fc3a01e94503971668c66f88459a94f930642b972feb493d` | `59f1329ab42fa2949d060c0431024ed15979df5bcf53a214a17ebf895577092e` |
 | x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42368086270/artifacts/13572870643) | `57a9cc640fab14a63152b8bbc43d4b467b9a550a0e5322976891db1bbbcc2f2b` | `14f254b5ed464d69b7031e50c82f7edb1a8d3cfe4c6d35321925507cf3d4e9c3` |
 
-## R111最新含依赖预览
+## R111含依赖预览（历史）
 
 双架构Qt5/OpenSSL依赖、各364份应用源码、全部载荷与71个框架链接、Mach-O架构/执行权限及归档摘要均逐件核验。两包各五项真实CLI/传输报告、系统PATH迁移、Cocoa导航与150%/200%高DPI通过，四张界面截图已查看。[原件回执](validation/2026-11-07/skip-directory-r111-macos-package/receipt.json)。本机副本在`dist/macos-preview-20261107-r111-skip-directory/`。
 
