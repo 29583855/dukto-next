@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import shutil
 import sqlite3
+import stat
 import subprocess
 import tempfile
 import uuid
@@ -163,14 +164,21 @@ def main():
             partial = [partial_case(executable, root, server, client, shared, direction) for direction in ('upload', 'download')]
             # 日期：2026-11-05；仅移动本测试的接收状态模拟缺失记录，保持原身份文件的原生保护权限。
             original, saved = client / 'transfers', root / 'saved-transfers'
+            unavailable = root / 'unavailable-transfers'
             assert original.resolve().is_relative_to(root.resolve()) and saved.resolve().is_relative_to(root.resolve())
             original.rename(saved)
             try:
                 missing = pages(executable, client, results[1]['taskId'])[0]
                 assert not missing['available'] and missing['reason'] == 'local-receipt-unavailable'
             finally:
-                original.rmdir()  # 仅删除本次CLI安全创建的空目录，非空即失败。
+                # 日期：2026-11-07；缺失状态查询会创建永久占用锁；只移动本测试目录，恢复原凭据，不删锁。
+                assert not unavailable.exists() and not unavailable.is_symlink()
+                original.rename(unavailable)
                 saved.rename(original)
+            # 日期：2026-11-07；仍须严格证明仅生成零字节普通单链接占用锁，不能接受其他恢复/结果文件。
+            assert {path.name for path in unavailable.iterdir()} == {'state-use.lock'}
+            guard = (unavailable / 'state-use.lock').lstat()
+            assert stat.S_ISREG(guard.st_mode) and guard.st_nlink == 1 and guard.st_size == 0
             offer2, _ = run(executable, server, ['serve', 'pairing', *rights])
             stranger = root / 'stranger'
             run(executable, stranger, ['pair', '--to', f'127.0.0.1:{port}', '--fingerprint', info['fingerprint'],

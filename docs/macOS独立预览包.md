@@ -24,7 +24,7 @@
 | arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42316601470/artifacts/13551071933) | 2177469af5c44bc8a4e3c1972ec6459163c41538e7021850a03dba6eacc82a60 |
 | x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42316601470/artifacts/13551037372) | 52023b03e3485504d06560f31e45a071f50d847314b4c3a3030df9955eb50014 |
 
-[编译回执](validation/2026-11-07/state-use-r104-macos-compiled/receipt.json)。这些编译归档仍需匹配Qt5/OpenSSL运行依赖；含依赖预览仍为顶部R100。R104四runner各23核心/88份Qt原报告已验，新增状态目录共享/独占互斥方法实际通过，两条精确Darwin预期失败保留。[核心回执](validation/2026-11-07/state-use-r104-native-core/receipt.json)。完整协议和POSIX八进程/链接拒绝专项仍待原件收验，过期回收及整个R04继续。
+[编译回执](validation/2026-11-07/state-use-r104-macos-compiled/receipt.json)。这些编译归档仍需匹配Qt5/OpenSSL运行依赖；含依赖预览仍为顶部R100。R104四runner各23核心/88份Qt原报告已验，新增状态目录共享/独占互斥方法实际通过，两条精确Darwin预期失败保留。[核心回执](validation/2026-11-07/state-use-r104-native-core/receipt.json)。Ubuntu POSIX八进程/链接拒绝专项已核验；其完整协议作业因task-items旧夹具失败，两项磁盘步骤跳过。R105只修正夹具并通过双Windows定向复验，独立Ubuntu上传超时未通过，新原生CI待验；本节Mac编译产物仍为R104。过期回收及整个R04继续。
 
 ## R103编译记录（2026-11-07）
 
