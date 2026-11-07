@@ -4,9 +4,11 @@
 
 项目以 `Dukto/` 内的 Dukto R6 为功能参考，开发 Windows、macOS、Linux 共用内核的桌面应用和独立命令行程序，增加服务器上传/下载、多线程提速及可靠恢复能力。
 
+R116精确`0a60da9120b6be49d1768fa500d042ff394ac9f7`已公开，新增上传扫描中断后的七天保留/预览/按请求清理；缓存额度耗尽不遗留Qt连接。双Windows各24条通过/1符号链接权限跳过，独立Ubuntu25条通过；双Mac GUI/独立CLI已编译并验归档。[原生CI](https://github.com/29583855/dukto-next/actions/runs/42375666807)继续收验；双架构[含依赖包](https://github.com/29583855/dukto-next/actions/runs/42375918838)、迁移运行及四张截图已验，[下载](docs/macOS独立预览包.md)。[清理规则](docs/decisions/0029-未发布上传源扫描清理.md)、[验证索引](docs/ci-verification-20261107-r116.json)。
+
 R114精确`d922dc4`已上传，修复私有配置原子换代与读取竞争；双Windows核心/身份、Ubuntu8000次读取及四项拒绝反例通过，双Mac GUI/CLI已编译并验归档。完整原生CI与含依赖包继续验收。[设计与证据](docs/decisions/0028-私有配置原子换代的有界重读.md)。
 
-R113四平台各26个CTest及目录各59条已验；双Mac含Qt5/OpenSSL预览、迁移运行及截图已验并可下载，Ubuntu/Apple Silicon完整协议各47/47通过，其余同源作业仍在执行。[下载](docs/macOS独立预览包.md)。
+R113四平台各26个CTest及目录各59条已验；双Mac含Qt5/OpenSSL预览、迁移运行及截图已验并可下载，四平台完整协议已验，Windows51/51、Ubuntu/Apple Silicon/Intel各47/47。[下载](docs/macOS独立预览包.md)。
 
 R112只修正配置变更故障测试预期，双Windows共24个真实故障用例通过，双Mac专项48个真实故障用例已通过；[原失败与修正边界](docs/decisions/0026-配置变更竞态与故障测试预期.md)。
 
@@ -116,6 +118,14 @@ dukto-cli download --state-directory <客户状态目录> --profile office --sha
 ```
 
 `--remote-path` 省略表示共享根；上传的 `--path` 可重复。传输开始事件输出 requestId，中断后以同一 `--request-id <UUID>`、同一资料/共享/路径重试；下载还绑定同一保存目录。传输成功必须检查最后 `transfer-completed` 和 `state=completed`，单个 `file-completed` 不表示整个批次成功。连续块恢复已在核心通过进程退出测试，公共服务首个 4 MiB 块后的暂停/客户进程退出/服务重启/取消已在 Windows 与 Alpine Linux 通过，其他故障偏移和确认丢失仍继续验收。GUI 服务器面板已接共用核心并完成真实文件上传/下载专项，多通道和三平台版本尚未全部交付。
+
+
+未发布上传源扫描在进程中断后可按原请求维护，默认保留七天。先退出使用同一状态根的GUI、CLI和服务，再预览及执行；冻结清单、已创建上传请求和缺少创建凭据的未知旧库保留。三平台使用相同命令，详见[规则](docs/decisions/0029-未发布上传源扫描清理.md)。
+
+```text
+dukto-cli client scan-cleanup preview --state-directory <客户状态父目录> --request-id <原请求UUID> --json
+dukto-cli client scan-cleanup run --state-directory <客户状态父目录> --request-id <原请求UUID> --json
+```
 
 新版 upload/download/resume 支持 `--retries 0..3`（默认 0，手动恢复）及 `--deadline-seconds 1..604800`（默认 86400 秒）。总时限覆盖扫描、恢复查询、排队、传输、校验及退避；只有网络错误有限重试，依次等待 250/500/1000ms，证书/权限、磁盘、路径、源变化、校验失败和取消均直接结束。所有尝试沿用同一请求与检查点，重连不重新扫描上传清单。到期为退出码 3、阶段 deadline，用户取消为 7。GUI 在连接与文件页展开“传输重试和总时限”设置，三平台共用核心，实际平台结果分别登记。详见[重试与时限契约](docs/decisions/0008-有限重试与任务总时限.md)。
 

@@ -1,5 +1,7 @@
 # macOS独立开发预览包
 
+R116精确`0a60da9120b6be49d1768fa500d042ff394ac9f7`已公开，增加上传扫描中断后的按请求清理及资源申请失败恢复。Apple Silicon/Intel C++14 GUI和独立CLI编译归档均已核验；[含依赖打包](https://github.com/29583855/dukto-next/actions/runs/42375918838)双架构终态success；[完整原生CI](https://github.com/29583855/dukto-next/actions/runs/42375666807)继续按终态原件收验，Windows热journal所有权诊断单独保留。下方R116含依赖双架构预览、迁移运行和四张截图已验，R114包保留为历史版本。
+
 R114精确`d922dc4c793c77de0553ddf44c0fe1fa2d998c24`已上传，增加私有配置原子换代有界重读。Apple Silicon/Intel的C++14 GUI及独立CLI已编译并核验两份归档；原生核心已验3/4。含依赖双架构预览、迁移运行及四张截图已验，下方可下载R114包。[完整原生CI](https://github.com/29583855/dukto-next/actions/runs/42370990486)按实际附件另验。
 
 R113精确`400e0621745dc250b3390ad01a5e9f47dfc924a4`已上传，修复跳过目录的接收/维护交错恢复。Apple Silicon/Intel C++14 GUI及独立CLI均已编译并核验归档；四平台核心已验4/4。双架构包和截图均已验，完整协议与整体交付继续按实际原件验收。
@@ -8,7 +10,27 @@ R111精确`dfe245b502f586e7df7219e8fb0d5e4030a6b032`已在Apple Silicon和Intel�
 
 R115仅修正面板测试的读取时序，产品应用输入与R114完全一致。双Mac各两轮完整面板专项已通过，四轮各7方法；原Intel失败日志继续保留。[专项回执](validation/2026-11-07/panel-timing-r115-macos/receipt.json)。
 
-## R114最新含依赖预览
+## R116含依赖开发预览
+
+两架构Qt5/OpenSSL、GUI/独立CLI、对应应用源码、全部载荷与框架链接均逐件核验；各五项真实CLI/传输报告、系统PATH迁移、Cocoa导航/高DPI通过，四张截图已查看。[回执](validation/2026-11-07/upload-scan-r116-macos-package/receipt.json)。这是adhoc开发预览，正式签名/公证、干净系统与完整项目继续验收。
+
+| 架构 | 下载 | 官方ZIP SHA-256 | 内部tar.gz SHA-256 |
+| --- | --- | --- | --- |
+| arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42375918838/artifacts/13575304889) | `ffc11de25341aba2b2baec03f0032c1f6089e36900cb8b374b0df0435064dbe4` | `f6d3db8dd983aa82b2d9130f342d7b0c727504ad5840437ee69516f4ca0bd9c8` |
+| x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42375918838/artifacts/13576046892) | `711addb244c805b6d0354ce90a35709cab65454df9c78840f8148138cd1ec040` | `2cf2ace7aea638175db3f9f3611a74d6c42eaa8f67e3e5bb2c334c42322fd3df` |
+
+本机副本：`dist/macos-preview-20261107-r116-upload-scan/`。解压与CLI用法见本文下方说明。
+
+## R116原生编译归档
+
+双架构原始ZIP/内部tar摘要、精确源码、LICENSE、Mach-O架构与执行权限已核验。这是编译产物，需要匹配的Qt5/OpenSSL依赖；含依赖预览另验。[回执](validation/2026-11-07/upload-scan-r116-macos-compiled/receipt.json)。
+
+| 架构 | 下载 | 内部tar.gz SHA-256 |
+| --- | --- | --- |
+| arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42375666807/artifacts/13575144094) | `be1ffc1339542f9ea57ac62e7b9d6ce3f3551b2709c934680961756621a6099d` |
+| x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42375666807/artifacts/13575058009) | `672bb0c885c76de396d96c8a66e720b7d7194505f7f040e2d2498ed6c8e2eabf` |
+
+## R114含依赖预览（历史）
 
 两架构包内Qt5/OpenSSL、全部载荷与框架链接、对应应用源码逐件核验。各五项真实CLI/传输报告、系统PATH迁移和Cocoa/高DPI通过，四张首页/服务器截图已查看。本机副本`dist/macos-preview-20261107-r114-private-read/`。[原件回执](validation/2026-11-07/private-read-r114-macos-package/receipt.json)。
 
