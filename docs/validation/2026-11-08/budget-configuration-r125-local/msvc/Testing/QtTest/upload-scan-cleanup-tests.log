@@ -1,0 +1,35 @@
+********* Start testing of UploadScanCleanupTests *********
+Config: Using QtTest library 5.15.2, Qt 5.15.2 (x86_64-little_endian-llp64 shared (dynamic) release build; by MSVC 2019), windows 10
+PASS   : UploadScanCleanupTests::initTestCase()
+PASS   : UploadScanCleanupTests::retainedPreviewAndCleanup(before-scan)
+PASS   : UploadScanCleanupTests::retainedPreviewAndCleanup(hot-journal)
+PASS   : UploadScanCleanupTests::interruptedCleanup(before-delete)
+PASS   : UploadScanCleanupTests::interruptedCleanup(after-delete)
+PASS   : UploadScanCleanupTests::interruptedCleanup(after-delete-replaced)
+PASS   : UploadScanCleanupTests::damagedEvidence(native)
+PASS   : UploadScanCleanupTests::damagedEvidence(rootIdentity)
+PASS   : UploadScanCleanupTests::damagedEvidence(request)
+PASS   : UploadScanCleanupTests::damagedEvidence(version)
+PASS   : UploadScanCleanupTests::damagedEvidence(created)
+PASS   : UploadScanCleanupTests::damagedEvidence(phase)
+PASS   : UploadScanCleanupTests::damagedEvidence(extra)
+PASS   : UploadScanCleanupTests::damagedEvidence(missing)
+PASS   : UploadScanCleanupTests::damagedEvidence(binding-identity)
+PASS   : UploadScanCleanupTests::publishedAndLocks()
+PASS   : UploadScanCleanupTests::unsafeObjects(wal)
+PASS   : UploadScanCleanupTests::unsafeObjects(shm)
+PASS   : UploadScanCleanupTests::unsafeObjects(replacement)
+SKIP   : UploadScanCleanupTests::unsafeObjects(symbolic-link) Windows account cannot create a native symbolic link
+E:\project\dukto\tests\upload_scan_cleanup_tests.cpp(304) : failure location
+PASS   : UploadScanCleanupTests::journalAccessBoundary()
+PASS   : UploadScanCleanupTests::unsafeJournalPermissions()
+PASS   : UploadScanCleanupTests::unsafeJournalLinks(hard-link)
+SKIP   : UploadScanCleanupTests::unsafeJournalLinks(symbolic-link) Windows account cannot create a native symbolic link
+E:\project\dukto\tests\upload_scan_cleanup_tests.cpp(446) : failure location
+PASS   : UploadScanCleanupTests::cancelledCleanup()
+PASS   : UploadScanCleanupTests::corruptDatabase()
+PASS   : UploadScanCleanupTests::exhaustedCacheCredit()
+PASS   : UploadScanCleanupTests::realCli()
+PASS   : UploadScanCleanupTests::cleanupTestCase()
+Totals: 27 passed, 0 failed, 2 skipped, 0 blacklisted, 4876ms
+********* Finished testing of UploadScanCleanupTests *********

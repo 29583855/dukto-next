@@ -209,4 +209,11 @@ StateBudget::Usage StateDomain::usage() {
     verifyCoordinator();
     return budget_->usage();
 }
+
+// 日期：2026-11-08；配置不重建域、不换根代数、不退款；协调标记或登记失效时禁止改写账本。
+StateBudget::Usage StateDomain::configure(quint64 expectedRevision,
+                                          const StateBudget::Limits &limits) {
+    verifyCoordinator();
+    return budget_->configure(expectedRevision, limits);
+}
 } // namespace dukto

@@ -127,6 +127,7 @@ struct StateBudget::Header {
         Usage result;
         result.domain = domain;
         result.revision = revision;
+        result.limits = limits;
         result.committed = committed;
         result.reserved = reserved;
         for (int index = 0; index < 4; ++index) {
@@ -240,8 +241,11 @@ StateBudget::Header StateBudget::load() {
         invalid();
     const auto journal = file_.read(JournalOffset, JournalBytes);
     if (journal != QByteArray(JournalBytes, '\0')) {
-        checkSeal(journal, JournalBytes, 1576);
-        if (journal.left(8) != QByteArray("DKBUDTX1", 8) || get(journal, 8) >= SlotCount)
+        const bool configuration = journal.left(8) == QByteArray("DKBUDCF1", 8);
+        checkSeal(journal, JournalBytes, configuration ? 1064 : 1576);
+        if (configuration
+                ? get(journal, 8) != 1
+                : (journal.left(8) != QByteArray("DKBUDTX1", 8) || get(journal, 8) >= SlotCount))
             invalid();
         const int index = int(get(journal, 8));
         const auto oldHeader = Header::decode(journal.mid(40, HeaderBytes));
@@ -254,17 +258,22 @@ StateBudget::Header StateBudget::load() {
             get(journal, 16) != oldHeader.revision || get(journal, 24) != newHeader.revision ||
             get(journal, 32) != 0)
             invalid();
-        const auto expected = adjusted(oldHeader, oldSlot, newSlot, false);
+        const auto expected = configuration ? configured(oldHeader, newHeader.limits)
+                                            : adjusted(oldHeader, oldSlot, newSlot, false);
         if (expected.encode() != newHeader.encode())
             invalid();
         const auto currentHeader = file_.read(0, HeaderBytes);
-        const auto currentSlot = file_.read(SlotOffset + qint64(index) * SlotBytes, SlotBytes);
+        const auto currentSlot =
+            configuration ? QByteArray()
+                          : file_.read(SlotOffset + qint64(index) * SlotBytes, SlotBytes);
         if ((seal(currentHeader) == currentHeader && currentHeader != oldHeader.encode() &&
              currentHeader != newHeader.encode()) ||
-            ((currentSlot == QByteArray(SlotBytes, '\0') || seal(currentSlot) == currentSlot) &&
+            (!configuration &&
+             (currentSlot == QByteArray(SlotBytes, '\0') || seal(currentSlot) == currentSlot) &&
              currentSlot != oldSlot.encode() && currentSlot != newSlot.encode()))
             invalid();
-        file_.write(SlotOffset + qint64(index) * SlotBytes, newSlot.encode());
+        if (!configuration)
+            file_.write(SlotOffset + qint64(index) * SlotBytes, newSlot.encode());
         file_.write(0, newHeader.encode());
         file_.synchronize();
         audit(newHeader);
@@ -327,6 +336,24 @@ StateBudget::Header StateBudget::adjusted(const Header &before, const Slot &oldS
     return result;
 }
 
+// 日期：2026-11-08；额度不能为负或丢失控制区，不能用缩小额度掩盖保留的实际占用和未决预留。
+StateBudget::Header StateBudget::configured(const Header &before, const Limits &limits) const {
+    if (limits.total < FileBytes || limits.categories[1] < FileBytes)
+        throw Error(ExitCode::Config, QStringLiteral("预算不能低于固定控制区占用"), "budget");
+    for (const auto value : limits.categories)
+        if (value < 0)
+            throw Error(ExitCode::Config, QStringLiteral("预算类别额度不能为负"), "budget");
+    auto after = before;
+    if (after.revision == std::numeric_limits<quint64>::max())
+        invalid();
+    ++after.revision;
+    after.limits = limits;
+    if (after.usage().overdrawn)
+        throw Error(ExitCode::Disk, QStringLiteral("新预算小于已有占用及保留额，原配置保持"),
+                    "budget-full");
+    return after;
+}
+
 // 日期：2026-11-08；意图同步成功后才更新数据；任何阶段失败均不返回已发放资格，下次仅向前重放。
 void StateBudget::commit(const Header &before, const Header &after, int index,
                          const QByteArray &oldSlot, const QByteArray &newSlot) {
@@ -342,6 +369,24 @@ void StateBudget::commit(const Header &before, const Header &after, int index,
     file_.write(JournalOffset, seal(journal));
     file_.synchronize();
     file_.write(SlotOffset + qint64(index) * SlotBytes, newSlot);
+    file_.write(0, after.encode());
+    file_.synchronize();
+    file_.write(JournalOffset, QByteArray(JournalBytes, '\0'));
+    file_.synchronize();
+    file_.verify();
+}
+
+// 日期：2026-11-08；固定配置意图与原槽事务互斥，意图/头/清零分别同步；失败保留现场供向前恢复。
+void StateBudget::commitConfiguration(const Header &before, const Header &after) {
+    QByteArray journal(JournalBytes, '\0');
+    journal.replace(0, 8, QByteArray("DKBUDCF1", 8));
+    put(journal, 8, 1);
+    put(journal, 16, before.revision);
+    put(journal, 24, after.revision);
+    journal.replace(40, HeaderBytes, before.encode());
+    journal.replace(552, HeaderBytes, after.encode());
+    file_.write(JournalOffset, seal(journal));
+    file_.synchronize();
     file_.write(0, after.encode());
     file_.synchronize();
     file_.write(JournalOffset, QByteArray(JournalBytes, '\0'));
@@ -522,5 +567,22 @@ StateBudget::Usage StateBudget::usage() {
     BufferCredit credit(65536);
     BudgetFile::Lock lock(file_, check_, timeoutMs_);
     return load().usage();
+}
+
+// 日期：2026-11-08；修订比较与持久更新处于同一账本锁内，相同配置不写盘；旧观察明确拒绝。
+StateBudget::Usage StateBudget::configure(quint64 expectedRevision, const Limits &limits) {
+    if (!store_.maintenance())
+        throw Error(ExitCode::Permission, QStringLiteral("预算配置需要协调根独占维护"), "budget");
+    BufferCredit credit(65536);
+    BudgetFile::Lock lock(file_, check_, timeoutMs_);
+    const auto before = load();
+    if (before.revision != expectedRevision)
+        throw Error(ExitCode::Integrity, QStringLiteral("预算修订已变化，请重新查询后修改"),
+                    "budget-stale");
+    if (before.limits.total == limits.total && before.limits.categories == limits.categories)
+        return before.usage();
+    const auto after = configured(before, limits);
+    commitConfiguration(before, after);
+    return after.usage();
 }
 } // namespace dukto

@@ -35,6 +35,8 @@ class StateDomain final {
     void verify(const PrivateStore &store, const Binding &expected);
     // 日期：2026-11-08；只报告该域账本已有登记，尚不代表全部生产写入已纳入总预算。
     StateBudget::Usage usage();
+    // 日期：2026-11-08；先重验域和协调登记，再在独占维护下按修订修改持久额度。
+    StateBudget::Usage configure(quint64 expectedRevision, const StateBudget::Limits &limits);
 
   private:
     // 日期：2026-11-08；重验协调标记及其登记；局部目录有效不能掩盖中央域换代。

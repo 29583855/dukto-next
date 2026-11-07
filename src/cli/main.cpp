@@ -10,6 +10,7 @@
 #include "core/sourcefile.h"
 #include "input.h"
 #include "servicecommands.h"
+#include "statecommands.h"
 
 #include <QCommandLineParser>
 #include <QCoreApplication>
@@ -99,7 +100,24 @@ void output(const QJsonObject &event, bool json) {
     }
     QTextStream stream(stdout);
     stream.setCodec("UTF-8");
-    if (event.value("event") == "devices") {
+    if (event.value("event") == "state-budget" || event.value("event") == "state-root") {
+        stream << event.value("message").toString() << '\n'
+               << "domain=" << event.value("domain").toString()
+               << " revision=" << event.value("revision").toString() << '\n'
+               << "limit=" << event.value("limit").toString()
+               << " committed=" << event.value("committed").toString()
+               << " reserved=" << event.value("reserved").toString() << " B\n";
+        for (const auto &value : event.value("categories").toArray()) {
+            const auto row = value.toObject();
+            stream << row.value("name").toString() << " limit=" << row.value("limit").toString()
+                   << " committed=" << row.value("committed").toString()
+                   << " reserved=" << row.value("reserved").toString() << " B\n";
+        }
+        if (event.contains("root"))
+            stream << "root=" << event.value("root").toString()
+                   << " generation=" << event.value("rootGeneration").toString() << '\n';
+        stream << "scope=registered-ledger-objects productionQuotaEnforced=false\n";
+    } else if (event.value("event") == "devices") {
         const auto peers = event.value("peers").toArray();
         if (peers.isEmpty())
             stream << QStringLiteral("未发现设备；可使用 --to 指定地址\n");
@@ -326,7 +344,7 @@ int doctor(const QCommandLineParser &parser, const QStringList &arguments, bool 
 }
 } // namespace
 
-// 日期：2026-11-07；三平台控制台入口严格核对传输策略，解析或传输失败返回明确非零退出码。
+// 日期：2026-11-08；三平台控制台入口严格核对传输及状态管理选项，失败返回明确非零退出码。
 int runApplication(int argc, char **argv) {
     QCoreApplication app(argc, argv);
     QCoreApplication::setApplicationName("dukto-cli");
@@ -345,7 +363,7 @@ int runApplication(int argc, char **argv) {
         "command", "discover / send / send-text / receive / receipts / "
                    "serve / client / pair / auth / rotate / profile-info / trust / list / "
                    "upload / download / tasks / task "
-                   "/ task-items / pause / cancel / resume / doctor / config / help");
+                   "/ task-items / pause / cancel / resume / doctor / state / config / help");
     parser.addPositionalArgument(
         "arguments", "config show / config set <key> <value> / client storage / serve storage",
         "[arguments...]");
@@ -373,6 +391,14 @@ int runApplication(int argc, char **argv) {
          {"config-file", QStringLiteral("使用独立 INI 配置文件"), "path"},
          {"report", QStringLiteral("doctor导出本地JSON诊断报告；已有目标拒绝覆盖"), "file"},
          {"state-directory", QStringLiteral("任务明细保存目录"), "directory"},
+         {"budget-total", QStringLiteral("state budget init/set：总预算字节数"), "bytes"},
+         {"budget-history", QStringLiteral("state budget init/set：历史额，不超过256MiB"), "bytes"},
+         {"budget-metadata", QStringLiteral("state budget init/set：元数据额度字节数"), "bytes"},
+         {"budget-body", QStringLiteral("state budget init/set：临时正文额度字节数"), "bytes"},
+         {"budget-unknown", QStringLiteral("state budget init/set：未知项额度字节数"), "bytes"},
+         {"budget-revision", QStringLiteral("state budget set：查询所得的预算修订"), "revision"},
+         {"state-root", QStringLiteral("state root bind/show：service/clients/transfers/history"),
+          "name"},
          {"server-name",
           QStringLiteral("服务证书 SAN 的 IP/主机名，可重复（serve init/renew；配对时为一个名称）"),
           "name"},
@@ -453,6 +479,14 @@ int runApplication(int argc, char **argv) {
                                "arguments");
         if (command == "doctor")
             return doctor(parser, args, json);
+        if (command == "state")
+            return runStateCommand(
+                parser, args, [json](const QJsonObject &event) { output(event, json); },
+                []() { return interrupted != 0; });
+        for (const auto &option : parser.optionNames())
+            if (option.startsWith("budget-") || option == "state-root")
+                throw dukto::Error(dukto::ExitCode::Config,
+                                   QStringLiteral("预算/状态根选项仅用于state命令"), "arguments");
         std::unique_ptr<QSettings> configuration;
         if (parser.isSet("config-file"))
             configuration.reset(new QSettings(parser.value("config-file"), QSettings::IniFormat));

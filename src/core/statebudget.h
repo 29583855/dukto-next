@@ -31,6 +31,7 @@ class StateBudget final {
     struct Usage {
         QUuid domain;
         quint64 revision = 0;
+        Limits limits;
         std::array<qint64, 4> committed{};
         std::array<qint64, 4> reserved{};
         qint64 totalCommitted = 0;
@@ -60,6 +61,8 @@ class StateBudget final {
     Record reconcile(const Record &expected, qint64 actualCharge);
     // 日期：2026-11-08；返回固定类别合计与透支状态，账本自身固定长度计入元数据占用。
     Usage usage();
+    // 日期：2026-11-08；独占维护按观察修订原子修改额度；不丢弃已有占用/预留，拒绝低于实际合计的配置。
+    Usage configure(quint64 expectedRevision, const Limits &limits);
 
   private:
     struct Header;
@@ -71,6 +74,10 @@ class StateBudget final {
     // 日期：2026-11-08；单槽与头以固定写前日志提交，意图/数据/清日志分别同步，失败保留未知结果。
     void commit(const Header &before, const Header &after, int index, const QByteArray &oldSlot,
                 const QByteArray &newSlot);
+    // 日期：2026-11-08；配置使用独立固定写前意图，仅更新头，不借用或改写任何对象槽。
+    void commitConfiguration(const Header &before, const Header &after);
+    // 日期：2026-11-08；新配置必须保持全部域/占用/游标和槽不变，只允许修订递增及合法额度变更。
+    Header configured(const Header &before, const Limits &limits) const;
     // 日期：2026-11-08；检查登记生命周期、修订及调用方记录，过期观察不能覆盖新的预留或同名新对象。
     Slot checked(const Record &record, const Header &header);
     // 日期：2026-11-08；由同一槽的旧/新值计算合计，检查64位溢出与额度；归还不绕开持久事务。
