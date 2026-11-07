@@ -1,10 +1,12 @@
 # macOS独立开发预览包
 
-R114精确`d922dc4c793c77de0553ddf44c0fe1fa2d998c24`已上传，增加私有配置原子换代有界重读。Apple Silicon/Intel的C++14 GUI及独立CLI已编译并核验两份归档；原生核心已验2/4。含依赖双架构预览、迁移运行及四张截图已验，下方可下载R114包。[完整原生CI](https://github.com/29583855/dukto-next/actions/runs/42370990486)按实际附件另验。
+R114精确`d922dc4c793c77de0553ddf44c0fe1fa2d998c24`已上传，增加私有配置原子换代有界重读。Apple Silicon/Intel的C++14 GUI及独立CLI已编译并核验两份归档；原生核心已验3/4。含依赖双架构预览、迁移运行及四张截图已验，下方可下载R114包。[完整原生CI](https://github.com/29583855/dukto-next/actions/runs/42370990486)按实际附件另验。
 
 R113精确`400e0621745dc250b3390ad01a5e9f47dfc924a4`已上传，修复跳过目录的接收/维护交错恢复。Apple Silicon/Intel C++14 GUI及独立CLI均已编译并核验归档；四平台核心已验4/4。双架构包和截图均已验，完整协议与整体交付继续按实际原件验收。
 
 R111精确`dfe245b502f586e7df7219e8fb0d5e4030a6b032`已在Apple Silicon和Intel原生环境以C++14/Qt5编译GUI及独立CLI；四平台各26个CTest和目录专项各49条已验，完整协议Ubuntu通过，Apple Silicon 46/47、overwrite-faults原失败保留，Intel 45/47（凭据轮换与会话恢复失败），Windows完整协议51/51且终态success。R111含Qt5/OpenSSL预览[构建42363743119](https://github.com/29583855/dukto-next/actions/runs/42363743119)双架构终态success，系统PATH迁移与包内运行报告已验。
+
+R115仅修正面板测试的读取时序，产品应用输入与R114完全一致。双Mac各两轮完整面板专项已通过，四轮各7方法；原Intel失败日志继续保留。[专项回执](validation/2026-11-07/panel-timing-r115-macos/receipt.json)。
 
 ## R114最新含依赖预览
 
