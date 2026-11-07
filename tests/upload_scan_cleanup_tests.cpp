@@ -18,7 +18,10 @@
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
+#include <aclapi.h>
 #include <windows.h>
+#else
+#include <unistd.h>
 #endif
 
 namespace {
@@ -319,6 +322,149 @@ class UploadScanCleanupTests final : public QObject {
         QFile source(fixture.root.filePath("source.bin"));
         QVERIFY(source.open(QIODevice::ReadOnly));
         QCOMPARE(source.readAll(), QByteArray("abc"));
+    }
+
+    // 日期：2026-11-07；专门校验只能在独占维护下用于规范journal，普通文件所有者规则仍严格。
+    void journalAccessBoundary() {
+        Fixture fixture;
+        fixture.abandon("hot");
+        const auto name = fixture.stem() + ".sqlite-journal";
+        const auto path = fixture.state + "/" + name;
+        const auto before = dukto::hashFile(path);
+        {
+            dukto::PrivateStore shared(fixture.state);
+            QVERIFY_EXCEPTION_THROWN(shared.validateSqliteJournal(name), dukto::Error);
+        }
+        dukto::PrivateStore store(fixture.state, false, dukto::PrivateStore::Use::Maintenance);
+        QVERIFY(store.validateSqliteJournal(name) > 0);
+        for (const auto &invalid : {fixture.stem() + ".sqlite", name + "-wal", name + "-shm",
+                                    "../" + name, QString("state-use.lock")})
+            QVERIFY_EXCEPTION_THROWN(store.validateSqliteJournal(invalid), dukto::Error);
+#ifdef Q_OS_WIN
+        const auto native = QDir::toNativeSeparators(path);
+        PSID owner = nullptr;
+        PSECURITY_DESCRIPTOR security = nullptr;
+        QCOMPARE(GetNamedSecurityInfoW(
+                     const_cast<LPWSTR>(reinterpret_cast<LPCWSTR>(native.utf16())), SE_FILE_OBJECT,
+                     OWNER_SECURITY_INFORMATION, &owner, nullptr, nullptr, nullptr, &security),
+                 DWORD(ERROR_SUCCESS));
+        const bool defaultAdmin = IsWellKnownSid(owner, WinBuiltinAdministratorsSid);
+        LocalFree(security);
+        if (defaultAdmin) {
+            QVERIFY_EXCEPTION_THROWN(store.validateFile(name), dukto::Error);
+            QVERIFY_EXCEPTION_THROWN(store.read(name), dukto::Error);
+        } else
+            QCOMPARE(store.validateFile(name), QFileInfo(path).size());
+#else
+        QCOMPARE(store.validateFile(name), QFileInfo(path).size());
+#endif
+        QCOMPARE(dukto::hashFile(path), before);
+    }
+
+    // 日期：2026-11-07；真实热日志一旦向其他主体开放读取，预览与执行都必须拒绝且不恢复或删除原件。
+    void unsafeJournalPermissions() {
+        Fixture fixture;
+        fixture.abandon("hot");
+        fixture.age();
+        const auto database = fixture.state + "/" + fixture.stem() + ".sqlite";
+        const auto journal = database + "-journal";
+        const auto before = dukto::hashFile(database);
+        const auto journalBefore = dukto::hashFile(journal);
+        dukto::PrivateStore store(fixture.state, false, dukto::PrivateStore::Use::Maintenance);
+        const auto marker = store.read(fixture.stem() + ".scan.json");
+#ifdef Q_OS_WIN
+        const auto native = QDir::toNativeSeparators(journal);
+        auto name = const_cast<LPWSTR>(reinterpret_cast<LPCWSTR>(native.utf16()));
+        PACL original = nullptr;
+        PSECURITY_DESCRIPTOR security = nullptr;
+        QCOMPARE(GetNamedSecurityInfoW(name, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, nullptr,
+                                       nullptr, &original, nullptr, &security),
+                 DWORD(ERROR_SUCCESS));
+        BYTE everyone[SECURITY_MAX_SID_SIZE];
+        DWORD length = sizeof(everyone);
+        QVERIFY(CreateWellKnownSid(WinWorldSid, nullptr, everyone, &length));
+        EXPLICIT_ACCESSW entry{};
+        entry.grfAccessPermissions = FILE_GENERIC_READ;
+        entry.grfAccessMode = GRANT_ACCESS;
+        entry.grfInheritance = NO_INHERITANCE;
+        BuildTrusteeWithSidW(&entry.Trustee, everyone);
+        PACL widened = nullptr;
+        const auto result = SetEntriesInAclW(1, &entry, original, &widened);
+        LocalFree(security);
+        QCOMPARE(result, DWORD(ERROR_SUCCESS));
+        const auto applied = SetNamedSecurityInfoW(name, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION,
+                                                   nullptr, nullptr, widened, nullptr);
+        LocalFree(widened);
+        QCOMPARE(applied, DWORD(ERROR_SUCCESS));
+#else
+        QVERIFY(
+            QFile::setPermissions(journal, QFile::permissions(journal) | QFileDevice::ReadOther));
+#endif
+        for (const bool apply : {false, true}) {
+            bool rejected = false;
+            try {
+                dukto::cleanupUploadScan(store, fixture.request, QDateTime::currentDateTimeUtc(),
+                                         apply);
+            } catch (const dukto::Error &error) {
+                QCOMPARE(error.code, dukto::ExitCode::Permission);
+                QCOMPARE(error.stage, QString("identity"));
+                rejected = true;
+            }
+            QVERIFY(rejected);
+            QCOMPARE(dukto::hashFile(database), before);
+            QCOMPARE(dukto::hashFile(journal), journalBefore);
+            QCOMPARE(store.read(fixture.stem() + ".scan.json"), marker);
+        }
+    }
+
+    // 日期：2026-11-07；回滚日志的硬链接和符号链接均不能借用专门所有者规则进入SQLite恢复。
+    void unsafeJournalLinks_data() {
+        QTest::addColumn<bool>("symbolic");
+        QTest::newRow("hard-link") << false;
+        QTest::newRow("symbolic-link") << true;
+    }
+
+    // 日期：2026-11-07；替换为指向外部原日志的真实链接，拒绝后外部日志/数据库/清理凭据保持原字节。
+    void unsafeJournalLinks() {
+        QFETCH(bool, symbolic);
+        Fixture fixture;
+        fixture.abandon("hot");
+        fixture.age();
+        const auto database = fixture.state + "/" + fixture.stem() + ".sqlite";
+        const auto path = database + "-journal";
+        const auto target = fixture.root.filePath("outside-journal");
+        const auto before = dukto::hashFile(database);
+        const auto journalBefore = dukto::hashFile(path);
+        QVERIFY(QFile::rename(path, target));
+#ifdef Q_OS_WIN
+        const auto native = QDir::toNativeSeparators(path);
+        const auto destination = QDir::toNativeSeparators(target);
+        const auto link = reinterpret_cast<LPCWSTR>(native.utf16());
+        const auto source = reinterpret_cast<LPCWSTR>(destination.utf16());
+        if (symbolic) {
+            if (!CreateSymbolicLinkW(link, source, 2) && !CreateSymbolicLinkW(link, source, 0))
+                QSKIP("Windows account cannot create a native symbolic link");
+        } else
+            QVERIFY(CreateHardLinkW(link, source, nullptr));
+#else
+        if (symbolic)
+            QVERIFY(QFile::link(target, path));
+        else
+            QCOMPARE(
+                ::link(QFile::encodeName(target).constData(), QFile::encodeName(path).constData()),
+                0);
+#endif
+        dukto::PrivateStore store(fixture.state, false, dukto::PrivateStore::Use::Maintenance);
+        const auto marker = store.read(fixture.stem() + ".scan.json");
+        for (const bool apply : {false, true}) {
+            QVERIFY_EXCEPTION_THROWN(dukto::cleanupUploadScan(store, fixture.request,
+                                                              QDateTime::currentDateTimeUtc(),
+                                                              apply),
+                                     dukto::Error);
+            QCOMPARE(dukto::hashFile(database), before);
+            QCOMPARE(dukto::hashFile(target), journalBefore);
+            QCOMPARE(store.read(fixture.stem() + ".scan.json"), marker);
+        }
     }
 
     // 日期：2026-11-07；持久删除后正常取消必须留下意图供恢复，不能只在进程崩溃时才可重入。
