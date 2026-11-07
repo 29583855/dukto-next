@@ -4,6 +4,8 @@
 
 项目以 `Dukto/` 内的 Dukto R6 为功能参考，开发 Windows、macOS、Linux 共用内核的桌面应用和独立命令行程序，增加服务器上传/下载、多线程提速及可靠恢复能力。
 
+R117精确`a46454d0ece59d178f1763c56f60cc61298e3154`已公开；Windows原生日志恢复通过双工具链各27核心及云端两轮各29条，双Mac含依赖GUI/CLI预览、迁移运行及截图已验。[Mac下载](docs/macOS独立预览包.md)、[本轮证据](docs/ci-verification-20261107-r117.json)。完整项目继续按计划验收。
+
 R116精确`0a60da9120b6be49d1768fa500d042ff394ac9f7`已公开，新增上传扫描中断后的七天保留/预览/按请求清理；缓存额度耗尽不遗留Qt连接。双Windows各24条通过/1符号链接权限跳过，独立Ubuntu25条通过；双Mac GUI/独立CLI已编译并验归档。[原生CI](https://github.com/29583855/dukto-next/actions/runs/42375666807)继续收验；双架构[含依赖包](https://github.com/29583855/dukto-next/actions/runs/42375918838)、迁移运行及四张截图已验，[下载](docs/macOS独立预览包.md)。[清理规则](docs/decisions/0029-未发布上传源扫描清理.md)、[验证索引](docs/ci-verification-20261107-r116.json)。
 
 R114精确`d922dc4`已上传，修复私有配置原子换代与读取竞争；双Windows核心/身份、Ubuntu8000次读取及四项拒绝反例通过，双Mac GUI/CLI已编译并验归档。完整原生CI与含依赖包继续验收。[设计与证据](docs/decisions/0028-私有配置原子换代的有界重读.md)。

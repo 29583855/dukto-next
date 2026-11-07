@@ -1,5 +1,7 @@
 # macOS独立开发预览包
 
+R117精确`a46454d0ece59d178f1763c56f60cc61298e3154`已公开，修复Windows提升进程创建SQLite热日志时的默认所有者误拒绝，保留私有ACL及普通文件严格规则。双Windows各27核心及GitHub Windows两轮专项各29条通过。Apple Silicon/Intel C++14 GUI、独立CLI及含Qt5/OpenSSL预览均已核验；迁移运行、各五项CLI/传输、Cocoa导航/高DPI和四张截图通过。[完整CI](https://github.com/29583855/dukto-next/actions/runs/42379391549)继续按终态收验，[打包](https://github.com/29583855/dukto-next/actions/runs/42379506896)双架构终态success。
+
 R116精确`0a60da9120b6be49d1768fa500d042ff394ac9f7`已公开，增加上传扫描中断后的按请求清理及资源申请失败恢复。Apple Silicon/Intel C++14 GUI和独立CLI编译归档均已核验；[含依赖打包](https://github.com/29583855/dukto-next/actions/runs/42375918838)双架构终态success；[完整原生CI](https://github.com/29583855/dukto-next/actions/runs/42375666807)继续按终态原件收验，Windows热journal所有权诊断单独保留。下方R116含依赖双架构预览、迁移运行和四张截图已验，R114包保留为历史版本。
 
 R114精确`d922dc4c793c77de0553ddf44c0fe1fa2d998c24`已上传，增加私有配置原子换代有界重读。Apple Silicon/Intel的C++14 GUI及独立CLI已编译并核验两份归档；原生核心已验3/4。含依赖双架构预览、迁移运行及四张截图已验，下方可下载R114包。[完整原生CI](https://github.com/29583855/dukto-next/actions/runs/42370990486)按实际附件另验。
@@ -10,7 +12,18 @@ R111精确`dfe245b502f586e7df7219e8fb0d5e4030a6b032`已在Apple Silicon和Intel�
 
 R115仅修正面板测试的读取时序，产品应用输入与R114完全一致。双Mac各两轮完整面板专项已通过，四轮各7方法；原Intel失败日志继续保留。[专项回执](validation/2026-11-07/panel-timing-r115-macos/receipt.json)。
 
-## R116含依赖开发预览
+## R117含依赖开发预览
+
+[逐层回执](validation/2026-11-07/sqlite-journal-r117-macos-package/receipt.json)。这是adhoc开发预览，正式签名/公证、最低干净系统及完整项目仍待验。
+
+| 架构 | 下载 | 官方ZIP SHA-256 | 内部tar.gz SHA-256 |
+| --- | --- | --- | --- |
+| arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42379506896/artifacts/13577251125) | `90d7a515493282be236e89497d4f941a944c6c0746452a9e49b06ff4f9fb1313` | `1fda4f0a9a598fc2a1766e695875e95bfd139ebf3939267fac192f90b6f65948` |
+| x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42379506896/artifacts/13577302509) | `d6321e29450f7798eb2300454bd937ff00a404c65ac8f1eb4e6927b9effba200` | `8583d6ab3a56cf5a2a3af0f3627663d49107d544d099d6fceec185dcff45afcf` |
+
+本机副本：`dist/macos-preview-20261107-r117-upload-scan/`。解压与CLI用法见本文下方说明。
+
+## R116含依赖开发预览（历史）
 
 两架构Qt5/OpenSSL、GUI/独立CLI、对应应用源码、全部载荷与框架链接均逐件核验；各五项真实CLI/传输报告、系统PATH迁移、Cocoa导航/高DPI通过，四张截图已查看。[回执](validation/2026-11-07/upload-scan-r116-macos-package/receipt.json)。这是adhoc开发预览，正式签名/公证、干净系统与完整项目继续验收。
 
