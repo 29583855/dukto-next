@@ -1,3 +1,6 @@
+#if defined(_WIN32) && !defined(_WIN32_WINNT)
+#define _WIN32_WINNT 0x0602
+#endif
 #include "buffercredit.h"
 #include "error.h"
 #include "privatestore.h"
@@ -7,6 +10,7 @@
 #include <QJsonArray>
 #include <QStringList>
 #include <array>
+#include <cstring>
 #include <limits>
 #ifdef Q_OS_WIN
 #ifndef NOMINMAX
@@ -41,7 +45,7 @@ int category(const QString &name) {
 } // namespace
 
 #ifdef Q_OS_WIN
-// 日期：2026-11-07；固定父路径后逐项读取原生属性，重解析点不跟随，始终只保留一个枚举项和文件句柄。
+// 日期：2026-11-08；固定父路径后逐项读取原生身份和分配量，不跟随重解析点，只保留一个项和句柄。
 void NativeDirectoryLock::visitEntries(
     const std::function<void(const NativeDirectoryEntry &)> &visitor) const {
     const auto before = stamp();
@@ -85,21 +89,37 @@ void NativeDirectoryLock::visitEntries(
             BY_HANDLE_FILE_INFORMATION info{};
             const auto type = GetFileType(handle);
             const bool ok = GetFileInformationByHandle(handle, &info);
+            FILE_ID_INFO identity{};
+            FILE_STANDARD_INFO standard{};
+            const bool regular =
+                ok && type == FILE_TYPE_DISK &&
+                !(info.dwFileAttributes & (FILE_ATTRIBUTE_REPARSE_POINT | FILE_ATTRIBUTE_DIRECTORY |
+                                           FILE_ATTRIBUTE_DEVICE));
+            const bool details =
+                !regular ||
+                (GetFileInformationByHandleEx(handle, FileIdInfo, &identity, sizeof(identity)) &&
+                 GetFileInformationByHandleEx(handle, FileStandardInfo, &standard,
+                                              sizeof(standard)));
             CloseHandle(handle);
-            if (!ok)
+            if (!ok || !details)
                 throw Error(ExitCode::Disk, QStringLiteral("读取状态目录项属性失败"), "storage");
             if (info.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
                 entry.kind = NativeDirectoryEntry::Kind::Link;
             else if (info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
                 entry.kind = NativeDirectoryEntry::Kind::Directory;
-            else if (type == FILE_TYPE_DISK && !(info.dwFileAttributes & FILE_ATTRIBUTE_DEVICE)) {
-                const quint64 size = (quint64(info.nFileSizeHigh) << 32) | info.nFileSizeLow;
-                if (size > quint64(std::numeric_limits<qint64>::max()) || !info.nNumberOfLinks)
-                    throw Error(ExitCode::Integrity, QStringLiteral("状态文件长度或链接计数无效"),
-                                "storage");
+            else if (regular) {
+                if (standard.Directory || standard.EndOfFile.QuadPart < 0 ||
+                    standard.AllocationSize.QuadPart < 0 || !standard.NumberOfLinks)
+                    throw Error(ExitCode::Integrity,
+                                QStringLiteral("状态文件长度、分配量或链接计数无效"), "storage");
                 entry.kind = NativeDirectoryEntry::Kind::Regular;
-                entry.bytes = qint64(size);
-                entry.links = info.nNumberOfLinks;
+                entry.bytes = standard.EndOfFile.QuadPart;
+                entry.links = standard.NumberOfLinks;
+                entry.allocatedBytes = standard.AllocationSize.QuadPart;
+                entry.identityPlatform = 2;
+                entry.volume = identity.VolumeSerialNumber;
+                std::memcpy(entry.identity.data(), identity.FileId.Identifier,
+                            entry.identity.size());
             }
             visitor(entry);
         }
@@ -113,7 +133,7 @@ void NativeDirectoryLock::visitEntries(
         throw Error(ExitCode::Integrity, QStringLiteral("状态目录在计量期间发生变化"), "storage");
 }
 #else
-// 日期：2026-11-07；从固定目录描述符建立独立枚举流，fstatat不跟随链接且不将FIFO当普通文件打开。
+// 日期：2026-11-08；固定目录描述符上fstatat取得身份及分配量，不另开数据文件而释放POSIX数据库锁。
 void PosixDirectory::visitEntries(
     const std::function<void(const NativeDirectoryEntry &)> &visitor) const {
     const auto before = stamp();
@@ -153,12 +173,21 @@ void PosixDirectory::visitEntries(
         else if (S_ISDIR(info.st_mode))
             entry.kind = NativeDirectoryEntry::Kind::Directory;
         else if (S_ISREG(info.st_mode)) {
-            if (info.st_size < 0 || !info.st_nlink)
-                throw Error(ExitCode::Integrity, QStringLiteral("状态文件长度或链接计数无效"),
-                            "storage");
+            if (info.st_size < 0 || !info.st_nlink || info.st_blocks < 0 ||
+                quint64(info.st_blocks) > quint64(std::numeric_limits<qint64>::max()) / 512)
+                throw Error(ExitCode::Integrity,
+                            QStringLiteral("状态文件长度、分配量或链接计数无效"), "storage");
             entry.kind = NativeDirectoryEntry::Kind::Regular;
             entry.bytes = info.st_size;
             entry.links = info.st_nlink;
+            entry.allocatedBytes = qint64(info.st_blocks) * 512;
+            entry.identityPlatform = 1;
+            entry.volume = quint64(info.st_dev);
+            auto inode = quint64(info.st_ino);
+            for (size_t index = 0; index < sizeof(inode); ++index) {
+                entry.identity[index] = static_cast<unsigned char>(inode & 255);
+                inode >>= 8;
+            }
         }
         visitor(entry);
     }
@@ -167,70 +196,97 @@ void PosixDirectory::visitEntries(
 }
 #endif
 
-// 日期：2026-11-07；独占维护下常量空间计量全部直接目录项，不读取正文、打开SQLite或据名称删除数据。
-QJsonObject PrivateStore::storageUsage(const std::function<void()> &check) const {
+// 日期：2026-11-08；独占维护下逐项观察，统一取消/根核验/缓冲授信；回调抛出时仍归还所有枚举资源。
+void PrivateStore::visitStorageEntries(
+    const std::function<void(const NativeDirectoryEntry &)> &visitor,
+    const std::function<void()> &check) const {
     if (!maintenance())
         throw Error(ExitCode::Permission, QStringLiteral("状态占用计量需要独占维护"), "storage");
+    if (!visitor)
+        throw Error(ExitCode::Config, QStringLiteral("状态观察回调不能为空"), "storage");
     BufferCredit credit(256 * 1024);
     const auto before = root_->stamp();
-    const auto observed = QDateTime::currentDateTimeUtc().toString(Qt::ISODateWithMs);
-    std::array<qint64, 7> files{};
-    std::array<qint64, 7> bytes{};
-    qint64 entries = 0, regular = 0, logical = 0, directories = 0, links = 0, other = 0, hard = 0;
+    qint64 entries = 0;
     if (check)
         check();
     root_->visitEntries([&](const NativeDirectoryEntry &entry) {
-        // 日期：2026-11-07；每项响应取消，每64项重验私有根及维护锁；从不保留随文件数增长的名称列表。
+        // 日期：2026-11-08；每项取消、每64项重验，观察接口不保留随文件数增长的对象列表。
         if (check)
             check();
         if (entries % 64 == 0)
             verify();
         accumulate(entries, 1);
-        if (entry.kind == NativeDirectoryEntry::Kind::Regular) {
-            const int index = category(entry.name);
-            accumulate(regular, 1);
-            accumulate(logical, entry.bytes);
-            accumulate(files[index], 1);
-            accumulate(bytes[index], entry.bytes);
-            if (entry.links > 1)
-                accumulate(hard, 1);
-        } else if (entry.kind == NativeDirectoryEntry::Kind::Directory)
-            accumulate(directories, 1);
-        else if (entry.kind == NativeDirectoryEntry::Kind::Link)
-            accumulate(links, 1);
-        else
-            accumulate(other, 1);
+        visitor(entry);
     });
     if (check)
         check();
     verify();
     if (root_->stamp() != before)
         throw Error(ExitCode::Integrity, QStringLiteral("状态目录在计量期间发生变化"), "storage");
+}
+
+// 日期：2026-11-08；直接普通文件按名称保守合计逻辑长度与系统分配量，不据瞬时身份自动去重或删除。
+QJsonObject PrivateStore::storageUsage(const std::function<void()> &check) const {
+    const auto observed = QDateTime::currentDateTimeUtc().toString(Qt::ISODateWithMs);
+    std::array<qint64, 7> files{};
+    std::array<qint64, 7> bytes{};
+    std::array<qint64, 7> allocations{};
+    qint64 allocated = 0;
+    qint64 entries = 0, regular = 0, logical = 0, directories = 0, links = 0, other = 0, hard = 0;
+    visitStorageEntries(
+        [&](const NativeDirectoryEntry &entry) {
+            // 日期：2026-11-08；七类汇总均为检查过的64位数，硬链接仍按名称保守重复计量。
+            accumulate(entries, 1);
+            if (entry.kind == NativeDirectoryEntry::Kind::Regular) {
+                const int index = category(entry.name);
+                accumulate(regular, 1);
+                accumulate(logical, entry.bytes);
+                accumulate(allocated, entry.allocatedBytes);
+                accumulate(files[index], 1);
+                accumulate(bytes[index], entry.bytes);
+                accumulate(allocations[index], entry.allocatedBytes);
+                if (entry.links > 1)
+                    accumulate(hard, 1);
+            } else if (entry.kind == NativeDirectoryEntry::Kind::Directory)
+                accumulate(directories, 1);
+            else if (entry.kind == NativeDirectoryEntry::Kind::Link)
+                accumulate(links, 1);
+            else
+                accumulate(other, 1);
+        },
+        check);
     QJsonArray categories;
     const QStringList names{"sqlite", "rollback", "wal", "shared-memory", "json", "locks", "other"};
     for (int index = 0; index < names.size(); ++index)
         categories.append(QJsonObject{{"kind", names[index]},
                                       {"files", QString::number(files[index])},
-                                      {"logicalBytes", QString::number(bytes[index])}});
-    qint64 sidecars = 0;
-    for (const auto index : {1, 2, 3})
+                                      {"logicalBytes", QString::number(bytes[index])},
+                                      {"allocatedBytes", QString::number(allocations[index])}});
+    qint64 sidecars = 0, sidecarAllocated = 0;
+    for (const auto index : {1, 2, 3}) {
         accumulate(sidecars, bytes[index]);
-    return {{"eventVersion", 1},
-            {"event", "state-storage"},
-            {"scope", "direct-private-state"},
-            {"stateDirectory", directory_},
-            {"observedUtc", observed},
-            {"entries", QString::number(entries)},
-            {"regularFiles", QString::number(regular)},
-            {"logicalBytes", QString::number(logical)},
-            {"sqliteSidecarBytes", QString::number(sidecars)},
-            {"excludedDirectories", QString::number(directories)},
-            {"excludedLinks", QString::number(links)},
-            {"excludedSpecial", QString::number(other)},
-            {"hardLinkedNames", QString::number(hard)},
-            {"directRegularFilesOnly", directories == 0 && links == 0 && other == 0},
-            {"categories", categories},
-            {"message", QStringLiteral("仅计量状态根直接普通文件的逻辑长度；不含传输正文及子目录，"
-                                       "不代表物理分配量或删除资格")}};
+        accumulate(sidecarAllocated, allocations[index]);
+    }
+    return {
+        {"eventVersion", 1},
+        {"event", "state-storage"},
+        {"scope", "direct-private-state"},
+        {"stateDirectory", directory_},
+        {"observedUtc", observed},
+        {"entries", QString::number(entries)},
+        {"regularFiles", QString::number(regular)},
+        {"logicalBytes", QString::number(logical)},
+        {"allocatedBytes", QString::number(allocated)},
+        {"sqliteSidecarBytes", QString::number(sidecars)},
+        {"sqliteSidecarAllocatedBytes", QString::number(sidecarAllocated)},
+        {"excludedDirectories", QString::number(directories)},
+        {"excludedLinks", QString::number(links)},
+        {"excludedSpecial", QString::number(other)},
+        {"hardLinkedNames", QString::number(hard)},
+        {"directRegularFilesOnly", directories == 0 && links == 0 && other == 0},
+        {"categories", categories},
+        {"message",
+         QStringLiteral("仅计量状态根直接普通文件的逻辑长度和系统报告分配量；"
+                        "硬链接按名称重复计量，不含正文及子目录，不代表独占物理占用或删除资格")}};
 }
 } // namespace dukto

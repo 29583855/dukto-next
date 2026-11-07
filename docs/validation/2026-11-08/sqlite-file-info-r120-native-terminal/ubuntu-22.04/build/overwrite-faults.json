@@ -1,0 +1,157 @@
+{
+  "date": "2026-11-05",
+  "passed": true,
+  "executableSha256": "9d8e8f86710eba08c8b71f6a5162258d1f3588c374bea8ddcab85c71414de86c",
+  "testScriptSha256": "1cf3cffef408013d1fec70d8b41cfe0c2600b6cf41e9daf672d4a08ae668c3c7",
+  "conflictPolicy": "overwrite",
+  "sourceChangeDeadlineSeconds": 30,
+  "authorizationDeadlineSeconds": 15,
+  "sampleSha256": "6dc338aaba7de55291429f33b095fb6bbb4b1752d97d45bec6a122c4ccda2199",
+  "cases": [
+    {
+      "direction": "upload",
+      "fault": "same-size-mtime-source-change",
+      "taskId": "fa6cc53d-9bcb-448a-a378-d377023cf1f4",
+      "checkpoint": 16777216,
+      "secondsAfterFault": 3.143,
+      "deadlineSeconds": 30,
+      "clientError": {
+        "code": 6,
+        "event": "error",
+        "eventVersion": 1,
+        "message": "读取期间源文件已变化",
+        "stage": "read"
+      },
+      "serverTask": {
+        "state": "interrupted",
+        "error": 0,
+        "confirmed": 8388608,
+        "total": 67108875
+      },
+      "pathIntegrityRefusalAccepted": false,
+      "originalPreserved": true,
+      "noPublishedCopy": true
+    },
+    {
+      "direction": "download",
+      "fault": "same-size-mtime-source-change",
+      "taskId": "fbbd897e-f282-4a78-afbe-88e6a8b2450b",
+      "checkpoint": 8388608,
+      "secondsAfterFault": 5.275,
+      "deadlineSeconds": 30,
+      "clientError": {
+        "code": 3,
+        "event": "error",
+        "eventVersion": 1,
+        "message": "安全连接已断开或无法连接",
+        "stage": "protocol"
+      },
+      "serverTask": {
+        "state": "failed",
+        "error": 6,
+        "confirmed": 37748736,
+        "total": 67108875
+      },
+      "pathIntegrityRefusalAccepted": false,
+      "originalPreserved": true,
+      "noPublishedCopy": true
+    },
+    {
+      "direction": "upload",
+      "fault": "revoke",
+      "taskId": "006b9cd5-bd38-4561-a4ff-679708c7b7c7",
+      "checkpoint": 16777216,
+      "secondsAfterFault": 0.077,
+      "deadlineSeconds": 15,
+      "clientError": {
+        "code": 4,
+        "event": "error",
+        "eventVersion": 1,
+        "message": "配对或认证被拒绝，请核对凭据、有效期和授权",
+        "stage": "auth"
+      },
+      "serverTask": {
+        "state": "interrupted",
+        "error": 0,
+        "confirmed": 4194304,
+        "total": 67108875
+      },
+      "pathIntegrityRefusalAccepted": false,
+      "originalPreserved": true,
+      "noPublishedCopy": true
+    },
+    {
+      "direction": "download",
+      "fault": "revoke",
+      "taskId": "118611ba-9eee-436e-b8ba-711b7e2d43a8",
+      "checkpoint": 16777216,
+      "secondsAfterFault": 3.12,
+      "deadlineSeconds": 15,
+      "clientError": {
+        "code": 3,
+        "event": "error",
+        "eventVersion": 1,
+        "message": "安全连接已断开或无法连接",
+        "stage": "protocol"
+      },
+      "serverTask": {
+        "state": "interrupted",
+        "error": 0,
+        "confirmed": 4194304,
+        "total": 67108875
+      },
+      "pathIntegrityRefusalAccepted": false,
+      "originalPreserved": true,
+      "noPublishedCopy": true
+    },
+    {
+      "direction": "upload",
+      "fault": "root-reconfigure",
+      "taskId": "f7289ff0-49bd-4e38-83bd-0fd091f746c5",
+      "checkpoint": 16777216,
+      "secondsAfterFault": 0.079,
+      "deadlineSeconds": 15,
+      "clientError": {
+        "code": 4,
+        "event": "error",
+        "eventVersion": 1,
+        "message": "数据通道授权根已变化",
+        "stage": "parallel"
+      },
+      "serverTask": {
+        "state": "failed",
+        "error": 4,
+        "confirmed": 8388608,
+        "total": 67108875
+      },
+      "pathIntegrityRefusalAccepted": false,
+      "originalPreserved": true,
+      "noPublishedCopy": true
+    },
+    {
+      "direction": "download",
+      "fault": "root-reconfigure",
+      "taskId": "068dc2f2-bbfd-4b50-9098-a5f646debeb3",
+      "checkpoint": 16777216,
+      "secondsAfterFault": 0.311,
+      "deadlineSeconds": 15,
+      "clientError": {
+        "code": 4,
+        "event": "error",
+        "eventVersion": 1,
+        "message": "传输共享根已经改配",
+        "stage": "transfer"
+      },
+      "serverTask": {
+        "state": "failed",
+        "error": 4,
+        "confirmed": 4194304,
+        "total": 67108875
+      },
+      "pathIntegrityRefusalAccepted": false,
+      "originalPreserved": true,
+      "noPublishedCopy": true
+    }
+  ],
+  "scope": "selected mid-transfer content/authorization/root faults; partial data retained, no disk-full or final-ack-loss claim"
+}

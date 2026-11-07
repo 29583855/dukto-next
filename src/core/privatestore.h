@@ -32,8 +32,11 @@ class PrivateStore final {
     QString directory() const;
     // 日期：2026-11-07；维护调用方显式核对独占模式，普通状态实例不能冒充维护所有者。
     bool maintenance() const;
-    // 日期：2026-11-07；独占维护时按后缀计量直接普通文件及SQLite旁路，不读取正文或授予删除资格。
+    // 日期：2026-11-08；独占维护按后缀汇总直接普通文件的逻辑/分配量，不读取正文或授予删除资格。
     QJsonObject storageUsage(const std::function<void()> &check = {}) const;
+    // 日期：2026-11-08；独占维护时逐项访问原生观察，调用方不得据瞬时身份删除对象或累积无界名称。
+    void visitStorageEntries(const std::function<void(const NativeDirectoryEntry &)> &visitor,
+                             const std::function<void()> &check = {}) const;
 
   private:
     // 日期：2026-11-07；内部共用原生对象核验，普通调用不能选择日志所有者策略。

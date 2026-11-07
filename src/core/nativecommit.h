@@ -4,6 +4,7 @@
 #include <QLockFile>
 #include <QString>
 #include <QtGlobal>
+#include <array>
 #include <functional>
 #include <memory>
 #ifdef Q_OS_WIN
@@ -19,6 +20,11 @@ struct NativeDirectoryEntry {
     Kind kind = Kind::Other;
     qint64 bytes = 0;
     quint64 links = 0;
+    // 日期：2026-11-08；普通文件的瞬时观察，平台1为POSIX、2为Windows；身份格式与SQLite观察一致。
+    int identityPlatform = 0;
+    quint64 volume = 0;
+    std::array<unsigned char, 16> identity{};
+    qint64 allocatedBytes = 0;
 };
 #ifdef Q_OS_WIN
 class NativeDirectoryLock final {

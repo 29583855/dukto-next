@@ -84,7 +84,7 @@ void printText(const QString &text) {
         outputFailure();
 }
 
-// 日期：2026-11-07；JSON直接写已编码UTF-8，避免六倍转义的大文本再次解码成整份UTF-16临时字符串。
+// 日期：2026-11-08；JSON直接写UTF-8，状态占用人类输出分别保留64位逻辑长度和系统分配量。
 void output(const QJsonObject &event, bool json) {
     if (json) {
         if (event.value("text").isString())
@@ -189,11 +189,12 @@ void output(const QJsonObject &event, bool json) {
             QJsonDocument(QJsonArray{event["stateDirectory"]}).toJson(QJsonDocument::Compact);
         stream << QString::fromUtf8(directory) << '\n' << event["message"].toString() << '\n';
         stream << event["regularFiles"].toString() << " files, " << event["logicalBytes"].toString()
-               << " B\n";
+               << " B, allocated=" << event["allocatedBytes"].toString() << " B\n";
         for (const auto &value : event["categories"].toArray()) {
             const auto group = value.toObject();
             stream << group["kind"].toString() << ": " << group["files"].toString() << " files, "
-                   << group["logicalBytes"].toString() << " B\n";
+                   << group["logicalBytes"].toString()
+                   << " B, allocated=" << group["allocatedBytes"].toString() << " B\n";
         }
         stream << "excluded directories=" << event["excludedDirectories"].toString()
                << ", links=" << event["excludedLinks"].toString()

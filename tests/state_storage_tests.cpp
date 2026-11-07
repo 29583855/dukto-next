@@ -1,7 +1,12 @@
+#if defined(_WIN32) && !defined(_WIN32_WINNT)
+#define _WIN32_WINNT 0x0602
+#endif
 #include "core/buffercredit.h"
 #include "core/error.h"
 #include "core/files.h"
 #include "core/privatestore.h"
+#include "core/sqliteruntime.h"
+#include "core/sqlitevfs.h"
 #include <QCoreApplication>
 #include <QDir>
 #include <QFile>
@@ -12,8 +17,10 @@
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QTemporaryDir>
+#include <QUuid>
 #include <QtTest>
 #include <cstdlib>
+#include <cstring>
 #ifdef Q_OS_WIN
 #ifndef NOMINMAX
 #define NOMINMAX
@@ -29,6 +36,31 @@
 
 namespace {
 constexpr qint64 LargeLength = 4294967296LL + 19;
+
+struct Connection {
+    QString name = QUuid::createUuid().toString();
+    QSqlDatabase database = dukto::addSqliteDatabase(name);
+    // 日期：2026-11-08；测试固定驱动的真实句柄与枚举观察可交叉核对，使用独立命名连接。
+    explicit Connection(const QString &path) {
+        database.setDatabaseName(path);
+    }
+    // 日期：2026-11-08；先销毁本地连接引用再注销，断言提前返回也不会泄漏连接。
+    ~Connection() {
+        database.close();
+        database = QSqlDatabase();
+        QSqlDatabase::removeDatabase(name);
+    }
+};
+
+// 日期：2026-11-08；真实子进程只测试SQLite锁，故意不取得应用状态锁，避免把维护拒绝误当数据库互斥。
+int attemptSqliteWrite(const QString &path) {
+    Connection connection(path);
+    if (!connection.database.open())
+        return 91;
+    auto handle = dukto::sqliteHandle(connection.database);
+    sqlite3_busy_timeout(handle, 0);
+    return sqlite3_exec(handle, "INSERT INTO payload VALUES(2)", nullptr, nullptr, nullptr);
+}
 
 // 日期：2026-11-07；只建立逻辑长度探针，Windows先启用稀疏属性，避免实际分配四GiB。
 bool sparse(const QString &path) {
@@ -109,6 +141,12 @@ class StateStorageTests final : public QObject {
         QCOMPARE(report["regularFiles"].toString(), QString("8"));
         QCOMPARE(report["logicalBytes"].toString(), QString::number(LargeLength + 90));
         QCOMPARE(report["sqliteSidecarBytes"].toString(), QString("45"));
+        QVERIFY(report["allocatedBytes"].toString().toLongLong() >= 0);
+        QVERIFY(report["allocatedBytes"].toString().toLongLong() < LargeLength);
+        qint64 allocated = 0;
+        for (const auto &value : report["categories"].toArray())
+            allocated += value.toObject()["allocatedBytes"].toString().toLongLong();
+        QCOMPARE(report["allocatedBytes"].toString(), QString::number(allocated));
         QCOMPARE(report["categories"].toArray().size(), 7);
         QCOMPARE(group(report, "locks")["files"].toString(), QString("2"));
         QCOMPARE(group(report, "other")["logicalBytes"].toString(), QString("15"));
@@ -165,6 +203,130 @@ class StateStorageTests final : public QObject {
         QCOMPARE(report["hardLinkedNames"].toString(), QString("2"));
         QCOMPARE(store.read("origin.bin"), QByteArray("abc"));
         QVERIFY(QFileInfo::exists(target));
+    }
+
+    // 日期：2026-11-08；目录原生身份与实际SQLite句柄一致，硬链接共用身份而等长独立文件不同。
+    void nativeIdentityMatchesSqliteAndAliases() {
+        QTemporaryDir root;
+        dukto::PrivateStore store(root.filePath("state"), true,
+                                  dukto::PrivateStore::Use::Maintenance);
+        store.write("object.sqlite", {});
+        Connection connection(store.directory() + "/object.sqlite");
+        QVERIFY(connection.database.open());
+        QSqlQuery query(connection.database);
+        QVERIFY(query.exec("CREATE TABLE payload(value)"));
+        QVERIFY(query.exec("INSERT INTO payload VALUES(zeroblob(8192))"));
+        const auto source = store.directory() + "/object.sqlite";
+        const auto alias = store.directory() + "/alias.sqlite";
+#ifdef Q_OS_WIN
+        QVERIFY(CreateHardLinkW(reinterpret_cast<LPCWSTR>(alias.utf16()),
+                                reinterpret_cast<LPCWSTR>(source.utf16()), nullptr));
+#else
+        QCOMPARE(
+            ::link(QFile::encodeName(source).constData(), QFile::encodeName(alias).constData()), 0);
+#endif
+        store.write("separate.bin", {});
+        {
+            QFile separate(store.directory() + "/separate.bin");
+            QVERIFY(separate.open(QIODevice::ReadWrite));
+            QVERIFY(separate.resize(QFileInfo(source).size()));
+        }
+        DuktoSqliteFileInfo native{};
+        QCOMPARE(sqlite3_file_control(dukto::sqliteHandle(connection.database), "main",
+                                      dukto::SqliteFileInfoControl, &native),
+                 SQLITE_OK);
+        dukto::NativeDirectoryEntry original, linked, separate;
+        qint64 allocated = 0;
+        store.visitStorageEntries([&](const dukto::NativeDirectoryEntry &entry) {
+            // 日期：2026-11-08；仅保存三份固定夹具观察，生产接口没有按文件数增长的缓存。
+            if (entry.name == "object.sqlite")
+                original = entry;
+            else if (entry.name == "alias.sqlite")
+                linked = entry;
+            else if (entry.name == "separate.bin")
+                separate = entry;
+            if (entry.kind == dukto::NativeDirectoryEntry::Kind::Regular)
+                allocated += entry.allocatedBytes;
+        });
+        QCOMPARE(original.identityPlatform, native.platform);
+        QCOMPARE(original.volume, quint64(native.volume));
+        QVERIFY(std::memcmp(original.identity.data(), native.identity, original.identity.size()) ==
+                0);
+        QCOMPARE(original.bytes, qint64(native.logicalBytes));
+        QCOMPARE(original.allocatedBytes, qint64(native.allocatedBytes));
+        QCOMPARE(original.links, quint64(2));
+        QCOMPARE(linked.identityPlatform, original.identityPlatform);
+        QCOMPARE(linked.volume, original.volume);
+        QVERIFY(linked.identity == original.identity);
+        QCOMPARE(linked.allocatedBytes, original.allocatedBytes);
+        QVERIFY(separate.identity != original.identity || separate.volume != original.volume);
+        const auto report = store.storageUsage();
+        QCOMPARE(report["allocatedBytes"].toString(), QString::number(allocated));
+        QCOMPARE(report["hardLinkedNames"].toString(), QString("2"));
+    }
+
+    // 日期：2026-11-08；共享模式和空回调明确拒绝，回调异常归还授信且后续相同观察仍可完成。
+    void visitorFailureIsReusable() {
+        QTemporaryDir root;
+        const auto state = root.filePath("state");
+        const auto used = dukto::BufferCredit::usage().value("used");
+        {
+            dukto::PrivateStore shared(state, true);
+            QVERIFY_EXCEPTION_THROWN(
+                shared.visitStorageEntries([](const dukto::NativeDirectoryEntry &) {
+                    // 日期：2026-11-08；此回调在共享实例上不可达。
+                    QFAIL("Shared observer must not run");
+                }),
+                dukto::Error);
+        }
+        dukto::PrivateStore store(state, false, dukto::PrivateStore::Use::Maintenance);
+        store.write("keep.json", "preserve");
+        QVERIFY_EXCEPTION_THROWN(store.visitStorageEntries({}), dukto::Error);
+        for (int round = 0; round < 64; ++round) {
+            int visited = 0;
+            QVERIFY_EXCEPTION_THROWN(
+                store.visitStorageEntries([&](const dukto::NativeDirectoryEntry &) {
+                    // 日期：2026-11-08；第一项回调真实抛出，不允许吞掉错误后继续或输出成功。
+                    ++visited;
+                    throw dukto::Error(dukto::ExitCode::Cancelled, "visitor interrupted",
+                                       "storage");
+                }),
+                dukto::Error);
+            QCOMPARE(visited, 1);
+            QCOMPARE(dukto::BufferCredit::usage().value("used"), used);
+        }
+        QCOMPARE(store.storageUsage()["logicalBytes"].toString(), QString("8"));
+        QCOMPARE(store.read("keep.json"), QByteArray("preserve"));
+    }
+
+    // 日期：2026-11-08；有界枚举后真实第二进程仍被SQLite写锁拒绝，提交后原第二进程命令可成功。
+    void inventoryPreservesSqliteWriteLock() {
+        QTemporaryDir root;
+        dukto::PrivateStore store(root.filePath("state"), true,
+                                  dukto::PrivateStore::Use::Maintenance);
+        store.write("locked.sqlite", {});
+        const auto path = store.directory() + "/locked.sqlite";
+        Connection connection(path);
+        QVERIFY(connection.database.open());
+        QSqlQuery query(connection.database);
+        QVERIFY(query.exec("CREATE TABLE payload(value)"));
+        QVERIFY(query.exec("BEGIN IMMEDIATE"));
+        QVERIFY(query.exec("INSERT INTO payload VALUES(1)"));
+        QVERIFY(store.storageUsage()["regularFiles"].toString().toLongLong() >= 2);
+        QProcess competitor;
+        const QStringList args{"--try-sqlite-write", path};
+        competitor.start(QCoreApplication::applicationFilePath(), args);
+        QVERIFY(competitor.waitForFinished(30000));
+        QCOMPARE(competitor.exitStatus(), QProcess::NormalExit);
+        QCOMPARE(competitor.exitCode(), int(SQLITE_BUSY));
+        QVERIFY(query.exec("COMMIT"));
+        competitor.start(QCoreApplication::applicationFilePath(), args);
+        QVERIFY(competitor.waitForFinished(30000));
+        QCOMPARE(competitor.exitStatus(), QProcess::NormalExit);
+        QCOMPARE(competitor.exitCode(), 0);
+        QVERIFY(query.exec("SELECT COUNT(*) FROM payload"));
+        QVERIFY(query.next());
+        QCOMPARE(query.value(0).toInt(), 2);
     }
 
     // 日期：2026-11-07；子目录只计排除项，不递归读取大数据或把子目录内容算作直接状态。
@@ -356,10 +518,14 @@ class StateStorageTests final : public QObject {
         QCOMPARE(report["event"].toString(), QString("state-storage"));
         QCOMPARE(report["stateDirectory"].toString(), QDir::cleanPath(state));
         QCOMPARE(report["logicalBytes"].toString(), QString("24"));
+        bool allocatedValid = false;
+        const auto allocated = report["allocatedBytes"].toString().toLongLong(&allocatedValid);
+        QVERIFY(allocatedValid && allocated >= 0);
         QVERIFY(invoke(process, arguments));
         QCOMPARE(process.exitCode(), 0);
         const auto human = process.readAllStandardOutput();
         QVERIFY(human.contains("24 B"));
+        QVERIFY(human.contains("allocated="));
         QVERIFY(human.contains(QStringLiteral("客户 状态").toUtf8()));
         QVERIFY(!human.contains(secret));
         const auto absent = root.filePath("must-not-create");
@@ -375,6 +541,8 @@ class StateStorageTests final : public QObject {
 // 日期：2026-11-07；仅测试子进程提供真实热日志崩溃夹具，生产CLI没有测试开关。
 int main(int argc, char **argv) {
     QCoreApplication app(argc, argv);
+    if (app.arguments().value(1) == "--try-sqlite-write")
+        return attemptSqliteWrite(app.arguments().value(2));
     if (app.arguments().value(1) == "--leave-journal") {
         leaveJournal(app.arguments().value(2));
         return 95;
