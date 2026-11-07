@@ -1,4 +1,5 @@
 #include "servicecommands.h"
+#include "core/clientdownloadcleanup.h"
 #include "core/endpoint.h"
 #include "core/error.h"
 #include "core/expiredtaskcleanup.h"
@@ -73,6 +74,37 @@ int runServiceCommand(const QCommandLineParser &parser, const QStringList &argum
                       const std::function<bool()> &interrupted) {
     auto command = arguments.value(0);
     const bool resuming = command == "resume";
+    if (command == "client" && arguments.value(1) == "cleanup") {
+        const auto operation = arguments.value(2);
+        const QUuid task(parser.value("task"));
+        bool valid = false;
+        const auto after = parser.value("after").toULongLong(&valid);
+        const QStringList allowed{"task", "state-directory", "after", "j",
+                                  "json", "non-interactive"};
+        for (const auto &option : parser.optionNames()) {
+            if (!allowed.contains(option) || parser.values(option).size() > 1 ||
+                parser.optionNames().count(option) > 1)
+                throw dukto::Error(dukto::ExitCode::Config,
+                                   QStringLiteral("客户端清理选项无效或重复"), "arguments");
+        }
+        if (arguments.size() != 3 || (operation != "preview" && operation != "run") ||
+            task.isNull() || parser.value("task") != task.toString(QUuid::WithoutBraces) ||
+            !valid || parser.value("after") != QString::number(after) ||
+            (operation == "run" && parser.isSet("after")))
+            throw dukto::Error(
+                dukto::ExitCode::Config,
+                QStringLiteral("用法：client cleanup preview|run --task UUID [--after 序号]"),
+                "arguments");
+        const auto transferPath = QDir(stateDirectory).filePath("transfers");
+        dukto::PrivateStore store(transferPath, false, dukto::PrivateStore::Use::Maintenance);
+        output(dukto::cleanupClientDownload(store, task, operation == "run", after, [&]() {
+            // 日期：2026-11-07；取消只在每条有界记录与同步事务边界响应，重复执行可恢复。
+            if (interrupted())
+                throw dukto::Error(dukto::ExitCode::Cancelled,
+                                   QStringLiteral("客户端清理已中断，可再次执行"), "cleanup");
+        }));
+        return 0;
+    }
     if (command == "trust" || command == "profile-info") {
         for (const auto &option :
              QStringList{"to", "port", "server-name", "credential-file", "share", "remote-path",

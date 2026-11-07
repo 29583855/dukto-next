@@ -47,6 +47,7 @@ add_library(dukto-core
     src/core/dispositionjournal.cpp
     src/core/taskstore.cpp
     src/core/expiredtaskcleanup.cpp
+    src/core/clientdownloadcleanup.cpp
     src/core/transferitems.cpp
     src/core/durablereceive.cpp
     src/core/receivetree.cpp
@@ -137,6 +138,9 @@ if(DUKTO_BUILD_TESTS)
     add_executable(expired-task-cleanup-tests tests/expired_task_cleanup_tests.cpp)
     target_link_libraries(expired-task-cleanup-tests PRIVATE dukto-core Qt5::Test)
     dukto_add_qt_test(expired-task-cleanup-tests)
+    add_executable(client-download-cleanup-tests tests/client_download_cleanup_tests.cpp)
+    target_link_libraries(client-download-cleanup-tests PRIVATE dukto-core Qt5::Test)
+    dukto_add_qt_test(client-download-cleanup-tests)
     add_executable(transfer-items-tests tests/transfer_items_tests.cpp)
     target_link_libraries(transfer-items-tests PRIVATE dukto-core Qt5::Test)
     dukto_add_qt_test(transfer-items-tests)

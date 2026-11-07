@@ -197,6 +197,17 @@ void output(const QJsonObject &event, bool json) {
         const auto capabilities = peer["capabilities"].toObject();
         for (auto item = capabilities.begin(); item != capabilities.end(); ++item)
             stream << item.key() << " = " << (item.value().toBool() ? "true" : "false") << '\n';
+    } else if (event.value("event") == "client-download-cleanup") {
+        stream << event.value("message").toString() << '\n';
+        for (const auto &value : event.value("entries").toArray()) {
+            const auto item = value.toObject();
+            const auto name =
+                QJsonDocument(QJsonArray{item["temporary"]}).toJson(QJsonDocument::Compact);
+            stream << item["id"].toString() << ' ' << item["action"].toString() << ' '
+                   << QString::fromUtf8(name.mid(1, name.size() - 2)) << '\n';
+        }
+        if (event.value("more").toBool())
+            stream << "after=" << event.value("after").toString() << '\n';
     } else if (event.contains("values")) {
         const auto values = event.value("values").toObject();
         for (auto iterator = values.begin(); iterator != values.end(); ++iterator)
@@ -314,11 +325,11 @@ int runApplication(int argc, char **argv) {
     parser.setApplicationDescription(QStringLiteral("Dukto Next 独立命令行传输工具（C++14/Qt5）"));
     parser.addHelpOption();
     parser.addVersionOption();
-    parser.addPositionalArgument("command",
-                                 "discover / send / send-text / receive / receipts / "
-                                 "serve / pair / auth / rotate / profile-info / trust / list / "
-                                 "upload / download / tasks / task "
-                                 "/ task-items / pause / cancel / resume / doctor / config / help");
+    parser.addPositionalArgument(
+        "command", "discover / send / send-text / receive / receipts / "
+                   "serve / client / pair / auth / rotate / profile-info / trust / list / "
+                   "upload / download / tasks / task "
+                   "/ task-items / pause / cancel / resume / doctor / config / help");
     parser.addPositionalArgument("arguments", "config show / config set <key> <value>",
                                  "[arguments...]");
     parser.addOptions(
@@ -366,7 +377,7 @@ int runApplication(int argc, char **argv) {
           "seconds"},
          {"cursor", QStringLiteral("目录浏览或本机客户端列表的下一页游标"), "cursor"},
          {"all", QStringLiteral("连续输出目录、任务或客户端全部页，不累积全部结果")},
-         {"task", QStringLiteral("任务 UUID（receipts show 或 task/pause/cancel/resume）"), "id"},
+         {"task", QStringLiteral("任务 UUID（client/serve cleanup、查询、管理或恢复）"), "id"},
          {"after", QStringLiteral("明细分页的起始序号"), "sequence", "0"},
          {"once", QStringLiteral("接收一个批次后退出")},
          {"non-interactive", QStringLiteral("禁止等待交互式输入")}});
@@ -435,11 +446,11 @@ int runApplication(int argc, char **argv) {
             parser.isSet("state-directory")
                 ? parser.value("state-directory")
                 : QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
-        if (command == "serve" || command == "pair" || command == "auth" || command == "rotate" ||
-            command == "profile-info" || command == "trust" || command == "list" ||
-            command == "upload" || command == "download" || command == "tasks" ||
-            command == "task" || command == "task-items" || command == "pause" ||
-            command == "cancel" || command == "resume")
+        if (command == "serve" || command == "client" || command == "pair" || command == "auth" ||
+            command == "rotate" || command == "profile-info" || command == "trust" ||
+            command == "list" || command == "upload" || command == "download" ||
+            command == "tasks" || command == "task" || command == "task-items" ||
+            command == "pause" || command == "cancel" || command == "resume")
             return runServiceCommand(
                 parser, args, stateDirectory,
                 [json](const QJsonObject &event) { output(event, json); },
