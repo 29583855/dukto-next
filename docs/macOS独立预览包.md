@@ -1,8 +1,30 @@
 # macOS独立开发预览包
 
+R124精确424c78b7四原生各三轮12场景通过，完整核心已验4/4；两Mac旧版对照也各12条通过，历史间歇失败未复现、根因未证明。双Mac GUI/CLI含依赖包及迁移运行已验，下载更新R124。独立Ubuntu12条通过；生产总预算、自动GC及完整交付继续。
+
+## R124含依赖开发预览
+
+精确源码`424c78b79fd1980ed52f9b2fe78d31a3c28fc39c`；[逐层回执](validation/2026-11-08/legacy-ready-r124-macos-package/receipt.json)。开发adhoc签名，正式签名/公证和最低干净系统继续。
+
+| 架构 | 下载 | 官方ZIP SHA-256 | 内部tar.gz SHA-256 |
+| --- | --- | --- | --- |
+| arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42412888131/artifacts/13590627939) | fa317f824cae88ea0c8497f5f406015c836f76a71f49aad9fc57f377d302c19c | eb34725d4e6d220e84b3c8aaf89d2546c0ce861b6b7c60a82bb7e32afe6f092b |
+| x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42412888131/artifacts/13590344234) | 651d162133bb79d5b4774ab6f2838d491346c33d35b9c6f93522ac8723e31594 | 1d481073fe9c7117ec855350334ce876544ac5716ef69de868064b3d4e22d134 |
+
+本机副本：dist/macos-preview-20261108-r124-legacy-ready/。解压和独立CLI用法见下文。
+
+## R124原生编译归档
+
+[回执](validation/2026-11-08/legacy-ready-r124-macos-compiled/receipt.json)。
+
+| 架构 | 下载 | 内部tar.gz SHA-256 |
+| --- | --- | --- |
+| arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42412876475/artifacts/13590386623) | 1dfe7cdd8c47ca90c1aa37b3dcc12d5211b3d4b26e8a5917081f28c7bad7434e |
+| x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42412876475/artifacts/13590382353) | 22e24d52bb41f211bf02e55f20c4637a3c1517eab82c26f230fd8a880d536b77 |
+
 R123精确d7895420四原生目录关联各12条通过，完整核心已验4/4；双Mac GUI/独立CLI和含Qt5/OpenSSL包、迁移及五项业务和四截图已验，下载更新至R123。独立Ubuntu12条通过。R122 ARM完整协议保留暂停后超时失败。生产总预算、自动GC及完整交付继续。
 
-## R123含依赖开发预览
+## R123含依赖开发预览（历史）
 
 精确源码`d78954207cfcd21e07f5ba56c9153b36b3b2cc18`；[逐层回执](validation/2026-11-08/state-domain-r123-macos-package/receipt.json)。开发adhoc签名，正式签名/公证和最低干净系统继续。
 

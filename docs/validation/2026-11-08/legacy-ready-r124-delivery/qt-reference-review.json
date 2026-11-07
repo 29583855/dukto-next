@@ -1,0 +1,33 @@
+{
+  "date": "2026-11-08",
+  "purpose": "Review reference implementation only; these downloaded files were not product build inputs",
+  "rootCauseProven": false,
+  "observation": "QAbstractSocket::waitForReadyRead uses a do loop; nativeSelect calls qt_poll_msecs; qt_safe_poll calls qt_ppoll even for zero timespec. This does not prove the macOS failure cause.",
+  "references": [
+    {
+      "url": "https://raw.githubusercontent.com/qt/qtbase/v5.15.2/src/network/socket/qabstractsocket.cpp",
+      "sha256": "2a4087de119ac5748bfebc40ab2e6249740def59ce65d8e8dca8fc1f405c2f2a",
+      "bytes": 107065
+    },
+    {
+      "url": "https://raw.githubusercontent.com/qt/qtbase/v5.15.2/src/corelib/kernel/qcore_unix.cpp",
+      "sha256": "d304200d2bdf482e3232308dc5fdfc2d78a04671e2465f9e39d7548815cc0a40",
+      "bytes": 5856
+    },
+    {
+      "url": "https://raw.githubusercontent.com/qt/qtbase/v5.15.2/src/corelib/kernel/qcore_unix_p.h",
+      "sha256": "d4fa6f462d5caf89bc1cd9707e1a6ef8759e1ed5ac984f182b70ecb673e6118e",
+      "bytes": 10705
+    },
+    {
+      "url": "https://raw.githubusercontent.com/qt/qtbase/v5.15.2/src/network/socket/qnativesocketengine.cpp",
+      "sha256": "7b69ecf9c15779984db4216b6a1e5cecb4c76d0da8baa010c11588d18814b9e8",
+      "bytes": 51127
+    },
+    {
+      "url": "https://raw.githubusercontent.com/qt/qtbase/v5.15.2/src/network/socket/qnativesocketengine_unix.cpp",
+      "sha256": "6066ba54cd6f0ff482865defe25e1102a30c82d6006d54c089b197fde7d1f265",
+      "bytes": 51771
+    }
+  ]
+}

@@ -1,0 +1,1165 @@
+﻿2026-11-07T20:49:15.2645390Z Current runner version: '2.338.2'
+2026-11-07T20:49:15.2674770Z ##[group]Runner Image Provisioner
+2026-11-07T20:49:15.2675850Z Hosted Compute Agent
+2026-11-07T20:49:15.2676520Z Version: 20260819.586
+2026-11-07T20:49:15.2677250Z Commit: 3cc4a88dfa507ef76119ad1bb3eccc6378bb2b76
+2026-11-07T20:49:15.2678140Z Build Date: 2026-08-18T23:20:18Z
+2026-11-07T20:49:15.2678940Z Worker ID: {6254802d-27b9-4e8c-8f53-d851c254b943}
+2026-11-07T20:49:15.2679810Z Azure Region: westus
+2026-11-07T20:49:15.2680460Z ##[endgroup]
+2026-11-07T20:49:15.2682440Z ##[group]Operating System
+2026-11-07T20:49:15.2683180Z macOS
+2026-11-07T20:49:15.2683750Z 15.7.9
+2026-11-07T20:49:15.2684320Z 24G830
+2026-11-07T20:49:15.2684890Z ##[endgroup]
+2026-11-07T20:49:15.2685520Z ##[group]Runner Image
+2026-11-07T20:49:15.2686220Z Image: macos-15
+2026-11-07T20:49:15.2686860Z Version: 20260824.0482.1
+2026-11-07T20:49:15.2688450Z Included Software: https://github.com/actions/runner-images/blob/macos-15/20260824.0482/images/macos/macos-15-Readme.md
+2026-11-07T20:49:15.2690620Z Image Release: https://github.com/actions/runner-images/releases/tag/macos-15%2F20260824.0482
+2026-11-07T20:49:15.2691900Z ##[endgroup]
+2026-11-07T20:49:15.2693440Z ##[group]GITHUB_TOKEN Permissions
+2026-11-07T20:49:15.2695940Z Contents: read
+2026-11-07T20:49:15.2696760Z Metadata: read
+2026-11-07T20:49:15.2697380Z Packages: read
+2026-11-07T20:49:15.2698040Z ##[endgroup]
+2026-11-07T20:49:15.2700560Z Secret source: Actions
+2026-11-07T20:49:15.2701610Z Cache mode: write
+2026-11-07T20:49:15.2702400Z Prepare workflow directory
+2026-11-07T20:49:15.3154360Z Prepare all required actions
+2026-11-07T20:49:15.3213940Z Getting action download info
+2026-11-07T20:49:15.8240450Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-11-07T20:49:15.9951120Z Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+2026-11-07T20:49:16.0878710Z Download action repository 'jurplel/install-qt-action@v4' (SHA:b344308e4483fc892e0d27b3cd1b173ebdd95f06)
+2026-11-07T20:49:19.1792040Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-11-07T20:49:19.4795320Z Getting action download info
+2026-11-07T20:49:19.6213590Z Download action repository 'actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1' (SHA:ece7cb06caefa5fff74198d8649806c4678c61a1)
+2026-11-07T20:49:19.7955630Z Complete job name: ready (macos-15-intel)
+2026-11-07T20:49:19.8850000Z ##[group]Run actions/checkout@v4
+2026-11-07T20:49:19.8850950Z with:
+2026-11-07T20:49:19.8851370Z   repository: 29583855/dukto-next
+2026-11-07T20:49:19.8856360Z   token: ***
+2026-11-07T20:49:19.8856760Z   ssh-strict: true
+2026-11-07T20:49:19.8857160Z   ssh-user: git
+2026-11-07T20:49:19.8857570Z   persist-credentials: true
+2026-11-07T20:49:19.8858040Z   clean: true
+2026-11-07T20:49:19.8858460Z   sparse-checkout-cone-mode: true
+2026-11-07T20:49:19.8858970Z   fetch-depth: 1
+2026-11-07T20:49:19.8859370Z   fetch-tags: false
+2026-11-07T20:49:19.8859880Z   show-progress: true
+2026-11-07T20:49:19.8860290Z   lfs: false
+2026-11-07T20:49:19.8860670Z   submodules: false
+2026-11-07T20:49:19.8861090Z   set-safe-directory: true
+2026-11-07T20:49:19.8861580Z   allow-unsafe-pr-checkout: false
+2026-11-07T20:49:19.8862420Z ##[endgroup]
+2026-11-07T20:49:20.1264350Z Syncing repository: 29583855/dukto-next
+2026-11-07T20:49:20.1266450Z ##[group]Getting Git version info
+2026-11-07T20:49:20.1267380Z Working directory is '/Users/runner/work/dukto-next/dukto-next'
+2026-11-07T20:49:20.1268540Z [command]/usr/local/bin/git version
+2026-11-07T20:49:20.1548960Z git version 2.55.0
+2026-11-07T20:49:20.1572070Z ##[endgroup]
+2026-11-07T20:49:20.1584700Z Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/9259f634-07eb-44be-ac6a-6f5e38f6145d/.gitconfig'
+2026-11-07T20:49:20.1597940Z Temporarily overriding HOME='/Users/runner/work/_temp/9259f634-07eb-44be-ac6a-6f5e38f6145d' before making global git config changes
+2026-11-07T20:49:20.1599570Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-07T20:49:20.1603770Z [command]/usr/local/bin/git config --global --add safe.directory /Users/runner/work/dukto-next/dukto-next
+2026-11-07T20:49:20.1727310Z Deleting the contents of '/Users/runner/work/dukto-next/dukto-next'
+2026-11-07T20:49:20.1732010Z ##[group]Initializing the repository
+2026-11-07T20:49:20.1737350Z [command]/usr/local/bin/git init /Users/runner/work/dukto-next/dukto-next
+2026-11-07T20:49:20.2053610Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-11-07T20:49:20.2054830Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-11-07T20:49:20.2056040Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-11-07T20:49:20.2056940Z hint: call:
+2026-11-07T20:49:20.2057380Z hint:
+2026-11-07T20:49:20.2058210Z hint: 	git config --global init.defaultBranch <name>
+2026-11-07T20:49:20.2058890Z hint:
+2026-11-07T20:49:20.2059520Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-11-07T20:49:20.2060880Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-11-07T20:49:20.2061840Z hint:
+2026-11-07T20:49:20.2062290Z hint: 	git branch -m <name>
+2026-11-07T20:49:20.2062790Z hint:
+2026-11-07T20:49:20.2063500Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-11-07T20:49:20.2064730Z Initialized empty Git repository in /Users/runner/work/dukto-next/dukto-next/.git/
+2026-11-07T20:49:20.2069930Z [command]/usr/local/bin/git remote add origin https://github.com/29583855/dukto-next
+2026-11-07T20:49:20.2195750Z ##[endgroup]
+2026-11-07T20:49:20.2196620Z ##[group]Disabling automatic garbage collection
+2026-11-07T20:49:20.2200320Z [command]/usr/local/bin/git config --local gc.auto 0
+2026-11-07T20:49:20.2299000Z ##[endgroup]
+2026-11-07T20:49:20.2299810Z ##[group]Setting up auth
+2026-11-07T20:49:20.2306540Z [command]/usr/local/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-07T20:49:20.2399750Z [command]/usr/local/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-07T20:49:20.3669980Z [command]/usr/local/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-07T20:49:20.3757150Z [command]/usr/local/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-07T20:49:20.4895400Z [command]/usr/local/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-07T20:49:20.4992050Z [command]/usr/local/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-07T20:49:20.6167790Z [command]/usr/local/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-11-07T20:49:20.6266420Z ##[endgroup]
+2026-11-07T20:49:20.6267320Z ##[group]Fetching the repository
+2026-11-07T20:49:20.6276960Z [command]/usr/local/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +424c78b79fd1980ed52f9b2fe78d31a3c28fc39c:refs/remotes/origin/main
+2026-11-07T20:49:28.2500790Z From https://github.com/29583855/dukto-next
+2026-11-07T20:49:28.2916400Z  * [new ref]           424c78b79fd1980ed52f9b2fe78d31a3c28fc39c -> origin/main
+2026-11-07T20:49:28.3080450Z ##[endgroup]
+2026-11-07T20:49:28.3130050Z ##[group]Determining the checkout info
+2026-11-07T20:49:28.3162570Z ##[endgroup]
+2026-11-07T20:49:28.3164920Z [command]/usr/local/bin/git sparse-checkout disable
+2026-11-07T20:49:28.3272890Z [command]/usr/local/bin/git config --local --unset-all extensions.worktreeConfig
+2026-11-07T20:49:28.3344820Z ##[group]Checking out the ref
+2026-11-07T20:49:28.3346010Z [command]/usr/local/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-11-07T20:49:29.4896960Z Updating files:   7% (2482/35001)
+2026-11-07T20:49:29.5497900Z Updating files:   8% (2801/35001)
+2026-11-07T20:49:29.7112610Z Updating files:   9% (3151/35001)
+2026-11-07T20:49:29.8137690Z Updating files:  10% (3501/35001)
+2026-11-07T20:49:29.9432310Z Updating files:  11% (3851/35001)
+2026-11-07T20:49:30.0291280Z Updating files:  12% (4201/35001)
+2026-11-07T20:49:30.1111190Z Updating files:  13% (4551/35001)
+2026-11-07T20:49:30.2236650Z Updating files:  14% (4901/35001)
+2026-11-07T20:49:30.2560970Z Updating files:  15% (5251/35001)
+2026-11-07T20:49:30.3212090Z Updating files:  15% (5380/35001)
+2026-11-07T20:49:30.4991620Z Updating files:  16% (5601/35001)
+2026-11-07T20:49:30.5916240Z Updating files:  17% (5951/35001)
+2026-11-07T20:49:30.7041280Z Updating files:  18% (6301/35001)
+2026-11-07T20:49:30.8336100Z Updating files:  19% (6651/35001)
+2026-11-07T20:49:30.9050410Z Updating files:  20% (7001/35001)
+2026-11-07T20:49:31.0024630Z Updating files:  21% (7351/35001)
+2026-11-07T20:49:31.2380060Z Updating files:  22% (7701/35001)
+2026-11-07T20:49:31.2502710Z Updating files:  23% (8051/35001)
+2026-11-07T20:49:31.2582830Z Updating files:  24% (8401/35001)
+2026-11-07T20:49:31.3321440Z Updating files:  24% (8449/35001)
+2026-11-07T20:49:31.4203170Z Updating files:  25% (8751/35001)
+2026-11-07T20:49:31.5131930Z Updating files:  26% (9101/35001)
+2026-11-07T20:49:31.7057610Z Updating files:  27% (9451/35001)
+2026-11-07T20:49:31.8275660Z Updating files:  28% (9801/35001)
+2026-11-07T20:49:31.9404210Z Updating files:  29% (10151/35001)
+2026-11-07T20:49:32.1010520Z Updating files:  30% (10501/35001)
+2026-11-07T20:49:32.2408970Z Updating files:  31% (10851/35001)
+2026-11-07T20:49:32.2556950Z Updating files:  32% (11201/35001)
+2026-11-07T20:49:32.3279280Z Updating files:  32% (11260/35001)
+2026-11-07T20:49:32.4695360Z Updating files:  33% (11551/35001)
+2026-11-07T20:49:32.5854230Z Updating files:  34% (11901/35001)
+2026-11-07T20:49:32.7669900Z Updating files:  35% (12251/35001)
+2026-11-07T20:49:32.8672120Z Updating files:  36% (12601/35001)
+2026-11-07T20:49:32.9674520Z Updating files:  37% (12951/35001)
+2026-11-07T20:49:33.0678100Z Updating files:  38% (13301/35001)
+2026-11-07T20:49:33.1912640Z Updating files:  39% (13651/35001)
+2026-11-07T20:49:33.2916080Z Updating files:  40% (14001/35001)
+2026-11-07T20:49:33.3571940Z Updating files:  40% (14287/35001)
+2026-11-07T20:49:33.4997720Z Updating files:  41% (14351/35001)
+2026-11-07T20:49:33.5919650Z Updating files:  42% (14701/35001)
+2026-11-07T20:49:33.6836520Z Updating files:  43% (15051/35001)
+2026-11-07T20:49:33.9906260Z Updating files:  44% (15401/35001)
+2026-11-07T20:49:34.1299640Z Updating files:  45% (15751/35001)
+2026-11-07T20:49:34.2305840Z Updating files:  46% (16101/35001)
+2026-11-07T20:49:34.3303900Z Updating files:  47% (16451/35001)
+2026-11-07T20:49:34.3995240Z Updating files:  47% (16635/35001)
+2026-11-07T20:49:34.4425560Z Updating files:  48% (16801/35001)
+2026-11-07T20:49:34.5811440Z Updating files:  49% (17151/35001)
+2026-11-07T20:49:34.7601160Z Updating files:  50% (17501/35001)
+2026-11-07T20:49:34.8672490Z Updating files:  51% (17851/35001)
+2026-11-07T20:49:34.9777430Z Updating files:  52% (18201/35001)
+2026-11-07T20:49:35.1268070Z Updating files:  53% (18551/35001)
+2026-11-07T20:49:35.2122320Z Updating files:  54% (18901/35001)
+2026-11-07T20:49:35.2649470Z Updating files:  55% (19251/35001)
+2026-11-07T20:49:35.3963550Z Updating files:  55% (19382/35001)
+2026-11-07T20:49:35.4906440Z Updating files:  56% (19601/35001)
+2026-11-07T20:49:35.5808260Z Updating files:  57% (19951/35001)
+2026-11-07T20:49:35.6738160Z Updating files:  58% (20301/35001)
+2026-11-07T20:49:35.7581110Z Updating files:  59% (20651/35001)
+2026-11-07T20:49:35.8600410Z Updating files:  60% (21001/35001)
+2026-11-07T20:49:36.0232930Z Updating files:  61% (21351/35001)
+2026-11-07T20:49:36.1169580Z Updating files:  62% (21701/35001)
+2026-11-07T20:49:36.2416670Z Updating files:  63% (22051/35001)
+2026-11-07T20:49:36.3030990Z Updating files:  64% (22401/35001)
+2026-11-07T20:49:36.4035680Z Updating files:  64% (22557/35001)
+2026-11-07T20:49:36.5042590Z Updating files:  65% (22751/35001)
+2026-11-07T20:49:36.6045230Z Updating files:  66% (23101/35001)
+2026-11-07T20:49:36.6516120Z Updating files:  67% (23451/35001)
+2026-11-07T20:49:36.7519550Z Updating files:  68% (23801/35001)
+2026-11-07T20:49:36.8674890Z Updating files:  69% (24151/35001)
+2026-11-07T20:49:36.9886280Z Updating files:  70% (24501/35001)
+2026-11-07T20:49:37.0874430Z Updating files:  71% (24851/35001)
+2026-11-07T20:49:37.2586620Z Updating files:  72% (25201/35001)
+2026-11-07T20:49:37.2690110Z Updating files:  72% (25538/35001)
+2026-11-07T20:49:37.4402530Z Updating files:  73% (25551/35001)
+2026-11-07T20:49:37.6855620Z Updating files:  74% (25901/35001)
+2026-11-07T20:49:37.7719650Z Updating files:  75% (26251/35001)
+2026-11-07T20:49:37.8875410Z Updating files:  76% (26601/35001)
+2026-11-07T20:49:37.9878340Z Updating files:  77% (26951/35001)
+2026-11-07T20:49:38.1362570Z Updating files:  78% (27301/35001)
+2026-11-07T20:49:38.2651210Z Updating files:  79% (27651/35001)
+2026-11-07T20:49:38.2669240Z Updating files:  80% (28001/35001)
+2026-11-07T20:49:38.5405510Z Updating files:  80% (28057/35001)
+2026-11-07T20:49:38.6150900Z Updating files:  81% (28351/35001)
+2026-11-07T20:49:38.7153800Z Updating files:  82% (28701/35001)
+2026-11-07T20:49:38.7711710Z Updating files:  83% (29051/35001)
+2026-11-07T20:49:38.8828880Z Updating files:  84% (29401/35001)
+2026-11-07T20:49:38.9816580Z Updating files:  85% (29751/35001)
+2026-11-07T20:49:39.0777400Z Updating files:  86% (30101/35001)
+2026-11-07T20:49:39.1928320Z Updating files:  87% (30451/35001)
+2026-11-07T20:49:39.2604050Z Updating files:  88% (30801/35001)
+2026-11-07T20:49:39.2815720Z Updating files:  88% (31071/35001)
+2026-11-07T20:49:39.3831980Z Updating files:  89% (31151/35001)
+2026-11-07T20:49:39.4986800Z Updating files:  90% (31501/35001)
+2026-11-07T20:49:39.6273260Z Updating files:  91% (31851/35001)
+2026-11-07T20:49:39.7350330Z Updating files:  92% (32201/35001)
+2026-11-07T20:49:39.8352710Z Updating files:  93% (32551/35001)
+2026-11-07T20:49:39.8970830Z Updating files:  94% (32901/35001)
+2026-11-07T20:49:39.9990930Z Updating files:  95% (33251/35001)
+2026-11-07T20:49:40.2157690Z Updating files:  96% (33601/35001)
+2026-11-07T20:49:40.3160680Z Updating files:  97% (33951/35001)
+2026-11-07T20:49:40.3641760Z Updating files:  97% (33976/35001)
+2026-11-07T20:49:40.4726160Z Updating files:  98% (34301/35001)
+2026-11-07T20:49:40.5726840Z Updating files:  99% (34651/35001)
+2026-11-07T20:49:40.6091380Z Updating files: 100% (35001/35001)
+2026-11-07T20:49:40.6121110Z Updating files: 100% (35001/35001), done.
+2026-11-07T20:49:40.6824300Z Switched to a new branch 'main'
+2026-11-07T20:49:40.7321590Z branch 'main' set up to track 'origin/main'.
+2026-11-07T20:49:40.7349670Z ##[endgroup]
+2026-11-07T20:49:40.7355800Z [command]/usr/local/bin/git log -1 --format=%H
+2026-11-07T20:49:40.7358410Z 424c78b79fd1980ed52f9b2fe78d31a3c28fc39c
+2026-11-07T20:49:40.8264240Z ##[group]Run actions/checkout@v4
+2026-11-07T20:49:40.8264710Z with:
+2026-11-07T20:49:40.8265050Z   ref: 206776b209c51fdd62661af6e90feb720bb6c1f1
+2026-11-07T20:49:40.8265530Z   path: baseline
+2026-11-07T20:49:40.8265880Z   repository: 29583855/dukto-next
+2026-11-07T20:49:40.8271170Z   token: ***
+2026-11-07T20:49:40.8271500Z   ssh-strict: true
+2026-11-07T20:49:40.8271830Z   ssh-user: git
+2026-11-07T20:49:40.8272170Z   persist-credentials: true
+2026-11-07T20:49:40.8272550Z   clean: true
+2026-11-07T20:49:40.8273040Z   sparse-checkout-cone-mode: true
+2026-11-07T20:49:40.8273490Z   fetch-depth: 1
+2026-11-07T20:49:40.8273820Z   fetch-tags: false
+2026-11-07T20:49:40.8274180Z   show-progress: true
+2026-11-07T20:49:40.8274530Z   lfs: false
+2026-11-07T20:49:40.8274850Z   submodules: false
+2026-11-07T20:49:40.8275210Z   set-safe-directory: true
+2026-11-07T20:49:40.8275640Z   allow-unsafe-pr-checkout: false
+2026-11-07T20:49:40.8276080Z ##[endgroup]
+2026-11-07T20:49:41.0057370Z Syncing repository: 29583855/dukto-next
+2026-11-07T20:49:41.0076570Z ##[group]Getting Git version info
+2026-11-07T20:49:41.0112990Z Working directory is '/Users/runner/work/dukto-next/dukto-next/baseline'
+2026-11-07T20:49:41.0145940Z [command]/usr/local/bin/git version
+2026-11-07T20:49:41.0181260Z git version 2.55.0
+2026-11-07T20:49:41.0336720Z ##[endgroup]
+2026-11-07T20:49:41.0366140Z Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/bfd67a43-a4d4-4e4f-bb12-0be2efa01e64/.gitconfig'
+2026-11-07T20:49:41.0392540Z Temporarily overriding HOME='/Users/runner/work/_temp/bfd67a43-a4d4-4e4f-bb12-0be2efa01e64' before making global git config changes
+2026-11-07T20:49:41.0415520Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-07T20:49:41.0423370Z [command]/usr/local/bin/git config --global --add safe.directory /Users/runner/work/dukto-next/dukto-next/baseline
+2026-11-07T20:49:41.0741410Z ##[group]Initializing the repository
+2026-11-07T20:49:41.0747190Z [command]/usr/local/bin/git init /Users/runner/work/dukto-next/dukto-next/baseline
+2026-11-07T20:49:41.0843890Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-11-07T20:49:41.1133290Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-11-07T20:49:41.1143650Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-11-07T20:49:41.1152460Z hint: call:
+2026-11-07T20:49:41.1170080Z hint:
+2026-11-07T20:49:41.1281670Z hint: 	git config --global init.defaultBranch <name>
+2026-11-07T20:49:41.1287960Z hint:
+2026-11-07T20:49:41.1364000Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-11-07T20:49:41.1383170Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-11-07T20:49:41.1389610Z hint:
+2026-11-07T20:49:41.1422170Z hint: 	git branch -m <name>
+2026-11-07T20:49:41.1431000Z hint:
+2026-11-07T20:49:41.1437270Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-11-07T20:49:41.1444970Z Initialized empty Git repository in /Users/runner/work/dukto-next/dukto-next/baseline/.git/
+2026-11-07T20:49:41.1833540Z [command]/usr/local/bin/git remote add origin https://github.com/29583855/dukto-next
+2026-11-07T20:49:41.2028500Z ##[endgroup]
+2026-11-07T20:49:41.2037680Z ##[group]Disabling automatic garbage collection
+2026-11-07T20:49:41.2239480Z [command]/usr/local/bin/git config --local gc.auto 0
+2026-11-07T20:49:41.2366990Z ##[endgroup]
+2026-11-07T20:49:41.2398620Z ##[group]Setting up auth
+2026-11-07T20:49:41.2455830Z [command]/usr/local/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-07T20:49:41.2541360Z [command]/usr/local/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-07T20:49:41.2654930Z [command]/usr/local/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-07T20:49:41.2701310Z [command]/usr/local/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-07T20:49:41.4224170Z [command]/usr/local/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-07T20:49:41.4335770Z [command]/usr/local/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-07T20:49:41.6582550Z [command]/usr/local/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-11-07T20:49:41.6594040Z ##[endgroup]
+2026-11-07T20:49:41.6595660Z ##[group]Fetching the repository
+2026-11-07T20:49:41.6598060Z [command]/usr/local/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin 206776b209c51fdd62661af6e90feb720bb6c1f1
+2026-11-07T20:49:48.5031440Z From https://github.com/29583855/dukto-next
+2026-11-07T20:49:48.5040990Z  * branch              206776b209c51fdd62661af6e90feb720bb6c1f1 -> FETCH_HEAD
+2026-11-07T20:49:48.5049950Z ##[endgroup]
+2026-11-07T20:49:48.5269660Z ##[group]Determining the checkout info
+2026-11-07T20:49:48.5349570Z ##[endgroup]
+2026-11-07T20:49:48.5546640Z [command]/usr/local/bin/git sparse-checkout disable
+2026-11-07T20:49:48.5651050Z [command]/usr/local/bin/git config --local --unset-all extensions.worktreeConfig
+2026-11-07T20:49:48.5936160Z ##[group]Checking out the ref
+2026-11-07T20:49:48.5965870Z [command]/usr/local/bin/git checkout --progress --force 206776b209c51fdd62661af6e90feb720bb6c1f1
+2026-11-07T20:49:49.7081420Z Updating files:   8% (2876/34682)
+2026-11-07T20:49:49.9591330Z Updating files:   9% (3122/34682)
+2026-11-07T20:49:50.0813230Z Updating files:  10% (3469/34682)
+2026-11-07T20:49:50.1805550Z Updating files:  11% (3816/34682)
+2026-11-07T20:49:50.2989390Z Updating files:  12% (4162/34682)
+2026-11-07T20:49:50.3852980Z Updating files:  13% (4509/34682)
+2026-11-07T20:49:50.4863840Z Updating files:  14% (4856/34682)
+2026-11-07T20:49:50.5878500Z Updating files:  15% (5203/34682)
+2026-11-07T20:49:50.5912210Z Updating files:  15% (5535/34682)
+2026-11-07T20:49:50.7569990Z Updating files:  16% (5550/34682)
+2026-11-07T20:49:50.8497950Z Updating files:  17% (5896/34682)
+2026-11-07T20:49:50.9614890Z Updating files:  18% (6243/34682)
+2026-11-07T20:49:51.0694630Z Updating files:  19% (6590/34682)
+2026-11-07T20:49:51.1642010Z Updating files:  20% (6937/34682)
+2026-11-07T20:49:51.2656800Z Updating files:  21% (7284/34682)
+2026-11-07T20:49:51.4103790Z Updating files:  22% (7631/34682)
+2026-11-07T20:49:51.5024010Z Updating files:  23% (7977/34682)
+2026-11-07T20:49:51.5854790Z Updating files:  24% (8324/34682)
+2026-11-07T20:49:51.6071320Z Updating files:  24% (8594/34682)
+2026-11-07T20:49:51.6961340Z Updating files:  25% (8671/34682)
+2026-11-07T20:49:51.8363870Z Updating files:  26% (9018/34682)
+2026-11-07T20:49:51.9416660Z Updating files:  27% (9365/34682)
+2026-11-07T20:49:52.0810080Z Updating files:  28% (9711/34682)
+2026-11-07T20:49:52.1832900Z Updating files:  29% (10058/34682)
+2026-11-07T20:49:52.2957900Z Updating files:  30% (10405/34682)
+2026-11-07T20:49:52.5459650Z Updating files:  31% (10752/34682)
+2026-11-07T20:49:52.5855840Z Updating files:  32% (11099/34682)
+2026-11-07T20:49:52.7146670Z Updating files:  32% (11255/34682)
+2026-11-07T20:49:52.7790580Z Updating files:  33% (11446/34682)
+2026-11-07T20:49:52.9076510Z Updating files:  34% (11792/34682)
+2026-11-07T20:49:53.0212680Z Updating files:  35% (12139/34682)
+2026-11-07T20:49:53.0827410Z Updating files:  36% (12486/34682)
+2026-11-07T20:49:53.1762210Z Updating files:  37% (12833/34682)
+2026-11-07T20:49:53.2765100Z Updating files:  38% (13180/34682)
+2026-11-07T20:49:53.4203110Z Updating files:  39% (13526/34682)
+2026-11-07T20:49:53.5450670Z Updating files:  40% (13873/34682)
+2026-11-07T20:49:53.5927810Z Updating files:  41% (14220/34682)
+2026-11-07T20:49:53.6499540Z Updating files:  41% (14392/34682)
+2026-11-07T20:49:53.7611800Z Updating files:  42% (14567/34682)
+2026-11-07T20:49:53.8567260Z Updating files:  43% (14914/34682)
+2026-11-07T20:49:53.9735420Z Updating files:  44% (15261/34682)
+2026-11-07T20:49:54.2036550Z Updating files:  45% (15607/34682)
+2026-11-07T20:49:54.3123290Z Updating files:  46% (15954/34682)
+2026-11-07T20:49:54.4745290Z Updating files:  47% (16301/34682)
+2026-11-07T20:49:54.5822560Z Updating files:  48% (16648/34682)
+2026-11-07T20:49:54.5876130Z Updating files:  49% (16995/34682)
+2026-11-07T20:49:54.7019390Z Updating files:  49% (17013/34682)
+2026-11-07T20:49:54.7861980Z Updating files:  50% (17341/34682)
+2026-11-07T20:49:54.9644510Z Updating files:  51% (17688/34682)
+2026-11-07T20:49:55.0671070Z Updating files:  52% (18035/34682)
+2026-11-07T20:49:55.2145100Z Updating files:  53% (18382/34682)
+2026-11-07T20:49:55.2775410Z Updating files:  54% (18729/34682)
+2026-11-07T20:49:55.3760350Z Updating files:  55% (19076/34682)
+2026-11-07T20:49:55.4938360Z Updating files:  56% (19422/34682)
+2026-11-07T20:49:55.6023350Z Updating files:  57% (19769/34682)
+2026-11-07T20:49:55.6587460Z Updating files:  57% (19909/34682)
+2026-11-07T20:49:55.7671660Z Updating files:  58% (20116/34682)
+2026-11-07T20:49:55.9886850Z Updating files:  59% (20463/34682)
+2026-11-07T20:49:56.0582700Z Updating files:  60% (20810/34682)
+2026-11-07T20:49:56.1325040Z Updating files:  61% (21157/34682)
+2026-11-07T20:49:56.2226770Z Updating files:  62% (21503/34682)
+2026-11-07T20:49:56.3459730Z Updating files:  63% (21850/34682)
+2026-11-07T20:49:56.4536610Z Updating files:  64% (22197/34682)
+2026-11-07T20:49:56.5473060Z Updating files:  65% (22544/34682)
+2026-11-07T20:49:56.5883070Z Updating files:  66% (22891/34682)
+2026-11-07T20:49:56.7278230Z Updating files:  66% (23034/34682)
+2026-11-07T20:49:56.7597970Z Updating files:  67% (23237/34682)
+2026-11-07T20:49:56.9469080Z Updating files:  68% (23584/34682)
+2026-11-07T20:49:56.9964810Z Updating files:  69% (23931/34682)
+2026-11-07T20:49:57.1084980Z Updating files:  70% (24278/34682)
+2026-11-07T20:49:57.2090600Z Updating files:  71% (24625/34682)
+2026-11-07T20:49:57.3548530Z Updating files:  72% (24972/34682)
+2026-11-07T20:49:57.4078800Z Updating files:  73% (25318/34682)
+2026-11-07T20:49:57.5698520Z Updating files:  74% (25665/34682)
+2026-11-07T20:49:57.5893790Z Updating files:  75% (26012/34682)
+2026-11-07T20:49:57.6788050Z Updating files:  75% (26074/34682)
+2026-11-07T20:49:57.7916500Z Updating files:  76% (26359/34682)
+2026-11-07T20:49:57.8932030Z Updating files:  77% (26706/34682)
+2026-11-07T20:49:57.9879500Z Updating files:  78% (27052/34682)
+2026-11-07T20:49:58.1326320Z Updating files:  79% (27399/34682)
+2026-11-07T20:49:58.2746560Z Updating files:  80% (27746/34682)
+2026-11-07T20:49:58.3740210Z Updating files:  81% (28093/34682)
+2026-11-07T20:49:58.4752510Z Updating files:  82% (28440/34682)
+2026-11-07T20:49:58.5768340Z Updating files:  83% (28787/34682)
+2026-11-07T20:49:58.5987100Z Updating files:  84% (29133/34682)
+2026-11-07T20:49:58.6573840Z Updating files:  84% (29219/34682)
+2026-11-07T20:49:58.7501670Z Updating files:  85% (29480/34682)
+2026-11-07T20:49:58.8817490Z Updating files:  86% (29827/34682)
+2026-11-07T20:49:58.9805080Z Updating files:  87% (30174/34682)
+2026-11-07T20:49:59.0738060Z Updating files:  88% (30521/34682)
+2026-11-07T20:49:59.2744590Z Updating files:  89% (30867/34682)
+2026-11-07T20:49:59.3079360Z Updating files:  90% (31214/34682)
+2026-11-07T20:49:59.3985250Z Updating files:  91% (31561/34682)
+2026-11-07T20:49:59.5360160Z Updating files:  92% (31908/34682)
+2026-11-07T20:49:59.5889550Z Updating files:  93% (32255/34682)
+2026-11-07T20:49:59.6279910Z Updating files:  93% (32461/34682)
+2026-11-07T20:49:59.7111870Z Updating files:  94% (32602/34682)
+2026-11-07T20:49:59.8172870Z Updating files:  95% (32948/34682)
+2026-11-07T20:49:59.9035610Z Updating files:  96% (33295/34682)
+2026-11-07T20:50:00.0184020Z Updating files:  97% (33642/34682)
+2026-11-07T20:50:00.1448230Z Updating files:  98% (33989/34682)
+2026-11-07T20:50:00.2391810Z Updating files:  99% (34336/34682)
+2026-11-07T20:50:00.2393250Z Updating files: 100% (34682/34682)
+2026-11-07T20:50:00.2395930Z Updating files: 100% (34682/34682), done.
+2026-11-07T20:50:00.3076940Z HEAD is now at 206776b2 Verify R123 persistent domains on four platforms and publish native macOS previews [skip ci]
+2026-11-07T20:50:00.3152430Z ##[endgroup]
+2026-11-07T20:50:00.3276650Z [command]/usr/local/bin/git log -1 --format=%H
+2026-11-07T20:50:00.3384630Z 206776b209c51fdd62661af6e90feb720bb6c1f1
+2026-11-07T20:50:00.3606230Z ##[group]Run actions/setup-python@v5
+2026-11-07T20:50:00.3606980Z with:
+2026-11-07T20:50:00.3607430Z   python-version: 3.12
+2026-11-07T20:50:00.3607950Z   check-latest: false
+2026-11-07T20:50:00.3613970Z   token: ***
+2026-11-07T20:50:00.3614350Z   update-environment: true
+2026-11-07T20:50:00.3614770Z   allow-prereleases: false
+2026-11-07T20:50:00.3615160Z   freethreaded: false
+2026-11-07T20:50:00.3615510Z ##[endgroup]
+2026-11-07T20:50:00.5520390Z ##[group]Installed versions
+2026-11-07T20:50:00.5617220Z (node:2209) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-07T20:50:00.5619220Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-07T20:50:00.5620030Z Successfully set up CPython (3.12.10)
+2026-11-07T20:50:00.5620960Z ##[endgroup]
+2026-11-07T20:50:00.5790730Z ##[group]Run brew install qt@5 openssl@3
+2026-11-07T20:50:00.5791410Z [36;1mbrew install qt@5 openssl@3[0m
+2026-11-07T20:50:00.5792140Z [36;1mecho "CMAKE_PREFIX_PATH=$(brew --prefix qt@5)" >> "$GITHUB_ENV"[0m
+2026-11-07T20:50:00.5793470Z [36;1mecho "OPENSSL_ROOT_DIR=$(brew --prefix openssl@3)" >> "$GITHUB_ENV"[0m
+2026-11-07T20:50:00.5794340Z [36;1mecho "$(brew --prefix qt@5)/bin" >> "$GITHUB_PATH"[0m
+2026-11-07T20:50:00.5873010Z shell: /bin/bash -e {0}
+2026-11-07T20:50:00.5873470Z env:
+2026-11-07T20:50:00.5874010Z   pythonLocation: /Users/runner/hostedtoolcache/Python/3.12.10/x64
+2026-11-07T20:50:00.5875020Z   PKG_CONFIG_PATH: /Users/runner/hostedtoolcache/Python/3.12.10/x64/lib/pkgconfig
+2026-11-07T20:50:00.5876030Z   Python_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/x64
+2026-11-07T20:50:00.5876940Z   Python2_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/x64
+2026-11-07T20:50:00.5877950Z   Python3_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/x64
+2026-11-07T20:50:00.5878660Z ##[endgroup]
+2026-11-07T20:50:03.4629960Z [33mWarning:[0m openssl@3 3.6.3 is already installed and up-to-date.
+2026-11-07T20:50:03.4630820Z To reinstall 3.6.3, run:
+2026-11-07T20:50:03.4631290Z   brew reinstall openssl@3
+2026-11-07T20:50:03.5260890Z ##[warning]qt@5 has been deprecated because it is not supported upstream! It will be disabled on 2027-05-19.
+2026-11-07T20:50:03.5579290Z [32m==>[0m [1mDownloading bottle manifests[0m
+2026-11-07T20:50:03.8772380Z ✔︎ Bottle Manifest qt@5 (5.15.19)
+2026-11-07T20:50:03.8775000Z [34m==>[0m [1mWould install 1 formula:[0m
+2026-11-07T20:50:03.8775650Z qt@5
+2026-11-07T20:50:04.1010130Z [34m==>[0m [1mWould install 1 dependency for qt@5:[0m
+2026-11-07T20:50:04.1010800Z md4c
+2026-11-07T20:50:04.1342220Z [32m==>[0m [1mFetching downloads for: [32mqt@5[39m[0m
+2026-11-07T20:50:04.3823730Z ✔︎ Bottle Manifest md4c (0.5.3)
+2026-11-07T20:50:04.4589930Z ✔︎ Bottle md4c (0.5.3)
+2026-11-07T20:50:09.8725510Z ✔︎ Bottle qt@5 (5.15.19)
+2026-11-07T20:50:09.9987490Z [32m==>[0m [1mInstalling qt@5 dependency: [32mmd4c[39m[0m
+2026-11-07T20:50:10.0034370Z [34m==>[0m [1mPouring md4c--0.5.3.sonoma.bottle.tar.gz[0m
+2026-11-07T20:50:10.2509810Z 🍺  /usr/local/Cellar/md4c/0.5.3: 20 files, 220.2KB
+2026-11-07T20:50:10.2514550Z [32m==>[0m [1mInstalling [32mqt@5[39m[0m
+2026-11-07T20:50:10.2517720Z [34m==>[0m [1mPouring qt@5--5.15.19.sonoma.bottle.tar.gz[0m
+2026-11-07T20:50:28.7049620Z [34m==>[0m [1mCaveats[0m
+2026-11-07T20:50:28.7050240Z We agreed to the Qt open source license for you.
+2026-11-07T20:50:28.7050910Z If this is unacceptable you should uninstall.
+2026-11-07T20:50:28.7051330Z 
+2026-11-07T20:50:28.7051600Z You can add Homebrew's Qt to QtCreator's "Qt Versions" in:
+2026-11-07T20:50:28.7052310Z   Preferences > Qt Versions > Link with Qt...
+2026-11-07T20:50:28.7053100Z pressing "Choose..." and selecting as the Qt installation path:
+2026-11-07T20:50:28.7053800Z   /usr/local/opt/qt@5
+2026-11-07T20:50:28.7054050Z 
+2026-11-07T20:50:28.7054500Z QtWebEngine is no longer included as its Chromium has unfixed vulnerabilities.
+2026-11-07T20:50:28.7055380Z [34m==>[0m [1mSummary[0m
+2026-11-07T20:50:29.0103810Z 🍺  /usr/local/Cellar/qt@5/5.15.19: 10,468 files, 188.8MB
+2026-11-07T20:50:29.0212500Z [32m==>[0m [1mCaveats[0m
+2026-11-07T20:50:29.0237260Z [34m==>[0m [1mqt@5[0m
+2026-11-07T20:50:29.0386350Z We agreed to the Qt open source license for you.
+2026-11-07T20:50:29.0454610Z If this is unacceptable you should uninstall.
+2026-11-07T20:50:29.0464940Z 
+2026-11-07T20:50:29.0465410Z You can add Homebrew's Qt to QtCreator's "Qt Versions" in:
+2026-11-07T20:50:29.0466130Z   Preferences > Qt Versions > Link with Qt...
+2026-11-07T20:50:29.0466880Z pressing "Choose..." and selecting as the Qt installation path:
+2026-11-07T20:50:29.0469130Z   /usr/local/opt/qt@5
+2026-11-07T20:50:29.0469460Z 
+2026-11-07T20:50:29.0469880Z QtWebEngine is no longer included as its Chromium has unfixed vulnerabilities.
+2026-11-07T20:50:29.1696700Z ##[group]Run python -m pip install psutil
+2026-11-07T20:50:29.1697340Z [36;1mpython -m pip install psutil[0m
+2026-11-07T20:50:29.1767750Z shell: /bin/bash -e {0}
+2026-11-07T20:50:29.1768210Z env:
+2026-11-07T20:50:29.1768770Z   pythonLocation: /Users/runner/hostedtoolcache/Python/3.12.10/x64
+2026-11-07T20:50:29.1769760Z   PKG_CONFIG_PATH: /Users/runner/hostedtoolcache/Python/3.12.10/x64/lib/pkgconfig
+2026-11-07T20:50:29.1770740Z   Python_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/x64
+2026-11-07T20:50:29.1771630Z   Python2_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/x64
+2026-11-07T20:50:29.1772510Z   Python3_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/x64
+2026-11-07T20:50:29.1773260Z   CMAKE_PREFIX_PATH: /usr/local/opt/qt@5
+2026-11-07T20:50:29.1773830Z   OPENSSL_ROOT_DIR: /usr/local/opt/openssl@3
+2026-11-07T20:50:29.1774380Z ##[endgroup]
+2026-11-07T20:50:31.0600710Z Collecting psutil
+2026-11-07T20:50:31.1804230Z   Downloading psutil-7.2.2-cp36-abi3-macosx_10_9_x86_64.whl.metadata (22 kB)
+2026-11-07T20:50:31.2266550Z Downloading psutil-7.2.2-cp36-abi3-macosx_10_9_x86_64.whl (129 kB)
+2026-11-07T20:50:31.3136430Z Installing collected packages: psutil
+2026-11-07T20:50:31.3851770Z Successfully installed psutil-7.2.2
+2026-11-07T20:50:31.3863260Z 
+2026-11-07T20:50:31.3864220Z [notice] A new release of pip is available: 26.2.1 -> 26.3
+2026-11-07T20:50:31.3865850Z [notice] To update, run: python -m pip install --upgrade pip
+2026-11-07T20:50:31.4513070Z ##[group]Run cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DDUKTO_BUILD_GUI=OFF
+2026-11-07T20:50:31.4514170Z [36;1mcmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DDUKTO_BUILD_GUI=OFF[0m
+2026-11-07T20:50:31.4575020Z shell: /bin/bash -e {0}
+2026-11-07T20:50:31.4575450Z env:
+2026-11-07T20:50:31.4575990Z   pythonLocation: /Users/runner/hostedtoolcache/Python/3.12.10/x64
+2026-11-07T20:50:31.4577050Z   PKG_CONFIG_PATH: /Users/runner/hostedtoolcache/Python/3.12.10/x64/lib/pkgconfig
+2026-11-07T20:50:31.4578460Z   Python_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/x64
+2026-11-07T20:50:31.4579360Z   Python2_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/x64
+2026-11-07T20:50:31.4580250Z   Python3_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/x64
+2026-11-07T20:50:31.4580980Z   CMAKE_PREFIX_PATH: /usr/local/opt/qt@5
+2026-11-07T20:50:31.4581790Z   OPENSSL_ROOT_DIR: /usr/local/opt/openssl@3
+2026-11-07T20:50:31.4582650Z ##[endgroup]
+2026-11-07T20:50:32.7713040Z -- The C compiler identification is AppleClang 17.0.0.17000013
+2026-11-07T20:50:34.5145060Z -- The CXX compiler identification is AppleClang 17.0.0.17000013
+2026-11-07T20:50:34.5737870Z -- Detecting C compiler ABI info
+2026-11-07T20:50:35.7547760Z -- Detecting C compiler ABI info - done
+2026-11-07T20:50:35.7823160Z -- Check for working C compiler: /usr/bin/cc - skipped
+2026-11-07T20:50:35.7839120Z -- Detecting C compile features
+2026-11-07T20:50:35.7850700Z -- Detecting C compile features - done
+2026-11-07T20:50:35.8005800Z -- Detecting CXX compiler ABI info
+2026-11-07T20:50:36.0998000Z -- Detecting CXX compiler ABI info - done
+2026-11-07T20:50:36.1283500Z -- Check for working CXX compiler: /usr/bin/c++ - skipped
+2026-11-07T20:50:36.1288280Z -- Detecting CXX compile features
+2026-11-07T20:50:36.1296030Z -- Detecting CXX compile features - done
+2026-11-07T20:50:36.2756320Z -- Found OpenSSL: /usr/local/opt/openssl@3/lib/libcrypto.dylib (found suitable version "3.6.3", minimum required is "1.1.1") found components: Crypto
+2026-11-07T20:50:36.3654610Z -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+2026-11-07T20:50:36.7612420Z -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+2026-11-07T20:50:36.7623850Z -- Found Threads: TRUE
+2026-11-07T20:50:36.7700950Z -- Configuring done (5.2s)
+2026-11-07T20:50:37.9909900Z -- Generating done (1.2s)
+2026-11-07T20:50:37.9922300Z -- Build files have been written to: /Users/runner/work/dukto-next/dukto-next/build
+2026-11-07T20:50:38.0041980Z ##[group]Run cmake --build build --config Release --target dukto-cli --parallel 4
+2026-11-07T20:50:38.0043120Z [36;1mcmake --build build --config Release --target dukto-cli --parallel 4[0m
+2026-11-07T20:50:38.0106630Z shell: /bin/bash -e {0}
+2026-11-07T20:50:38.0107060Z env:
+2026-11-07T20:50:38.0107610Z   pythonLocation: /Users/runner/hostedtoolcache/Python/3.12.10/x64
+2026-11-07T20:50:38.0108610Z   PKG_CONFIG_PATH: /Users/runner/hostedtoolcache/Python/3.12.10/x64/lib/pkgconfig
+2026-11-07T20:50:38.0109610Z   Python_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/x64
+2026-11-07T20:50:38.0110490Z   Python2_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/x64
+2026-11-07T20:50:38.0111400Z   Python3_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/x64
+2026-11-07T20:50:38.0112150Z   CMAKE_PREFIX_PATH: /usr/local/opt/qt@5
+2026-11-07T20:50:38.0112760Z   OPENSSL_ROOT_DIR: /usr/local/opt/openssl@3
+2026-11-07T20:50:38.0113310Z ##[endgroup]
+2026-11-07T20:50:38.2113550Z [  0%] Building C object CMakeFiles/dukto-sqlite.dir/src/core/sqliteplatform.c.o
+2026-11-07T20:51:07.0393780Z [  2%] Linking C static library libdukto-sqlite.a
+2026-11-07T20:51:08.7914600Z [  2%] Built target dukto-sqlite
+2026-11-07T20:51:08.8407790Z [  2%] Built target dukto-sql-driver_autogen_timestamp_deps
+2026-11-07T20:51:08.8899850Z [  5%] Automatic MOC for target dukto-sql-driver
+2026-11-07T20:51:09.9282930Z [  5%] Built target dukto-sql-driver_autogen
+2026-11-07T20:51:09.9885040Z [  8%] Building CXX object CMakeFiles/dukto-sql-driver.dir/src/core/sqliteruntime.cpp.o
+2026-11-07T20:51:09.9887280Z [  8%] Building CXX object CMakeFiles/dukto-sql-driver.dir/src/core/sqlitevfs.cpp.o
+2026-11-07T20:51:10.0198750Z [  8%] Building CXX object CMakeFiles/dukto-sql-driver.dir/dukto-sql-driver_autogen/mocs_compilation.cpp.o
+2026-11-07T20:51:10.0207020Z [ 11%] Building CXX object CMakeFiles/dukto-sql-driver.dir/third-party/sqlite-runtime/qt-5.15.2/qsql_sqlite.cpp.o
+2026-11-07T20:51:12.3741760Z [ 11%] Linking CXX static library libdukto-sql-driver.a
+2026-11-07T20:51:12.4737530Z [ 11%] Built target dukto-sql-driver
+2026-11-07T20:51:12.5257240Z [ 11%] Built target dukto-core_autogen_timestamp_deps
+2026-11-07T20:51:12.5771470Z [ 14%] Automatic MOC for target dukto-core
+2026-11-07T20:51:13.1903640Z [ 14%] Built target dukto-core_autogen
+2026-11-07T20:51:13.2486180Z [ 14%] Building CXX object CMakeFiles/dukto-core.dir/src/core/error.cpp.o
+2026-11-07T20:51:13.2727080Z [ 17%] Building CXX object CMakeFiles/dukto-core.dir/dukto-core_autogen/mocs_compilation.cpp.o
+2026-11-07T20:51:13.2730420Z [ 20%] Building CXX object CMakeFiles/dukto-core.dir/src/core/diagnostics.cpp.o
+2026-11-07T20:51:13.2732330Z [ 20%] Building CXX object CMakeFiles/dukto-core.dir/src/core/files.cpp.o
+2026-11-07T20:51:16.1151370Z In file included from /Users/runner/work/dukto-next/dukto-next/build/dukto-core_autogen/mocs_compilation.cpp:3:
+2026-11-07T20:51:16.1765410Z In file included from /Users/runner/work/dukto-next/dukto-next/build/dukto-core_autogen/PRMOGMWJPH/moc_legacy.cpp:10:
+2026-11-07T20:51:16.2770900Z /Users/runner/work/dukto-next/dukto-next/build/dukto-core_autogen/PRMOGMWJPH/../../../src/core/legacy.h:60:10: warning: 'dukto::LegacyJob::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:51:16.2773030Z [ 23%] Building CXX object CMakeFiles/dukto-core.dir/src/core/nativecommit.cpp.o
+2026-11-07T20:51:16.3543750Z    60 |     void event(const QJsonObject &event);
+2026-11-07T20:51:16.4548390Z       |          ^
+2026-11-07T20:51:16.5000940Z /usr/local/opt/qt@5/lib/QtCore.framework/Headers/qthread.h:111:10: note: hidden overloaded virtual function 'QThread::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:51:16.5628390Z   111 |     bool event(QEvent *event) override;
+2026-11-07T20:51:16.5879980Z       |          ^
+2026-11-07T20:51:16.5903720Z In file included from /Users/runner/work/dukto-next/dukto-next/build/dukto-core_autogen/mocs_compilation.cpp:3:
+2026-11-07T20:51:16.6029310Z In file included from /Users/runner/work/dukto-next/dukto-next/build/dukto-core_autogen/PRMOGMWJPH/moc_legacy.cpp:10:
+2026-11-07T20:51:16.6060490Z /Users/runner/work/dukto-next/dukto-next/build/dukto-core_autogen/PRMOGMWJPH/../../../src/core/legacy.h:94:10: warning: 'dukto::LegacyListener::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:51:16.6099960Z    94 |     void event(const QJsonObject &event);
+2026-11-07T20:51:16.6335490Z       |          ^
+2026-11-07T20:51:16.6336230Z [ 23%] Building CXX object CMakeFiles/dukto-core.dir/src/core/sourcefile.cpp.o
+2026-11-07T20:51:16.6915050Z /usr/local/include/QtCore/qobject.h:138:18: note: hidden overloaded virtual function 'QObject::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:51:16.7305940Z   138 |     virtual bool event(QEvent *event);
+2026-11-07T20:51:16.7357000Z       |                  ^
+2026-11-07T20:51:16.7488940Z [ 26%] Building CXX object CMakeFiles/dukto-core.dir/src/core/protocol.cpp.o
+2026-11-07T20:51:16.7491760Z In file included from /Users/runner/work/dukto-next/dukto-next/build/dukto-core_autogen/mocs_compilation.cpp:4:
+2026-11-07T20:51:16.7583140Z In file included from /Users/runner/work/dukto-next/dukto-next/build/dukto-core_autogen/PRMOGMWJPH/moc_service.cpp:10:
+2026-11-07T20:51:16.7611410Z /Users/runner/work/dukto-next/dukto-next/build/dukto-core_autogen/PRMOGMWJPH/../../../src/core/service.h:116:10: warning: 'dukto::ServiceWorker::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:51:16.8615670Z   116 |     void event(const QJsonObject &event);
+2026-11-07T20:51:16.8616720Z [ 26%] Building CXX object CMakeFiles/dukto-core.dir/src/core/securechannel.cpp.o
+2026-11-07T20:51:16.9152040Z       |          ^
+2026-11-07T20:51:16.9364610Z /usr/local/opt/qt@5/lib/QtCore.framework/Headers/qthread.h:111:10: note: hidden overloaded virtual function 'QThread::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:51:16.9619220Z   111 |     bool event(QEvent *event) override;
+2026-11-07T20:51:16.9925800Z       |          ^
+2026-11-07T20:51:17.0582290Z In file included from /Users/runner/work/dukto-next/dukto-next/build/dukto-core_autogen/mocs_compilation.cpp:4:
+2026-11-07T20:51:17.0688980Z In file included from /Users/runner/work/dukto-next/dukto-next/build/dukto-core_autogen/PRMOGMWJPH/moc_service.cpp:10:
+2026-11-07T20:51:17.0950470Z /Users/runner/work/dukto-next/dukto-next/build/dukto-core_autogen/PRMOGMWJPH/../../../src/core/service.h:142:10: warning: 'dukto::ServiceListener::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:51:17.1445140Z   142 |     void event(const QJsonObject &event);
+2026-11-07T20:51:17.1590370Z       |          ^
+2026-11-07T20:51:17.1631650Z /usr/local/include/QtCore/qobject.h:138:18: note: hidden overloaded virtual function 'QObject::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:51:17.2001460Z   138 |     virtual bool event(QEvent *event);
+2026-11-07T20:51:17.2516460Z       |                  ^
+2026-11-07T20:51:17.2674270Z 4 warnings generated.
+2026-11-07T20:51:19.1981510Z [ 29%] Building CXX object CMakeFiles/dukto-core.dir/src/core/buffercredit.cpp.o
+2026-11-07T20:51:19.2532930Z [ 29%] Building CXX object CMakeFiles/dukto-core.dir/src/core/filecredit.cpp.o
+2026-11-07T20:51:19.2676310Z [ 32%] Building CXX object CMakeFiles/dukto-core.dir/src/core/sqlitecache.cpp.o
+2026-11-07T20:51:20.5604670Z [ 32%] Building CXX object CMakeFiles/dukto-core.dir/src/core/privatestore.cpp.o
+2026-11-07T20:51:20.9061420Z [ 32%] Building CXX object CMakeFiles/dukto-core.dir/src/core/statebudget.cpp.o
+2026-11-07T20:51:20.9063620Z [ 35%] Building CXX object CMakeFiles/dukto-core.dir/src/core/stateinventory.cpp.o
+2026-11-07T20:51:20.9640640Z [ 38%] Building CXX object CMakeFiles/dukto-core.dir/src/core/statedomain.cpp.o
+2026-11-07T20:51:22.8084940Z [ 38%] Building CXX object CMakeFiles/dukto-core.dir/src/core/identity.cpp.o
+2026-11-07T20:51:23.0069180Z [ 41%] Building CXX object CMakeFiles/dukto-core.dir/src/core/auth.cpp.o
+2026-11-07T20:51:23.1687490Z [ 44%] Building CXX object CMakeFiles/dukto-core.dir/src/core/sessionpolicy.cpp.o
+2026-11-07T20:51:23.3052230Z [ 44%] Building CXX object CMakeFiles/dukto-core.dir/src/core/transferscheduler.cpp.o
+2026-11-07T20:51:24.6278870Z [ 47%] Building CXX object CMakeFiles/dukto-core.dir/src/core/transferoperation.cpp.o
+2026-11-07T20:51:25.1853960Z [ 47%] Building CXX object CMakeFiles/dukto-core.dir/src/core/service.cpp.o
+2026-11-07T20:51:25.4843090Z [ 50%] Building CXX object CMakeFiles/dukto-core.dir/src/core/shares.cpp.o
+2026-11-07T20:51:25.7361820Z [ 50%] Building CXX object CMakeFiles/dukto-core.dir/src/core/browse.cpp.o
+2026-11-07T20:51:26.4870110Z In file included from /Users/runner/work/dukto-next/dukto-next/src/core/transferoperation.cpp:2:
+2026-11-07T20:51:26.5873850Z /Users/runner/work/dukto-next/dukto-next/src/core/service.h:116:10: warning: 'dukto::ServiceWorker::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:51:26.5875470Z   116 |     void event(const QJsonObject &event);
+2026-11-07T20:51:26.6166670Z       |          ^
+2026-11-07T20:51:26.6736590Z /usr/local/opt/qt@5/lib/QtCore.framework/Headers/qthread.h:111:10: note: hidden overloaded virtual function 'QThread::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:51:26.6816310Z   111 |     bool event(QEvent *event) override;
+2026-11-07T20:51:26.6932870Z       |          ^
+2026-11-07T20:51:26.7935570Z In file included from /Users/runner/work/dukto-next/dukto-next/src/core/transferoperation.cpp:2:
+2026-11-07T20:51:26.8273780Z /Users/runner/work/dukto-next/dukto-next/src/core/service.h:142:10: warning: 'dukto::ServiceListener::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:51:26.8400800Z   142 |     void event(const QJsonObject &event);
+2026-11-07T20:51:26.8778150Z       |          ^
+2026-11-07T20:51:26.9120090Z /usr/local/include/QtCore/qobject.h:138:18: note: hidden overloaded virtual function 'QObject::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:51:26.9170590Z   138 |     virtual bool event(QEvent *event);
+2026-11-07T20:51:26.9459380Z       |                  ^
+2026-11-07T20:51:27.0412230Z In file included from /Users/runner/work/dukto-next/dukto-next/src/core/service.cpp:1:
+2026-11-07T20:51:27.0578950Z /Users/runner/work/dukto-next/dukto-next/src/core/service.h:116:10: warning: 'dukto::ServiceWorker::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:51:27.0617100Z   116 |     void event(const QJsonObject &event);
+2026-11-07T20:51:27.0629490Z       |          ^
+2026-11-07T20:51:27.1416490Z /usr/local/opt/qt@5/lib/QtCore.framework/Headers/qthread.h:111:10: note: hidden overloaded virtual function 'QThread::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:51:27.1427670Z   111 |     bool event(QEvent *event) override;
+2026-11-07T20:51:27.1443880Z       |          ^
+2026-11-07T20:51:27.1657090Z In file included from /Users/runner/work/dukto-next/dukto-next/src/core/service.cpp:1:
+2026-11-07T20:51:27.1671130Z /Users/runner/work/dukto-next/dukto-next/src/core/service.h:142:10: warning: 'dukto::ServiceListener::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:51:27.1672930Z [ 52%] Building CXX object CMakeFiles/dukto-core.dir/src/core/strongmanifest.cpp.o
+2026-11-07T20:51:27.1699320Z   142 |     void event(const QJsonObject &event);
+2026-11-07T20:51:27.1721750Z       |          ^
+2026-11-07T20:51:27.1813660Z /usr/local/include/QtCore/qobject.h:138:18: note: hidden overloaded virtual function 'QObject::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:51:27.1907460Z   138 |     virtual bool event(QEvent *event);
+2026-11-07T20:51:27.2383020Z       |                  ^
+2026-11-07T20:51:27.2885140Z 2 warnings generated.
+2026-11-07T20:51:27.6758750Z [ 52%] Building CXX object CMakeFiles/dukto-core.dir/src/core/uploadmanifest.cpp.o
+2026-11-07T20:51:28.4681430Z [ 55%] Building CXX object CMakeFiles/dukto-core.dir/src/core/dispositionjournal.cpp.o
+2026-11-07T20:51:28.9762550Z 2 warnings generated.
+2026-11-07T20:51:28.9987040Z [ 55%] Building CXX object CMakeFiles/dukto-core.dir/src/core/taskstore.cpp.o
+2026-11-07T20:51:29.3515190Z In file included from /Users/runner/work/dukto-next/dukto-next/src/core/uploadmanifest.cpp:4:
+2026-11-07T20:51:29.4330800Z /Users/runner/work/dukto-next/dukto-next/src/core/service.h:116:10: warning: 'dukto::ServiceWorker::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:51:29.4579390Z   116 |     void event(const QJsonObject &event);
+2026-11-07T20:51:29.4682570Z       |          ^
+2026-11-07T20:51:29.4722030Z /usr/local/opt/qt@5/lib/QtCore.framework/Headers/qthread.h:111:10: note: hidden overloaded virtual function 'QThread::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:51:29.5412300Z   111 |     bool event(QEvent *event) override;
+2026-11-07T20:51:29.5846840Z       |          ^
+2026-11-07T20:51:29.5874360Z In file included from /Users/runner/work/dukto-next/dukto-next/src/core/uploadmanifest.cpp:4:
+2026-11-07T20:51:29.6343120Z /Users/runner/work/dukto-next/dukto-next/src/core/service.h:142:10: warning: 'dukto::ServiceListener::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:51:29.6448920Z   142 |     void event(const QJsonObject &event);
+2026-11-07T20:51:29.6475570Z       |          ^
+2026-11-07T20:51:29.6503300Z /usr/local/include/QtCore/qobject.h:138:18: note: hidden overloaded virtual function 'QObject::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:51:29.6511400Z   138 |     virtual bool event(QEvent *event);
+2026-11-07T20:51:29.6645270Z       |                  ^
+2026-11-07T20:51:29.6689330Z [ 58%] Building CXX object CMakeFiles/dukto-core.dir/src/core/expiredtaskcleanup.cpp.o
+2026-11-07T20:51:30.4792820Z 2 warnings generated.
+2026-11-07T20:51:30.5079690Z [ 58%] Building CXX object CMakeFiles/dukto-core.dir/src/core/clientdownloadcleanup.cpp.o
+2026-11-07T20:51:30.7165510Z [ 61%] Building CXX object CMakeFiles/dukto-core.dir/src/core/directorycleanup.cpp.o
+2026-11-07T20:51:31.9245730Z [ 61%] Building CXX object CMakeFiles/dukto-core.dir/src/core/transferitems.cpp.o
+2026-11-07T20:51:32.4192090Z [ 64%] Building CXX object CMakeFiles/dukto-core.dir/src/core/durablereceive.cpp.o
+2026-11-07T20:51:33.0481620Z [ 64%] Building CXX object CMakeFiles/dukto-core.dir/src/core/receivetree.cpp.o
+2026-11-07T20:51:33.0561500Z [ 67%] Building CXX object CMakeFiles/dukto-core.dir/src/core/receiveskip.cpp.o
+2026-11-07T20:51:34.6752090Z [ 67%] Building CXX object CMakeFiles/dukto-core.dir/src/core/receiveskipfinal.cpp.o
+2026-11-07T20:51:35.0422220Z [ 70%] Building CXX object CMakeFiles/dukto-core.dir/src/core/transferdisposition.cpp.o
+2026-11-07T20:51:35.1310620Z [ 70%] Building CXX object CMakeFiles/dukto-core.dir/src/core/fileexchange.cpp.o
+2026-11-07T20:51:35.9317780Z [ 73%] Building CXX object CMakeFiles/dukto-core.dir/src/core/paralleltransfer.cpp.o
+2026-11-07T20:51:36.8868440Z [ 73%] Building CXX object CMakeFiles/dukto-core.dir/src/core/transferservice.cpp.o
+2026-11-07T20:51:36.9991390Z [ 76%] Building CXX object CMakeFiles/dukto-core.dir/src/core/transferclient.cpp.o
+2026-11-07T20:51:37.6567450Z In file included from /Users/runner/work/dukto-next/dukto-next/src/core/paralleltransfer.cpp:5:
+2026-11-07T20:51:37.6618060Z /Users/runner/work/dukto-next/dukto-next/src/core/service.h:116:10: warning: 'dukto::ServiceWorker::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:51:37.6871460Z   116 |     void event(const QJsonObject &event);
+2026-11-07T20:51:37.6928010Z       |          ^
+2026-11-07T20:51:37.7259120Z /usr/local/opt/qt@5/lib/QtCore.framework/Headers/qthread.h:111:10: note: hidden overloaded virtual function 'QThread::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:51:37.7393310Z   111 |     bool event(QEvent *event) override;
+2026-11-07T20:51:37.7648830Z       |          ^
+2026-11-07T20:51:37.8581110Z In file included from /Users/runner/work/dukto-next/dukto-next/src/core/paralleltransfer.cpp:5:
+2026-11-07T20:51:37.9067200Z /Users/runner/work/dukto-next/dukto-next/src/core/service.h:142:10: warning: 'dukto::ServiceListener::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:51:37.9646240Z   142 |     void event(const QJsonObject &event);
+2026-11-07T20:51:37.9788980Z       |          ^
+2026-11-07T20:51:38.0312950Z /usr/local/include/QtCore/qobject.h:138:18: note: hidden overloaded virtual function 'QObject::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:51:38.0561080Z   138 |     virtual bool event(QEvent *event);
+2026-11-07T20:51:38.0691180Z       |                  ^
+2026-11-07T20:51:38.2643570Z [ 76%] Building CXX object CMakeFiles/dukto-core.dir/src/core/transferprogress.cpp.o
+2026-11-07T20:51:38.8534300Z In file included from /Users/runner/work/dukto-next/dukto-next/src/core/transferclient.cpp:6:
+2026-11-07T20:51:38.8592780Z /Users/runner/work/dukto-next/dukto-next/src/core/service.h:116:10: warning: 'dukto::ServiceWorker::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:51:38.9218960Z   116 |     void event(const QJsonObject &event);
+2026-11-07T20:51:38.9356940Z       |          ^
+2026-11-07T20:51:38.9482000Z /usr/local/opt/qt@5/lib/QtCore.framework/Headers/qthread.h:111:10: note: hidden overloaded virtual function 'QThread::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:51:38.9597430Z   111 |     bool event(QEvent *event) override;
+2026-11-07T20:51:39.0223010Z       |          ^
+2026-11-07T20:51:39.0360600Z In file included from /Users/runner/work/dukto-next/dukto-next/src/core/transferclient.cpp:6:
+2026-11-07T20:51:39.0490300Z /Users/runner/work/dukto-next/dukto-next/src/core/service.h:142:10: warning: 'dukto::ServiceListener::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:51:39.0600740Z   142 |     void event(const QJsonObject &event);
+2026-11-07T20:51:39.1604020Z       |          ^
+2026-11-07T20:51:39.2075750Z /usr/local/include/QtCore/qobject.h:138:18: note: hidden overloaded virtual function 'QObject::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:51:39.2090750Z   138 |     virtual bool event(QEvent *event);
+2026-11-07T20:51:39.2166770Z       |                  ^
+2026-11-07T20:51:40.2847480Z [ 79%] Building CXX object CMakeFiles/dukto-core.dir/src/core/transferaccounting.cpp.o
+2026-11-07T20:51:40.7570680Z 2 warnings generated.
+2026-11-07T20:51:40.7899670Z [ 79%] Building CXX object CMakeFiles/dukto-core.dir/src/core/manifest.cpp.o
+2026-11-07T20:51:40.9535080Z [ 82%] Building CXX object CMakeFiles/dukto-core.dir/src/core/legacy.cpp.o
+2026-11-07T20:51:41.9025940Z 2 warnings generated.
+2026-11-07T20:51:41.9385140Z [ 85%] Building CXX object CMakeFiles/dukto-core.dir/src/core/tcplistener.cpp.o
+2026-11-07T20:51:42.0758180Z [ 85%] Building CXX object CMakeFiles/dukto-core.dir/src/core/discovery.cpp.o
+2026-11-07T20:51:42.5242210Z In file included from /Users/runner/work/dukto-next/dukto-next/src/core/legacy.cpp:1:
+2026-11-07T20:51:42.5883630Z /Users/runner/work/dukto-next/dukto-next/src/core/legacy.h:60:10: warning: 'dukto::LegacyJob::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:51:42.5910550Z    60 |     void event(const QJsonObject &event);
+2026-11-07T20:51:42.5979530Z       |          ^
+2026-11-07T20:51:42.6008740Z /usr/local/opt/qt@5/lib/QtCore.framework/Headers/qthread.h:111:10: note: hidden overloaded virtual function 'QThread::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:51:42.6052650Z   111 |     bool event(QEvent *event) override;
+2026-11-07T20:51:42.6226630Z       |          ^
+2026-11-07T20:51:42.6227360Z [ 88%] Building CXX object CMakeFiles/dukto-core.dir/src/core/endpoint.cpp.o
+2026-11-07T20:51:42.6268500Z In file included from /Users/runner/work/dukto-next/dukto-next/src/core/legacy.cpp:1:
+2026-11-07T20:51:42.6290750Z /Users/runner/work/dukto-next/dukto-next/src/core/legacy.h:94:10: warning: 'dukto::LegacyListener::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:51:42.6324120Z    94 |     void event(const QJsonObject &event);
+2026-11-07T20:51:42.6367730Z       |          ^
+2026-11-07T20:51:42.6461560Z /usr/local/include/QtCore/qobject.h:138:18: note: hidden overloaded virtual function 'QObject::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:51:42.6904940Z   138 |     virtual bool event(QEvent *event);
+2026-11-07T20:51:42.6930580Z       |                  ^
+2026-11-07T20:51:44.0098120Z [ 88%] Building CXX object CMakeFiles/dukto-core.dir/src/core/updates.cpp.o
+2026-11-07T20:51:44.0845670Z 2 warnings generated.
+2026-11-07T20:51:44.1848490Z [ 91%] Building CXX object CMakeFiles/dukto-core.dir/src/core/catalog.cpp.o
+2026-11-07T20:51:45.8179900Z [ 91%] Linking CXX static library libdukto-core.a
+2026-11-07T20:51:46.1000330Z [ 91%] Built target dukto-core
+2026-11-07T20:51:46.1495940Z [ 91%] Built target dukto-cli_autogen_timestamp_deps
+2026-11-07T20:51:46.2024300Z [ 91%] Automatic MOC for target dukto-cli
+2026-11-07T20:51:46.3291830Z [ 91%] Built target dukto-cli_autogen
+2026-11-07T20:51:46.3878750Z [ 94%] Building CXX object CMakeFiles/dukto-cli.dir/dukto-cli_autogen/mocs_compilation.cpp.o
+2026-11-07T20:51:46.4896450Z [ 94%] Building CXX object CMakeFiles/dukto-cli.dir/src/cli/main.cpp.o
+2026-11-07T20:51:46.5921430Z [ 97%] Building CXX object CMakeFiles/dukto-cli.dir/src/cli/input.cpp.o
+2026-11-07T20:51:46.6924750Z [ 97%] Building CXX object CMakeFiles/dukto-cli.dir/src/cli/servicecommands.cpp.o
+2026-11-07T20:51:47.8665490Z In file included from /Users/runner/work/dukto-next/dukto-next/src/cli/servicecommands.cpp:8:
+2026-11-07T20:51:47.8844170Z /Users/runner/work/dukto-next/dukto-next/src/core/service.h:116:10: warning: 'dukto::ServiceWorker::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:51:47.8888280Z   116 |     void event(const QJsonObject &event);
+2026-11-07T20:51:47.8889800Z       |          ^
+2026-11-07T20:51:47.8897860Z /usr/local/opt/qt@5/lib/QtCore.framework/Headers/qthread.h:111:10: note: hidden overloaded virtual function 'QThread::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:51:47.9151750Z   111 |     bool event(QEvent *event) override;
+2026-11-07T20:51:47.9188300Z       |          ^
+2026-11-07T20:51:47.9190570Z In file included from /Users/runner/work/dukto-next/dukto-next/src/cli/servicecommands.cpp:8:
+2026-11-07T20:51:47.9216140Z /Users/runner/work/dukto-next/dukto-next/src/core/service.h:142:10: warning: 'dukto::ServiceListener::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:51:47.9412830Z   142 |     void event(const QJsonObject &event);
+2026-11-07T20:51:47.9498150Z       |          ^
+2026-11-07T20:51:47.9506500Z /usr/local/include/QtCore/qobject.h:138:18: note: hidden overloaded virtual function 'QObject::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:51:47.9509000Z   138 |     virtual bool event(QEvent *event);
+2026-11-07T20:51:47.9510340Z       |                  ^
+2026-11-07T20:51:47.9511860Z In file included from /Users/runner/work/dukto-next/dukto-next/src/cli/main.cpp:8:
+2026-11-07T20:51:47.9514320Z /Users/runner/work/dukto-next/dukto-next/src/core/legacy.h:60:10: warning: 'dukto::LegacyJob::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:51:47.9516550Z    60 |     void event(const QJsonObject &event);
+2026-11-07T20:51:47.9517890Z       |          ^
+2026-11-07T20:51:47.9521350Z /usr/local/opt/qt@5/lib/QtCore.framework/Headers/qthread.h:111:10: note: hidden overloaded virtual function 'QThread::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:51:47.9524220Z   111 |     bool event(QEvent *event) override;
+2026-11-07T20:51:47.9525550Z       |          ^
+2026-11-07T20:51:47.9527060Z In file included from /Users/runner/work/dukto-next/dukto-next/src/cli/main.cpp:8:
+2026-11-07T20:51:47.9531610Z /Users/runner/work/dukto-next/dukto-next/src/core/legacy.h:94:10: warning: 'dukto::LegacyListener::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:51:47.9534040Z    94 |     void event(const QJsonObject &event);
+2026-11-07T20:51:47.9535520Z       |          ^
+2026-11-07T20:51:47.9537950Z /usr/local/include/QtCore/qobject.h:138:18: note: hidden overloaded virtual function 'QObject::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:51:47.9540520Z   138 |     virtual bool event(QEvent *event);
+2026-11-07T20:51:47.9542080Z       |                  ^
+2026-11-07T20:51:47.9543740Z In file included from /Users/runner/work/dukto-next/dukto-next/src/cli/main.cpp:9:
+2026-11-07T20:51:47.9546410Z /Users/runner/work/dukto-next/dukto-next/src/core/service.h:116:10: warning: 'dukto::ServiceWorker::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:51:47.9548940Z   116 |     void event(const QJsonObject &event);
+2026-11-07T20:51:47.9550410Z       |          ^
+2026-11-07T20:51:47.9552960Z /usr/local/opt/qt@5/lib/QtCore.framework/Headers/qthread.h:111:10: note: hidden overloaded virtual function 'QThread::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:51:47.9555650Z   111 |     bool event(QEvent *event) override;
+2026-11-07T20:51:47.9557110Z       |          ^
+2026-11-07T20:51:47.9558680Z In file included from /Users/runner/work/dukto-next/dukto-next/src/cli/main.cpp:9:
+2026-11-07T20:51:47.9561370Z /Users/runner/work/dukto-next/dukto-next/src/core/service.h:142:10: warning: 'dukto::ServiceListener::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:51:47.9563960Z   142 |     void event(const QJsonObject &event);
+2026-11-07T20:51:47.9566760Z       |          ^
+2026-11-07T20:51:47.9570620Z /usr/local/include/QtCore/qobject.h:138:18: note: hidden overloaded virtual function 'QObject::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:51:47.9573260Z   138 |     virtual bool event(QEvent *event);
+2026-11-07T20:51:47.9574700Z       |                  ^
+2026-11-07T20:51:49.8668570Z 4 warnings generated.
+2026-11-07T20:51:50.1905340Z 2 warnings generated.
+2026-11-07T20:51:50.2477740Z [100%] Linking CXX executable dukto-cli
+2026-11-07T20:51:50.4781310Z [100%] Built target dukto-cli
+2026-11-07T20:51:50.5294490Z ##[group]Run cmake -S baseline -B build-baseline -DCMAKE_BUILD_TYPE=Release -DDUKTO_BUILD_GUI=OFF
+2026-11-07T20:51:50.5295990Z [36;1mcmake -S baseline -B build-baseline -DCMAKE_BUILD_TYPE=Release -DDUKTO_BUILD_GUI=OFF[0m
+2026-11-07T20:51:50.5297510Z [36;1mcmake --build build-baseline --config Release --target dukto-cli --parallel 4[0m
+2026-11-07T20:51:50.5385080Z shell: /bin/bash -e {0}
+2026-11-07T20:51:50.5385540Z env:
+2026-11-07T20:51:50.5386080Z   pythonLocation: /Users/runner/hostedtoolcache/Python/3.12.10/x64
+2026-11-07T20:51:50.5387280Z   PKG_CONFIG_PATH: /Users/runner/hostedtoolcache/Python/3.12.10/x64/lib/pkgconfig
+2026-11-07T20:51:50.5388240Z   Python_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/x64
+2026-11-07T20:51:50.5389120Z   Python2_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/x64
+2026-11-07T20:51:50.5390010Z   Python3_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/x64
+2026-11-07T20:51:50.5390850Z   CMAKE_PREFIX_PATH: /usr/local/opt/qt@5
+2026-11-07T20:51:50.5391410Z   OPENSSL_ROOT_DIR: /usr/local/opt/openssl@3
+2026-11-07T20:51:50.5391920Z ##[endgroup]
+2026-11-07T20:51:50.8408280Z -- The C compiler identification is AppleClang 17.0.0.17000013
+2026-11-07T20:51:51.0412710Z -- The CXX compiler identification is AppleClang 17.0.0.17000013
+2026-11-07T20:51:51.1058370Z -- Detecting C compiler ABI info
+2026-11-07T20:51:51.4279060Z -- Detecting C compiler ABI info - done
+2026-11-07T20:51:51.4552170Z -- Check for working C compiler: /usr/bin/cc - skipped
+2026-11-07T20:51:51.4555620Z -- Detecting C compile features
+2026-11-07T20:51:51.4561230Z -- Detecting C compile features - done
+2026-11-07T20:51:51.4652620Z -- Detecting CXX compiler ABI info
+2026-11-07T20:51:51.7950520Z -- Detecting CXX compiler ABI info - done
+2026-11-07T20:51:51.8225730Z -- Check for working CXX compiler: /usr/bin/c++ - skipped
+2026-11-07T20:51:51.8230260Z -- Detecting CXX compile features
+2026-11-07T20:51:51.8238190Z -- Detecting CXX compile features - done
+2026-11-07T20:51:51.9336540Z -- Found OpenSSL: /usr/local/opt/openssl@3/lib/libcrypto.dylib (found suitable version "3.6.3", minimum required is "1.1.1") found components: Crypto
+2026-11-07T20:51:52.0136430Z -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+2026-11-07T20:51:52.3575170Z -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+2026-11-07T20:51:52.3615990Z -- Found Threads: TRUE
+2026-11-07T20:51:52.3690050Z -- Configuring done (1.8s)
+2026-11-07T20:51:52.8747390Z -- Generating done (0.5s)
+2026-11-07T20:51:52.8761130Z -- Build files have been written to: /Users/runner/work/dukto-next/dukto-next/build-baseline
+2026-11-07T20:51:53.0426060Z [  0%] Building C object CMakeFiles/dukto-sqlite.dir/src/core/sqliteplatform.c.o
+2026-11-07T20:52:20.5292850Z [  2%] Linking C static library libdukto-sqlite.a
+2026-11-07T20:52:20.6388980Z [  2%] Built target dukto-sqlite
+2026-11-07T20:52:20.6927440Z [  2%] Built target dukto-sql-driver_autogen_timestamp_deps
+2026-11-07T20:52:20.7429510Z [  5%] Automatic MOC for target dukto-sql-driver
+2026-11-07T20:52:21.1922100Z [  5%] Built target dukto-sql-driver_autogen
+2026-11-07T20:52:21.2496180Z [  5%] Building CXX object CMakeFiles/dukto-sql-driver.dir/dukto-sql-driver_autogen/mocs_compilation.cpp.o
+2026-11-07T20:52:21.2506580Z [  8%] Building CXX object CMakeFiles/dukto-sql-driver.dir/src/core/sqlitevfs.cpp.o
+2026-11-07T20:52:21.2509290Z [  8%] Building CXX object CMakeFiles/dukto-sql-driver.dir/src/core/sqliteruntime.cpp.o
+2026-11-07T20:52:21.2511340Z [ 11%] Building CXX object CMakeFiles/dukto-sql-driver.dir/third-party/sqlite-runtime/qt-5.15.2/qsql_sqlite.cpp.o
+2026-11-07T20:52:23.4307710Z [ 11%] Linking CXX static library libdukto-sql-driver.a
+2026-11-07T20:52:23.5250090Z [ 11%] Built target dukto-sql-driver
+2026-11-07T20:52:23.5738710Z [ 11%] Built target dukto-core_autogen_timestamp_deps
+2026-11-07T20:52:23.6230430Z [ 14%] Automatic MOC for target dukto-core
+2026-11-07T20:52:24.2918010Z [ 14%] Built target dukto-core_autogen
+2026-11-07T20:52:24.3455590Z [ 14%] Building CXX object CMakeFiles/dukto-core.dir/src/core/error.cpp.o
+2026-11-07T20:52:24.3456930Z [ 20%] Building CXX object CMakeFiles/dukto-core.dir/src/core/files.cpp.o
+2026-11-07T20:52:24.3463840Z [ 20%] Building CXX object CMakeFiles/dukto-core.dir/src/core/diagnostics.cpp.o
+2026-11-07T20:52:24.3465630Z [ 20%] Building CXX object CMakeFiles/dukto-core.dir/dukto-core_autogen/mocs_compilation.cpp.o
+2026-11-07T20:52:25.7133080Z In file included from /Users/runner/work/dukto-next/dukto-next/build-baseline/dukto-core_autogen/mocs_compilation.cpp:3:
+2026-11-07T20:52:25.7269670Z In file included from /Users/runner/work/dukto-next/dukto-next/build-baseline/dukto-core_autogen/PRMOGMWJPH/moc_legacy.cpp:10:
+2026-11-07T20:52:25.7407840Z /Users/runner/work/dukto-next/dukto-next/build-baseline/dukto-core_autogen/PRMOGMWJPH/../../../baseline/src/core/legacy.h:60:10: warning: 'dukto::LegacyJob::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:52:25.8411540Z    60 |     void event(const QJsonObject &event);
+2026-11-07T20:52:25.8412470Z [ 23%] Building CXX object CMakeFiles/dukto-core.dir/src/core/nativecommit.cpp.o
+2026-11-07T20:52:25.9413190Z       |          ^
+2026-11-07T20:52:25.9741400Z /usr/local/opt/qt@5/lib/QtCore.framework/Headers/qthread.h:111:10: note: hidden overloaded virtual function 'QThread::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:52:26.0392160Z   111 |     bool event(QEvent *event) override;
+2026-11-07T20:52:26.0521660Z       |          ^
+2026-11-07T20:52:26.0802920Z In file included from /Users/runner/work/dukto-next/dukto-next/build-baseline/dukto-core_autogen/mocs_compilation.cpp:3:
+2026-11-07T20:52:26.0808130Z In file included from /Users/runner/work/dukto-next/dukto-next/build-baseline/dukto-core_autogen/PRMOGMWJPH/moc_legacy.cpp:10:
+2026-11-07T20:52:26.1405090Z /Users/runner/work/dukto-next/dukto-next/build-baseline/dukto-core_autogen/PRMOGMWJPH/../../../baseline/src/core/legacy.h:94:10: warning: 'dukto::LegacyListener::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:52:26.1524570Z    94 |     void event(const QJsonObject &event);
+2026-11-07T20:52:26.1808530Z       |          ^
+2026-11-07T20:52:26.1813270Z /usr/local/include/QtCore/qobject.h:138:18: note: hidden overloaded virtual function 'QObject::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:52:26.1870320Z   138 |     virtual bool event(QEvent *event);
+2026-11-07T20:52:26.1990870Z       |                  ^
+2026-11-07T20:52:26.2017840Z In file included from /Users/runner/work/dukto-next/dukto-next/build-baseline/dukto-core_autogen/mocs_compilation.cpp:4:
+2026-11-07T20:52:26.2024890Z In file included from /Users/runner/work/dukto-next/dukto-next/build-baseline/dukto-core_autogen/PRMOGMWJPH/moc_service.cpp:10:
+2026-11-07T20:52:26.2056780Z /Users/runner/work/dukto-next/dukto-next/build-baseline/dukto-core_autogen/PRMOGMWJPH/../../../baseline/src/core/service.h:116:10: warning: 'dukto::ServiceWorker::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:52:26.2225480Z [ 23%] Building CXX object CMakeFiles/dukto-core.dir/src/core/sourcefile.cpp.o
+2026-11-07T20:52:26.2227190Z   116 |     void event(const QJsonObject &event);
+2026-11-07T20:52:26.2296010Z       |          ^
+2026-11-07T20:52:26.2368370Z /usr/local/opt/qt@5/lib/QtCore.framework/Headers/qthread.h:111:10: note: hidden overloaded virtual function 'QThread::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:52:26.2463590Z   111 |     bool event(QEvent *event) override;
+2026-11-07T20:52:26.2545060Z       |          ^
+2026-11-07T20:52:26.2577110Z In file included from /Users/runner/work/dukto-next/dukto-next/build-baseline/dukto-core_autogen/mocs_compilation.cpp:4:
+2026-11-07T20:52:26.2629630Z In file included from /Users/runner/work/dukto-next/dukto-next/build-baseline/dukto-core_autogen/PRMOGMWJPH/moc_service.cpp:10:
+2026-11-07T20:52:26.2658760Z /Users/runner/work/dukto-next/dukto-next/build-baseline/dukto-core_autogen/PRMOGMWJPH/../../../baseline/src/core/service.h:142:10: warning: 'dukto::ServiceListener::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:52:26.2668460Z   142 |     void event(const QJsonObject &event);
+2026-11-07T20:52:26.2677140Z       |          ^
+2026-11-07T20:52:26.2700260Z /usr/local/include/QtCore/qobject.h:138:18: note: hidden overloaded virtual function 'QObject::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:52:26.2708910Z   138 |     virtual bool event(QEvent *event);
+2026-11-07T20:52:26.2736430Z       |                  ^
+2026-11-07T20:52:26.2873220Z 4 warnings generated.
+2026-11-07T20:52:26.2873980Z [ 26%] Building CXX object CMakeFiles/dukto-core.dir/src/core/protocol.cpp.o
+2026-11-07T20:52:26.2910080Z [ 26%] Building CXX object CMakeFiles/dukto-core.dir/src/core/securechannel.cpp.o
+2026-11-07T20:52:27.8521540Z [ 29%] Building CXX object CMakeFiles/dukto-core.dir/src/core/buffercredit.cpp.o
+2026-11-07T20:52:28.0017480Z [ 29%] Building CXX object CMakeFiles/dukto-core.dir/src/core/filecredit.cpp.o
+2026-11-07T20:52:28.1056420Z [ 32%] Building CXX object CMakeFiles/dukto-core.dir/src/core/sqlitecache.cpp.o
+2026-11-07T20:52:29.0549830Z [ 32%] Building CXX object CMakeFiles/dukto-core.dir/src/core/privatestore.cpp.o
+2026-11-07T20:52:29.5606580Z [ 35%] Building CXX object CMakeFiles/dukto-core.dir/src/core/stateinventory.cpp.o
+2026-11-07T20:52:29.6333010Z [ 38%] Building CXX object CMakeFiles/dukto-core.dir/src/core/statedomain.cpp.o
+2026-11-07T20:52:29.6353720Z [ 38%] Building CXX object CMakeFiles/dukto-core.dir/src/core/statebudget.cpp.o
+2026-11-07T20:52:31.4185290Z [ 38%] Building CXX object CMakeFiles/dukto-core.dir/src/core/identity.cpp.o
+2026-11-07T20:52:31.9187460Z [ 41%] Building CXX object CMakeFiles/dukto-core.dir/src/core/auth.cpp.o
+2026-11-07T20:52:32.0932770Z [ 44%] Building CXX object CMakeFiles/dukto-core.dir/src/core/sessionpolicy.cpp.o
+2026-11-07T20:52:32.1095220Z [ 44%] Building CXX object CMakeFiles/dukto-core.dir/src/core/transferscheduler.cpp.o
+2026-11-07T20:52:33.6538810Z [ 47%] Building CXX object CMakeFiles/dukto-core.dir/src/core/transferoperation.cpp.o
+2026-11-07T20:52:33.6605820Z [ 47%] Building CXX object CMakeFiles/dukto-core.dir/src/core/service.cpp.o
+2026-11-07T20:52:33.7946760Z [ 50%] Building CXX object CMakeFiles/dukto-core.dir/src/core/shares.cpp.o
+2026-11-07T20:52:34.2854360Z [ 50%] Building CXX object CMakeFiles/dukto-core.dir/src/core/browse.cpp.o
+2026-11-07T20:52:35.2091610Z In file included from /Users/runner/work/dukto-next/dukto-next/baseline/src/core/transferoperation.cpp:2:
+2026-11-07T20:52:35.2096870Z /Users/runner/work/dukto-next/dukto-next/baseline/src/core/service.h:116:10: warning: 'dukto::ServiceWorker::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:52:35.2212680Z   116 |     void event(const QJsonObject &event);
+2026-11-07T20:52:35.3095090Z       |          ^
+2026-11-07T20:52:35.3195880Z /usr/local/opt/qt@5/lib/QtCore.framework/Headers/qthread.h:111:10: note: hidden overloaded virtual function 'QThread::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:52:35.4200500Z   111 |     bool event(QEvent *event) override;
+2026-11-07T20:52:35.4570890Z       |          ^
+2026-11-07T20:52:35.4741620Z In file included from /Users/runner/work/dukto-next/dukto-next/baseline/src/core/transferoperation.cpp:2:
+2026-11-07T20:52:35.4874910Z /Users/runner/work/dukto-next/dukto-next/baseline/src/core/service.h:142:10: warning: 'dukto::ServiceListener::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:52:35.5212440Z   142 |     void event(const QJsonObject &event);
+2026-11-07T20:52:35.5581950Z       |          ^
+2026-11-07T20:52:35.5760130Z /usr/local/include/QtCore/qobject.h:138:18: note: hidden overloaded virtual function 'QObject::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:52:35.5883350Z   138 |     virtual bool event(QEvent *event);
+2026-11-07T20:52:35.6220380Z       |                  ^
+2026-11-07T20:52:35.6292680Z In file included from /Users/runner/work/dukto-next/dukto-next/baseline/src/core/service.cpp:1:
+2026-11-07T20:52:35.6327000Z /Users/runner/work/dukto-next/dukto-next/baseline/src/core/service.h:116:10: warning: 'dukto::ServiceWorker::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:52:35.6363080Z   116 |     void event(const QJsonObject &event);
+2026-11-07T20:52:35.6530800Z       |          ^
+2026-11-07T20:52:35.6531570Z [ 52%] Building CXX object CMakeFiles/dukto-core.dir/src/core/strongmanifest.cpp.o
+2026-11-07T20:52:35.6669780Z /usr/local/opt/qt@5/lib/QtCore.framework/Headers/qthread.h:111:10: note: hidden overloaded virtual function 'QThread::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:52:35.6762140Z   111 |     bool event(QEvent *event) override;
+2026-11-07T20:52:35.6799560Z       |          ^
+2026-11-07T20:52:35.6914680Z In file included from /Users/runner/work/dukto-next/dukto-next/baseline/src/core/service.cpp:1:
+2026-11-07T20:52:35.7237840Z /Users/runner/work/dukto-next/dukto-next/baseline/src/core/service.h:142:10: warning: 'dukto::ServiceListener::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:52:35.7349580Z   142 |     void event(const QJsonObject &event);
+2026-11-07T20:52:35.7431630Z       |          ^
+2026-11-07T20:52:35.7454570Z /usr/local/include/QtCore/qobject.h:138:18: note: hidden overloaded virtual function 'QObject::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:52:35.7525690Z   138 |     virtual bool event(QEvent *event);
+2026-11-07T20:52:35.7536540Z       |                  ^
+2026-11-07T20:52:35.7696300Z [ 52%] Building CXX object CMakeFiles/dukto-core.dir/src/core/uploadmanifest.cpp.o
+2026-11-07T20:52:35.7698240Z 2 warnings generated.
+2026-11-07T20:52:36.5414850Z [ 55%] Building CXX object CMakeFiles/dukto-core.dir/src/core/dispositionjournal.cpp.o
+2026-11-07T20:52:37.0596790Z 2 warnings generated.
+2026-11-07T20:52:37.0835960Z [ 55%] Building CXX object CMakeFiles/dukto-core.dir/src/core/taskstore.cpp.o
+2026-11-07T20:52:37.3839870Z In file included from /Users/runner/work/dukto-next/dukto-next/baseline/src/core/uploadmanifest.cpp:4:
+2026-11-07T20:52:37.3927320Z /Users/runner/work/dukto-next/dukto-next/baseline/src/core/service.h:116:10: warning: 'dukto::ServiceWorker::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:52:37.4934490Z   116 |     void event(const QJsonObject &event);
+2026-11-07T20:52:37.4935180Z       |          ^
+2026-11-07T20:52:37.5293850Z /usr/local/opt/qt@5/lib/QtCore.framework/Headers/qthread.h:111:10: note: hidden overloaded virtual function 'QThread::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:52:37.5377540Z   111 |     bool event(QEvent *event) override;
+2026-11-07T20:52:37.5496700Z       |          ^
+2026-11-07T20:52:37.5620410Z In file included from /Users/runner/work/dukto-next/dukto-next/baseline/src/core/uploadmanifest.cpp:4:
+2026-11-07T20:52:37.6302430Z /Users/runner/work/dukto-next/dukto-next/baseline/src/core/service.h:142:10: warning: 'dukto::ServiceListener::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:52:37.6401540Z   142 |     void event(const QJsonObject &event);
+2026-11-07T20:52:37.6503260Z       |          ^
+2026-11-07T20:52:37.6628850Z /usr/local/include/QtCore/qobject.h:138:18: note: hidden overloaded virtual function 'QObject::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:52:37.7556310Z   138 |     virtual bool event(QEvent *event);
+2026-11-07T20:52:37.7664230Z       |                  ^
+2026-11-07T20:52:38.1642190Z [ 58%] Building CXX object CMakeFiles/dukto-core.dir/src/core/expiredtaskcleanup.cpp.o
+2026-11-07T20:52:38.5128750Z 2 warnings generated.
+2026-11-07T20:52:38.5387790Z [ 58%] Building CXX object CMakeFiles/dukto-core.dir/src/core/clientdownloadcleanup.cpp.o
+2026-11-07T20:52:38.8062570Z [ 61%] Building CXX object CMakeFiles/dukto-core.dir/src/core/directorycleanup.cpp.o
+2026-11-07T20:52:39.8792650Z [ 61%] Building CXX object CMakeFiles/dukto-core.dir/src/core/transferitems.cpp.o
+2026-11-07T20:52:40.9939150Z [ 64%] Building CXX object CMakeFiles/dukto-core.dir/src/core/durablereceive.cpp.o
+2026-11-07T20:52:41.2670660Z [ 64%] Building CXX object CMakeFiles/dukto-core.dir/src/core/receivetree.cpp.o
+2026-11-07T20:52:41.3314990Z [ 67%] Building CXX object CMakeFiles/dukto-core.dir/src/core/receiveskip.cpp.o
+2026-11-07T20:52:43.1533230Z [ 67%] Building CXX object CMakeFiles/dukto-core.dir/src/core/receiveskipfinal.cpp.o
+2026-11-07T20:52:43.5451900Z [ 70%] Building CXX object CMakeFiles/dukto-core.dir/src/core/transferdisposition.cpp.o
+2026-11-07T20:52:43.6012540Z [ 70%] Building CXX object CMakeFiles/dukto-core.dir/src/core/fileexchange.cpp.o
+2026-11-07T20:52:44.4280130Z [ 73%] Building CXX object CMakeFiles/dukto-core.dir/src/core/paralleltransfer.cpp.o
+2026-11-07T20:52:45.4455720Z [ 73%] Building CXX object CMakeFiles/dukto-core.dir/src/core/transferservice.cpp.o
+2026-11-07T20:52:45.4688590Z [ 76%] Building CXX object CMakeFiles/dukto-core.dir/src/core/transferclient.cpp.o
+2026-11-07T20:52:45.9699700Z In file included from /Users/runner/work/dukto-next/dukto-next/baseline/src/core/paralleltransfer.cpp:5:
+2026-11-07T20:52:46.0157770Z /Users/runner/work/dukto-next/dukto-next/baseline/src/core/service.h:116:10: warning: 'dukto::ServiceWorker::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:52:46.0404100Z   116 |     void event(const QJsonObject &event);
+2026-11-07T20:52:46.0479540Z       |          ^
+2026-11-07T20:52:46.0765590Z /usr/local/opt/qt@5/lib/QtCore.framework/Headers/qthread.h:111:10: note: hidden overloaded virtual function 'QThread::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:52:46.1695080Z   111 |     bool event(QEvent *event) override;
+2026-11-07T20:52:46.2697580Z       |          ^
+2026-11-07T20:52:46.3449820Z In file included from /Users/runner/work/dukto-next/dukto-next/baseline/src/core/paralleltransfer.cpp:5:
+2026-11-07T20:52:46.3949140Z /Users/runner/work/dukto-next/dukto-next/baseline/src/core/service.h:142:10: warning: 'dukto::ServiceListener::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:52:46.4112540Z   142 |     void event(const QJsonObject &event);
+2026-11-07T20:52:46.4145160Z       |          ^
+2026-11-07T20:52:46.4181800Z /usr/local/include/QtCore/qobject.h:138:18: note: hidden overloaded virtual function 'QObject::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:52:46.4183660Z   138 |     virtual bool event(QEvent *event);
+2026-11-07T20:52:46.4288140Z       |                  ^
+2026-11-07T20:52:46.4382680Z [ 76%] Building CXX object CMakeFiles/dukto-core.dir/src/core/transferprogress.cpp.o
+2026-11-07T20:52:47.1192480Z In file included from /Users/runner/work/dukto-next/dukto-next/baseline/src/core/transferclient.cpp:6:
+2026-11-07T20:52:47.1207420Z /Users/runner/work/dukto-next/dukto-next/baseline/src/core/service.h:116:10: warning: 'dukto::ServiceWorker::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:52:47.1243470Z   116 |     void event(const QJsonObject &event);
+2026-11-07T20:52:47.1599580Z       |          ^
+2026-11-07T20:52:47.2073620Z /usr/local/opt/qt@5/lib/QtCore.framework/Headers/qthread.h:111:10: note: hidden overloaded virtual function 'QThread::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:52:47.2217090Z   111 |     bool event(QEvent *event) override;
+2026-11-07T20:52:47.2603730Z       |          ^
+2026-11-07T20:52:47.3078240Z In file included from /Users/runner/work/dukto-next/dukto-next/baseline/src/core/transferclient.cpp:6:
+2026-11-07T20:52:47.3224660Z /Users/runner/work/dukto-next/dukto-next/baseline/src/core/service.h:142:10: warning: 'dukto::ServiceListener::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:52:47.3607610Z   142 |     void event(const QJsonObject &event);
+2026-11-07T20:52:47.3608200Z       |          ^
+2026-11-07T20:52:47.4102590Z /usr/local/include/QtCore/qobject.h:138:18: note: hidden overloaded virtual function 'QObject::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:52:47.4328130Z   138 |     virtual bool event(QEvent *event);
+2026-11-07T20:52:47.4957730Z       |                  ^
+2026-11-07T20:52:48.4900510Z [ 79%] Building CXX object CMakeFiles/dukto-core.dir/src/core/transferaccounting.cpp.o
+2026-11-07T20:52:48.8410100Z 2 warnings generated.
+2026-11-07T20:52:48.9412640Z [ 79%] Building CXX object CMakeFiles/dukto-core.dir/src/core/manifest.cpp.o
+2026-11-07T20:52:49.1596070Z [ 82%] Building CXX object CMakeFiles/dukto-core.dir/src/core/legacy.cpp.o
+2026-11-07T20:52:50.1913540Z 2 warnings generated.
+2026-11-07T20:52:50.2917090Z [ 85%] Building CXX object CMakeFiles/dukto-core.dir/src/core/tcplistener.cpp.o
+2026-11-07T20:52:50.5384920Z [ 85%] Building CXX object CMakeFiles/dukto-core.dir/src/core/discovery.cpp.o
+2026-11-07T20:52:50.8348070Z In file included from /Users/runner/work/dukto-next/dukto-next/baseline/src/core/legacy.cpp:1:
+2026-11-07T20:52:50.9138990Z /Users/runner/work/dukto-next/dukto-next/baseline/src/core/legacy.h:60:10: warning: 'dukto::LegacyJob::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:52:50.9974410Z    60 |     void event(const QJsonObject &event);
+2026-11-07T20:52:50.9982410Z       |          ^
+2026-11-07T20:52:50.9994600Z /usr/local/opt/qt@5/lib/QtCore.framework/Headers/qthread.h:111:10: note: hidden overloaded virtual function 'QThread::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:52:51.0022490Z   111 |     bool event(QEvent *event) override;
+2026-11-07T20:52:51.0057560Z       |          ^
+2026-11-07T20:52:51.0226600Z [ 88%] Building CXX object CMakeFiles/dukto-core.dir/src/core/endpoint.cpp.o
+2026-11-07T20:52:51.0228610Z In file included from /Users/runner/work/dukto-next/dukto-next/baseline/src/core/legacy.cpp:1:
+2026-11-07T20:52:51.0367100Z /Users/runner/work/dukto-next/dukto-next/baseline/src/core/legacy.h:94:10: warning: 'dukto::LegacyListener::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:52:51.0462990Z    94 |     void event(const QJsonObject &event);
+2026-11-07T20:52:51.0677500Z       |          ^
+2026-11-07T20:52:51.0817840Z /usr/local/include/QtCore/qobject.h:138:18: note: hidden overloaded virtual function 'QObject::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:52:51.1069050Z   138 |     virtual bool event(QEvent *event);
+2026-11-07T20:52:51.1681870Z       |                  ^
+2026-11-07T20:52:51.7823730Z [ 88%] Building CXX object CMakeFiles/dukto-core.dir/src/core/updates.cpp.o
+2026-11-07T20:52:51.9789170Z 2 warnings generated.
+2026-11-07T20:52:52.0085010Z [ 91%] Building CXX object CMakeFiles/dukto-core.dir/src/core/catalog.cpp.o
+2026-11-07T20:52:53.8014230Z [ 91%] Linking CXX static library libdukto-core.a
+2026-11-07T20:52:53.9526620Z [ 91%] Built target dukto-core
+2026-11-07T20:52:54.0014230Z [ 91%] Built target dukto-cli_autogen_timestamp_deps
+2026-11-07T20:52:54.0494660Z [ 91%] Automatic MOC for target dukto-cli
+2026-11-07T20:52:54.2048950Z [ 91%] Built target dukto-cli_autogen
+2026-11-07T20:52:54.2620120Z [ 94%] Building CXX object CMakeFiles/dukto-cli.dir/dukto-cli_autogen/mocs_compilation.cpp.o
+2026-11-07T20:52:54.2853520Z [ 94%] Building CXX object CMakeFiles/dukto-cli.dir/src/cli/main.cpp.o
+2026-11-07T20:52:54.2855640Z [ 97%] Building CXX object CMakeFiles/dukto-cli.dir/src/cli/input.cpp.o
+2026-11-07T20:52:54.2924770Z [ 97%] Building CXX object CMakeFiles/dukto-cli.dir/src/cli/servicecommands.cpp.o
+2026-11-07T20:52:55.8139030Z In file included from /Users/runner/work/dukto-next/dukto-next/baseline/src/cli/servicecommands.cpp:8:
+2026-11-07T20:52:55.8770360Z /Users/runner/work/dukto-next/dukto-next/baseline/src/core/service.h:116:10: warning: 'dukto::ServiceWorker::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:52:55.8928740Z   116 |     void event(const QJsonObject &event);
+2026-11-07T20:52:55.8930270Z       |          ^
+2026-11-07T20:52:55.8932980Z /usr/local/opt/qt@5/lib/QtCore.framework/Headers/qthread.h:111:10: note: hidden overloaded virtual function 'QThread::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:52:55.8935850Z   111 |     bool event(QEvent *event) override;
+2026-11-07T20:52:55.8937470Z       |          ^
+2026-11-07T20:52:55.8939380Z In file included from /Users/runner/work/dukto-next/dukto-next/baseline/src/cli/servicecommands.cpp:8:
+2026-11-07T20:52:55.8942440Z /Users/runner/work/dukto-next/dukto-next/baseline/src/core/service.h:142:10: warning: 'dukto::ServiceListener::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:52:55.8945130Z   142 |     void event(const QJsonObject &event);
+2026-11-07T20:52:55.8947610Z       |          ^
+2026-11-07T20:52:55.8949910Z /usr/local/include/QtCore/qobject.h:138:18: note: hidden overloaded virtual function 'QObject::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:52:55.8953280Z   138 |     virtual bool event(QEvent *event);
+2026-11-07T20:52:55.8955410Z       |                  ^
+2026-11-07T20:52:55.8957290Z In file included from /Users/runner/work/dukto-next/dukto-next/baseline/src/cli/main.cpp:8:
+2026-11-07T20:52:55.8960380Z /Users/runner/work/dukto-next/dukto-next/baseline/src/core/legacy.h:60:10: warning: 'dukto::LegacyJob::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:52:55.8963120Z    60 |     void event(const QJsonObject &event);
+2026-11-07T20:52:55.8964720Z       |          ^
+2026-11-07T20:52:55.8967690Z /usr/local/opt/qt@5/lib/QtCore.framework/Headers/qthread.h:111:10: note: hidden overloaded virtual function 'QThread::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:52:55.8971280Z   111 |     bool event(QEvent *event) override;
+2026-11-07T20:52:55.8972940Z       |          ^
+2026-11-07T20:52:55.8974740Z In file included from /Users/runner/work/dukto-next/dukto-next/baseline/src/cli/main.cpp:8:
+2026-11-07T20:52:55.8977660Z /Users/runner/work/dukto-next/dukto-next/baseline/src/core/legacy.h:94:10: warning: 'dukto::LegacyListener::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:52:55.8980260Z    94 |     void event(const QJsonObject &event);
+2026-11-07T20:52:55.8981860Z       |          ^
+2026-11-07T20:52:55.8984330Z /usr/local/include/QtCore/qobject.h:138:18: note: hidden overloaded virtual function 'QObject::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:52:55.8987010Z   138 |     virtual bool event(QEvent *event);
+2026-11-07T20:52:55.8988600Z       |                  ^
+2026-11-07T20:52:55.8990450Z In file included from /Users/runner/work/dukto-next/dukto-next/baseline/src/cli/main.cpp:9:
+2026-11-07T20:52:55.8993370Z /Users/runner/work/dukto-next/dukto-next/baseline/src/core/service.h:116:10: warning: 'dukto::ServiceWorker::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:52:55.8995990Z   116 |     void event(const QJsonObject &event);
+2026-11-07T20:52:55.8997590Z       |          ^
+2026-11-07T20:52:55.9000230Z /usr/local/opt/qt@5/lib/QtCore.framework/Headers/qthread.h:111:10: note: hidden overloaded virtual function 'QThread::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:52:55.9003070Z   111 |     bool event(QEvent *event) override;
+2026-11-07T20:52:55.9004660Z       |          ^
+2026-11-07T20:52:55.9007140Z In file included from /Users/runner/work/dukto-next/dukto-next/baseline/src/cli/main.cpp:9:
+2026-11-07T20:52:55.9010150Z /Users/runner/work/dukto-next/dukto-next/baseline/src/core/service.h:142:10: warning: 'dukto::ServiceListener::event' hides overloaded virtual function [-Woverloaded-virtual]
+2026-11-07T20:52:55.9012790Z   142 |     void event(const QJsonObject &event);
+2026-11-07T20:52:55.9014380Z       |          ^
+2026-11-07T20:52:55.9016960Z /usr/local/include/QtCore/qobject.h:138:18: note: hidden overloaded virtual function 'QObject::event' declared here: type mismatch at 1st parameter ('QEvent *' vs 'const QJsonObject &')
+2026-11-07T20:52:55.9019680Z   138 |     virtual bool event(QEvent *event);
+2026-11-07T20:52:55.9021290Z       |                  ^
+2026-11-07T20:52:57.8007190Z 4 warnings generated.
+2026-11-07T20:52:58.2085450Z 2 warnings generated.
+2026-11-07T20:52:58.2437640Z [100%] Linking CXX executable dukto-cli
+2026-11-07T20:52:58.4541150Z [100%] Built target dukto-cli
+2026-11-07T20:52:58.4796240Z ##[group]Run python -X utf8 tests/legacy_ready_integration.py build-baseline/dukto-cli --source-root baseline --rounds 3 --report build/baseline-ready.json
+2026-11-07T20:52:58.4798960Z [36;1mpython -X utf8 tests/legacy_ready_integration.py build-baseline/dukto-cli --source-root baseline --rounds 3 --report build/baseline-ready.json[0m
+2026-11-07T20:52:58.4861470Z shell: /bin/bash -e {0}
+2026-11-07T20:52:58.4861840Z env:
+2026-11-07T20:52:58.4862330Z   pythonLocation: /Users/runner/hostedtoolcache/Python/3.12.10/x64
+2026-11-07T20:52:58.4863290Z   PKG_CONFIG_PATH: /Users/runner/hostedtoolcache/Python/3.12.10/x64/lib/pkgconfig
+2026-11-07T20:52:58.4864220Z   Python_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/x64
+2026-11-07T20:52:58.4865040Z   Python2_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/x64
+2026-11-07T20:52:58.4865880Z   Python3_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/x64
+2026-11-07T20:52:58.4866640Z   CMAKE_PREFIX_PATH: /usr/local/opt/qt@5
+2026-11-07T20:52:58.4867150Z   OPENSSL_ROOT_DIR: /usr/local/opt/openssl@3
+2026-11-07T20:52:58.4867630Z ##[endgroup]
+2026-11-07T20:53:05.1656440Z {"name": "buffered-valid", "expected": 0, "exitCode": 0, "seconds": 6.424, "lastEvent": {"bytes": "21", "catalog": "/var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/dukto-r6-ready-m4z75k5k/0/buffered-valid/.state/receipts.sqlite", "elapsedMs": "6418", "entries": "1", "event": "result", "eventVersion": 1, "path": "/private/var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/dukto-r6-ready-m4z75k5k/0/buffered-valid/buffered.bin", "peer": "127.0.0.1", "rateBytesPerSecond": "3", "stage": "received", "taskId": "6554160c-c1da-4c3b-9308-7d0f4e02be6f"}, "stderr": "", "pausedSeconds": 6, "receiverTimeoutSeconds": 5, "passed": true, "contentVerified": true, "round": 1}
+2026-11-07T20:53:11.6356740Z {"name": "buffered-invalid-text", "expected": 6, "exitCode": 6, "seconds": 6.437, "lastEvent": {"catalog": "/var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/dukto-r6-ready-m4z75k5k/0/buffered-invalid-text/.state/receipts.sqlite", "code": 6, "elapsedMs": "6434", "event": "error", "eventVersion": 1, "message": "收到的文本不是有效 UTF-8", "rateBytesPerSecond": "0", "stage": "receive", "taskId": "1594142b-d08b-474f-8373-3fc541bd5641"}, "stderr": "", "pausedSeconds": 6, "receiverTimeoutSeconds": 5, "passed": true, "round": 1}
+2026-11-07T20:53:16.7404650Z {"name": "silent-stall", "exitCode": 3, "seconds": 5.076, "lastEvent": {"code": 3, "elapsedMs": "5074", "event": "error", "eventVersion": 1, "message": "连接或传输无进展超时", "rateBytesPerSecond": "0", "stage": "transfer"}, "stderr": "", "receiverTimeoutSeconds": 5, "passed": true, "round": 1}
+2026-11-07T20:53:21.8489930Z {"name": "partial-stall", "exitCode": 3, "seconds": 5.073, "lastEvent": {"code": 3, "elapsedMs": "5070", "event": "error", "eventVersion": 1, "message": "连接或传输无进展超时", "rateBytesPerSecond": "0", "stage": "transfer"}, "stderr": "", "receiverTimeoutSeconds": 5, "passed": true, "round": 1}
+2026-11-07T20:53:28.2062270Z {"name": "buffered-valid", "expected": 0, "exitCode": 0, "seconds": 6.328, "lastEvent": {"bytes": "21", "catalog": "/var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/dukto-r6-ready-m4z75k5k/1/buffered-valid/.state/receipts.sqlite", "elapsedMs": "6325", "entries": "1", "event": "result", "eventVersion": 1, "path": "/private/var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/dukto-r6-ready-m4z75k5k/1/buffered-valid/buffered.bin", "peer": "127.0.0.1", "rateBytesPerSecond": "3", "stage": "received", "taskId": "c3e8fb3e-f75d-4095-b834-54814ee53667"}, "stderr": "", "pausedSeconds": 6, "receiverTimeoutSeconds": 5, "passed": true, "contentVerified": true, "round": 2}
+2026-11-07T20:53:34.6506490Z {"name": "buffered-invalid-text", "expected": 6, "exitCode": 6, "seconds": 6.411, "lastEvent": {"catalog": "/var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/dukto-r6-ready-m4z75k5k/1/buffered-invalid-text/.state/receipts.sqlite", "code": 6, "elapsedMs": "6408", "event": "error", "eventVersion": 1, "message": "收到的文本不是有效 UTF-8", "rateBytesPerSecond": "0", "stage": "receive", "taskId": "a05fd06c-ab52-46da-ad15-5348b5a12276"}, "stderr": "", "pausedSeconds": 6, "receiverTimeoutSeconds": 5, "passed": true, "round": 2}
+2026-11-07T20:53:39.7387460Z {"name": "silent-stall", "exitCode": 3, "seconds": 5.059, "lastEvent": {"code": 3, "elapsedMs": "5056", "event": "error", "eventVersion": 1, "message": "连接或传输无进展超时", "rateBytesPerSecond": "0", "stage": "transfer"}, "stderr": "", "receiverTimeoutSeconds": 5, "passed": true, "round": 2}
+2026-11-07T20:53:44.8433470Z {"name": "partial-stall", "exitCode": 3, "seconds": 5.076, "lastEvent": {"code": 3, "elapsedMs": "5074", "event": "error", "eventVersion": 1, "message": "连接或传输无进展超时", "rateBytesPerSecond": "0", "stage": "transfer"}, "stderr": "", "receiverTimeoutSeconds": 5, "passed": true, "round": 2}
+2026-11-07T20:53:51.4078690Z {"name": "buffered-valid", "expected": 0, "exitCode": 0, "seconds": 6.535, "lastEvent": {"bytes": "21", "catalog": "/var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/dukto-r6-ready-m4z75k5k/2/buffered-valid/.state/receipts.sqlite", "elapsedMs": "6533", "entries": "1", "event": "result", "eventVersion": 1, "path": "/private/var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/dukto-r6-ready-m4z75k5k/2/buffered-valid/buffered.bin", "peer": "127.0.0.1", "rateBytesPerSecond": "3", "stage": "received", "taskId": "662512b8-49f2-4017-9591-10b1b9adfd7f"}, "stderr": "", "pausedSeconds": 6, "receiverTimeoutSeconds": 5, "passed": true, "contentVerified": true, "round": 3}
+2026-11-07T20:53:57.8077450Z {"name": "buffered-invalid-text", "expected": 6, "exitCode": 6, "seconds": 6.371, "lastEvent": {"catalog": "/var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/dukto-r6-ready-m4z75k5k/2/buffered-invalid-text/.state/receipts.sqlite", "code": 6, "elapsedMs": "6368", "event": "error", "eventVersion": 1, "message": "收到的文本不是有效 UTF-8", "rateBytesPerSecond": "0", "stage": "receive", "taskId": "13102cd7-d219-4f37-9b74-c252baeea4e6"}, "stderr": "", "pausedSeconds": 6, "receiverTimeoutSeconds": 5, "passed": true, "round": 3}
+2026-11-07T20:54:02.9395710Z {"name": "silent-stall", "exitCode": 3, "seconds": 5.087, "lastEvent": {"code": 3, "elapsedMs": "5083", "event": "error", "eventVersion": 1, "message": "连接或传输无进展超时", "rateBytesPerSecond": "0", "stage": "transfer"}, "stderr": "", "receiverTimeoutSeconds": 5, "passed": true, "round": 3}
+2026-11-07T20:54:08.0424250Z {"name": "partial-stall", "exitCode": 3, "seconds": 5.069, "lastEvent": {"code": 3, "elapsedMs": "5067", "event": "error", "eventVersion": 1, "message": "连接或传输无进展超时", "rateBytesPerSecond": "0", "stage": "transfer"}, "stderr": "", "receiverTimeoutSeconds": 5, "passed": true, "round": 3}
+2026-11-07T20:54:08.1184240Z {"passed": true, "cases": 12}
+2026-11-07T20:54:08.2592510Z ##[group]Run python -X utf8 tests/legacy_ready_integration.py build/dukto-cli --rounds 3 --report build/legacy-ready.json
+2026-11-07T20:54:08.2594340Z [36;1mpython -X utf8 tests/legacy_ready_integration.py build/dukto-cli --rounds 3 --report build/legacy-ready.json[0m
+2026-11-07T20:54:08.2660890Z shell: /bin/bash -e {0}
+2026-11-07T20:54:08.2661360Z env:
+2026-11-07T20:54:08.2661900Z   pythonLocation: /Users/runner/hostedtoolcache/Python/3.12.10/x64
+2026-11-07T20:54:08.2662900Z   PKG_CONFIG_PATH: /Users/runner/hostedtoolcache/Python/3.12.10/x64/lib/pkgconfig
+2026-11-07T20:54:08.2663910Z   Python_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/x64
+2026-11-07T20:54:08.2665060Z   Python2_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/x64
+2026-11-07T20:54:08.2665970Z   Python3_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/x64
+2026-11-07T20:54:08.2666710Z   CMAKE_PREFIX_PATH: /usr/local/opt/qt@5
+2026-11-07T20:54:08.2667390Z   OPENSSL_ROOT_DIR: /usr/local/opt/openssl@3
+2026-11-07T20:54:08.2667940Z ##[endgroup]
+2026-11-07T20:54:15.1469090Z {"name": "buffered-valid", "expected": 0, "exitCode": 0, "seconds": 6.533, "lastEvent": {"bytes": "21", "catalog": "/var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/dukto-r6-ready-nu4a1myc/0/buffered-valid/.state/receipts.sqlite", "elapsedMs": "6527", "entries": "1", "event": "result", "eventVersion": 1, "path": "/private/var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/dukto-r6-ready-nu4a1myc/0/buffered-valid/buffered.bin", "peer": "127.0.0.1", "rateBytesPerSecond": "3", "stage": "received", "taskId": "4aa356a5-82db-4630-8d44-b08fa800941f"}, "stderr": "", "pausedSeconds": 6, "receiverTimeoutSeconds": 5, "passed": true, "contentVerified": true, "round": 1}
+2026-11-07T20:54:21.6693190Z {"name": "buffered-invalid-text", "expected": 6, "exitCode": 6, "seconds": 6.491, "lastEvent": {"catalog": "/var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/dukto-r6-ready-nu4a1myc/0/buffered-invalid-text/.state/receipts.sqlite", "code": 6, "elapsedMs": "6489", "event": "error", "eventVersion": 1, "message": "收到的文本不是有效 UTF-8", "rateBytesPerSecond": "0", "stage": "receive", "taskId": "e1b9a08b-38f8-4e2c-919d-3f036a69be16"}, "stderr": "", "pausedSeconds": 6, "receiverTimeoutSeconds": 5, "passed": true, "round": 1}
+2026-11-07T20:54:26.7725930Z {"name": "silent-stall", "exitCode": 3, "seconds": 5.074, "lastEvent": {"code": 3, "elapsedMs": "5072", "event": "error", "eventVersion": 1, "message": "连接或传输无进展超时", "rateBytesPerSecond": "0", "stage": "transfer"}, "stderr": "", "receiverTimeoutSeconds": 5, "passed": true, "round": 1}
+2026-11-07T20:54:31.8713800Z {"name": "partial-stall", "exitCode": 3, "seconds": 5.065, "lastEvent": {"code": 3, "elapsedMs": "5063", "event": "error", "eventVersion": 1, "message": "连接或传输无进展超时", "rateBytesPerSecond": "0", "stage": "transfer"}, "stderr": "", "receiverTimeoutSeconds": 5, "passed": true, "round": 1}
+2026-11-07T20:54:38.3102670Z {"name": "buffered-valid", "expected": 0, "exitCode": 0, "seconds": 6.409, "lastEvent": {"bytes": "21", "catalog": "/var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/dukto-r6-ready-nu4a1myc/1/buffered-valid/.state/receipts.sqlite", "elapsedMs": "6406", "entries": "1", "event": "result", "eventVersion": 1, "path": "/private/var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/dukto-r6-ready-nu4a1myc/1/buffered-valid/buffered.bin", "peer": "127.0.0.1", "rateBytesPerSecond": "3", "stage": "received", "taskId": "3726c875-e4dc-4ac3-8fbf-e045dac89549"}, "stderr": "", "pausedSeconds": 6, "receiverTimeoutSeconds": 5, "passed": true, "contentVerified": true, "round": 2}
+2026-11-07T20:54:44.7645710Z {"name": "buffered-invalid-text", "expected": 6, "exitCode": 6, "seconds": 6.424, "lastEvent": {"catalog": "/var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/dukto-r6-ready-nu4a1myc/1/buffered-invalid-text/.state/receipts.sqlite", "code": 6, "elapsedMs": "6422", "event": "error", "eventVersion": 1, "message": "收到的文本不是有效 UTF-8", "rateBytesPerSecond": "0", "stage": "receive", "taskId": "085e32dd-2c83-4309-97ee-867a3e19cbb4"}, "stderr": "", "pausedSeconds": 6, "receiverTimeoutSeconds": 5, "passed": true, "round": 2}
+2026-11-07T20:54:49.8868620Z {"name": "silent-stall", "exitCode": 3, "seconds": 5.094, "lastEvent": {"code": 3, "elapsedMs": "5091", "event": "error", "eventVersion": 1, "message": "连接或传输无进展超时", "rateBytesPerSecond": "0", "stage": "transfer"}, "stderr": "", "receiverTimeoutSeconds": 5, "passed": true, "round": 2}
+2026-11-07T20:54:54.9962270Z {"name": "partial-stall", "exitCode": 3, "seconds": 5.081, "lastEvent": {"code": 3, "elapsedMs": "5079", "event": "error", "eventVersion": 1, "message": "连接或传输无进展超时", "rateBytesPerSecond": "0", "stage": "transfer"}, "stderr": "", "receiverTimeoutSeconds": 5, "passed": true, "round": 2}
+2026-11-07T20:55:01.5776550Z {"name": "buffered-valid", "expected": 0, "exitCode": 0, "seconds": 6.55, "lastEvent": {"bytes": "21", "catalog": "/var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/dukto-r6-ready-nu4a1myc/2/buffered-valid/.state/receipts.sqlite", "elapsedMs": "6547", "entries": "1", "event": "result", "eventVersion": 1, "path": "/private/var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/dukto-r6-ready-nu4a1myc/2/buffered-valid/buffered.bin", "peer": "127.0.0.1", "rateBytesPerSecond": "3", "stage": "received", "taskId": "958a66b7-cde3-498b-b78c-a3ce78cedc22"}, "stderr": "", "pausedSeconds": 6, "receiverTimeoutSeconds": 5, "passed": true, "contentVerified": true, "round": 3}
+2026-11-07T20:55:08.1231550Z {"name": "buffered-invalid-text", "expected": 6, "exitCode": 6, "seconds": 6.514, "lastEvent": {"catalog": "/var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/dukto-r6-ready-nu4a1myc/2/buffered-invalid-text/.state/receipts.sqlite", "code": 6, "elapsedMs": "6512", "event": "error", "eventVersion": 1, "message": "收到的文本不是有效 UTF-8", "rateBytesPerSecond": "0", "stage": "receive", "taskId": "d98d4ee0-3985-4858-9188-f4c89bd72e26"}, "stderr": "", "pausedSeconds": 6, "receiverTimeoutSeconds": 5, "passed": true, "round": 3}
+2026-11-07T20:55:13.2288440Z {"name": "silent-stall", "exitCode": 3, "seconds": 5.077, "lastEvent": {"code": 3, "elapsedMs": "5075", "event": "error", "eventVersion": 1, "message": "连接或传输无进展超时", "rateBytesPerSecond": "0", "stage": "transfer"}, "stderr": "", "receiverTimeoutSeconds": 5, "passed": true, "round": 3}
+2026-11-07T20:55:18.4151230Z {"name": "partial-stall", "exitCode": 3, "seconds": 5.098, "lastEvent": {"code": 3, "elapsedMs": "5095", "event": "error", "eventVersion": 1, "message": "连接或传输无进展超时", "rateBytesPerSecond": "0", "stage": "transfer"}, "stderr": "", "receiverTimeoutSeconds": 5, "passed": true, "round": 3}
+2026-11-07T20:55:18.5314430Z {"passed": true, "cases": 12}
+2026-11-07T20:55:18.6787780Z ##[group]Run actions/upload-artifact@v4
+2026-11-07T20:55:18.6788410Z with:
+2026-11-07T20:55:18.6788830Z   name: legacy-ready-macos-15-intel
+2026-11-07T20:55:18.6790000Z   path: build/legacy-ready.json
+build/baseline-ready.json
+build/CMakeCache.txt
+build-baseline/CMakeCache.txt
+
+2026-11-07T20:55:18.6791340Z   if-no-files-found: warn
+2026-11-07T20:55:18.6791830Z   compression-level: 6
+2026-11-07T20:55:18.6792260Z   overwrite: false
+2026-11-07T20:55:18.6792680Z   include-hidden-files: false
+2026-11-07T20:55:18.6793150Z env:
+2026-11-07T20:55:18.6793750Z   pythonLocation: /Users/runner/hostedtoolcache/Python/3.12.10/x64
+2026-11-07T20:55:18.6807410Z   PKG_CONFIG_PATH: /Users/runner/hostedtoolcache/Python/3.12.10/x64/lib/pkgconfig
+2026-11-07T20:55:18.6808580Z   Python_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/x64
+2026-11-07T20:55:18.6809470Z   Python2_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/x64
+2026-11-07T20:55:18.6810500Z   Python3_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/x64
+2026-11-07T20:55:18.6811320Z   CMAKE_PREFIX_PATH: /usr/local/opt/qt@5
+2026-11-07T20:55:18.6811910Z   OPENSSL_ROOT_DIR: /usr/local/opt/openssl@3
+2026-11-07T20:55:18.6812650Z ##[endgroup]
+2026-11-07T20:55:18.9268610Z (node:9372) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-07T20:55:18.9318530Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-07T20:55:18.9520440Z Multiple search paths detected. Calculating the least common ancestor of all paths
+2026-11-07T20:55:18.9704120Z The least common ancestor is /Users/runner/work/dukto-next/dukto-next. This will be the root directory of the artifact
+2026-11-07T20:55:18.9714050Z With the provided path, there will be 4 files uploaded
+2026-11-07T20:55:18.9728230Z Artifact name is valid!
+2026-11-07T20:55:18.9731110Z Root directory input is valid!
+2026-11-07T20:55:19.3779060Z (node:9372) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-11-07T20:55:19.5710390Z Beginning upload of artifact content to blob storage
+2026-11-07T20:55:19.8123680Z Uploaded bytes 61078
+2026-11-07T20:55:19.8930860Z Finished uploading artifact content to blob storage!
+2026-11-07T20:55:19.8932020Z SHA256 digest of uploaded artifact zip is 43821f5c14087c069863999bf41c368cd8aa51195e14aa87f579101ca8237dc4
+2026-11-07T20:55:19.8933180Z Finalizing artifact upload
+2026-11-07T20:55:20.3131680Z Artifact legacy-ready-macos-15-intel.zip successfully finalized. Artifact ID 13590880631
+2026-11-07T20:55:20.3134390Z Artifact legacy-ready-macos-15-intel has been successfully uploaded! Final size is 61078 bytes. Artifact ID is 13590880631
+2026-11-07T20:55:20.3141260Z Artifact download URL: https://github.com/29583855/dukto-next/actions/runs/42412866699/artifacts/13590880631
+2026-11-07T20:55:20.3377100Z Post job cleanup.
+2026-11-07T20:55:20.5068750Z (node:9516) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-07T20:55:20.5070260Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-07T20:55:20.5291570Z Post job cleanup.
+2026-11-07T20:55:20.6681480Z [command]/usr/local/bin/git version
+2026-11-07T20:55:20.6786650Z git version 2.55.0
+2026-11-07T20:55:20.6829550Z Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/56376e69-3272-4f87-81b3-e4ac746027d7/.gitconfig'
+2026-11-07T20:55:20.6850020Z Temporarily overriding HOME='/Users/runner/work/_temp/56376e69-3272-4f87-81b3-e4ac746027d7' before making global git config changes
+2026-11-07T20:55:20.6855170Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-07T20:55:20.6859040Z [command]/usr/local/bin/git config --global --add safe.directory /Users/runner/work/dukto-next/dukto-next/baseline
+2026-11-07T20:55:20.6966170Z [command]/usr/local/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-07T20:55:20.7073320Z [command]/usr/local/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-07T20:55:20.8500430Z [command]/usr/local/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-07T20:55:20.9514020Z http.https://github.com/.extraheader
+2026-11-07T20:55:20.9973120Z [command]/usr/local/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-11-07T20:55:20.9979430Z [command]/usr/local/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-07T20:55:21.0514580Z [command]/usr/local/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-07T20:55:21.0608630Z [command]/usr/local/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-07T20:55:21.2173070Z Post job cleanup.
+2026-11-07T20:55:21.3638370Z [command]/usr/local/bin/git version
+2026-11-07T20:55:21.3734830Z git version 2.55.0
+2026-11-07T20:55:21.3773150Z Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/13f0bafa-6e4f-468b-a6d0-c99bce5ab2c9/.gitconfig'
+2026-11-07T20:55:21.3790280Z Temporarily overriding HOME='/Users/runner/work/_temp/13f0bafa-6e4f-468b-a6d0-c99bce5ab2c9' before making global git config changes
+2026-11-07T20:55:21.3791970Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-07T20:55:21.3797090Z [command]/usr/local/bin/git config --global --add safe.directory /Users/runner/work/dukto-next/dukto-next
+2026-11-07T20:55:21.3905460Z [command]/usr/local/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-07T20:55:21.4001390Z [command]/usr/local/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-07T20:55:21.5298490Z [command]/usr/local/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-07T20:55:21.5380340Z http.https://github.com/.extraheader
+2026-11-07T20:55:21.5396920Z [command]/usr/local/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-11-07T20:55:21.5494500Z [command]/usr/local/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-07T20:55:21.7060320Z [command]/usr/local/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-07T20:55:21.7118310Z [command]/usr/local/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-07T20:55:21.8605570Z Cleaning up orphan processes
+2026-11-07T20:55:22.1695460Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-python@v5, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
