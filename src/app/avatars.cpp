@@ -187,21 +187,26 @@ void Avatars::pump() {
             bool invalid = false;
         };
         const auto response = std::make_shared<Response>();
+        // 日期：2026-11-07；元数据与正文可能连续报告同一拒绝，确保QNetworkReply只中止一次。
+        const auto abortOnce = [reply, response]() {
+            if (response->invalid)
+                return;
+            response->invalid = true;
+            reply->abort();
+        };
         // 日期：2026-11-04；读到上限后一字节即中止，不能因缺少 Content-Length 无限增长。
-        connect(reply, &QNetworkReply::readyRead, this, [reply, response]() {
+        connect(reply, &QNetworkReply::readyRead, this, [reply, response, abortOnce]() {
             response->bytes.append(reply->read(MaxEncoded + 1 - response->bytes.size()));
             if (response->bytes.size() > MaxEncoded || reply->bytesAvailable() > 0) {
-                response->invalid = true;
-                reply->abort();
+                abortOnce();
             }
         });
         // 日期：2026-11-04；声明压缩或超限时在解码前拒绝，不跟随任意重定向。
-        connect(reply, &QNetworkReply::metaDataChanged, this, [reply, response]() {
+        connect(reply, &QNetworkReply::metaDataChanged, this, [reply, response, abortOnce]() {
             const auto encoding = reply->rawHeader("Content-Encoding").toLower();
             if (reply->header(QNetworkRequest::ContentLengthHeader).toLongLong() > MaxEncoded ||
                 (!encoding.isEmpty() && encoding != "identity")) {
-                response->invalid = true;
-                reply->abort();
+                abortOnce();
             }
         });
         auto deadline = new QTimer(reply);

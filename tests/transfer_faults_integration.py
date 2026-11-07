@@ -140,11 +140,19 @@ def main():
                     safe_path_replacement = (
                         fault == "root-reconfigure"
                         and direction == "upload"
-                        and error == {
-                            "code": 6,
-                            "stage": "read",
-                            "message": "源文件路径在读取期间已被替换",
-                        }
+                        and error
+                        in (
+                            {
+                                "code": 6,
+                                "stage": "read",
+                                "message": "源文件路径在读取期间已被替换",
+                            },
+                            {
+                                "code": 6,
+                                "stage": "read",
+                                "message": "读取期间源文件已变化",
+                            },
+                        )
                     )
                     if safe_path_replacement:
                         assert stopped["state"] in ("failed", "interrupted"), stopped
