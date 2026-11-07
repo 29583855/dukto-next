@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestCase name="ServerPanelTests">
+<Environment>
+    <QtVersion>5.15.13</QtVersion>
+    <QtBuild>Qt 5.15.13 (x86_64&#x002D;little_endian&#x002D;lp64 shared (dynamic) release build; by GCC 13.2.0)</QtBuild>
+    <QTestVersion>5.15.13</QTestVersion>
+</Environment>
+<TestFunction name="initTestCase">
+<Incident type="pass" file="" line="0" />
+    <Duration msecs="2.54899"/>
+</TestFunction>
+<TestFunction name="stateSessionSharedWithCli">
+<Incident type="pass" file="" line="0" />
+    <Duration msecs="5499.19"/>
+</TestFunction>
+<TestFunction name="publicSkipQml">
+<Incident type="pass" file="" line="0" />
+    <Duration msecs="8713.57"/>
+</TestFunction>
+<TestFunction name="uploadManifestAcrossPanelRestart">
+<Incident type="pass" file="" line="0" />
+    <Duration msecs="11118.9"/>
+</TestFunction>
+<TestFunction name="certificateLifecycleQml">
+<Incident type="fail" file="/home/dukto/gui&#x002D;state&#x002D;r127/tests/server_panel_tests.cpp" line="446">
+    <Description><![CDATA['view.grabFramebuffer().save("Testing/QtTest/server-certificate-renewal.png")' returned FALSE. ()]]></Description>
+</Incident>
+    <Duration msecs="6493.47"/>
+</TestFunction>
+<TestFunction name="queuedProductionControls">
+<Incident type="fail" file="/home/dukto/gui&#x002D;state&#x002D;r127/tests/server_panel_tests.cpp" line="584">
+    <Description><![CDATA['view.grabFramebuffer().save("Testing/QtTest/server-queue.png")' returned FALSE. ()]]></Description>
+</Incident>
+    <Duration msecs="18066.2"/>
+</TestFunction>
+<TestFunction name="productionServiceAndQml">
+<Incident type="fail" file="/home/dukto/gui&#x002D;state&#x002D;r127/tests/server_panel_tests.cpp" line="746">
+    <Description><![CDATA['picture.save("Testing/QtTest/server-page.png")' returned FALSE. ()]]></Description>
+</Incident>
+    <Duration msecs="17367.3"/>
+</TestFunction>
+<TestFunction name="cleanupTestCase">
+<Incident type="pass" file="" line="0" />
+    <Duration msecs="0.118298"/>
+</TestFunction>
+<Duration msecs="67266.5"/>
+</TestCase>

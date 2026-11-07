@@ -1,0 +1,15 @@
+********* Start testing of ServerPanelTests *********
+Config: Using QtTest library 5.15.13, Qt 5.15.13 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 13.2.0), ubuntu 24.04
+PASS   : ServerPanelTests::initTestCase()
+PASS   : ServerPanelTests::stateSessionSharedWithCli()
+PASS   : ServerPanelTests::publicSkipQml()
+PASS   : ServerPanelTests::uploadManifestAcrossPanelRestart()
+FAIL!  : ServerPanelTests::certificateLifecycleQml() 'view.grabFramebuffer().save("Testing/QtTest/server-certificate-renewal.png")' returned FALSE. ()
+   Loc: [/home/dukto/gui-state-r127/tests/server_panel_tests.cpp(446)]
+FAIL!  : ServerPanelTests::queuedProductionControls() 'view.grabFramebuffer().save("Testing/QtTest/server-queue.png")' returned FALSE. ()
+   Loc: [/home/dukto/gui-state-r127/tests/server_panel_tests.cpp(584)]
+FAIL!  : ServerPanelTests::productionServiceAndQml() 'picture.save("Testing/QtTest/server-page.png")' returned FALSE. ()
+   Loc: [/home/dukto/gui-state-r127/tests/server_panel_tests.cpp(746)]
+PASS   : ServerPanelTests::cleanupTestCase()
+Totals: 5 passed, 3 failed, 0 skipped, 0 blacklisted, 67266ms
+********* Finished testing of ServerPanelTests *********

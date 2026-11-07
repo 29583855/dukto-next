@@ -1,8 +1,23 @@
 # macOS独立开发预览包
 
+R127精确6c6dc363GUI与CLI同目录状态接入已验，四原生各34核心/33份Qt XML、面板各8项通过；双Mac含Qt5/OpenSSL预览、迁移业务与四截图已验并公开下载。独立Ubuntu8项通过。R126原完整协议两项旧夹具假设已失败，原件保留；修正独立验收。普通历史迁移、全应用预算和自动GC未完成。
+
+## R127含依赖开发预览
+
+精确源码`6c6dc363c7bb755f7b5aae1f7627385c009a0ac2`；[逐层回执](validation/2026-11-08/gui-state-session-r127-macos-package/receipt.json)。
+
+[公开开发预览与四份附件](https://github.com/29583855/dukto-next/releases/tag/preview-r127-20261108)。开发adhoc签名，正式签名、公证和最低干净系统继续。
+
+| 架构 | 下载 | 内部tar.gz SHA-256 |
+| --- | --- | --- |
+| arm64 | [下载tar.gz](https://github.com/29583855/dukto-next/releases/download/preview-r127-20261108/DuktoNext-macos-arm64-preview.tar.gz) · [CI原件](https://github.com/29583855/dukto-next/actions/runs/42423175058/artifacts/13594956150) | 5e5b8edc5fe6822b5d80904bed06d4002c74afc59843de998ba9a2d22cd35d2d |
+| x86_64 | [下载tar.gz](https://github.com/29583855/dukto-next/releases/download/preview-r127-20261108/DuktoNext-macos-x86_64-preview.tar.gz) · [CI原件](https://github.com/29583855/dukto-next/actions/runs/42423175058/artifacts/13595043803) | d32e9c8e46139ff63ad441ab130f2688669db7932dfa72186d994422aed36c5b |
+
+本机副本：dist/macos-preview-20261108-r127-gui-state-session/。独立CLI入口及用法见下文。
+
 R125精确1b99cd63四原生持久配置/真实CLI各16条通过，完整核心4/4各33项；双Mac GUI/CLI含依赖包、迁移运行及截图已验，下载更新R125。独立Ubuntu16条通过。生产根/历史迁移、实际总预算和自动GC继续。
 
-## R125含依赖开发预览
+## R125含依赖开发预览（历史）
 
 精确源码`1b99cd63eb5c3cfa5c97e17d494a119fc3e7ecdb`；[逐层回执](validation/2026-11-08/budget-configuration-r125-macos-package/receipt.json)。开发adhoc签名，正式签名/公证和最低干净系统继续。
 
