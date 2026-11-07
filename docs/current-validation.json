@@ -1,5 +1,5 @@
 {
-  "observedUtc": "2026-11-07T02:06:59.200629+00:00",
+  "observedUtc": "2026-11-07T02:21:41.207196+00:00",
   "productionCommit": "ed4f5cf08c96f04671e49e5138eda8ce1790ead3",
   "testCommit": "ed4f5cf08c96f04671e49e5138eda8ce1790ead3",
   "packages": [
@@ -214,7 +214,7 @@
   "releaseQualified": false,
   "deliveryComplete": false,
   "planVersion": "v0.107",
-  "currentSourceStage": "R107 secure-channel ready path; Windows verified; new native and independent Ubuntu pending",
+  "currentSourceStage": "R107 dualMac compiled and Windows verified; independent Ubuntu task-items timed out; full new native pending",
   "nativeMusl": {
     "sourceCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
     "productionCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
@@ -17580,7 +17580,7 @@
       "sha256": "872c369563c6beb92b4421968bdf88a82f6621aae9bcad048f3a3fe316c7c56a"
     }
   },
-  "currentSourceCommit": "cd92c43f301e5a60584b7896a450247855f0bdfd",
+  "currentSourceCommit": "e220461bdd0a409b10f483a3aaa321db927975c3",
   "productionImplementationUnchangedFrom": "88f33b2c83f2950307c362fb64c693f7e9e5929d",
   "nativeRegressionGuardR98": {
     "date": "2026-11-07",
@@ -19613,7 +19613,7 @@
       "sha256": "4e925961855239abe68898110d7e27d2d842a6676373cc2ab724a1f18d5af3a0"
     }
   },
-  "currentGuiSourceCommitPending": true,
+  "currentGuiSourceCommitPending": false,
   "coreProductionCommit": "88f33b2c83f2950307c362fb64c693f7e9e5929d",
   "linuxPreviewR98": {
     "sourceCommit": "b2e4659b347c65eef24c8e568e07e96a2d6ff2d7",
@@ -20591,7 +20591,7 @@
     "path": "docs/validation/2026-11-07/cancel-r102-native-terminal/receipt.json",
     "sha256": "93384dac8e1ae928a2cb54494b861638b6bc418f66dc24d2de5a514c0185f238"
   },
-  "currentGuiSourceCommit": "4652f4dce23b014e18f2db56c6a75e81e76deafa",
+  "currentGuiSourceCommit": "e220461bdd0a409b10f483a3aaa321db927975c3",
   "r103CompleteTerminal": {
     "path": "docs/validation/2026-11-07/diagnostics-r103-native-terminal/receipt.json",
     "sha256": "e4fbf6ba33cf3e04747c1f06619ba3465b4ec412d9eda295d9310221e204194d"
@@ -20599,14 +20599,14 @@
   "taskItemsFixtureR105": {
     "manifest": {
       "path": "docs/ci-verification-20261107-r105.json",
-      "sha256": "1d4146db43cd611073fee07b8ec8963a18c7c3c5ee939091af95bea8d3066539"
+      "sha256": "ba68391bf5717ba630c4a562e21fbcbb3c5dcb242641e78cbb53d0a61f8997fe"
     },
     "evidence": {
       "path": "docs/validation/2026-11-07/task-items-r105-qualified/receipt.json",
       "sha256": "957e858690825c11cdac9fdc6bd799d9063a5c4590feafdefee8e01082dd2858"
     },
     "productionCodeChanged": false,
-    "nativeCIPending": true,
+    "nativeCIPending": false,
     "independentUbuntuFixtureRecheckPassed": false,
     "macOSPackageEvidence": {
       "path": "docs/validation/2026-11-07/task-items-r105-macos-package-terminal/qualified-receipt.json",
@@ -20638,7 +20638,12 @@
     "independentUbuntuDiagnosticEvidence": {
       "path": "docs/validation/2026-11-07/task-items-r106-diagnostic-qualified/receipt.json",
       "sha256": "f03f30ef47700a723c14adf788809797cbce727d2c491d7b4839d7a61f653127"
-    }
+    },
+    "completeTerminalEvidence": {
+      "path": "docs/validation/2026-11-07/task-items-r105-native-terminal/receipt.json",
+      "sha256": "28694e7b8c6b9e14de910a6c074ac420c99ec49d88715f2c9c96df18862b9e5d"
+    },
+    "fullNativeRegressionQualified": true
   },
   "previousMacOSPreviewBeforeR105": {
     "sourceCommit": "ed4f5cf08c96f04671e49e5138eda8ce1790ead3",
@@ -20790,11 +20795,32 @@
       "sha256": "93514152715c1115afb7bd53d9bf2c9d4904c03b3d841611dd704602aebbfb08"
     },
     "nativeCIPending": true,
-    "independentUbuntuPending": true,
-    "throughputImprovementProven": false
+    "independentUbuntuPending": false,
+    "throughputImprovementProven": false,
+    "manifest": {
+      "path": "docs/ci-verification-20261107-r107.json",
+      "sha256": "e602af80c74010f0ccbb4b2a5d30bb928c0ca62bddf42a40e4ca74331e854ed9"
+    },
+    "independentUbuntuEvidence": {
+      "path": "docs/validation/2026-11-07/secure-ready-r107-glibc/receipt.json",
+      "sha256": "eb4456835e09a9b26ae4ae5f71d16d941facae5cf5404fc2d50646a9bb086e84"
+    },
+    "independentUbuntuFullTaskItemsPassed": false,
+    "macosCompiledEvidence": {
+      "path": "docs/validation/2026-11-07/secure-ready-r107-macos-compiled/receipt.json",
+      "sha256": "ca9dac58d32a4f55c49ce562919ef8c7eb1e7ae8d86fc027800fd05587de7131"
+    }
   },
   "r105IntelNativeTerminal": {
     "path": "docs/validation/2026-11-07/task-items-r105-native-job-terminals/macos-15-intel/receipt.json",
     "sha256": "e775cea4321842306d5dc1b3b1ad812c1c466b159db2c46f97f5720204d181f9"
+  },
+  "r105CompleteTerminal": {
+    "path": "docs/validation/2026-11-07/task-items-r105-native-terminal/receipt.json",
+    "sha256": "28694e7b8c6b9e14de910a6c074ac420c99ec49d88715f2c9c96df18862b9e5d"
+  },
+  "macOSCompilationR107": {
+    "path": "docs/validation/2026-11-07/secure-ready-r107-macos-compiled/receipt.json",
+    "sha256": "ca9dac58d32a4f55c49ce562919ef8c7eb1e7ae8d86fc027800fd05587de7131"
   }
 }

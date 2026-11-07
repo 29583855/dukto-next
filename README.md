@@ -6,7 +6,7 @@
 
 当前已建立 C++14 共用核心、Qt Quick 2 桌面端和独立 CLI。Windows 已验证与原版文件/目录/文本双向互传、超过 4 GiB、10 万文件、100 轮接收，以及首次说明/设置/截图/单实例和有界头像模块。完整原版交互、服务器、多线程、恢复和跨平台验收继续按计划推进。原版目录保留用于对照。
 
-公开仓库为[29583855/dukto-next](https://github.com/29583855/dukto-next)。[macOS Apple Silicon/Intel GUI与独立CLI](docs/macOS独立预览包.md)的R105含Qt5/OpenSSL开发包已编译并通过迁移业务。R107安全通道就绪路径通过双Windows各23核心和31 TLS边界，新Mac/Linux验证继续；尚未证明提速或独立Ubuntu原超时根因。完整交付见[计划](开发计划与进度.md)和[本轮证据](docs/ci-verification-20261107-r107.json)。
+公开仓库为[29583855/dukto-next](https://github.com/29583855/dukto-next)。R107双Mac GUI/CLI已原生编译，双Windows各23核心/31 TLS边界通过；独立Ubuntu31 TLS/16通道专项通过，完整小文件任务仍90秒超时，保留失败。R105四原生完整终态success、192协议/48取消已验；[双Mac含依赖预览](docs/macOS独立预览包.md)仍为R105。完整交付见[计划](开发计划与进度.md)和[本轮证据](docs/ci-verification-20261107-r107.json)。
 
 新增[b9d9b78上传发送端确认](docs/decisions/0022-上传发送端持久处置与证据恢复.md)已通过本机专项；原CI终态failure保留：四平台临时库glob误判，另Windows并发隔离空闲线程5/基线3的原因未确认。旧运行不再视为进行中，完整历史见主计划v0.64。
 

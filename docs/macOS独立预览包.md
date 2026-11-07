@@ -260,3 +260,14 @@ R86补记（2026-11-06）：06089a5双架构原包、各290源码、五业务报
 
 
 R87补记（2026-11-06）：精确409a73b双Mac包各293源码、五原业务报告及四截图已核验。当前下载包含公开skip；其完整原生协议独立收件，不用部署包成功代替全量回归。
+
+## R107新源码编译归档
+
+精确源码`e220461bdd0a409b10f483a3aaa321db927975c3`的两种架构已编译并核验GUI/CLI、Mach-O和摘要。以下归档未部署运行依赖；上方可运行含依赖预览仍为R105。R107完整协议及运行部署继续。
+
+| 架构 | 编译归档 | 内部tar.gz SHA-256 |
+| --- | --- | --- |
+| arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42327794378/artifacts/13555753915) | `b32d3466822c21fe31796b16ee8a988a1d7976f507807874d04be7a6706a9989` |
+| x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42327794378/artifacts/13556431606) | `39f4f750924540588d870e025945af6fbc9fa3165d6a7e931cb002eee1ccf194` |
+
+[编译回执](validation/2026-11-07/secure-ready-r107-macos-compiled/receipt.json)。
