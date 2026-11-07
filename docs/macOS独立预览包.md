@@ -1,8 +1,28 @@
 # macOS独立开发预览包
 
-更新日期：2026-11-07。最新R109源码`bea5d8181fd4e474216ad613120e20c3c086f217`已在Apple Silicon和Intel原生环境以C++14/Qt5编译GUI及独立CLI，归档校验通过，两架构各25个核心CTest与下载清理各16条数据行已核验；各保留一条已有Darwin端口独占XFAIL，完整原生协议回归仍在运行。含Qt5/OpenSSL运行依赖的开发预览仍为R108，打包源码`641920f75b76149d49ee01f134bf70097857dc3d`。
+更新日期：2026-11-07。R110精确`a29960a38fb46368dd8ac190caed2f4c515f8731`已在Apple Silicon和Intel原生环境以C++14/Qt5编译GUI及独立CLI；两架构各26个CTest、目录清理各45条已验，归档摘要/架构/执行位通过。双架构Qt5/OpenSSL含依赖预览、系统PATH搬迁、各五项真实CLI/传输报告和Cocoa导航均通过；四平台完整协议终态success。各一条精确Darwin端口独占XFAIL保留。
 
-## R109最新原生编译归档
+## R110最新含依赖预览
+
+[双架构打包运行42352207494](https://github.com/29583855/dukto-next/actions/runs/42352207494)终态success。两架构的Qt/OpenSSL依赖、364份应用源码、全部载荷与框架链接、归档摘要和Mach-O身份均通过核验；系统PATH下搬迁启动、各五项CLI/传输报告及Cocoa导航均通过。[原件回执](validation/2026-11-07/directory-cleanup-r110-macos-package/receipt.json)。
+
+| 架构 | Actions下载 | 官方ZIP SHA-256 | 内部tar.gz SHA-256 |
+| --- | --- | --- | --- |
+| arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42352207494/artifacts/13566366056) | `4420124e5e966524ee19cadc666d4401d261b45bae6132e7ed0e8319d4f47b3e` | `e6545125a4b1f65ed91ccd72c6e929991855e67e6d32a8b1dcb6a9d76d8a39c2` |
+| x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42352207494/artifacts/13566343168) | `0cb9443e3053bd87b8d3bef504935b9683172a316bf8013789548d8a2a36d60a` | `f8bb4793cfb6b90ad82697a43c6c00f9acb193dc13abab5a37734bc445f95ce6` |
+
+## R110原生编译归档
+
+对应[运行42351739970](https://github.com/29583855/dukto-next/actions/runs/42351739970)。官方ZIP、内部tar SHA、精确源码、LICENSE、Mach-O架构及GUI/CLI执行权限逐件通过；本机副本在`dist/macos-compiled-20261107-r110-directory-cleanup/`。[回执](validation/2026-11-07/directory-cleanup-r110-macos-compiled/receipt.json)。
+
+| 架构 | Actions下载 | 官方ZIP SHA-256 | 内部tar.gz SHA-256 |
+| --- | --- | --- | --- |
+| arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42351739970/artifacts/13565863520) | `a45ff1143b9f7714196ab246142b5f265794e38c677b97b3ca1f634a9231c2e4` | `3107555534a54211ac84540419409c5709fa7a49e23efaf590f50d2288058d3d` |
+| x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42351739970/artifacts/13566320998) | `b13f83388ff82efbbe7b4573f950e366b0b32de7294822cb54fc6f7e8d87fc87` | `900d9d04d0ff46cf986d9ea4cf733d6262c29132051c20b9f0f60638e1af65b0` |
+
+这是编译归档，需要匹配Qt5/OpenSSL运行依赖；当前双架构含依赖预览见本节顶部。核心通过不替代完整协议、干净系统或正式签名公证。
+
+## R109原生编译归档（历史）
 
 对应[运行42347962868](https://github.com/29583855/dukto-next/actions/runs/42347962868)。两架构的官方ZIP摘要、内部tar摘要、源码提交、LICENSE、Mach-O CPU架构及GUI/CLI执行权限已逐件核验；本机副本存于`dist/macos-compiled-20261107-r109-client-cleanup/`。[核验回执](validation/2026-11-07/client-cleanup-r109-macos-compiled/receipt.json)。
 
@@ -13,7 +33,7 @@
 
 这些是原生编译产物，需要匹配的Qt5/OpenSSL运行依赖；完整含依赖预览见下方R108。R109新增本机客户端下载普通文件临时正文清理，完整原生测试及正式签名公证资格仍单独验收，不能由编译成功替代。
 
-## 当前R108含依赖部署包
+## R108含依赖部署包（历史）
 
 [双架构原生部署与搬迁工作流](https://github.com/29583855/dukto-next/actions/runs/42333318212)终态success。两架构均完成GUI/CLI编译、依赖部署、系统PATH下迁移验证与五项业务报告；附件下载可能需要登录GitHub。
 
@@ -49,7 +69,7 @@ R108应用源码`73cd10ac95be6c97fd67134ba14b6edee4b2c189`已在 [公开仓库](
 
 ## `6eea9d2`原生复验（终态失败，原件保留）
 
-[GitHub Actions运行42340140189](https://github.com/29583855/dukto-next/actions/runs/42340140189)对应精确源码`6eea9d23a254ac0095e588b03d76c19faf7bf5cf`，已终态failure。两架构GUI/CLI编译均成功；Windows、Ubuntu和Apple Silicon job成功，Intel `transfer-retry`在1秒总时限内未进入queued状态，排队期限断言失败且未生成该项报告。原job日志、执行清单和官方附件摘要已[收验保存](validation/2026-11-07/client-cleanup-r109-prior-ci/receipt.json)，未授予整轮通过资格。当前最新编译归档和核心结果见上方R109；R108含依赖包仍单独标记其源码身份。
+[GitHub Actions运行42340140189](https://github.com/29583855/dukto-next/actions/runs/42340140189)对应精确源码`6eea9d23a254ac0095e588b03d76c19faf7bf5cf`，已终态failure。两架构GUI/CLI编译均成功；Windows、Ubuntu和Apple Silicon job成功，Intel `transfer-retry`在1秒总时限内未进入queued状态，排队期限断言失败且未生成该项报告。原job日志、执行清单和官方附件摘要已[收验保存](validation/2026-11-07/client-cleanup-r109-prior-ci/receipt.json)，未授予整轮通过资格。当前最新编译归档和核心结果见上方R110；R108含依赖包仍单独标记其源码身份。
 
 ## R105含依赖部署包（历史）
 

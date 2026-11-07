@@ -59,8 +59,10 @@ def main():
         folder = output / runner
         receipt_path = folder / "receipt.json"
         if receipt_path.exists():
-            records.append(json.loads(receipt_path.read_text("utf-8")))
-            continue
+            existing = json.loads(receipt_path.read_text("utf-8"))
+            if existing.get("status") == "completed":
+                records.append(existing)
+                continue
         item, = [item for item in artifacts if item["name"] == "validation-" + runner]
         cache = root / ".cache/client-cleanup-r109-terminal-artifacts"
         cache.mkdir(exist_ok=True)

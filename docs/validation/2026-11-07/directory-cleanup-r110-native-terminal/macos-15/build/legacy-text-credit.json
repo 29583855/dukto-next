@@ -1,0 +1,100 @@
+{
+  "passed": true,
+  "completed": true,
+  "cases": [
+    {
+      "name": "maximum-controls",
+      "jsonLines": 4,
+      "jsonBytes": 50332290,
+      "bytes": 8388608,
+      "sha256": "220d8df25aa59863cd30f83130b4b061c3925db5a076e116f698b2891350b796",
+      "completeTextVerified": true,
+      "peaks": {
+        "receiver": {
+          "rss": 74514432,
+          "private": 32572672,
+          "threads": 4,
+          "handles": 14
+        },
+        "sender": {
+          "rss": 47628288,
+          "private": 31949824,
+          "threads": 4,
+          "handles": 10
+        }
+      },
+      "memorySamplingRequired": true,
+      "memorySamplingObserved": {
+        "receiver": true,
+        "sender": true
+      },
+      "memoryQualified": true,
+      "passed": true
+    },
+    {
+      "name": "unicode-segment",
+      "jsonLines": 4,
+      "jsonBytes": 4747,
+      "bytes": 4111,
+      "sha256": "2396a2f1125f9dfdaa9f1edef54d6a5d8163efe80f228c7f242995dc0b7c7009",
+      "completeTextVerified": true,
+      "peaks": {
+        "receiver": {
+          "rss": 9273344,
+          "private": 3474368,
+          "threads": 3,
+          "handles": 7
+        },
+        "sender": {}
+      },
+      "memorySamplingRequired": false,
+      "memorySamplingObserved": {
+        "receiver": true,
+        "sender": false
+      },
+      "memoryQualified": false,
+      "passed": true
+    },
+    {
+      "name": "empty",
+      "jsonLines": 4,
+      "jsonBytes": 611,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "completeTextVerified": true,
+      "peaks": {
+        "receiver": {
+          "rss": 9256960,
+          "private": 3457984,
+          "threads": 3,
+          "handles": 7
+        },
+        "sender": {}
+      },
+      "memorySamplingRequired": false,
+      "memorySamplingObserved": {
+        "receiver": true,
+        "sender": false
+      },
+      "memoryQualified": false,
+      "passed": true
+    },
+    {
+      "name": "oversized-declaration",
+      "exitCode": 2,
+      "bodySent": false,
+      "passed": true
+    }
+  ],
+  "memoryLimitBytes": 536870912,
+  "outputErrors": [
+    {
+      "mode": "text",
+      "exitCode": 5
+    },
+    {
+      "mode": "json",
+      "exitCode": 5
+    }
+  ]
+}

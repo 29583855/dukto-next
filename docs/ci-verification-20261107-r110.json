@@ -1,5 +1,5 @@
 {
-  "observedUtc": "2026-11-07T07:30:00.505816+00:00",
+  "observedUtc": "2026-11-07T08:59:06.295792+00:00",
   "planVersion": "v0.110",
   "sourceBaseCommit": "619567b03157481766279d3f25b96ff93eb5b10c",
   "repositoryUrl": "https://github.com/29583855/dukto-next",
@@ -15,11 +15,11 @@
   "localRelatedTargetsEach": 8,
   "directoryCleanupRowsEach": 45,
   "directoryCleanupJUnitMethodsEach": 15,
-  "nativeR110Pending": true,
+  "nativeR110Pending": false,
   "priorR109TerminalEvidence": {
     "path": "docs/validation/2026-11-07/client-cleanup-r109-native-terminal/receipt.json",
-    "bytes": 79789,
-    "sha256": "5b4a32e307826253e810a39de2e18fdb383173668d020a13170d5c58a40adfde"
+    "bytes": 107171,
+    "sha256": "d15db244190f26713ca504824560b32cc11d02679898c85ef68d97782499884f"
   },
   "buildInputs": [
     {
@@ -1229,7 +1229,7 @@
     }
   ],
   "openScope": [
-    "native four-platform R110 validation",
+    "R110 full native protocol terminal",
     "skip-policy directory coordination",
     "unknown-identity temporary directories",
     "global GC and total disk budgets",
@@ -1241,8 +1241,114 @@
   "deliveryComplete": false,
   "releaseQualified": false,
   "priorR109VerifiedProtocolJobs": [
+    "ubuntu-22.04",
     "macos-15",
     "macos-15-intel",
-    "ubuntu-22.04"
-  ]
+    "windows-2022"
+  ],
+  "sourceCommit": "a29960a38fb46368dd8ac190caed2f4c515f8731",
+  "nativeRun": {
+    "id": 42351739970,
+    "head_sha": "a29960a38fb46368dd8ac190caed2f4c515f8731",
+    "status": "completed",
+    "conclusion": "success",
+    "html_url": "https://github.com/29583855/dukto-next/actions/runs/42351739970"
+  },
+  "nativeR110CorePending": false,
+  "nativeCompilationVerified": true,
+  "nativeFullProtocolPending": false,
+  "nativeCoreTargetsEach": 26,
+  "nativeCoreEvidence": {
+    "path": "docs/validation/2026-11-07/directory-cleanup-r110-native-core/receipt.json",
+    "bytes": 36854,
+    "sha256": "a4fbb110c7b2e69acf919711963c10e3090b81841e17657cc513b0ecd0a04c7d"
+  },
+  "macosCompiledEvidence": {
+    "path": "docs/validation/2026-11-07/directory-cleanup-r110-macos-compiled/receipt.json",
+    "bytes": 2645,
+    "sha256": "f57f3ea2ed589f0d903dae13e47ff95705abfad23cc84c0409835d776c0ecfce"
+  },
+  "macosCompiledPackages": [
+    {
+      "sourceCommit": "a29960a38fb46368dd8ac190caed2f4c515f8731",
+      "architecture": "arm64",
+      "artifactId": 13565863520,
+      "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42351739970/artifacts/13565863520",
+      "artifactSha256": "a45ff1143b9f7714196ab246142b5f265794e38c677b97b3ca1f634a9231c2e4",
+      "archive": "DuktoNext-macos-ARM64-compiled.tar.gz",
+      "sha256": "3107555534a54211ac84540419409c5709fa7a49e23efaf590f50d2288058d3d",
+      "binaries": [
+        {
+          "path": "dukto-cli",
+          "sha256": "c873ea5567ac1c34228a71f22b82bbb6b97442a18c4df1f1955d32508acf710d",
+          "architecture": "arm64",
+          "executable": true
+        },
+        {
+          "path": "dukto-gui.app/Contents/MacOS/dukto-gui",
+          "sha256": "a6f6eac784cbe95a80005eaa24958e9d29de18e36b365dc502304add4b3324f1",
+          "architecture": "arm64",
+          "executable": true
+        }
+      ],
+      "compileStepsPassed": true,
+      "dependenciesDeployed": false
+    },
+    {
+      "sourceCommit": "a29960a38fb46368dd8ac190caed2f4c515f8731",
+      "architecture": "x86_64",
+      "artifactId": 13566320998,
+      "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42351739970/artifacts/13566320998",
+      "artifactSha256": "b13f83388ff82efbbe7b4573f950e366b0b32de7294822cb54fc6f7e8d87fc87",
+      "archive": "DuktoNext-macos-X64-compiled.tar.gz",
+      "sha256": "900d9d04d0ff46cf986d9ea4cf733d6262c29132051c20b9f0f60638e1af65b0",
+      "binaries": [
+        {
+          "path": "dukto-cli",
+          "sha256": "0412bd2b528d01bfd46dd52ee400469f53c3851945c57c93b2fc94a181f14258",
+          "architecture": "x86_64",
+          "executable": true
+        },
+        {
+          "path": "dukto-gui.app/Contents/MacOS/dukto-gui",
+          "sha256": "ddb707befb892bafd49de1a5d4205213a3513755ff219cca9b5e1b3866d02210",
+          "architecture": "x86_64",
+          "executable": true
+        }
+      ],
+      "compileStepsPassed": true,
+      "dependenciesDeployed": false
+    }
+  ],
+  "priorR109AllFourProtocolJobsVerified": true,
+  "macosDeployedPackageEvidence": {
+    "path": "docs/validation/2026-11-07/directory-cleanup-r110-macos-package/receipt.json",
+    "bytes": 13714,
+    "sha256": "859cf17549aeccf6bf5cdca86747afe1507a1de4b49ab357f4fec56b7baee11d"
+  },
+  "macosDependenciesDeployedForR110": true,
+  "macosDependenciesDeployedForR110VerifiedArchitectures": [
+    "arm64",
+    "x86_64"
+  ],
+  "currentSelfContainedMacPreviewSource": "a29960a38fb46368dd8ac190caed2f4c515f8731",
+  "macosDeployedPackageRun": {
+    "id": 42352207494,
+    "head_sha": "a29960a38fb46368dd8ac190caed2f4c515f8731",
+    "status": "completed",
+    "conclusion": "success",
+    "html_url": "https://github.com/29583855/dukto-next/actions/runs/42352207494"
+  },
+  "nativeR110AllFourProtocolJobsVerified": true,
+  "nativeVerifiedProtocolJobs": [
+    "ubuntu-22.04",
+    "macos-15",
+    "macos-15-intel",
+    "windows-2022"
+  ],
+  "nativeTerminalEvidence": {
+    "path": "docs/validation/2026-11-07/directory-cleanup-r110-native-terminal/receipt.json",
+    "bytes": 107801,
+    "sha256": "5ea1077152e6a7565a3dfd706df702544c4c90a99b79818c8d8335c60bb9a5b3"
+  }
 }
