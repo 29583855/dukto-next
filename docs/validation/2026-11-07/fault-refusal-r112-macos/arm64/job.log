@@ -1,0 +1,282 @@
+﻿2026-11-07T11:06:08.7399530Z Current runner version: '2.338.2'
+2026-11-07T11:06:08.7414470Z ##[group]Runner Image Provisioner
+2026-11-07T11:06:08.7415000Z Hosted Compute Agent
+2026-11-07T11:06:08.7415360Z Version: 20261103.629
+2026-11-07T11:06:08.7415760Z Commit: 15dbd9ccb5dbf34fae002b6ed1a2670f52df37bc
+2026-11-07T11:06:08.7416220Z Build Date: 2026-11-03T17:26:59Z
+2026-11-07T11:06:08.7416650Z Worker ID: {9706babd-a4c9-428e-b4dd-53a4639df425}
+2026-11-07T11:06:08.7417090Z Region: westus
+2026-11-07T11:06:08.7417430Z Cloud: MacCloud
+2026-11-07T11:06:08.7417770Z ##[endgroup]
+2026-11-07T11:06:08.7418670Z ##[group]Operating System
+2026-11-07T11:06:08.7419050Z macOS
+2026-11-07T11:06:08.7419360Z 15.8.2
+2026-11-07T11:06:08.7419670Z 24H232
+2026-11-07T11:06:08.7419980Z ##[endgroup]
+2026-11-07T11:06:08.7420380Z ##[group]Runner Image
+2026-11-07T11:06:08.7420750Z Image: macos-15-arm64
+2026-11-07T11:06:08.7421150Z Version: 20261104.0514.1
+2026-11-07T11:06:08.7421960Z Included Software: https://github.com/actions/runner-images/blob/macos-15-arm64/20261104.0514/images/macos/macos-15-arm64-Readme.md
+2026-11-07T11:06:08.7422980Z Image Release: https://github.com/actions/runner-images/releases/tag/macos-15-arm64%2F20261104.0514
+2026-11-07T11:06:08.7423630Z ##[endgroup]
+2026-11-07T11:06:08.7424390Z ##[group]GITHUB_TOKEN Permissions
+2026-11-07T11:06:08.7425590Z Actions: read
+2026-11-07T11:06:08.7425930Z Contents: read
+2026-11-07T11:06:08.7426290Z Metadata: read
+2026-11-07T11:06:08.7426650Z ##[endgroup]
+2026-11-07T11:06:08.7428000Z Secret source: Actions
+2026-11-07T11:06:08.7428560Z Cache mode: write
+2026-11-07T11:06:08.7428980Z Prepare workflow directory
+2026-11-07T11:06:08.7642380Z Prepare all required actions
+2026-11-07T11:06:08.7678560Z Getting action download info
+2026-11-07T11:06:08.9208160Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-11-07T11:06:09.0826560Z Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+2026-11-07T11:06:09.1576810Z Download action repository 'actions/download-artifact@v4' (SHA:d3f86a106a0bac45b974a628896c90dbdf5c8093)
+2026-11-07T11:06:09.8936930Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-11-07T11:06:10.0821570Z Complete job name: fault-regression (macos-15, 13571515179, arm64, ec45a9b4299c058c4252dfe6c39fd2fef8ed5dad58929953b...
+2026-11-07T11:06:10.1335890Z ##[group]Run actions/checkout@v4
+2026-11-07T11:06:10.1336450Z with:
+2026-11-07T11:06:10.1336790Z   repository: 29583855/dukto-next
+2026-11-07T11:06:10.1339400Z   token: ***
+2026-11-07T11:06:10.1339730Z   ssh-strict: true
+2026-11-07T11:06:10.1340060Z   ssh-user: git
+2026-11-07T11:06:10.1340390Z   persist-credentials: true
+2026-11-07T11:06:10.1340760Z   clean: true
+2026-11-07T11:06:10.1341100Z   sparse-checkout-cone-mode: true
+2026-11-07T11:06:10.1341500Z   fetch-depth: 1
+2026-11-07T11:06:10.1341830Z   fetch-tags: false
+2026-11-07T11:06:10.1342170Z   show-progress: true
+2026-11-07T11:06:10.1342510Z   lfs: false
+2026-11-07T11:06:10.1342880Z   submodules: false
+2026-11-07T11:06:10.1343230Z   set-safe-directory: true
+2026-11-07T11:06:10.1343610Z   allow-unsafe-pr-checkout: false
+2026-11-07T11:06:10.1344110Z ##[endgroup]
+2026-11-07T11:06:10.4495200Z Syncing repository: 29583855/dukto-next
+2026-11-07T11:06:10.4496440Z ##[group]Getting Git version info
+2026-11-07T11:06:10.4497040Z Working directory is '/Users/runner/work/dukto-next/dukto-next'
+2026-11-07T11:06:10.4497810Z [command]/opt/homebrew/bin/git version
+2026-11-07T11:06:10.4722680Z git version 2.56.0
+2026-11-07T11:06:10.4732900Z ##[endgroup]
+2026-11-07T11:06:10.4738940Z Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/9a89e578-e5ec-446b-9bf8-cd4d167d861d/.gitconfig'
+2026-11-07T11:06:10.4745160Z Temporarily overriding HOME='/Users/runner/work/_temp/9a89e578-e5ec-446b-9bf8-cd4d167d861d' before making global git config changes
+2026-11-07T11:06:10.4746180Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-07T11:06:10.4748530Z [command]/opt/homebrew/bin/git config --global --add safe.directory /Users/runner/work/dukto-next/dukto-next
+2026-11-07T11:06:10.4834120Z Deleting the contents of '/Users/runner/work/dukto-next/dukto-next'
+2026-11-07T11:06:10.4836630Z ##[group]Initializing the repository
+2026-11-07T11:06:10.4840430Z [command]/opt/homebrew/bin/git init /Users/runner/work/dukto-next/dukto-next
+2026-11-07T11:06:10.5004600Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-11-07T11:06:10.5005470Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-11-07T11:06:10.5006310Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-11-07T11:06:10.5006900Z hint: call:
+2026-11-07T11:06:10.5007220Z hint:
+2026-11-07T11:06:10.5007640Z hint: 	git config --global init.defaultBranch <name>
+2026-11-07T11:06:10.5008160Z hint:
+2026-11-07T11:06:10.5008660Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-11-07T11:06:10.5009370Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-11-07T11:06:10.5009930Z hint:
+2026-11-07T11:06:10.5010250Z hint: 	git branch -m <name>
+2026-11-07T11:06:10.5010620Z hint:
+2026-11-07T11:06:10.5011120Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-11-07T11:06:10.5011880Z Initialized empty Git repository in /Users/runner/work/dukto-next/dukto-next/.git/
+2026-11-07T11:06:10.5017120Z [command]/opt/homebrew/bin/git remote add origin https://github.com/29583855/dukto-next
+2026-11-07T11:06:10.5084500Z ##[endgroup]
+2026-11-07T11:06:10.5085280Z ##[group]Disabling automatic garbage collection
+2026-11-07T11:06:10.5087800Z [command]/opt/homebrew/bin/git config --local gc.auto 0
+2026-11-07T11:06:10.5135530Z ##[endgroup]
+2026-11-07T11:06:10.5136100Z ##[group]Setting up auth
+2026-11-07T11:06:10.5140020Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-07T11:06:10.5185920Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-07T11:06:10.5879540Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-07T11:06:10.5925750Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-07T11:06:10.6520850Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-07T11:06:10.6576780Z [command]/opt/homebrew/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-07T11:06:10.7174650Z [command]/opt/homebrew/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-11-07T11:06:10.7223830Z ##[endgroup]
+2026-11-07T11:06:10.7224610Z ##[group]Fetching the repository
+2026-11-07T11:06:10.7229050Z [command]/opt/homebrew/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +10c026577449e089720471fc4a43c3da5bf627a4:refs/remotes/origin/main
+2026-11-07T11:06:27.7273700Z From https://github.com/29583855/dukto-next
+2026-11-07T11:06:27.7274260Z  * [new ref]         10c026577449e089720471fc4a43c3da5bf627a4 -> origin/main
+2026-11-07T11:06:27.7276000Z ##[endgroup]
+2026-11-07T11:06:27.7276520Z ##[group]Determining the checkout info
+2026-11-07T11:06:27.7276940Z ##[endgroup]
+2026-11-07T11:06:27.7279560Z [command]/opt/homebrew/bin/git sparse-checkout disable
+2026-11-07T11:06:27.7338990Z [command]/opt/homebrew/bin/git config --local --unset-all extensions.worktreeConfig
+2026-11-07T11:06:27.7384470Z ##[group]Checking out the ref
+2026-11-07T11:06:27.7390660Z [command]/opt/homebrew/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-11-07T11:06:28.8492070Z Updating files:  37% (8354/22521)
+2026-11-07T11:06:28.8668280Z Updating files:  38% (8558/22521)
+2026-11-07T11:06:28.8859520Z Updating files:  39% (8784/22521)
+2026-11-07T11:06:28.9034230Z Updating files:  40% (9009/22521)
+2026-11-07T11:06:28.9212000Z Updating files:  41% (9234/22521)
+2026-11-07T11:06:28.9431220Z Updating files:  42% (9459/22521)
+2026-11-07T11:06:28.9679570Z Updating files:  43% (9685/22521)
+2026-11-07T11:06:28.9864980Z Updating files:  44% (9910/22521)
+2026-11-07T11:06:29.0070490Z Updating files:  45% (10135/22521)
+2026-11-07T11:06:29.0300650Z Updating files:  46% (10360/22521)
+2026-11-07T11:06:29.0632940Z Updating files:  47% (10585/22521)
+2026-11-07T11:06:29.0971360Z Updating files:  48% (10811/22521)
+2026-11-07T11:06:29.1205150Z Updating files:  49% (11036/22521)
+2026-11-07T11:06:29.1369700Z Updating files:  50% (11261/22521)
+2026-11-07T11:06:29.1732790Z Updating files:  51% (11486/22521)
+2026-11-07T11:06:29.2112300Z Updating files:  52% (11711/22521)
+2026-11-07T11:06:29.3117770Z Updating files:  53% (11937/22521)
+2026-11-07T11:06:29.3763970Z Updating files:  54% (12162/22521)
+2026-11-07T11:06:29.4358150Z Updating files:  55% (12387/22521)
+2026-11-07T11:06:29.4884330Z Updating files:  56% (12612/22521)
+2026-11-07T11:06:29.5071310Z Updating files:  57% (12837/22521)
+2026-11-07T11:06:29.5252810Z Updating files:  58% (13063/22521)
+2026-11-07T11:06:29.5437000Z Updating files:  59% (13288/22521)
+2026-11-07T11:06:29.5615160Z Updating files:  60% (13513/22521)
+2026-11-07T11:06:29.5794520Z Updating files:  61% (13738/22521)
+2026-11-07T11:06:29.6001190Z Updating files:  62% (13964/22521)
+2026-11-07T11:06:29.6322060Z Updating files:  63% (14189/22521)
+2026-11-07T11:06:29.6650080Z Updating files:  64% (14414/22521)
+2026-11-07T11:06:29.6841260Z Updating files:  65% (14639/22521)
+2026-11-07T11:06:29.7046890Z Updating files:  66% (14864/22521)
+2026-11-07T11:06:29.7763980Z Updating files:  67% (15090/22521)
+2026-11-07T11:06:29.7940590Z Updating files:  67% (15197/22521)
+2026-11-07T11:06:29.8239420Z Updating files:  68% (15315/22521)
+2026-11-07T11:06:29.8568950Z Updating files:  69% (15540/22521)
+2026-11-07T11:06:29.8888170Z Updating files:  70% (15765/22521)
+2026-11-07T11:06:29.9233140Z Updating files:  71% (15990/22521)
+2026-11-07T11:06:29.9492590Z Updating files:  72% (16216/22521)
+2026-11-07T11:06:30.0015060Z Updating files:  73% (16441/22521)
+2026-11-07T11:06:30.0594830Z Updating files:  74% (16666/22521)
+2026-11-07T11:06:30.1098130Z Updating files:  75% (16891/22521)
+2026-11-07T11:06:30.1655860Z Updating files:  76% (17116/22521)
+2026-11-07T11:06:30.1955890Z Updating files:  77% (17342/22521)
+2026-11-07T11:06:30.2498500Z Updating files:  78% (17567/22521)
+2026-11-07T11:06:30.3563290Z Updating files:  79% (17792/22521)
+2026-11-07T11:06:30.4193550Z Updating files:  80% (18017/22521)
+2026-11-07T11:06:30.4946840Z Updating files:  81% (18243/22521)
+2026-11-07T11:06:30.5450140Z Updating files:  82% (18468/22521)
+2026-11-07T11:06:30.5950790Z Updating files:  83% (18693/22521)
+2026-11-07T11:06:30.6213220Z Updating files:  84% (18918/22521)
+2026-11-07T11:06:30.6821510Z Updating files:  85% (19143/22521)
+2026-11-07T11:06:30.7066280Z Updating files:  86% (19369/22521)
+2026-11-07T11:06:30.7319330Z Updating files:  87% (19594/22521)
+2026-11-07T11:06:30.7588550Z Updating files:  88% (19819/22521)
+2026-11-07T11:06:30.7600930Z Updating files:  89% (20044/22521)
+2026-11-07T11:06:30.7875300Z Updating files:  89% (20051/22521)
+2026-11-07T11:06:30.8171850Z Updating files:  90% (20269/22521)
+2026-11-07T11:06:30.8428700Z Updating files:  91% (20495/22521)
+2026-11-07T11:06:30.8657250Z Updating files:  92% (20720/22521)
+2026-11-07T11:06:30.8889180Z Updating files:  93% (20945/22521)
+2026-11-07T11:06:30.9199040Z Updating files:  94% (21170/22521)
+2026-11-07T11:06:30.9465450Z Updating files:  95% (21395/22521)
+2026-11-07T11:06:30.9724240Z Updating files:  96% (21621/22521)
+2026-11-07T11:06:31.0411020Z Updating files:  97% (21846/22521)
+2026-11-07T11:06:31.0684180Z Updating files:  98% (22071/22521)
+2026-11-07T11:06:31.0914980Z Updating files:  99% (22296/22521)
+2026-11-07T11:06:31.0917220Z Updating files: 100% (22521/22521)
+2026-11-07T11:06:31.0917430Z Updating files: 100% (22521/22521), done.
+2026-11-07T11:06:31.1156470Z Switched to a new branch 'main'
+2026-11-07T11:06:31.1160540Z branch 'main' set up to track 'origin/main'.
+2026-11-07T11:06:31.1180350Z ##[endgroup]
+2026-11-07T11:06:31.1267010Z [command]/opt/homebrew/bin/git log -1 --format=%H
+2026-11-07T11:06:31.1321720Z 10c026577449e089720471fc4a43c3da5bf627a4
+2026-11-07T11:06:31.1504440Z ##[group]Run actions/setup-python@v5
+2026-11-07T11:06:31.1504650Z with:
+2026-11-07T11:06:31.1504770Z   python-version: 3.12
+2026-11-07T11:06:31.1504930Z   check-latest: false
+2026-11-07T11:06:31.1506580Z   token: ***
+2026-11-07T11:06:31.1506720Z   update-environment: true
+2026-11-07T11:06:31.1506880Z   allow-prereleases: false
+2026-11-07T11:06:31.1507040Z   freethreaded: false
+2026-11-07T11:06:31.1507170Z ##[endgroup]
+2026-11-07T11:06:31.2585000Z ##[group]Installed versions
+2026-11-07T11:06:31.2628470Z (node:3056) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-07T11:06:31.2629080Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-07T11:06:31.2629410Z Successfully set up CPython (3.12.10)
+2026-11-07T11:06:31.2629840Z ##[endgroup]
+2026-11-07T11:06:31.2726790Z ##[group]Run actions/download-artifact@v4
+2026-11-07T11:06:31.2727010Z with:
+2026-11-07T11:06:31.2728790Z   github-token: ***
+2026-11-07T11:06:31.2728960Z   run-id: 42363743119
+2026-11-07T11:06:31.2729170Z   artifact-ids: 13571515179
+2026-11-07T11:06:31.2729410Z   path: original-preview
+2026-11-07T11:06:31.2729620Z   merge-multiple: true
+2026-11-07T11:06:31.2729810Z   repository: 29583855/dukto-next
+2026-11-07T11:06:31.2729990Z env:
+2026-11-07T11:06:31.2730220Z   pythonLocation: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-07T11:06:31.2730660Z   PKG_CONFIG_PATH: /Users/runner/hostedtoolcache/Python/3.12.10/arm64/lib/pkgconfig
+2026-11-07T11:06:31.2731090Z   Python_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-07T11:06:31.2731450Z   Python2_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-07T11:06:31.2731830Z   Python3_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-07T11:06:31.2732120Z ##[endgroup]
+2026-11-07T11:06:31.3891610Z Downloading artifacts by ID
+2026-11-07T11:06:31.3893450Z Fetching artifact list for workflow run 42363743119 in repository 29583855/dukto-next
+2026-11-07T11:06:31.3938090Z (node:3057) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-07T11:06:31.3939170Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-07T11:06:31.4124270Z (node:3057) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-11-07T11:06:31.8093720Z Found 2 artifact(s)
+2026-11-07T11:06:31.8094480Z Preparing to download the following artifacts:
+2026-11-07T11:06:31.8095110Z - macos-preview-ARM64 (ID: 13571515179, Size: 26570759, Expected Digest: sha256:550e797501be43dd9bb9a46eace199b378a0681b6beebd1d1aa041435ee25967)
+2026-11-07T11:06:31.8113470Z Downloading artifact '13571515179' from '29583855/dukto-next'
+2026-11-07T11:06:32.0617000Z Redirecting to blob download url: https://productionresultssa5.blob.core.windows.net/actions-results/be42fff9-e43e-4166-bffc-60da60f26247/workflow-job-run-9c803a10-9bca-5022-92b5-4078cda1dc3e/artifacts/41da84b95d65cb614c00c6fbad087133fed9d12aab4ab64886c90d37c5692b8b.zip
+2026-11-07T11:06:32.0688190Z Starting download of artifact to: /Users/runner/work/dukto-next/dukto-next/original-preview
+2026-11-07T11:06:32.2477480Z (node:3057) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
+2026-11-07T11:06:32.6153390Z SHA256 digest of downloaded artifact is 550e797501be43dd9bb9a46eace199b378a0681b6beebd1d1aa041435ee25967
+2026-11-07T11:06:32.6161530Z Artifact download completed successfully.
+2026-11-07T11:06:32.6166320Z Total of 1 artifact(s) downloaded
+2026-11-07T11:06:32.6175970Z Download artifact has finished successfully
+2026-11-07T11:06:32.6312260Z ##[group]Run python -X utf8 tests/macos_fault_regression_integration.py original-preview/package-output/DuktoNext-macos-arm64-preview.tar.gz --sha256 ec45a9b4299c058c4252dfe6c39fd2fef8ed5dad58929953b291880434c7cec4 --application-source dfe245b502f586e7df7219e8fb0d5e4030a6b032 --report regression/report.json
+2026-11-07T11:06:32.6313980Z [36;1mpython -X utf8 tests/macos_fault_regression_integration.py original-preview/package-output/DuktoNext-macos-arm64-preview.tar.gz --sha256 ec45a9b4299c058c4252dfe6c39fd2fef8ed5dad58929953b291880434c7cec4 --application-source dfe245b502f586e7df7219e8fb0d5e4030a6b032 --report regression/report.json[0m
+2026-11-07T11:06:32.6529330Z shell: /bin/bash -e {0}
+2026-11-07T11:06:32.6529550Z env:
+2026-11-07T11:06:32.6529810Z   pythonLocation: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-07T11:06:32.6530240Z   PKG_CONFIG_PATH: /Users/runner/hostedtoolcache/Python/3.12.10/arm64/lib/pkgconfig
+2026-11-07T11:06:32.6530740Z   Python_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-07T11:06:32.6531110Z   Python2_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-07T11:06:32.6531490Z   Python3_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-07T11:06:32.6531790Z ##[endgroup]
+2026-11-07T11:08:09.4779270Z {"passed": true, "architecture": "arm64", "faultCases": 24, "binaryUnchanged": true}
+2026-11-07T11:08:09.4927730Z ##[group]Run actions/upload-artifact@v4
+2026-11-07T11:08:09.4927950Z with:
+2026-11-07T11:08:09.4928100Z   name: macos-fault-regression-arm64
+2026-11-07T11:08:09.4928300Z   path: regression/
+2026-11-07T11:08:09.4928450Z   if-no-files-found: warn
+2026-11-07T11:08:09.4928630Z   compression-level: 6
+2026-11-07T11:08:09.4928790Z   overwrite: false
+2026-11-07T11:08:09.4928940Z   include-hidden-files: false
+2026-11-07T11:08:09.4929100Z env:
+2026-11-07T11:08:09.4929310Z   pythonLocation: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-07T11:08:09.4930040Z   PKG_CONFIG_PATH: /Users/runner/hostedtoolcache/Python/3.12.10/arm64/lib/pkgconfig
+2026-11-07T11:08:09.4930410Z   Python_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-07T11:08:09.4930750Z   Python2_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-07T11:08:09.4931090Z   Python3_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-11-07T11:08:09.4931340Z ##[endgroup]
+2026-11-07T11:08:09.7551910Z (node:4694) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-07T11:08:09.7552550Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-07T11:08:09.7592070Z With the provided path, there will be 10 files uploaded
+2026-11-07T11:08:09.7594970Z Artifact name is valid!
+2026-11-07T11:08:09.7595540Z Root directory input is valid!
+2026-11-07T11:08:09.9507370Z Beginning upload of artifact content to blob storage
+2026-11-07T11:08:09.9709100Z (node:4694) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-11-07T11:08:10.0269310Z Uploaded bytes 7265
+2026-11-07T11:08:10.0470160Z Finished uploading artifact content to blob storage!
+2026-11-07T11:08:10.0470770Z SHA256 digest of uploaded artifact zip is e1216b72d4313b738c6680bb3325f265b8a88ed52c81d5c0a9ea594f41dc6693
+2026-11-07T11:08:10.0471670Z Finalizing artifact upload
+2026-11-07T11:08:10.4270880Z Artifact macos-fault-regression-arm64.zip successfully finalized. Artifact ID 13572525651
+2026-11-07T11:08:10.4271650Z Artifact macos-fault-regression-arm64 has been successfully uploaded! Final size is 7265 bytes. Artifact ID is 13572525651
+2026-11-07T11:08:10.4273310Z Artifact download URL: https://github.com/29583855/dukto-next/actions/runs/42366735173/artifacts/13572525651
+2026-11-07T11:08:10.4339080Z Post job cleanup.
+2026-11-07T11:08:10.5338870Z (node:4699) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-07T11:08:10.5339530Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-07T11:08:10.5420530Z Post job cleanup.
+2026-11-07T11:08:10.6214700Z [command]/opt/homebrew/bin/git version
+2026-11-07T11:08:10.6371220Z git version 2.56.0
+2026-11-07T11:08:10.6387900Z Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/2006c97f-bcf3-4eb9-b7a5-427bced7e887/.gitconfig'
+2026-11-07T11:08:10.6394890Z Temporarily overriding HOME='/Users/runner/work/_temp/2006c97f-bcf3-4eb9-b7a5-427bced7e887' before making global git config changes
+2026-11-07T11:08:10.6395660Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-07T11:08:10.6397300Z [command]/opt/homebrew/bin/git config --global --add safe.directory /Users/runner/work/dukto-next/dukto-next
+2026-11-07T11:08:10.6486170Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-07T11:08:10.6540570Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-07T11:08:10.7330450Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-07T11:08:10.7377190Z http.https://github.com/.extraheader
+2026-11-07T11:08:10.7382320Z [command]/opt/homebrew/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-11-07T11:08:10.7434550Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-07T11:08:10.8052830Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-07T11:08:10.8101400Z [command]/opt/homebrew/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-07T11:08:10.9204610Z Cleaning up orphan processes
+2026-11-07T11:08:11.9961030Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/download-artifact@v4, actions/setup-python@v5, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
