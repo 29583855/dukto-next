@@ -256,7 +256,29 @@ class StateStorageTests final : public QObject {
                 // 日期：2026-11-07；真实创建新目录项使枚举时间戳变化，不能输出混合快照成功。
                 if (++calls == 2) {
                     store.write("added.json", "new");
-#ifndef Q_OS_WIN
+#ifdef Q_OS_WIN
+                    // 日期：2026-11-08；Windows目录句柄也可能延迟更新时间，显式设置可观测的原生写时间。
+                    const auto path = QDir::toNativeSeparators(store.directory());
+                    const auto handle = CreateFileW(
+                        reinterpret_cast<LPCWSTR>(path.utf16()),
+                        FILE_READ_ATTRIBUTES | FILE_WRITE_ATTRIBUTES,
+                        FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING,
+                        FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, nullptr);
+                    if (handle == INVALID_HANDLE_VALUE)
+                        qFatal("Cannot open Windows mutation fixture directory");
+                    FILETIME changed{};
+                    const bool read = GetFileTime(handle, nullptr, nullptr, &changed);
+                    ULARGE_INTEGER ticks{};
+                    ticks.LowPart = changed.dwLowDateTime;
+                    ticks.HighPart = changed.dwHighDateTime;
+                    ticks.QuadPart += 20000000;
+                    changed.dwLowDateTime = ticks.LowPart;
+                    changed.dwHighDateTime = ticks.HighPart;
+                    const bool written = read && SetFileTime(handle, nullptr, nullptr, &changed);
+                    CloseHandle(handle);
+                    if (!written)
+                        qFatal("Cannot set observable Windows directory timestamp");
+#else
                     // 日期：2026-11-08；同一时钟刻度内目录时间可能不变，显式设置可观测mtime后再验证拒绝。
                     const auto path = QFile::encodeName(store.directory());
                     struct stat info{};

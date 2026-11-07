@@ -1,0 +1,49 @@
+name: Windows observable directory timestamp regression
+on:
+  workflow_dispatch:
+jobs:
+  storage:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: jurplel/install-qt-action@v4
+        with:
+          version: '5.15.2'
+          arch: win64_msvc2019_64
+          cache: true
+      - name: Install validation TLS runtime
+        shell: pwsh
+        run: |
+          python scripts/ci_tls_runtime.py
+          "$PWD/.tools/openssl/Library/bin" >> $env:GITHUB_PATH
+      # 日期：2026-11-08；完整计量专项及20次真实变更拒绝，不扩大业务时限或修改产品代码。
+      - name: Compile actual CLI and storage test
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --config Release --target dukto-cli state-storage-tests --parallel 4
+      - name: Validate native directory timestamp mutation
+        shell: pwsh
+        run: |
+          $env:QT_QPA_PLATFORM = "offscreen"
+          New-Item -ItemType Directory -Path build/storage-regression -ErrorAction Stop
+          (git rev-parse HEAD) | Set-Content -Encoding utf8 build/storage-regression/source-commit.txt
+          Get-FileHash build/Release/dukto-cli.exe, build/Release/state-storage-tests.exe | ConvertTo-Json | Set-Content -Encoding utf8 build/storage-regression/before.json
+          ctest --test-dir build -C Release -R '^state-storage-tests$' --output-on-failure --output-log build/storage-regression/ctest.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          for ($attempt = 1; $attempt -le 20; $attempt++) {
+            & build/Release/state-storage-tests.exe maintenanceCancellationAndMutation -o "build/storage-regression/repeat-$attempt.log,txt" -o "build/storage-regression/repeat-$attempt.xml,junitxml"
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
+          Get-FileHash build/Release/dukto-cli.exe, build/Release/state-storage-tests.exe | ConvertTo-Json | Set-Content -Encoding utf8 build/storage-regression/after.json
+      - name: Preserve original regression evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-observable-storage
+          path: |
+            build/storage-regression/**
+            build/Testing/QtTest/state-storage-tests.*
+            build/CMakeCache.txt

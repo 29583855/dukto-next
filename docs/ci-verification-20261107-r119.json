@@ -1,5 +1,5 @@
 {
-  "observedUtc": "2026-11-07T16:13:29.755352+00:00",
+  "observedUtc": "2026-11-07T16:35:07.525928+00:00",
   "planVersion": "v0.119",
   "baselineSourceCommit": "e84f34f5dfec9c1edd465a443b37c3bc2696c633",
   "qualificationInputs": [
@@ -107,6 +107,11 @@
       "path": ".github/workflows/terminal-failure.yml",
       "bytes": 2883,
       "sha256": "784cbce8de75b1ccb4a7004d25fe5d266cab58f547895f91d3340496b50b102e"
+    },
+    {
+      "path": ".github/workflows/windows-storage-regression.yml",
+      "bytes": 2496,
+      "sha256": "920ebc0c9c9b8090e05225990c49ce35088409415b76324fb51402f17bd8107a"
     },
     {
       "path": "CMakeLists.txt",
@@ -1120,8 +1125,8 @@
     },
     {
       "path": "tests/state_storage_tests.cpp",
-      "bytes": 17483,
-      "sha256": "b11fb18e5f4249dc7eec55029d709c5968af9c687ddc38d0e8ce5c63da2e1cb2"
+      "bytes": 18928,
+      "sha256": "0dfe49590ca4bac3059bc0559d6ec1bb80e881dae3c947cfaa74aba05cf364d3"
     },
     {
       "path": "tests/strong_manifest_tests.cpp",
@@ -1304,7 +1309,7 @@
       "sha256": "3f3c0dcd4ce91b2597f43f6245fd9425ae91f60f4b3b763fa4083e04f1b0b552"
     }
   ],
-  "inputCount": 260,
+  "inputCount": 261,
   "changedInputs": [
     ".github/workflows/build.yml",
     ".github/workflows/linux-package.yml",
@@ -1369,6 +1374,18 @@
     {
       "path": "docs/validation/2026-11-07/sqlite-vfs-r119-observable-directory/r119-directory-fixture-msvc.xml",
       "sha256": "51ef17558f24c4fb8a906bc2e38dff42a093d62621bc37b0b30267e658e762c3"
+    },
+    {
+      "path": "docs/validation/2026-11-07/sqlite-vfs-r119-windows-fixture/source-audit.json",
+      "sha256": "a477fc9dc272b3e8f13c4744fc5f32f12b59a5b40d52613507664574bf2a8f17"
+    },
+    {
+      "path": "docs/validation/2026-11-07/sqlite-vfs-r119-windows-fixture/r119-windows-fixture-msvc.xml",
+      "sha256": "51ef17558f24c4fb8a906bc2e38dff42a093d62621bc37b0b30267e658e762c3"
+    },
+    {
+      "path": "docs/validation/2026-11-07/sqlite-vfs-r119-windows-fixture/r119-windows-fixture-ucrt.xml",
+      "sha256": "c99363cfe0d8f6edfb824321397a25168f991043c3996d77dd1286165204f4d5"
     }
   ],
   "localWindowsAllCoreQualified": true,
@@ -1394,5 +1411,14 @@
   "previousUbuntuCoreFailureRetained": true,
   "applicationInputsUnchangedByFixtureFix": true,
   "localFullCoreAtPreviousInputs": true,
-  "currentWindowsStorageTargetedPassed": true
+  "currentWindowsStorageTargetedPassed": true,
+  "macosApplicationSourceCommit": "325c60cc2a4230cad1b837ecace356117574777a",
+  "applicationInputsUnchangedByWindowsFixtureFix": true,
+  "applicationAndDependencyInputCount": 115,
+  "windowsTimestampFixChangedInputs": [
+    ".github/workflows/windows-storage-regression.yml",
+    "tests/state_storage_tests.cpp"
+  ],
+  "firstWindowsTimestampFixtureFailureRetained": true,
+  "currentWindowsLocalStorageTargetPassedBoth": true
 }

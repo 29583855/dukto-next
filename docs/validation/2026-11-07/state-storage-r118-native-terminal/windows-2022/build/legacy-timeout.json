@@ -1,0 +1,87 @@
+{
+  "date": "2026-11-05",
+  "passed": true,
+  "executableSha256": "8c580bc4a359363179b90373db0cbdbb4140bcd6739b3b84159290137e39a7ed",
+  "scriptSha256": "245e2e35789908c371005cd29a46657c9bc2ff758053bd815e6d6ff54a3948de",
+  "cases": [
+    {
+      "name": "buffered-valid",
+      "expected": 0,
+      "exitCode": 0,
+      "seconds": 6.469,
+      "lastEvent": {
+        "bytes": "21",
+        "catalog": "C:/Users/RUNNER~1/AppData/Local/Temp/dukto-r6-timeout-429lvtnh/buffered-valid/.state/receipts.sqlite",
+        "elapsedMs": "6462",
+        "entries": "1",
+        "event": "result",
+        "eventVersion": 1,
+        "path": "C:/Users/RUNNER~1/AppData/Local/Temp/dukto-r6-timeout-429lvtnh/buffered-valid/buffered.bin",
+        "peer": "127.0.0.1",
+        "rateBytesPerSecond": "3",
+        "stage": "received",
+        "taskId": "39e24b51-b698-4951-a87e-345f73407719"
+      },
+      "stderr": "",
+      "pausedSeconds": 6,
+      "receiverTimeoutSeconds": 5,
+      "passed": true,
+      "contentVerified": true
+    },
+    {
+      "name": "buffered-invalid-text",
+      "expected": 6,
+      "exitCode": 6,
+      "seconds": 6.42,
+      "lastEvent": {
+        "catalog": "C:/Users/RUNNER~1/AppData/Local/Temp/dukto-r6-timeout-429lvtnh/buffered-invalid-text/.state/receipts.sqlite",
+        "code": 6,
+        "elapsedMs": "6415",
+        "event": "error",
+        "eventVersion": 1,
+        "message": "收到的文本不是有效 UTF-8",
+        "rateBytesPerSecond": "0",
+        "stage": "receive",
+        "taskId": "aba9c64a-c304-4a5b-8b37-793b8aa5211b"
+      },
+      "stderr": "",
+      "pausedSeconds": 6,
+      "receiverTimeoutSeconds": 5,
+      "passed": true
+    },
+    {
+      "name": "silent-stall",
+      "exitCode": 3,
+      "seconds": 5.028,
+      "lastEvent": {
+        "code": 3,
+        "elapsedMs": "5023",
+        "event": "error",
+        "eventVersion": 1,
+        "message": "连接或传输无进展超时",
+        "rateBytesPerSecond": "0",
+        "stage": "transfer"
+      },
+      "stderr": "",
+      "receiverTimeoutSeconds": 5,
+      "passed": true
+    },
+    {
+      "name": "partial-stall",
+      "exitCode": 3,
+      "seconds": 5.033,
+      "lastEvent": {
+        "code": 3,
+        "elapsedMs": "5028",
+        "event": "error",
+        "eventVersion": 1,
+        "message": "连接或传输无进展超时",
+        "rateBytesPerSecond": "0",
+        "stage": "transfer"
+      },
+      "stderr": "",
+      "receiverTimeoutSeconds": 5,
+      "passed": true
+    }
+  ]
+}
