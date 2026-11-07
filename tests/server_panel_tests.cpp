@@ -966,8 +966,13 @@ class ServerPanelTests final : public QObject {
         // 日期：2026-11-05；生产折叠设置真实点击读取/保存，重建模型后必须读回持久策略，随后恢复默认。
         QVERIFY(visibleClick("serverSessionExpand", localFlick));
         QVERIFY(root->findChild<QObject *>("serverSessionExpand")->property("checked").toBool());
+        // 日期：2026-11-07；鼠标事件可能已处理完整异步读取，记录真实忙碌转变而不要求点击返回时仍忙。
+        bool sessionReadStarted = false;
+        QObject sessionReadObserver;
+        connect(&server, &ServerPanel::changed, &sessionReadObserver,
+                [&]() { sessionReadStarted = sessionReadStarted || server.busy(); });
         QVERIFY(visibleClick("serverSessionRead", localFlick));
-        QVERIFY(server.busy());
+        QVERIFY(sessionReadStarted);
         QTRY_VERIFY_WITH_TIMEOUT(!server.busy(), 30000);
         QCOMPARE(server.outcome()["event"].toString(), QString("session-policy"));
         QCOMPARE(server.sessionSeconds(), 86400);

@@ -1,0 +1,87 @@
+{
+  "date": "2026-11-05",
+  "passed": true,
+  "executableSha256": "682f1d14dbc9c9c8d2b60ccfc075a038369f27f99b5a662c876e7a4efb90a856",
+  "scriptSha256": "203345719c62625bf8d83020f87d0a1b6afea56481f76ff7cd6e41841d9e04f8",
+  "cases": [
+    {
+      "name": "buffered-valid",
+      "expected": 0,
+      "exitCode": 0,
+      "seconds": 6.439,
+      "lastEvent": {
+        "bytes": "21",
+        "catalog": "/var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/dukto-r6-timeout-1d9ee_h8/buffered-valid/.state/receipts.sqlite",
+        "elapsedMs": "6429",
+        "entries": "1",
+        "event": "result",
+        "eventVersion": 1,
+        "path": "/private/var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/dukto-r6-timeout-1d9ee_h8/buffered-valid/buffered.bin",
+        "peer": "127.0.0.1",
+        "rateBytesPerSecond": "3",
+        "stage": "received",
+        "taskId": "7eda5690-0a47-4a58-9c2c-52760a1e2987"
+      },
+      "stderr": "",
+      "pausedSeconds": 6,
+      "receiverTimeoutSeconds": 5,
+      "passed": true,
+      "contentVerified": true
+    },
+    {
+      "name": "buffered-invalid-text",
+      "expected": 6,
+      "exitCode": 6,
+      "seconds": 6.443,
+      "lastEvent": {
+        "catalog": "/var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/dukto-r6-timeout-1d9ee_h8/buffered-invalid-text/.state/receipts.sqlite",
+        "code": 6,
+        "elapsedMs": "6436",
+        "event": "error",
+        "eventVersion": 1,
+        "message": "收到的文本不是有效 UTF-8",
+        "rateBytesPerSecond": "0",
+        "stage": "receive",
+        "taskId": "cd6acdd9-3286-4620-94e2-3c8cb4411905"
+      },
+      "stderr": "",
+      "pausedSeconds": 6,
+      "receiverTimeoutSeconds": 5,
+      "passed": true
+    },
+    {
+      "name": "silent-stall",
+      "exitCode": 3,
+      "seconds": 5.07,
+      "lastEvent": {
+        "code": 3,
+        "elapsedMs": "5063",
+        "event": "error",
+        "eventVersion": 1,
+        "message": "连接或传输无进展超时",
+        "rateBytesPerSecond": "0",
+        "stage": "transfer"
+      },
+      "stderr": "",
+      "receiverTimeoutSeconds": 5,
+      "passed": true
+    },
+    {
+      "name": "partial-stall",
+      "exitCode": 3,
+      "seconds": 5.053,
+      "lastEvent": {
+        "code": 3,
+        "elapsedMs": "5050",
+        "event": "error",
+        "eventVersion": 1,
+        "message": "连接或传输无进展超时",
+        "rateBytesPerSecond": "0",
+        "stage": "transfer"
+      },
+      "stderr": "",
+      "receiverTimeoutSeconds": 5,
+      "passed": true
+    }
+  ]
+}

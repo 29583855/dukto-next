@@ -1,0 +1,11 @@
+[1/5] Automatic MOC for target server-panel-tests
+[2/5] Building CXX object CMakeFiles/server-panel-tests.dir/server-panel-tests_autogen/mocs_compilation.cpp.obj
+[3/5] Building CXX object CMakeFiles/server-panel-tests.dir/src/app/serverpanel.cpp.obj
+[4/5] Building CXX object CMakeFiles/server-panel-tests.dir/tests/server_panel_tests.cpp.obj
+FAILED: [code=1] CMakeFiles/server-panel-tests.dir/tests/server_panel_tests.cpp.obj 
+E:\project\dukto\.tools\msys64\ucrt64\bin\g++.exe -DDUKTO_VERSION=\"0.1.0\" -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_QMLMODELS_LIB -DQT_QML_LIB -DQT_QUICKWIDGETS_LIB -DQT_QUICK_LIB -DQT_SQL_LIB -DQT_TESTCASE_BUILDDIR=\"E:/project/dukto/build/windows-ucrt\" -DQT_TESTLIB_LIB -DQT_WIDGETS_LIB -IE:/project/dukto/build/windows-ucrt -IE:/project/dukto -IE:/project/dukto/build/windows-ucrt/server-panel-tests_autogen/include -IE:/project/dukto/src -isystem E:/project/dukto/.tools/msys64/ucrt64/include/QtCore -isystem E:/project/dukto/.tools/msys64/ucrt64/share/qt5/mkspecs/win32-g++ -isystem E:/project/dukto/.tools/msys64/ucrt64/include/QtNetwork -isystem E:/project/dukto/.tools/msys64/ucrt64/include/QtSql -isystem E:/project/dukto/.tools/msys64/ucrt64/include/QtQuickWidgets -isystem E:/project/dukto/.tools/msys64/ucrt64/include/QtQuick -isystem E:/project/dukto/.tools/msys64/ucrt64/include/QtQmlModels -isystem E:/project/dukto/.tools/msys64/ucrt64/include/QtQml -isystem E:/project/dukto/.tools/msys64/ucrt64/include/QtGui -isystem E:/project/dukto/.tools/msys64/ucrt64/include/QtWidgets -isystem E:/project/dukto/.tools/msys64/ucrt64/include/QtTest -O3 -DNDEBUG -std=c++14 -Wall -Wextra -Wpedantic -MD -MT CMakeFiles/server-panel-tests.dir/tests/server_panel_tests.cpp.obj -MF CMakeFiles\server-panel-tests.dir\tests\server_panel_tests.cpp.obj.d -o CMakeFiles/server-panel-tests.dir/tests/server_panel_tests.cpp.obj -c E:/project/dukto/tests/server_panel_tests.cpp
+E:/project/dukto/tests/server_panel_tests.cpp: In member function 'void ServerPanelTests::productionServiceAndQml()':
+E:/project/dukto/tests/server_panel_tests.cpp:972:40: error: 'busyChanged' is not a member of 'ServerPanel'
+  972 |         connect(&server, &ServerPanel::busyChanged, &sessionReadObserver,
+      |                                        ^~~~~~~~~~~
+ninja: build stopped: subcommand failed.

@@ -1,10 +1,32 @@
 # macOS独立开发预览包
 
+R114精确`d922dc4c793c77de0553ddf44c0fe1fa2d998c24`已上传，增加私有配置原子换代有界重读。Apple Silicon/Intel的C++14 GUI及独立CLI已编译并核验两份归档；原生核心已验2/4。含依赖双架构预览、迁移运行及四张截图已验，下方可下载R114包。[完整原生CI](https://github.com/29583855/dukto-next/actions/runs/42370990486)按实际附件另验。
+
 R113精确`400e0621745dc250b3390ad01a5e9f47dfc924a4`已上传，修复跳过目录的接收/维护交错恢复。Apple Silicon/Intel C++14 GUI及独立CLI均已编译并核验归档；四平台核心已验4/4。双架构包和截图均已验，完整协议与整体交付继续按实际原件验收。
 
 R111精确`dfe245b502f586e7df7219e8fb0d5e4030a6b032`已在Apple Silicon和Intel原生环境以C++14/Qt5编译GUI及独立CLI；四平台各26个CTest和目录专项各49条已验，完整协议Ubuntu通过，Apple Silicon 46/47、overwrite-faults原失败保留，Intel 45/47（凭据轮换与会话恢复失败），Windows完整协议51/51且终态success。R111含Qt5/OpenSSL预览[构建42363743119](https://github.com/29583855/dukto-next/actions/runs/42363743119)双架构终态success，系统PATH迁移与包内运行报告已验。
 
-## R113最新含依赖预览
+## R114最新含依赖预览
+
+两架构包内Qt5/OpenSSL、全部载荷与框架链接、对应应用源码逐件核验。各五项真实CLI/传输报告、系统PATH迁移和Cocoa/高DPI通过，四张首页/服务器截图已查看。本机副本`dist/macos-preview-20261107-r114-private-read/`。[原件回执](validation/2026-11-07/private-read-r114-macos-package/receipt.json)。
+
+| 架构 | 下载 | 官方ZIP SHA-256 | 内部tar.gz SHA-256 |
+| --- | --- | --- | --- |
+| arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42371059159/artifacts/13573737190) | `7786b95be731348ace2bba0dc62f0eb5b1ca78000975c7fbf3ce51860f7a6543` | `8154e7e263e0afa5eeccf536ce2c3bb7d86cb223975db533ee04954fcef046ac` |
+| x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42371059159/artifacts/13573569843) | `e06db2fb996c398479330dacbab3793845cac46e746097254b4debdaa2b62f5c` | `825a10f7f543838226d95ef9904b4dbc05800d433588e48935ba240cc584283f` |
+
+这是adhoc签名开发预览。正式签名、公证、干净系统、当前版本24h与完整项目仍待验；包部署通过不能替代完整协议。解压与CLI用法见下文。
+
+## R114原生编译归档
+
+双架构官方ZIP、内部tar摘要、源码提交、LICENSE、Mach-O架构和执行权限均已核验。本机副本`dist/macos-compiled-20261107-r114-private-read/`。[回执](validation/2026-11-07/private-read-r114-macos-compiled/receipt.json)。这是编译归档，仍需匹配Qt5/OpenSSL运行依赖。
+
+| 架构 | 下载 | 官方ZIP SHA-256 | 内部tar.gz SHA-256 |
+| --- | --- | --- | --- |
+| arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42370990486/artifacts/13573921451) | `db06fddb869b2c4bd4463e840bb6f8cc3ad04fe9bf59166f77cb31a6bcb7884a` | `57fad4a3a7587511b8bd2c70e8c572fe07fb8d02c1cdde8a50a166108dbc8cdb` |
+| x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42370990486/artifacts/13573767547) | `ac2bea6cbb727e53dca4baf32e22b06c11aac0960e893a23281b694ba4def064` | `aae32fe2d01ad352a14ccc472fffd7a9eda4273dbee923468c5ca4718f63ed5b` |
+
+## R113含依赖预览（历史）
 
 双架构Qt5/OpenSSL运行依赖、各372份应用源码、全部载荷与框架链接均逐件核验。两包各五项真实CLI/传输报告、系统PATH迁移、Cocoa导航及150%/200%高DPI通过；四张首页/服务器截图已查看。本机副本在`dist/macos-preview-20261107-r113-skip-reconcile/`。[回执](validation/2026-11-07/skip-reconcile-r113-macos-package-retry/receipt.json)。
 
