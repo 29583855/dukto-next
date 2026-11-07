@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestCase name="StateBudgetTests">
+<Environment>
+    <QtVersion>5.15.2</QtVersion>
+    <QtBuild>Qt 5.15.2 (x86_64&#x002D;little_endian&#x002D;llp64 shared (dynamic) release build; by MSVC 2019)</QtBuild>
+    <QTestVersion>5.15.2</QTestVersion>
+</Environment>
+<TestFunction name="initTestCase">
+<Incident type="pass" file="" line="0" />
+    <Duration msecs="0.1809"/>
+</TestFunction>
+<TestFunction name="fixedFileAndPrivateBoundary">
+<Incident type="pass" file="" line="0" />
+    <Duration msecs="32.2046"/>
+</TestFunction>
+<TestFunction name="categoriesAndLargeAmounts">
+<Incident type="pass" file="" line="0" />
+    <Duration msecs="44.7429"/>
+</TestFunction>
+<TestFunction name="processesCompeteForLastCredit">
+<Message type="qwarn" file="" line="0">
+    <Description><![CDATA[QProcess: Destroyed while process ("E:\\project\\dukto\\build\\windows\\Release\\state-budget-tests.exe") is still running.]]></Description>
+</Message>
+<Incident type="fail" file="qtestcase.cpp" line="1939">
+    <Description><![CDATA[Caught unhandled exception]]></Description>
+</Incident>
+    <Duration msecs="162.36"/>
+</TestFunction>
+<Duration msecs="240.283"/>
+</TestCase>

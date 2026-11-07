@@ -1,0 +1,44 @@
+[0/1] Re-running CMake...
+-- Configuring done (0.3s)
+-- Generating done (0.5s)
+-- Build files have been written to: E:/project/dukto/build/windows-ucrt
+[1/187] Automatic MOC for target dukto-sql-driver
+[2/185] Automatic MOC for target discovery-signature-probe
+[3/183] Automatic MOC for target dukto-core
+[4/183] Building CXX object CMakeFiles/dukto-core.dir/dukto-core_autogen/mocs_compilation.cpp.obj
+[5/183] Building CXX object CMakeFiles/dukto-core.dir/src/core/statebudget.cpp.obj
+FAILED: [code=1] CMakeFiles/dukto-core.dir/src/core/statebudget.cpp.obj 
+E:\project\dukto\.tools\msys64\ucrt64\bin\g++.exe -DDUKTO_VERSION=\"0.1.0\" -DQT_CORE_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_SQL_LIB -IE:/project/dukto/build/windows-ucrt -IE:/project/dukto -IE:/project/dukto/build/windows-ucrt/dukto-core_autogen/include -IE:/project/dukto/src -IE:/project/dukto/build/windows-ucrt/sqlite-runtime-source/sqlite-amalgamation-3530400 -isystem E:/project/dukto/.tools/msys64/ucrt64/include/QtCore -isystem E:/project/dukto/.tools/msys64/ucrt64/share/qt5/mkspecs/win32-g++ -isystem E:/project/dukto/.tools/msys64/ucrt64/include/QtNetwork -isystem E:/project/dukto/.tools/msys64/ucrt64/include/QtSql -O3 -DNDEBUG -std=c++14 -Wall -Wextra -Wpedantic -MD -MT CMakeFiles/dukto-core.dir/src/core/statebudget.cpp.obj -MF CMakeFiles\dukto-core.dir\src\core\statebudget.cpp.obj.d -o CMakeFiles/dukto-core.dir/src/core/statebudget.cpp.obj -c E:/project/dukto/src/core/statebudget.cpp
+E:/project/dukto/src/core/statebudget.cpp: In member function 'void dukto::StateBudget::retire(const Record&)':
+E:/project/dukto/src/core/statebudget.cpp:507:30: error: ambiguous overload for 'operator=' (operand types are 'QUuid' and '<brace-enclosed initializer list>')
+  507 |     slot.record.operation = {};
+      |                              ^
+  • there are 3 candidates
+In file included from E:/project/dukto/.tools/msys64/ucrt64/include/QtCore/QUuid:1,
+                 from E:/project/dukto/src/core/statebudget.h:4,
+                 from E:/project/dukto/src/core/statebudget.cpp:1:
+    • candidate 1: 'constexpr QUuid& QUuid::operator=(const GUID&)'
+      E:/project/dukto/.tools/msys64/ucrt64/include/QtCore/quuid.h:179:37:
+        179 |     Q_DECL_RELAXED_CONSTEXPR QUuid &operator=(const GUID &guid) noexcept
+            |                                     ^~~~~~~~
+    • candidate 2: 'constexpr QUuid& QUuid::operator=(const QUuid&)'
+      E:/project/dukto/.tools/msys64/ucrt64/include/QtCore/quuid.h:66:21:
+         66 | class Q_CORE_EXPORT QUuid
+            |                     ^~~~~
+    • candidate 3: 'constexpr QUuid& QUuid::operator=(QUuid&&)'
+E:/project/dukto/src/core/statebudget.cpp:508:26: error: ambiguous overload for 'operator=' (operand types are 'QUuid' and '<brace-enclosed initializer list>')
+  508 |     slot.record.actor = {};
+      |                          ^
+  • there are 3 candidates
+    • candidate 1: 'constexpr QUuid& QUuid::operator=(const GUID&)'
+      E:/project/dukto/.tools/msys64/ucrt64/include/QtCore/quuid.h:179:37:
+        179 |     Q_DECL_RELAXED_CONSTEXPR QUuid &operator=(const GUID &guid) noexcept
+            |                                     ^~~~~~~~
+    • candidate 2: 'constexpr QUuid& QUuid::operator=(const QUuid&)'
+      E:/project/dukto/.tools/msys64/ucrt64/include/QtCore/quuid.h:66:21:
+         66 | class Q_CORE_EXPORT QUuid
+            |                     ^~~~~
+    • candidate 3: 'constexpr QUuid& QUuid::operator=(QUuid&&)'
+[6/183] Building CXX object CMakeFiles/dukto-core.dir/src/core/stateinventory.cpp.obj
+[7/183] Building CXX object CMakeFiles/dukto-core.dir/src/core/privatestore.cpp.obj
+ninja: build stopped: subcommand failed.

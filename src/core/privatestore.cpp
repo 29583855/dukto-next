@@ -1,4 +1,5 @@
 #include "privatestore.h"
+#include "budgetfile.h"
 #include "error.h"
 #include "files.h"
 #include "sourcefile.h"
@@ -6,9 +7,11 @@
 #include <QDir>
 #include <QElapsedTimer>
 #include <QFileInfo>
+#include <QMutex>
 #include <QRegularExpression>
 #include <QThread>
 #include <QUuid>
+#include <limits>
 #ifdef Q_OS_WIN
 #ifndef NOMINMAX
 #define NOMINMAX
@@ -16,6 +19,7 @@
 #include <windows.h>
 
 #include <aclapi.h>
+#include <fcntl.h>
 #include <io.h>
 #include <sddl.h>
 #else
@@ -351,10 +355,12 @@ void PrivateStore::verify() const {
         use_->verify();
 }
 
-// 日期：2026-11-07；保留占用锁名称及大小写变体，普通状态接口不能读取、替换或删除原生锁。
+// 日期：2026-11-08；保留占用锁、永久预算账本及大小写变体，普通状态接口不能读取、替换或删除。
 QString PrivateStore::path(const QString &name) const {
     static const QRegularExpression allowed("\\A[a-zA-Z0-9][a-zA-Z0-9_.-]{0,95}\\z");
-    if (!allowed.match(name).hasMatch() || name.compare("state-use.lock", Qt::CaseInsensitive) == 0)
+    if (!allowed.match(name).hasMatch() ||
+        name.compare("state-use.lock", Qt::CaseInsensitive) == 0 ||
+        name.compare("state-budget.bin", Qt::CaseInsensitive) == 0)
         throw Error(ExitCode::Permission, QStringLiteral("私有状态键无效"), "identity");
     validateRelativePath(name);
     return QDir(directory_).filePath(name);
@@ -549,5 +555,211 @@ void PrivateStore::remove(const QString &name) const {
 // 日期：2026-11-04；目录只用于显式组合状态数据库路径，不输出其中秘密内容。
 QString PrivateStore::directory() const {
     return directory_;
+}
+
+struct BudgetFile::Implementation {
+    const PrivateStore &store;
+    QFile file;
+    QMutex mutex;
+    bool locked = false;
+    bool created = false;
+    // 日期：2026-11-08；账本描述符受外层状态资格约束，调用方保证PrivateStore先构造后析构。
+    explicit Implementation(const PrivateStore &value) : store(value) {
+    }
+};
+
+// 日期：2026-11-08；复用现有私有安全规则，Windows显式所有者，POSIX相对固定根且不跟随链接。
+BudgetFile::BudgetFile(const PrivateStore &store, bool create)
+    : implementation_(new Implementation(store)) {
+    store.verify();
+    if (create && !store.maintenance())
+        throw Error(ExitCode::Permission, QStringLiteral("账本初始化需要独占维护"), "budget");
+    int descriptor = -1;
+#ifdef Q_OS_WIN
+    const auto name = longPath(QDir(store.directory_).filePath("state-budget.bin"));
+    auto security = privateSecurity();
+    SECURITY_ATTRIBUTES attributes{sizeof(SECURITY_ATTRIBUTES), security, FALSE};
+    const auto handle = CreateFileW(
+        reinterpret_cast<LPCWSTR>(name.utf16()), GENERIC_READ | GENERIC_WRITE | READ_CONTROL,
+        FILE_SHARE_READ | FILE_SHARE_WRITE, &attributes, create ? CREATE_NEW : OPEN_EXISTING,
+        FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OPEN_REPARSE_POINT, nullptr);
+    LocalFree(security);
+    if (handle == INVALID_HANDLE_VALUE)
+        throw Error(ExitCode::Permission, QStringLiteral("无法安全打开永久预算账本"), "budget");
+    descriptor = _open_osfhandle(reinterpret_cast<intptr_t>(handle), _O_RDWR | _O_BINARY);
+    if (descriptor < 0) {
+        CloseHandle(handle);
+        throw Error(ExitCode::Disk, QStringLiteral("无法接管预算账本句柄"), "budget");
+    }
+#else
+    descriptor = store.root_->openUpdate("state-budget.bin", create);
+#endif
+    if (!implementation_->file.open(descriptor, QIODevice::ReadWrite | QIODevice::Unbuffered,
+                                    QFileDevice::AutoCloseHandle)) {
+#ifdef Q_OS_WIN
+        _close(descriptor);
+#else
+        ::close(descriptor);
+#endif
+        throw Error(ExitCode::Disk, QStringLiteral("无法接管预算账本文件"), "budget");
+    }
+    implementation_->created = create;
+    verify();
+}
+
+// 日期：2026-11-08；QFile先关闭，随后销毁互斥；不删除永久账本或按进程生命期归还额度。
+BudgetFile::~BudgetFile() = default;
+
+// 日期：2026-11-08；使用同一打开对象核对权限/类型/单链接，POSIX另核对路径防止锁对象换代。
+void BudgetFile::verify() const {
+    const auto &state = *implementation_;
+    state.store.verify();
+    verifyFile(implementation_->file);
+#ifdef Q_OS_WIN
+    const auto handle = reinterpret_cast<HANDLE>(_get_osfhandle(state.file.handle()));
+    BY_HANDLE_FILE_INFORMATION info{};
+    if (GetFileType(handle) != FILE_TYPE_DISK || !GetFileInformationByHandle(handle, &info) ||
+        (info.dwFileAttributes &
+         (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_REPARSE_POINT | FILE_ATTRIBUTE_DEVICE)) ||
+        info.nNumberOfLinks != 1)
+        throw Error(ExitCode::Permission, QStringLiteral("预算账本不是独立普通文件"), "budget");
+#else
+    struct stat opened{};
+    const auto current = state.store.root_->fileInformation("state-budget.bin");
+    if (::fstat(state.file.handle(), &opened) != 0 || current.st_dev != opened.st_dev ||
+        current.st_ino != opened.st_ino || !S_ISREG(current.st_mode) || current.st_nlink != 1)
+        throw Error(ExitCode::Integrity, QStringLiteral("预算账本路径或原生对象已变化"), "budget");
+#endif
+}
+
+// 日期：2026-11-08；期限覆盖两级锁；用户取消回调不在原生锁内运行，错误不是锁忙时立即失败。
+void BudgetFile::lock(const std::function<void()> &check, int timeoutMs) {
+    if (timeoutMs < 0 || timeoutMs > 5000)
+        throw Error(ExitCode::Config, QStringLiteral("预算锁期限无效"), "budget");
+    auto &state = *implementation_;
+    QElapsedTimer elapsed;
+    elapsed.start();
+    while (true) {
+        if (check)
+            check();
+        if (state.mutex.tryLock())
+            break;
+        if (elapsed.elapsed() >= timeoutMs)
+            throw Error(ExitCode::Disk, QStringLiteral("预算账本进程内协调繁忙"), "budget-busy");
+        QThread::msleep(2);
+    }
+    try {
+        // 日期：2026-11-08；文件有效性只在持有实例互斥后读取，避免与另一线程解除失败后的关闭竞争。
+        if (!state.file.isOpen())
+            throw Error(ExitCode::Disk, QStringLiteral("预算账本句柄已失效"), "budget");
+        while (true) {
+            if (check)
+                check();
+            bool acquired = false;
+#ifdef Q_OS_WIN
+            const auto handle = reinterpret_cast<HANDLE>(_get_osfhandle(state.file.handle()));
+            OVERLAPPED position{};
+            acquired = LockFileEx(handle, LOCKFILE_EXCLUSIVE_LOCK | LOCKFILE_FAIL_IMMEDIATELY, 0, 1,
+                                  0, &position);
+            if (!acquired && GetLastError() != ERROR_LOCK_VIOLATION)
+                throw Error(ExitCode::Disk, QStringLiteral("预算账本原生锁失败"), "budget");
+#else
+            acquired = ::flock(state.file.handle(), LOCK_EX | LOCK_NB) == 0;
+            if (!acquired && errno != EWOULDBLOCK && errno != EAGAIN && errno != EINTR)
+                throw Error(ExitCode::Disk, QStringLiteral("预算账本原生锁失败"), "budget");
+#endif
+            if (acquired) {
+                state.locked = true;
+                verify();
+                return;
+            }
+            if (elapsed.elapsed() >= timeoutMs)
+                throw Error(ExitCode::Disk, QStringLiteral("预算账本跨进程协调繁忙"),
+                            "budget-busy");
+            QThread::msleep(2);
+        }
+    } catch (...) {
+        if (state.locked)
+            unlock();
+        else
+            state.mutex.unlock();
+        throw;
+    }
+}
+
+// 日期：2026-11-08；无需文件删除即可归还原生占用；关闭描述符仍能释放任何未成功解除的内核锁。
+void BudgetFile::unlock() noexcept {
+    auto &state = *implementation_;
+#ifdef Q_OS_WIN
+    OVERLAPPED position{};
+    const bool released = UnlockFileEx(
+        reinterpret_cast<HANDLE>(_get_osfhandle(state.file.handle())), 0, 1, 0, &position);
+#else
+    const bool released = ::flock(state.file.handle(), LOCK_UN) == 0;
+#endif
+    if (!released)
+        state.file.close();
+    state.locked = false;
+    state.mutex.unlock();
+}
+
+// 日期：2026-11-08；先完成两级锁获取和身份重验，才允许读取或改写账本片段。
+BudgetFile::Lock::Lock(BudgetFile &file, const std::function<void()> &check, int timeoutMs)
+    : file_(file) {
+    file_.lock(check, timeoutMs);
+}
+
+// 日期：2026-11-08；调用方异常退出临界区同样归还两级锁。
+BudgetFile::Lock::~Lock() {
+    file_.unlock();
+}
+
+// 日期：2026-11-08；固定片段不得超16KiB，读取不完整或位置溢出均拒绝，不产生无界缓冲。
+QByteArray BudgetFile::read(qint64 offset, int bytes) {
+    auto &state = *implementation_;
+    if (!state.locked || offset < 0 || bytes <= 0 || bytes > 16384 ||
+        offset > std::numeric_limits<qint64>::max() - bytes || !state.file.seek(offset))
+        throw Error(ExitCode::Integrity, QStringLiteral("预算账本读取范围无效"), "budget");
+    const auto result = state.file.read(bytes);
+    if (result.size() != bytes)
+        throw Error(ExitCode::Integrity, QStringLiteral("预算账本读取不完整"), "budget");
+    return result;
+}
+
+// 日期：2026-11-08；单次片段有界且不得跳过短写，写入失败后不将尚未持久授信交给业务。
+void BudgetFile::write(qint64 offset, const QByteArray &bytes) {
+    auto &state = *implementation_;
+    if (!state.locked || offset < 0 || bytes.isEmpty() || bytes.size() > 16384 ||
+        offset > std::numeric_limits<qint64>::max() - bytes.size() || !state.file.seek(offset) ||
+        state.file.write(bytes) != bytes.size())
+        throw Error(ExitCode::Disk, QStringLiteral("预算账本写入不完整"), "budget");
+}
+
+// 日期：2026-11-08；日志意图和数据各自显式同步；创建目录的持久性在首次初始化末尾另行确认。
+void BudgetFile::synchronize() {
+    auto &state = *implementation_;
+    if (!state.locked || !state.file.flush())
+        throw Error(ExitCode::Disk, QStringLiteral("预算账本缓冲同步失败"), "budget");
+#ifdef Q_OS_WIN
+    if (!FlushFileBuffers(reinterpret_cast<HANDLE>(_get_osfhandle(state.file.handle()))))
+#else
+    if (::fsync(state.file.handle()) != 0)
+#endif
+        throw Error(ExitCode::Disk, QStringLiteral("预算账本持久同步失败"), "budget");
+#ifndef Q_OS_WIN
+    if (state.created)
+        state.store.root_->synchronize();
+#endif
+    state.created = false;
+}
+
+// 日期：2026-11-08；目录身份不包含修改时间，合法账本写入不会改变域绑定。
+QByteArray BudgetFile::rootIdentity() const {
+    return implementation_->store.root_->identity();
+}
+
+// 日期：2026-11-08；文件长度来自已打开对象，禁止通过缓存名称属性掩盖截断。
+qint64 BudgetFile::size() const {
+    return implementation_->file.size();
 }
 } // namespace dukto

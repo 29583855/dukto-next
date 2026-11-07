@@ -39,6 +39,7 @@ class PrivateStore final {
                              const std::function<void()> &check = {}) const;
 
   private:
+    friend class BudgetFile;
     // 日期：2026-11-07；内部共用原生对象核验，普通调用不能选择日志所有者策略。
     qint64 validateFileObject(const QString &name, bool sqliteJournal) const;
     // 日期：2026-11-04；重复核对根权限，防止启动后无意放宽状态目录访问控制仍继续写秘密。

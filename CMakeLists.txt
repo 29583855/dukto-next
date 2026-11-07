@@ -98,6 +98,7 @@ add_library(dukto-core
     src/core/sqlitecache.cpp
     src/core/privatestore.cpp
     src/core/stateinventory.cpp
+    src/core/statebudget.cpp
     src/core/identity.cpp
     src/core/auth.cpp
     src/core/sessionpolicy.cpp
@@ -194,6 +195,9 @@ if(DUKTO_BUILD_TESTS)
     add_executable(sqlite-file-info-tests tests/sqlite_file_info_tests.cpp)
     target_link_libraries(sqlite-file-info-tests PRIVATE dukto-core Qt5::Test)
     dukto_add_qt_test(sqlite-file-info-tests)
+    add_executable(state-budget-tests tests/state_budget_tests.cpp)
+    target_link_libraries(state-budget-tests PRIVATE dukto-core Qt5::Test)
+    dukto_add_qt_test(state-budget-tests)
     add_executable(identity-tests tests/identity_tests.cpp)
     target_link_libraries(identity-tests PRIVATE dukto-core Qt5::Test)
     dukto_add_qt_test(identity-tests)
