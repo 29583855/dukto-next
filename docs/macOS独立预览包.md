@@ -1,6 +1,42 @@
 # macOS独立开发预览包
 
-更新日期：2026-11-07。当前含依赖预览包为R100，精确源码`ed4f5cf08c96f04671e49e5138eda8ce1790ead3`，采用C++14、Qt5和CMake；Apple Silicon和Intel均有GUI、独立CLI及Qt5/OpenSSL依赖。
+更新日期：2026-11-07。当前含依赖开发预览为R105，精确源码`4652f4dce23b014e18f2db56c6a75e81e76deafa`；使用C++14、Qt5及CMake，两种架构均含GUI、独立CLI和Qt5/OpenSSL运行依赖。
+
+## 当前R105含依赖部署包
+
+[双架构原生部署及迁移工作流](https://github.com/29583855/dukto-next/actions/runs/42321257970)终态success。ZIP含tar.gz、SHA-256和运行原件，附件下载可能需要登录GitHub。
+
+| 架构 | 下载 | 内部tar.gz SHA-256 |
+| --- | --- | --- |
+| arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42321257970/artifacts/13552932598) | `d3b0c4bf119c50b686c21bd5fc1865285614d37342fa84172b360e1b8b8d8dd4` |
+| x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42321257970/artifacts/13553163728) | `fdd310dfc86d96c099fe7a172226f90a6303820089676568bf5eea25b64dbc99` |
+
+每包348份应用源码全集逐字节匹配精确Git提交；全部载荷、各71个框架链接、Mach-O架构和执行位已核验。包在中文空格新目录、仅系统PATH下实际运行，CLI不加载GUI框架；每包五份业务原报告通过：独立CLI、16通道双向、1/4/16覆盖、覆盖恢复及4→8恢复。Cocoa及150%/200%导航通过，四张实际启动/导航截图已查看。[原件与视觉收验](validation/2026-11-07/task-items-r105-macos-package-terminal/qualified-receipt.json)。
+
+先解压ZIP，再用tar保留框架链接和执行权限。Apple Silicon示例（Intel将arm64替换为x86_64）：
+
+```sh
+shasum -a 256 -c DuktoNext-macos-arm64-preview.tar.gz.sha256
+tar -xzf DuktoNext-macos-arm64-preview.tar.gz
+cd DuktoNext-macos-arm64-preview
+open "Dukto Next.app"
+./dukto-cli --help
+```
+
+保留整个目录，CLI启动器与.app相邻；CLI独立运行不要求GUI启动。当前为adhoc签名开发预览，Developer ID、公证、最低/干净系统、完整GUI及选择器、各平台长期与正式发布继续验收。
+
+## R105原生编译归档
+
+以下是同提交的原始编译输出，仍需匹配运行依赖；直接运行优先使用上方含依赖包。
+
+| 架构 | 编译归档 | 内部tar.gz SHA-256 |
+| --- | --- | --- |
+| arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42321115720/artifacts/13553316446) | `4e9bc456c3d38016efbe30649e975220cb48077459ddf88c6ccb68e0ec7abc93` |
+| x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42321115720/artifacts/13552799237) | `1034698c77c56794f0e0f07e7196c6482455386f3cf638c3bddb4274dd2b106b` |
+
+[编译回执](validation/2026-11-07/task-items-r105-macos-compiled/receipt.json)。完整原生协议仍按其自身终态收验；R104 Ubuntu及Apple Silicon原失败均保留，各47项中46项通过、task-items旧夹具失败。R105仅修正夹具，未声称修复生产传输缺陷或完成整体稳定性验收。
+
+## 历史版本与原始记录
 
 ## 当前R100含依赖部署包
 

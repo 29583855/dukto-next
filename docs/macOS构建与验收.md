@@ -483,3 +483,11 @@ R96精确上传补记（2026-11-07）：`88f33b2c83f2950307c362fb64c693f7e9e5929
 - [x] 首次收件工具因路径替换表达式不匹配，在下载前停止；原日志和脚本保留。修正为完整目录表达式后按原门槛收验，没有重跑应用或放宽断言。
 - [x] R98双Mac和双Windows各23核心及当前Windows部署包已验；源码b2e4659的生产实现与R96相同，新测试身份仍独立记录。Mac可下载包继续绑定已验R96。
 - [ ] R98 Linux新包42266702018仍处于依赖安装；完整R6/原生GUI、发送编辑器/全部缓存/句柄/线程预算、公平性/GC、物理LAN/3×3、当前各平台长期、依赖源码独立重建、干净系统及签名公证/正式发布继续，整体未完成。
+
+## R105双Mac部署及独立Ubuntu核心终态（2026-11-07）
+
+- [x] 精确4652f4d已上传且远端main/整树/213构建输入独立一致。双Mac GUI/独立CLI编译归档与官方/内部摘要、源码、Mach-O架构、执行位和许可通过。[最新下载](macOS独立预览包.md)。
+- [x] 双Mac含Qt5/OpenSSL部署包终态success，全部载荷、每包348份应用源码及71框架链接逐项核对；中文空格路径/系统PATH迁移、CLI不加载GUI、每包五项真实传输/恢复业务通过。Cocoa及150%/200%导航、中文覆盖通过，四张启动/导航原图已查看；当前macOS含依赖包更新到R105，Windows/Linux部署包继续保持R100。
+- [x] R104独立Ubuntu完整复验真实exit0：实际构建、23核心/22XML、新维护互斥方法、真实八进程与POSIX权限/硬链接/符号链接拒绝，以及12项诊断/两项链接拒绝和服务通过。213份冻结构建输入匹配9c1e941；首次编译失败保留。[原件回执](validation/2026-11-07/state-use-r104-glibc-recheck/receipt.json)。
+- [x] R104 Apple Silicon终态failure已取原官方附件及job.log，47项协议中46份通过报告摘要一致，唯一task-items失败同为原空目录假设。该失败与Ubuntu原失败及R105独立Ubuntu90秒上传超时均保留；完整核心结束后的再次定向复查推进到16通道下载仍90秒超时，原因未定，两次均不能被核心通过覆盖。[Apple Silicon失败子集](validation/2026-11-07/state-use-r104-macos-arm-terminal/subset-verification.json)、[再次超时](validation/2026-11-07/task-items-r105-glibc-after-core/failure-verification.json)。
+- [ ] R105四runner各23核心/88份Qt及48行取消原件已核验；两条精确Darwin XFAIL保留。 完整协议和独立Ubuntu逐项专项仍单独收验；正在运行的冻结86400秒不能按轮数授予长期资格。安全GC/磁盘配额、全部资源/公平性、完整R6/GUI与选择器、物理LAN/3×3、各平台长期、依赖源码重建、最低干净系统和正式签名分发继续。deliveryComplete=false、releaseQualified=false。

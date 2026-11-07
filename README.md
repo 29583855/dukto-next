@@ -6,7 +6,7 @@
 
 当前已建立 C++14 共用核心、Qt Quick 2 桌面端和独立 CLI。Windows 已验证与原版文件/目录/文本双向互传、超过 4 GiB、10 万文件、100 轮接收，以及首次说明/设置/截图/单实例和有界头像模块。完整原版交互、服务器、多线程、恢复和跨平台验收继续按计划推进。原版目录保留用于对照。
 
-公开仓库为[29583855/dukto-next](https://github.com/29583855/dukto-next)。最新R104源码9c1e941的双Mac GUI/独立CLI编译及四原生各23核心/88份Qt原报告已验，新增状态目录维护互斥方法通过；完整协议/POSIX多进程、独立Ubuntu及安全回收继续。[最新Mac编译产物](docs/macOS独立预览包.md)。含依赖部署包仍为R100精确ed4f5cf：[Windows](docs/Windows独立预览包.md)、[macOS Apple Silicon/Intel](docs/macOS独立预览包.md)、[Linux](docs/Linux独立预览包.md)，均含GUI/独立CLI；其四平台188协议已验，两条精确Darwin端口共享XFAIL披露。真实长期、完整GUI/选择器、物理网络及正式交付继续，见[计划](开发计划与进度.md)和[当前索引](docs/current-validation.json)。
+公开仓库为[29583855/dukto-next](https://github.com/29583855/dukto-next)。最新R105精确4652f4d的[macOS Apple Silicon/Intel GUI与独立CLI](docs/macOS独立预览包.md)已原生编译、部署Qt5/OpenSSL并通过中文空格路径迁移及每包五项业务；包内348份应用源码及全部载荷核验一致，四张实际截图已查看。Windows/Linux含依赖预览仍为R100。R104独立Ubuntu23核心/22XML及POSIX八进程/诊断/服务通过；原协议夹具失败和独立Ubuntu上传超时均保留。完整GUI、协议、各平台长期与正式分发继续，见[计划](开发计划与进度.md)和[当前索引](docs/current-validation.json)。
 
 新增[b9d9b78上传发送端确认](docs/decisions/0022-上传发送端持久处置与证据恢复.md)已通过本机专项；原CI终态failure保留：四平台临时库glob误判，另Windows并发隔离空闲线程5/基线3的原因未确认。旧运行不再视为进行中，完整历史见主计划v0.64。
 
