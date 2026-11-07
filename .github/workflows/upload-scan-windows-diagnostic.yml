@@ -1,0 +1,56 @@
+name: Windows upload scan cleanup diagnostics
+on:
+  workflow_dispatch:
+jobs:
+  scan:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install matching Windows Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '5.15.2'
+          arch: win64_msvc2019_64
+          cache: true
+      # 日期：2026-11-07；与原失败相同的Qt5/MSVC组合，只补充错误阶段，不修改生产输入。
+      - name: Prepare matching TLS runtime
+        shell: pwsh
+        run: |
+          python scripts/ci_tls_runtime.py
+          "$PWD/.tools/openssl/Library/bin" >> $env:GITHUB_PATH
+      - name: Configure C++14 diagnostic
+        run: cmake -S . -B build -DDUKTO_BUILD_GUI=OFF -DCMAKE_BUILD_TYPE=Release
+      - name: Compile actual scan tests and CLI
+        run: cmake --build build --config Release --target upload-scan-cleanup-tests dukto-cli --parallel 4
+      # 日期：2026-11-07；完整专项独立运行两轮，各自保留退出码与原件，任一失败仍返回失败。
+      - name: Run two complete scan rounds
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path evidence | Out-Null
+          git rev-parse HEAD | Set-Content -Encoding utf8 evidence/source-commit.txt
+          Get-FileHash build/Release/dukto-cli.exe,build/Release/upload-scan-cleanup-tests.exe -Algorithm SHA256 | ConvertTo-Json | Set-Content -Encoding utf8 evidence/binaries-before.json
+          $failedRounds = 0
+          foreach ($round in 1,2) {
+            $folder = "evidence/round-$round"
+            New-Item -ItemType Directory -Path $folder | Out-Null
+            ctest --test-dir build -C Release -R '^upload-scan-cleanup-tests$' --output-on-failure --output-log "$PWD/$folder/ctest.log"
+            $code = $LASTEXITCODE
+            $code | Set-Content -Encoding ascii "$folder/exit-code.txt"
+            Copy-Item build/Testing/QtTest/upload-scan-cleanup-tests.* $folder
+            if ($code -ne 0) { $failedRounds++ }
+          }
+          Get-FileHash build/Release/dukto-cli.exe,build/Release/upload-scan-cleanup-tests.exe -Algorithm SHA256 | ConvertTo-Json | Set-Content -Encoding utf8 evidence/binaries-after.json
+          if ((Get-Content evidence/binaries-before.json -Raw) -ne (Get-Content evidence/binaries-after.json -Raw)) { $failedRounds++ }
+          if ($failedRounds -ne 0) { exit 1 }
+      - name: Preserve original diagnostic evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-upload-scan-diagnostic
+          path: |
+            evidence/**
+            build/Testing/QtTest/upload-scan-cleanup-tests.*
+            build/Testing/Temporary/*

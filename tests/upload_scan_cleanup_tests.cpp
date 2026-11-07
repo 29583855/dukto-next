@@ -13,6 +13,7 @@
 #include <QSqlQuery>
 #include <QTemporaryDir>
 #include <QtTest>
+#include <cstdio>
 #include <cstdlib>
 #ifdef Q_OS_WIN
 #ifndef NOMINMAX
@@ -54,7 +55,10 @@ struct Fixture {
                        profile.server.toString(QUuid::WithoutBraces),
                        profile.client.toString(QUuid::WithoutBraces), phase});
         if (!process.waitForFinished(30000) || process.exitCode() != 47)
-            throw dukto::Error(dukto::ExitCode::Runtime, "fixture abandoned scan", "test");
+            throw dukto::Error(dukto::ExitCode::Runtime,
+                               "fixture abandoned scan: " + QString::number(process.exitCode()) +
+                                   " " + QString::fromUtf8(process.readAllStandardError()),
+                               "test");
     }
 
     // 日期：2026-11-07；只修改自有测试时钟字段，避免实际等待七天；产品使用真实UTC时间。
@@ -433,7 +437,7 @@ class UploadScanCleanupTests final : public QObject {
 };
 
 // 日期：2026-11-07；真实进程退出留原件，其余调用交给QtTest，测试生产代码无需专用环境开关。
-int main(int argc, char **argv) {
+int runTestApplication(int argc, char **argv) {
     QCoreApplication application(argc, argv);
     const auto args = application.arguments();
     if (args.size() == 7 && args[1] == "--abandon-scan") {
@@ -469,6 +473,19 @@ int main(int argc, char **argv) {
     }
     UploadScanCleanupTests tests;
     return QTest::qExec(&tests, argc, argv);
+}
+
+// 日期：2026-11-07；保留QtTest原失败，并输出跨进程原始错误码/阶段；诊断不把异常转换为成功。
+int main(int argc, char **argv) {
+    try {
+        return runTestApplication(argc, argv);
+    } catch (const dukto::Error &error) {
+        std::fprintf(stderr, "scan diagnostic code=%d stage=%s message=%s\n", int(error.code),
+                     error.stage.toUtf8().constData(), error.message.toUtf8().constData());
+    } catch (const std::exception &error) {
+        std::fprintf(stderr, "scan diagnostic exception=%s\n", error.what());
+    }
+    return 1;
 }
 
 #include "upload_scan_cleanup_tests.moc"
