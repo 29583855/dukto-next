@@ -71,7 +71,7 @@ class Wire final {
                 throw Error(ExitCode::Network, socket.errorString(), "send");
         }
     }
-    // 日期：2026-11-05；先读已到达的有界数据，再判无进展；调度间隙不能遮盖协议内容错误。
+    // 日期：2026-11-08；超时前再做一次原生就绪轮询，进程暂停不能把内核已到达数据误判成无进展。
     QByteArray read(qint64 count) {
         if (count < 0 || count > BufferSize)
             throw Error(ExitCode::Config, QStringLiteral("内部读取长度越界"), "receive");
@@ -92,6 +92,14 @@ class Wire final {
             if (socket.state() == QAbstractSocket::UnconnectedState)
                 throw Error(ExitCode::Network, QStringLiteral("传输尚未完整，对端已断开"),
                             "receive");
+            if (progress.elapsed() > timeout_) {
+                check();
+                // 日期：2026-11-08；报超时前最多再等待1ms接收就绪通知；没有读到正文时不重置无进展计时。
+                socket.waitForReadyRead(1);
+                if (socket.bytesAvailable() > 0 ||
+                    socket.state() == QAbstractSocket::UnconnectedState)
+                    continue;
+            }
             checkProgress(progress);
             socket.waitForReadyRead(100);
         }

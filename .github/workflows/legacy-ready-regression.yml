@@ -1,0 +1,78 @@
+name: Native R6 queued input and original idle deadline regression
+on:
+  workflow_dispatch:
+jobs:
+  ready:
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022, ubuntu-22.04, macos-15, macos-15-intel]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      # 日期：2026-11-08；两Mac在同一原生环境构建旧版对照，失败原件保留，不作为候选成功条件。
+      - uses: actions/checkout@v4
+        if: runner.os == 'macOS'
+        with:
+          ref: 206776b209c51fdd62661af6e90feb720bb6c1f1
+          path: baseline
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Windows Qt
+        if: runner.os == 'Windows'
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '5.15.2'
+          arch: win64_msvc2019_64
+          cache: true
+      - name: Install Linux Qt and TLS
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y qtbase5-dev qtbase5-private-dev libssl-dev libqt5sql5-sqlite
+      - name: Install macOS Qt and TLS
+        if: runner.os == 'macOS'
+        run: |
+          brew install qt@5 openssl@3
+          echo "CMAKE_PREFIX_PATH=$(brew --prefix qt@5)" >> "$GITHUB_ENV"
+          echo "OPENSSL_ROOT_DIR=$(brew --prefix openssl@3)" >> "$GITHUB_ENV"
+          echo "$(brew --prefix qt@5)/bin" >> "$GITHUB_PATH"
+      - name: Install process sampler
+        run: python -m pip install psutil
+      - name: Install Windows TLS
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          python scripts/ci_tls_runtime.py
+          "$PWD/.tools/openssl/Library/bin" >> $env:GITHUB_PATH
+      # 日期：2026-11-08；本工作流只授予原生R6暂停/就绪/原期限专项，完整GUI/核心/协议继续由独立完整工作流验证。
+      - name: Configure actual C++14 CLI queued input regression
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DDUKTO_BUILD_GUI=OFF
+      - name: Compile actual CLI
+        run: cmake --build build --config Release --target dukto-cli --parallel 4
+      - name: Compile original macOS CLI for comparison
+        if: runner.os == 'macOS'
+        run: |
+          cmake -S baseline -B build-baseline -DCMAKE_BUILD_TYPE=Release -DDUKTO_BUILD_GUI=OFF
+          cmake --build build-baseline --config Release --target dukto-cli --parallel 4
+      - name: Retain original macOS queued input comparison
+        if: runner.os == 'macOS'
+        continue-on-error: true
+        run: python -X utf8 tests/legacy_ready_integration.py build-baseline/dukto-cli --source-root baseline --rounds 3 --report build/baseline-ready.json
+      # 日期：2026-11-08；重复三轮原五秒超时夹具，暂停六秒后区分有效正文/非法文本和真正静默。
+      - name: Verify original five second timeout and queued input
+        if: runner.os != 'Windows'
+        run: python -X utf8 tests/legacy_ready_integration.py build/dukto-cli --rounds 3 --report build/legacy-ready.json
+      - name: Verify original five second timeout and queued input on Windows
+        if: runner.os == 'Windows'
+        run: python -X utf8 tests/legacy_ready_integration.py build/Release/dukto-cli.exe --rounds 3 --report build/legacy-ready.json
+      - name: Preserve original R6 ready input evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: legacy-ready-${{ matrix.os }}
+          path: |
+            build/legacy-ready.json
+            build/baseline-ready.json
+            build/CMakeCache.txt
+            build-baseline/CMakeCache.txt

@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="64" failures="0" tests="12" name="FileExchangeTests">
+  <properties>
+    <property value="5.15.3" name="QTestVersion"/>
+    <property value="5.15.3" name="QtVersion"/>
+    <property value="Qt 5.15.3 (x86_64&#x002D;little_endian&#x002D;lp64 shared (dynamic) release build; by GCC 11.3.0)" name="QtBuild"/>
+  </properties>
+  <testcase result="pass" name="initTestCase"/>
+  <testcase result="pass" name="childExitWait"/>
+  <testcase result="pass" name="remoteFailureAfterLaneDisconnect">
+    <!-- tag="disk" message="terminal fixture client TLS begin 0" type="qinfo" -->
+    <!-- tag="disk" message="terminal fixture control TLS begin 0" type="qinfo" -->
+    <!-- tag="disk" message="terminal fixture client TLS ready 5" type="qinfo" -->
+    <!-- tag="disk" message="terminal fixture lane TLS begin 30" type="qinfo" -->
+    <!-- tag="disk" message="terminal fixture control TLS ready 30" type="qinfo" -->
+    <!-- tag="disk" message="terminal fixture lane TLS ready 35" type="qinfo" -->
+    <!-- tag="disk" message="terminal fixture lane disconnected 35" type="qinfo" -->
+    <!-- tag="disk" message="terminal fixture failure 5 &quot;receive&quot; after lane ms 301" type="qinfo" -->
+    <!-- tag="permission" message="terminal fixture client TLS begin 0" type="qinfo" -->
+    <!-- tag="permission" message="terminal fixture control TLS begin 0" type="qinfo" -->
+    <!-- tag="permission" message="terminal fixture client TLS ready 4" type="qinfo" -->
+    <!-- tag="permission" message="terminal fixture lane TLS begin 30" type="qinfo" -->
+    <!-- tag="permission" message="terminal fixture control TLS ready 30" type="qinfo" -->
+    <!-- tag="permission" message="terminal fixture lane TLS ready 34" type="qinfo" -->
+    <!-- tag="permission" message="terminal fixture lane disconnected 35" type="qinfo" -->
+    <!-- tag="permission" message="terminal fixture failure 4 &quot;receive&quot; after lane ms 301" type="qinfo" -->
+    <!-- tag="explicit&#x002D;control&#x002D;cancellation" message="terminal fixture client TLS begin 0" type="qinfo" -->
+    <!-- tag="explicit&#x002D;control&#x002D;cancellation" message="terminal fixture control TLS begin 0" type="qinfo" -->
+    <!-- tag="explicit&#x002D;control&#x002D;cancellation" message="terminal fixture client TLS ready 4" type="qinfo" -->
+    <!-- tag="explicit&#x002D;control&#x002D;cancellation" message="terminal fixture lane TLS begin 30" type="qinfo" -->
+    <!-- tag="explicit&#x002D;control&#x002D;cancellation" message="terminal fixture control TLS ready 30" type="qinfo" -->
+    <!-- tag="explicit&#x002D;control&#x002D;cancellation" message="terminal fixture lane TLS ready 34" type="qinfo" -->
+    <!-- tag="explicit&#x002D;control&#x002D;cancellation" message="terminal fixture lane disconnected 35" type="qinfo" -->
+    <!-- tag="explicit&#x002D;control&#x002D;cancellation" message="terminal fixture failure 7 &quot;receive&quot; after lane ms 301" type="qinfo" -->
+    <!-- tag="abrupt&#x002D;control" message="terminal fixture client TLS begin 0" type="qinfo" -->
+    <!-- tag="abrupt&#x002D;control" message="terminal fixture control TLS begin 0" type="qinfo" -->
+    <!-- tag="abrupt&#x002D;control" message="terminal fixture client TLS ready 4" type="qinfo" -->
+    <!-- tag="abrupt&#x002D;control" message="terminal fixture lane TLS begin 30" type="qinfo" -->
+    <!-- tag="abrupt&#x002D;control" message="terminal fixture control TLS ready 30" type="qinfo" -->
+    <!-- tag="abrupt&#x002D;control" message="terminal fixture lane TLS ready 34" type="qinfo" -->
+    <!-- tag="abrupt&#x002D;control" message="terminal fixture lane disconnected 35" type="qinfo" -->
+    <!-- tag="abrupt&#x002D;control" message="terminal fixture failure 3 &quot;parallel&quot; after lane ms 301" type="qinfo" -->
+    <!-- tag="wrong&#x002D;correlation" message="terminal fixture client TLS begin 0" type="qinfo" -->
+    <!-- tag="wrong&#x002D;correlation" message="terminal fixture control TLS begin 0" type="qinfo" -->
+    <!-- tag="wrong&#x002D;correlation" message="terminal fixture client TLS ready 4" type="qinfo" -->
+    <!-- tag="wrong&#x002D;correlation" message="terminal fixture lane TLS begin 30" type="qinfo" -->
+    <!-- tag="wrong&#x002D;correlation" message="terminal fixture control TLS ready 30" type="qinfo" -->
+    <!-- tag="wrong&#x002D;correlation" message="terminal fixture lane TLS ready 34" type="qinfo" -->
+    <!-- tag="wrong&#x002D;correlation" message="terminal fixture lane disconnected 35" type="qinfo" -->
+    <!-- tag="wrong&#x002D;correlation" message="terminal fixture failure 6 &quot;parallel&quot; after lane ms 301" type="qinfo" -->
+    <!-- tag="invalid&#x002D;failure" message="terminal fixture client TLS begin 0" type="qinfo" -->
+    <!-- tag="invalid&#x002D;failure" message="terminal fixture control TLS begin 0" type="qinfo" -->
+    <!-- tag="invalid&#x002D;failure" message="terminal fixture client TLS ready 4" type="qinfo" -->
+    <!-- tag="invalid&#x002D;failure" message="terminal fixture lane TLS begin 30" type="qinfo" -->
+    <!-- tag="invalid&#x002D;failure" message="terminal fixture control TLS ready 30" type="qinfo" -->
+    <!-- tag="invalid&#x002D;failure" message="terminal fixture lane TLS ready 34" type="qinfo" -->
+    <!-- tag="invalid&#x002D;failure" message="terminal fixture lane disconnected 35" type="qinfo" -->
+    <!-- tag="invalid&#x002D;failure" message="terminal fixture failure 2 &quot;parallel&quot; after lane ms 301" type="qinfo" -->
+    <!-- tag="ordinary&#x002D;confirmation" message="terminal fixture client TLS begin 0" type="qinfo" -->
+    <!-- tag="ordinary&#x002D;confirmation" message="terminal fixture control TLS begin 0" type="qinfo" -->
+    <!-- tag="ordinary&#x002D;confirmation" message="terminal fixture client TLS ready 4" type="qinfo" -->
+    <!-- tag="ordinary&#x002D;confirmation" message="terminal fixture lane TLS begin 30" type="qinfo" -->
+    <!-- tag="ordinary&#x002D;confirmation" message="terminal fixture control TLS ready 30" type="qinfo" -->
+    <!-- tag="ordinary&#x002D;confirmation" message="terminal fixture lane TLS ready 34" type="qinfo" -->
+    <!-- tag="ordinary&#x002D;confirmation" message="terminal fixture lane disconnected 35" type="qinfo" -->
+    <!-- tag="ordinary&#x002D;confirmation" message="terminal fixture failure 6 &quot;parallel&quot; after lane ms 301" type="qinfo" -->
+    <!-- tag="busy&#x002D;deadline" message="terminal fixture client TLS begin 0" type="qinfo" -->
+    <!-- tag="busy&#x002D;deadline" message="terminal fixture control TLS begin 0" type="qinfo" -->
+    <!-- tag="busy&#x002D;deadline" message="terminal fixture client TLS ready 4" type="qinfo" -->
+    <!-- tag="busy&#x002D;deadline" message="terminal fixture lane TLS begin 30" type="qinfo" -->
+    <!-- tag="busy&#x002D;deadline" message="terminal fixture control TLS ready 30" type="qinfo" -->
+    <!-- tag="busy&#x002D;deadline" message="terminal fixture lane TLS ready 34" type="qinfo" -->
+    <!-- tag="busy&#x002D;deadline" message="terminal fixture lane disconnected 35" type="qinfo" -->
+    <!-- tag="busy&#x002D;deadline" message="terminal fixture failure 3 &quot;parallel&quot; after lane ms 2309" type="qinfo" -->
+  </testcase>
+  <testcase result="pass" name="rejectedParallelDisposition"/>
+  <testcase result="pass" name="dispositionFields"/>
+  <testcase result="pass" name="rejectedDispositionWire"/>
+  <testcase result="pass" name="parallelDispositions"/>
+  <testcase result="pass" name="explicitDispositions"/>
+  <testcase result="pass" name="completedSummary"/>
+  <testcase result="pass" name="rejectedProgress"/>
+  <testcase result="pass" name="encryptedRoundtrip"/>
+  <testcase result="pass" name="cleanupTestCase"/>
+  <system-err>
+<![CDATA[terminal fixture client TLS begin 0]]>
+<![CDATA[terminal fixture control TLS begin 0]]>
+<![CDATA[terminal fixture client TLS ready 5]]>
+<![CDATA[terminal fixture lane TLS begin 30]]>
+<![CDATA[terminal fixture control TLS ready 30]]>
+<![CDATA[terminal fixture lane TLS ready 35]]>
+<![CDATA[terminal fixture lane disconnected 35]]>
+<![CDATA[terminal fixture failure 5 "receive" after lane ms 301]]>
+<![CDATA[terminal fixture client TLS begin 0]]>
+<![CDATA[terminal fixture control TLS begin 0]]>
+<![CDATA[terminal fixture client TLS ready 4]]>
+<![CDATA[terminal fixture lane TLS begin 30]]>
+<![CDATA[terminal fixture control TLS ready 30]]>
+<![CDATA[terminal fixture lane TLS ready 34]]>
+<![CDATA[terminal fixture lane disconnected 35]]>
+<![CDATA[terminal fixture failure 4 "receive" after lane ms 301]]>
+<![CDATA[terminal fixture client TLS begin 0]]>
+<![CDATA[terminal fixture control TLS begin 0]]>
+<![CDATA[terminal fixture client TLS ready 4]]>
+<![CDATA[terminal fixture lane TLS begin 30]]>
+<![CDATA[terminal fixture control TLS ready 30]]>
+<![CDATA[terminal fixture lane TLS ready 34]]>
+<![CDATA[terminal fixture lane disconnected 35]]>
+<![CDATA[terminal fixture failure 7 "receive" after lane ms 301]]>
+<![CDATA[terminal fixture client TLS begin 0]]>
+<![CDATA[terminal fixture control TLS begin 0]]>
+<![CDATA[terminal fixture client TLS ready 4]]>
+<![CDATA[terminal fixture lane TLS begin 30]]>
+<![CDATA[terminal fixture control TLS ready 30]]>
+<![CDATA[terminal fixture lane TLS ready 34]]>
+<![CDATA[terminal fixture lane disconnected 35]]>
+<![CDATA[terminal fixture failure 3 "parallel" after lane ms 301]]>
+<![CDATA[terminal fixture client TLS begin 0]]>
+<![CDATA[terminal fixture control TLS begin 0]]>
+<![CDATA[terminal fixture client TLS ready 4]]>
+<![CDATA[terminal fixture lane TLS begin 30]]>
+<![CDATA[terminal fixture control TLS ready 30]]>
+<![CDATA[terminal fixture lane TLS ready 34]]>
+<![CDATA[terminal fixture lane disconnected 35]]>
+<![CDATA[terminal fixture failure 6 "parallel" after lane ms 301]]>
+<![CDATA[terminal fixture client TLS begin 0]]>
+<![CDATA[terminal fixture control TLS begin 0]]>
+<![CDATA[terminal fixture client TLS ready 4]]>
+<![CDATA[terminal fixture lane TLS begin 30]]>
+<![CDATA[terminal fixture control TLS ready 30]]>
+<![CDATA[terminal fixture lane TLS ready 34]]>
+<![CDATA[terminal fixture lane disconnected 35]]>
+<![CDATA[terminal fixture failure 2 "parallel" after lane ms 301]]>
+<![CDATA[terminal fixture client TLS begin 0]]>
+<![CDATA[terminal fixture control TLS begin 0]]>
+<![CDATA[terminal fixture client TLS ready 4]]>
+<![CDATA[terminal fixture lane TLS begin 30]]>
+<![CDATA[terminal fixture control TLS ready 30]]>
+<![CDATA[terminal fixture lane TLS ready 34]]>
+<![CDATA[terminal fixture lane disconnected 35]]>
+<![CDATA[terminal fixture failure 6 "parallel" after lane ms 301]]>
+<![CDATA[terminal fixture client TLS begin 0]]>
+<![CDATA[terminal fixture control TLS begin 0]]>
+<![CDATA[terminal fixture client TLS ready 4]]>
+<![CDATA[terminal fixture lane TLS begin 30]]>
+<![CDATA[terminal fixture control TLS ready 30]]>
+<![CDATA[terminal fixture lane TLS ready 34]]>
+<![CDATA[terminal fixture lane disconnected 35]]>
+<![CDATA[terminal fixture failure 3 "parallel" after lane ms 2309]]>
+  </system-err>
+</testsuite>
