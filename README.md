@@ -4,6 +4,8 @@
 
 项目以 `Dukto/` 内的 Dukto R6 为功能参考，开发 Windows、macOS、Linux 共用内核的桌面应用和独立命令行程序，增加服务器上传/下载、多线程提速及可靠恢复能力。
 
+R126将CLI服务/客户端状态根接入持久协调会话，双Windows各34完整测试及13项生命周期专项通过。四原生与独立Ubuntu继续验收，Mac可下载预览仍R125；GUI根映射、历史迁移和实际总预算/自动GC未完成。 [本轮证据](docs/ci-verification-20261108-r126.json)。
+
 R125精确1b99cd63四原生持久配置/真实CLI各16条通过，完整核心4/4各33项；双Mac GUI/CLI含依赖包、迁移运行及截图已验，下载更新R125。独立Ubuntu16条通过。生产根/历史迁移、实际总预算和自动GC继续。 [Mac下载](docs/macOS独立预览包.md)。
 
 R125新增持久额度配置及state budget/root CLI，本机及四平台验证、双Mac含依赖包已按上文收验。生产总预算、迁移与自动GC未完成。 [本轮证据](docs/ci-verification-20261108-r125.json)。

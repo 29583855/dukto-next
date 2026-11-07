@@ -1,0 +1,33 @@
+********* Start testing of StateBudgetTests *********
+Config: Using QtTest library 5.15.19, Qt 5.15.19 (x86_64-little_endian-lp64 shared (dynamic) release build; by Clang 16.0.0 (clang-1600.0.26.6) (Apple)), osx 15.7
+PASS   : StateBudgetTests::initTestCase()
+PASS   : StateBudgetTests::fixedFileAndPrivateBoundary()
+PASS   : StateBudgetTests::categoriesAndLargeAmounts()
+QINFO  : StateBudgetTests::processesCompeteForLastCredit() Child readiness bytes: 72656164790a
+QINFO  : StateBudgetTests::processesCompeteForLastCredit() Child readiness bytes: 72656164790a
+PASS   : StateBudgetTests::processesCompeteForLastCredit()
+QINFO  : StateBudgetTests::processesCompeteForSameObject() Child readiness bytes: 72656164790a
+QINFO  : StateBudgetTests::processesCompeteForSameObject() Child readiness bytes: 72656164790a
+PASS   : StateBudgetTests::processesCompeteForSameObject()
+QINFO  : StateBudgetTests::exitRetainsCreditAndMaintenanceReconciles() Child readiness bytes: 72656164790a
+PASS   : StateBudgetTests::exitRetainsCreditAndMaintenanceReconciles()
+PASS   : StateBudgetTests::revisionsIdempotenceAndOverdraw()
+QINFO  : StateBudgetTests::nativeLockTimeoutAndCancellation() Child readiness bytes: 72656164790a
+PASS   : StateBudgetTests::nativeLockTimeoutAndCancellation()
+PASS   : StateBudgetTests::threadsShareOneInstance()
+PASS   : StateBudgetTests::writeAheadRecovery(0)
+PASS   : StateBudgetTests::writeAheadRecovery(1)
+PASS   : StateBudgetTests::writeAheadRecovery(2)
+PASS   : StateBudgetTests::writeAheadRecovery(3)
+PASS   : StateBudgetTests::writeAheadRecovery(4)
+PASS   : StateBudgetTests::completedTransactionReplay()
+PASS   : StateBudgetTests::corruptionAndDomainBinding()
+PASS   : StateBudgetTests::staleJournalIsRejected()
+PASS   : StateBudgetTests::tornIntentIsRejected()
+PASS   : StateBudgetTests::invalidAdmissionLeavesLedgerUnchanged()
+PASS   : StateBudgetTests::fixedSlotExhaustion()
+PASS   : StateBudgetTests::hardLinkIsRejected()
+PASS   : StateBudgetTests::repeatedUseReturnsResources()
+PASS   : StateBudgetTests::cleanupTestCase()
+Totals: 23 passed, 0 failed, 0 skipped, 0 blacklisted, 1325ms
+********* Finished testing of StateBudgetTests *********

@@ -8,6 +8,7 @@
 #include "core/service.h"
 #include "core/sessionpolicy.h"
 #include "core/shares.h"
+#include "core/statesession.h"
 #include "core/strongmanifest.h"
 #include "core/transferoperation.h"
 #include "core/uploadmanifest.h"
@@ -67,11 +68,22 @@ int certificateDays(const QCommandLineParser &parser) {
 }
 } // namespace
 
-// 日期：2026-11-07；GUI/CLI复用核心；过期维护先独占状态根，恢复控制仍绑定原请求。
+// 日期：2026-11-08；CLI业务根持有共享协调资格；维护独占成员，恢复仍绑定原请求。
 int runServiceCommand(const QCommandLineParser &parser, const QStringList &arguments,
                       const QString &stateDirectory,
                       const std::function<void(const QJsonObject &)> &output,
                       const std::function<bool()> &interrupted) {
+    const auto stateCheck = [&interrupted]() {
+        // 日期：2026-11-08；初始化/登记竞争在预算锁外响应信号，不清除控制文件或预留。
+        if (interrupted())
+            throw dukto::Error(dukto::ExitCode::Cancelled, QStringLiteral("状态准备已取消"),
+                               "state-session");
+    };
+    const auto stateRoot = [&](const QString &name, bool create = false,
+                               dukto::PrivateStore::Use use = dukto::PrivateStore::Use::Shared) {
+        // 日期：2026-11-08；返回句柄自身保留中央共享占用，不能在活动业务中修改域额度。
+        return dukto::StateSession::root(stateDirectory, name, create, use, stateCheck);
+    };
     auto command = arguments.value(0);
     const bool resuming = command == "resume";
     if ((command == "client" || command == "serve") && arguments.value(1) == "storage") {
@@ -86,9 +98,10 @@ int runServiceCommand(const QCommandLineParser &parser, const QStringList &argum
             throw dukto::Error(dukto::ExitCode::Config,
                                QStringLiteral("用法：client|serve storage --state-directory 目录"),
                                "arguments");
-        dukto::PrivateStore store(
-            QDir(stateDirectory).filePath(command == "client" ? "transfers" : "service"), false,
-            dukto::PrivateStore::Use::Maintenance);
+        auto bound = dukto::StateSession::observe(
+            stateDirectory, command == "client" ? "transfers" : "service",
+            dukto::PrivateStore::Use::Maintenance, stateCheck);
+        auto &store = *bound;
         output(store.storageUsage([&]() {
             // 日期：2026-11-07；每个枚举项检查进程信号，不写入部分结果或修改任何数据库。
             if (interrupted())
@@ -113,8 +126,8 @@ int runServiceCommand(const QCommandLineParser &parser, const QStringList &argum
                 dukto::ExitCode::Config,
                 QStringLiteral("用法：client scan-cleanup preview|run --request-id UUID"),
                 "arguments");
-        dukto::PrivateStore store(QDir(stateDirectory).filePath("transfers"), false,
-                                  dukto::PrivateStore::Use::Maintenance);
+        auto bound = stateRoot("transfers", false, dukto::PrivateStore::Use::Maintenance);
+        auto &store = *bound;
         output(dukto::cleanupUploadScan(
             store, request, QDateTime::currentDateTimeUtc(), operation == "run", [&]() {
                 // 日期：2026-11-07；显式中断保存已持久删除意图，同一请求可再次续做。
@@ -145,8 +158,8 @@ int runServiceCommand(const QCommandLineParser &parser, const QStringList &argum
                 dukto::ExitCode::Config,
                 QStringLiteral("用法：client cleanup preview|run --task UUID [--after 序号]"),
                 "arguments");
-        const auto transferPath = QDir(stateDirectory).filePath("transfers");
-        dukto::PrivateStore store(transferPath, false, dukto::PrivateStore::Use::Maintenance);
+        auto bound = stateRoot("transfers", false, dukto::PrivateStore::Use::Maintenance);
+        auto &store = *bound;
         output(dukto::cleanupClientDownload(store, task, operation == "run", after, [&]() {
             // 日期：2026-11-07；取消只在每条有界记录与同步事务边界响应，重复执行可恢复。
             if (interrupted())
@@ -196,7 +209,8 @@ int runServiceCommand(const QCommandLineParser &parser, const QStringList &argum
                     dukto::ExitCode::Config,
                     QStringLiteral("用法：serve cleanup preview|run --client UUID --task UUID"),
                     "arguments");
-            dukto::PrivateStore store(servicePath, false, dukto::PrivateStore::Use::Maintenance);
+            auto bound = stateRoot("service", false, dukto::PrivateStore::Use::Maintenance);
+            auto &store = *bound;
             output(dukto::cleanupExpiredUpload(
                 store, owner, id, QDateTime::currentDateTimeUtc(), operation == "run", after,
                 [&]() {
@@ -213,7 +227,8 @@ int runServiceCommand(const QCommandLineParser &parser, const QStringList &argum
                                    QStringLiteral("身份命令不接受额外位置参数"), "arguments");
             if (action == "init")
                 prepareParent(stateDirectory);
-            dukto::PrivateStore store(servicePath, action == "init");
+            auto bound = stateRoot("service", action == "init");
+            auto &store = *bound;
             QJsonObject info;
             if (action == "init")
                 info = dukto::initializeIdentity(store, parser.values("server-name"),
@@ -249,7 +264,8 @@ int runServiceCommand(const QCommandLineParser &parser, const QStringList &argum
             if (bind.isNull())
                 throw dukto::Error(dukto::ExitCode::Config, QStringLiteral("监听地址无效"),
                                    "arguments");
-            dukto::ServiceListener listener(servicePath, timeout(parser));
+            auto bound = stateRoot("service");
+            dukto::ServiceListener listener(bound->directory(), timeout(parser));
             QObject::connect(&listener, &dukto::ServiceListener::event, &listener, output);
             if (!listener.listen(bind, endpoint.port))
                 throw dukto::Error(dukto::ExitCode::Network, QStringLiteral("服务端口无法监听"),
@@ -274,7 +290,8 @@ int runServiceCommand(const QCommandLineParser &parser, const QStringList &argum
             QCoreApplication::exec();
             return interrupted() ? 7 : 0;
         }
-        dukto::PrivateStore store(servicePath);
+        auto bound = stateRoot("service");
+        auto &store = *bound;
         dukto::loadIdentity(store);
         if (action == "session") {
             const auto operation = arguments.value(2);
@@ -401,7 +418,8 @@ int runServiceCommand(const QCommandLineParser &parser, const QStringList &argum
         throw dukto::Error(dukto::ExitCode::Config, QStringLiteral("远程命令不接受额外位置参数"),
                            "arguments");
     prepareParent(stateDirectory);
-    dukto::PrivateStore clients(QDir(stateDirectory).filePath("clients"), true);
+    auto boundClients = stateRoot("clients", true);
+    auto &clients = *boundClients;
     const auto alias = parser.value("profile");
     if (command == "profile-info") {
         output(dukto::profileInfo(clients, alias));
@@ -459,7 +477,7 @@ int runServiceCommand(const QCommandLineParser &parser, const QStringList &argum
         output(dukto::rotateProfile(clients, alias, timeout(parser), &cancelled));
         return 0;
     }
-    std::unique_ptr<dukto::PrivateStore> transferState;
+    std::shared_ptr<dukto::PrivateStore> transferState;
     std::unique_ptr<dukto::UploadManifest> upload;
     QUuid request;
     QUuid resumeId;
@@ -516,8 +534,7 @@ int runServiceCommand(const QCommandLineParser &parser, const QStringList &argum
                 {"event", "transfer-started"},
                 {"requestId", request.toString(QUuid::WithoutBraces)},
                 {"message", QStringLiteral("中断后可使用相同 --request-id 重试")}});
-        transferState.reset(
-            new dukto::PrivateStore(QDir(stateDirectory).filePath("transfers"), true));
+        transferState = stateRoot("transfers", true);
         if (command == "upload") {
             operation->run([&]() {
                 // 日期：2026-11-06；原请求跨进程复用冻结源清单，重开不扫描已删除的跳过源。
@@ -581,7 +598,8 @@ int runServiceCommand(const QCommandLineParser &parser, const QStringList &argum
                                "arguments");
         auto after =
             dukto::next::decimal(parser.value("after"), std::numeric_limits<qint64>::max());
-        dukto::PrivateStore local(QDir(stateDirectory).filePath("transfers"), true);
+        auto bound = stateRoot("transfers", true);
+        auto &local = *bound;
         remote.close();
         for (int count = 0; count < 100000; ++count) {
             // 日期：2026-11-05；每页独立认证及关闭，10万文件翻页不耗尽单会话请求上限。

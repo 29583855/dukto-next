@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="1" failures="0" tests="13" name="StateStorageTests">
+  <properties>
+    <property value="5.15.2" name="QTestVersion"/>
+    <property value="5.15.2" name="QtVersion"/>
+    <property value="Qt 5.15.2 (x86_64&#x002D;little_endian&#x002D;llp64 shared (dynamic) release build; by MSVC 2019)" name="QtBuild"/>
+  </properties>
+  <testcase result="pass" name="initTestCase"/>
+  <testcase result="pass" name="logicalLengthsAndCategories"/>
+  <testcase result="pass" name="hotJournalIsObservedWithoutRecovery"/>
+  <testcase result="pass" name="hardLinksCountPerName"/>
+  <testcase result="pass" name="nativeIdentityMatchesSqliteAndAliases"/>
+  <testcase result="pass" name="visitorFailureIsReusable"/>
+  <testcase result="pass" name="inventoryPreservesSqliteWriteLock"/>
+  <testcase result="pass" name="nestedDataIsExcluded"/>
+  <testcase name="nativeSymbolicLinkIsExcluded">
+    <!-- message="Windows account cannot create a native symbolic link" type="skip" -->
+  </testcase>
+  <testcase result="pass" name="maintenanceCancellationAndMutation"/>
+  <testcase result="pass" name="manyEntriesKeepReportBounded"/>
+  <testcase result="pass" name="realCli"/>
+  <testcase result="pass" name="cleanupTestCase"/>
+  <system-err>
+<![CDATA[Windows account cannot create a native symbolic link]]>
+  </system-err>
+</testsuite>
