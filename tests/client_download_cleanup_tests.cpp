@@ -11,8 +11,8 @@
 #include <QProcess>
 #include <QSqlQuery>
 #include <QTemporaryDir>
-#include <QTemporaryFile>
 #include <QtTest>
+#include <cstdlib>
 
 namespace {
 // 日期：2026-11-07；测试仅使用独立临时状态根和目标目录，不访问用户真实下载位置。
@@ -76,33 +76,50 @@ struct Fixture {
     const QString receiveName = "receive-" + task.toString(QUuid::WithoutBraces) + ".sqlite";
 
     // 日期：2026-11-07；冻结真实强清单并留下可恢复的收件日志及一份已发布文件。
-    Fixture() {
-        if (!root.isValid() || !QDir().mkpath(output) || !QDir().mkpath(root.filePath("sources")))
+    explicit Fixture(dukto::ConflictPolicy policy = dukto::ConflictPolicy::Rename,
+                     int extraFiles = 0) {
+        if (!root.isValid() || !QDir().mkpath(output) || !QDir().mkpath(stateDirectory) ||
+            !QDir().mkpath(root.filePath("sources")))
             throw dukto::Error(dukto::ExitCode::Disk, "fixture directory", "test");
         writeSource(root.filePath("sources/a.bin"), dukto::StrongBlockBytes);
         writeSource(root.filePath("sources/b.bin"), 2 * dukto::StrongBlockBytes);
+        QStringList sources{root.filePath("sources/a.bin"), root.filePath("sources/b.bin")};
+        for (int index = 0; index < extraFiles; ++index) {
+            const auto path =
+                root.filePath(QString("sources/c%1.bin").arg(index, 3, 10, QChar('0')));
+            writeSource(path, 0);
+            sources.append(path);
+        }
         dukto::PrivateStore store(state, true);
         {
             dukto::StrongManifest manifest(store, manifestName, true);
-            manifest.scan({root.filePath("sources/a.bin"), root.filePath("sources/b.bin")});
+            manifest.scan(sources);
         }
         {
             dukto::StrongManifest manifest(store, manifestName, false);
-            dukto::DurableReceive receiver(store, receiveName, task, manifest, output);
-            receiver.open(1, "a.bin");
+            dukto::DurableReceive receiver(store, receiveName, task, manifest, output, policy);
+            receiver.prepareDisposition(1);
+            receiver.openDisposition(1, "a.bin");
             for (qint64 offset = 0; offset < dukto::StrongBlockBytes; offset += dukto::BufferSize) {
                 const auto count =
                     qMin<qint64>(dukto::BufferSize, dukto::StrongBlockBytes - offset);
                 receiver.write(0, static_cast<quint32>(offset), QByteArray(count, 'd'));
             }
-            receiver.finish();
-            receiver.open(2, "b.bin");
+            receiver.finishDisposition();
+            receiver.prepareDisposition(2);
+            receiver.openDisposition(2, "b.bin");
             for (qint64 offset = 0; offset < dukto::StrongBlockBytes; offset += dukto::BufferSize) {
                 const auto count =
                     qMin<qint64>(dukto::BufferSize, dukto::StrongBlockBytes - offset);
                 receiver.write(0, static_cast<quint32>(offset), QByteArray(count, 'd'));
             }
             receiver.write(1, 0, QByteArray(65536, 'x'));
+            for (int index = 0; index < extraFiles; ++index) {
+                const auto id = static_cast<quint64>(3 + index);
+                const auto path = QString("c%1.bin").arg(index, 3, 10, QChar('0'));
+                receiver.prepareDisposition(id);
+                receiver.openDisposition(id, path);
+            }
         }
     }
 
@@ -204,19 +221,75 @@ class ClientDownloadCleanupTests final : public QObject {
             dukto::PrivateStore store(fixture.state);
             path = QDir(fixture.output).filePath(receiveTemporary(store, fixture.task, 2));
         }
-        QTemporaryFile replacement(fixture.output + "/replacement-XXXXXX");
-        QVERIFY(replacement.open());
+        QVERIFY(QFile::rename(path, path + ".saved"));
+        QFile replacement(path);
+        QVERIFY(replacement.open(QIODevice::WriteOnly));
         QCOMPARE(replacement.write("keep", 4), qint64(4));
         replacement.close();
-        QVERIFY(QFile::remove(path));
-        QVERIFY(QFile::rename(replacement.fileName(), path));
         dukto::PrivateStore store(fixture.state, false, dukto::PrivateStore::Use::Maintenance);
         QVERIFY_EXCEPTION_THROWN(dukto::cleanupClientDownload(store, fixture.task, true),
                                  dukto::Error);
         QFile preserved(path);
         QVERIFY(preserved.open(QIODevice::ReadOnly));
         QCOMPARE(preserved.readAll(), QByteArray("keep"));
+        QVERIFY(QFileInfo::exists(path + ".saved"));
         QCOMPARE(fixture.fileState(store, 2)["state"].toString(), QString("receiving"));
+    }
+
+    // 日期：2026-11-07；真实子进程在删除正文后退出，内核锁释放后同一任务可安全重新清理。
+    void processExitAfterRemoval() {
+        Fixture fixture;
+        QString path;
+        {
+            dukto::PrivateStore store(fixture.state);
+            path = QDir(fixture.output).filePath(receiveTemporary(store, fixture.task, 2));
+        }
+        QProcess worker;
+        worker.start(
+            QCoreApplication::applicationFilePath(),
+            {"--crash-cleanup", fixture.state, fixture.task.toString(QUuid::WithoutBraces), path});
+        QVERIFY(worker.waitForFinished(30000));
+        QCOMPARE(worker.exitCode(), 87);
+        QVERIFY(!QFileInfo::exists(path));
+        dukto::PrivateStore store(fixture.state, false, dukto::PrivateStore::Use::Maintenance);
+        QCOMPARE(fixture.fileState(store, 2)["state"].toString(), QString("receiving"));
+        QCOMPARE(fixture.blockCount(store, 2), 1);
+        const auto result = dukto::cleanupClientDownload(store, fixture.task, true);
+        QCOMPARE(result["cleanedFiles"].toString(), QString("1"));
+        QCOMPARE(fixture.fileState(store, 2)["state"].toString(), QString("planned"));
+        QCOMPARE(fixture.blockCount(store, 2), 0);
+        QFile other(path);
+        QVERIFY(other.open(QIODevice::WriteOnly));
+        QCOMPARE(other.write("keep", 4), qint64(4));
+        other.close();
+        QCOMPARE(dukto::cleanupClientDownload(store, fixture.task, true)["cleanedFiles"].toString(),
+                 QString("0"));
+        QVERIFY(other.open(QIODevice::ReadOnly));
+        QCOMPARE(other.readAll(), QByteArray("keep"));
+    }
+
+    // 日期：2026-11-07；在检查点及状态更新后取消会回滚整个事务，之后重跑仍能完成清理。
+    void cancellationRollsBackCheckpointReset() {
+        Fixture fixture;
+        dukto::PrivateStore store(fixture.state, false, dukto::PrivateStore::Use::Maintenance);
+        const auto path = QDir(fixture.output).filePath(receiveTemporary(store, fixture.task, 2));
+        int afterRemoval = 0;
+        QVERIFY_EXCEPTION_THROWN(
+            dukto::cleanupClientDownload(store, fixture.task, true, 0,
+                                         [&]() {
+                                             // 日期：2026-11-07；第二个删除后检查点位于FULL事务提交前，精确验证回滚边界。
+                                             if (!QFileInfo::exists(path) && ++afterRemoval == 2)
+                                                 throw dukto::Error(dukto::ExitCode::Cancelled,
+                                                                    "fixture cancel", "test");
+                                         }),
+            dukto::Error);
+        QCOMPARE(afterRemoval, 2);
+        QCOMPARE(fixture.fileState(store, 2)["state"].toString(), QString("receiving"));
+        QCOMPARE(fixture.blockCount(store, 2), 1);
+        QCOMPARE(dukto::cleanupClientDownload(store, fixture.task, true)["cleanedFiles"].toString(),
+                 QString("1"));
+        QCOMPARE(fixture.fileState(store, 2)["state"].toString(), QString("planned"));
+        QCOMPARE(fixture.blockCount(store, 2), 0);
     }
 
     // 日期：2026-11-07；即使没有残留旁路文件，也必须从SQLite元数据拒绝WAL模式接收日志。
@@ -238,6 +311,87 @@ class ClientDownloadCleanupTests final : public QObject {
         dukto::PrivateStore store(fixture.state, false, dukto::PrivateStore::Use::Maintenance);
         QVERIFY_EXCEPTION_THROWN(dukto::cleanupClientDownload(store, fixture.task, false),
                                  dukto::Error);
+    }
+
+    // 日期：2026-11-07；100条分页游标须稳定前进，执行可处理整任务且重复执行不重复删除。
+    void paginationAndRepeatedRun() {
+        Fixture fixture(dukto::ConflictPolicy::Rename, 101);
+        dukto::PrivateStore store(fixture.state, false, dukto::PrivateStore::Use::Maintenance);
+        const auto first = dukto::cleanupClientDownload(store, fixture.task, false);
+        QCOMPARE(first["entries"].toArray().size(), 100);
+        QVERIFY(first["more"].toBool());
+        QCOMPARE(first["after"].toString(), QString("100"));
+        const auto second = dukto::cleanupClientDownload(store, fixture.task, false, 100);
+        QCOMPARE(second["entries"].toArray().size(), 3);
+        QVERIFY(!second["more"].toBool());
+        QCOMPARE(second["after"].toString(), QString("103"));
+        const auto result = dukto::cleanupClientDownload(store, fixture.task, true);
+        QCOMPARE(result["cleanedFiles"].toString(), QString("102"));
+        QCOMPARE(result["preservedFiles"].toString(), QString("1"));
+        QVERIFY(result["entries"].toArray().isEmpty());
+        QCOMPARE(dukto::cleanupClientDownload(store, fixture.task, true)["cleanedFiles"].toString(),
+                 QString("0"));
+    }
+
+    // 日期：2026-11-07；冲突策略绑定由真实接收器生成，所有策略均保留已发布目标。
+    void policies_data() {
+        QTest::addColumn<QString>("policy");
+        for (const auto &policy : QStringList{"rename", "fail", "overwrite", "skip"})
+            QTest::newRow(policy.toLatin1().constData()) << policy;
+    }
+
+    // 日期：2026-11-07；skip日志完全保留；其余策略仅复位未完成文件并保留原已完成文件摘要。
+    void policies() {
+        QFETCH(QString, policy);
+        Fixture fixture(dukto::checkedConflictPolicy(policy));
+        dukto::PrivateStore store(fixture.state, false, dukto::PrivateStore::Use::Maintenance);
+        const auto completed = dukto::hashFile(QDir(fixture.output).filePath("a.bin"));
+        const auto path = QDir(fixture.output).filePath(receiveTemporary(store, fixture.task, 2));
+        const auto result = dukto::cleanupClientDownload(store, fixture.task, true);
+        const bool skipped = policy == "skip";
+        QCOMPARE(result["cleanedFiles"].toString(), skipped ? QString("0") : QString("1"));
+        QCOMPARE(QFileInfo::exists(path), skipped);
+        QCOMPARE(fixture.fileState(store, 2)["state"].toString(),
+                 skipped ? QString("receiving") : QString("planned"));
+        QCOMPARE(dukto::hashFile(QDir(fixture.output).filePath("a.bin")), completed);
+    }
+
+    // 日期：2026-11-07；目标根被替换后拒绝清理，保留原目录中仍可辨认的临时正文。
+    void replacedRootIsRejected() {
+        Fixture fixture;
+        QString temporary;
+        {
+            dukto::PrivateStore store(fixture.state);
+            temporary = receiveTemporary(store, fixture.task, 2);
+        }
+        const auto saved = fixture.root.filePath("saved-output");
+        QVERIFY(QDir().rename(fixture.output, saved));
+        QVERIFY(QDir().mkpath(fixture.output));
+        dukto::PrivateStore store(fixture.state, false, dukto::PrivateStore::Use::Maintenance);
+        QVERIFY_EXCEPTION_THROWN(dukto::cleanupClientDownload(store, fixture.task, true),
+                                 dukto::Error);
+        QVERIFY(QFileInfo::exists(QDir(saved).filePath(temporary)));
+        QCOMPARE(fixture.fileState(store, 2)["state"].toString(), QString("receiving"));
+    }
+
+    // 日期：2026-11-07；共享状态对象不能维护；已有接收日志租约时预览和执行都立即拒绝。
+    void maintenanceAndReceiveLeaseRequired() {
+        Fixture fixture;
+        {
+            dukto::PrivateStore shared(fixture.state);
+            QVERIFY_EXCEPTION_THROWN(dukto::cleanupClientDownload(shared, fixture.task, true),
+                                     dukto::Error);
+            QVERIFY_EXCEPTION_THROWN(
+                dukto::PrivateStore(fixture.state, false, dukto::PrivateStore::Use::Maintenance),
+                dukto::Error);
+        }
+        dukto::PrivateStore store(fixture.state, false, dukto::PrivateStore::Use::Maintenance);
+        dukto::StrongManifest manifest(store, fixture.manifestName, false);
+        dukto::DurableReceive receiver(store, fixture.receiveName, fixture.task, manifest,
+                                       fixture.output);
+        for (const bool apply : {false, true})
+            QVERIFY_EXCEPTION_THROWN(dukto::cleanupClientDownload(store, fixture.task, apply),
+                                     dukto::Error);
     }
 
     // 日期：2026-11-07；真实CLI核对JSON预览、参数拒绝及复用任务ID执行后的接收状态。
@@ -298,6 +452,16 @@ class ClientDownloadCleanupTests final : public QObject {
 // 日期：2026-11-07；独立QtTest进程使状态锁、SQLite连接和临时目录生命周期可重复核验。
 int main(int argc, char **argv) {
     QCoreApplication app(argc, argv);
+    const auto arguments = app.arguments();
+    if (arguments.size() == 5 && arguments[1] == "--crash-cleanup") {
+        dukto::PrivateStore store(arguments[2], false, dukto::PrivateStore::Use::Maintenance);
+        dukto::cleanupClientDownload(store, QUuid(arguments[3]), true, 0, [&]() {
+            // 日期：2026-11-07；跳过正常析构退出，验证原生占用锁和接收租约的真实崩溃恢复。
+            if (!QFileInfo::exists(arguments[4]))
+                std::_Exit(87);
+        });
+        return 88;
+    }
     ClientDownloadCleanupTests tests;
     return QTest::qExec(&tests, argc, argv);
 }
