@@ -1,6 +1,17 @@
 # macOS独立开发预览包
 
-更新日期：2026-11-07。当前含依赖开发预览为R108，打包源码`641920f75b76149d49ee01f134bf70097857dc3d`；使用C++14、Qt5及CMake，两种架构均含GUI、独立CLI和Qt5/OpenSSL运行依赖。最新修正提交`6eea9d2`加入头像请求单次中止保护并调整跨平台测试；Apple Silicon和Intel的GUI/CLI编译归档均已生成，四平台原生完整回归仍在运行。下方预览包尚未包含该新提交。
+更新日期：2026-11-07。最新R109源码`bea5d8181fd4e474216ad613120e20c3c086f217`已在Apple Silicon和Intel原生环境以C++14/Qt5编译GUI及独立CLI，归档校验通过，两架构各25个核心CTest与下载清理各16条数据行已核验；各保留一条已有Darwin端口独占XFAIL，完整原生协议回归仍在运行。含Qt5/OpenSSL运行依赖的开发预览仍为R108，打包源码`641920f75b76149d49ee01f134bf70097857dc3d`。
+
+## R109最新原生编译归档
+
+对应[运行42347962868](https://github.com/29583855/dukto-next/actions/runs/42347962868)。两架构的官方ZIP摘要、内部tar摘要、源码提交、LICENSE、Mach-O CPU架构及GUI/CLI执行权限已逐件核验；本机副本存于`dist/macos-compiled-20261107-r109-client-cleanup/`。[核验回执](validation/2026-11-07/client-cleanup-r109-macos-compiled/receipt.json)。
+
+| 架构 | Actions下载 | 官方ZIP SHA-256 | 内部tar.gz SHA-256 |
+| --- | --- | --- | --- |
+| arm64 | [macos-compiled-ARM64](https://github.com/29583855/dukto-next/actions/runs/42347962868/artifacts/13564775658) | `b9cadc32ba39beab41316cb98dc9ee040973b1e35f4c103513ccd077e46023b2` | `71fca3707db61d1750e5b71421d82eafa6d68c8ce2f1cfe07abc6fd1aa095512` |
+| x86_64 | [macos-compiled-X64](https://github.com/29583855/dukto-next/actions/runs/42347962868/artifacts/13564417308) | `22a57ffda0573c70c13a00c5f989534ed543bacb38a8f00c9d682a492ce1bb22` | `e7eac194d2e7bb16a5fda861f61ec270d637a69f739d0c791e0ecbe6daa2480b` |
+
+这些是原生编译产物，需要匹配的Qt5/OpenSSL运行依赖；完整含依赖预览见下方R108。R109新增本机客户端下载普通文件临时正文清理，完整原生测试及正式签名公证资格仍单独验收，不能由编译成功替代。
 
 ## 当前R108含依赖部署包
 
@@ -36,9 +47,9 @@ R108应用源码`73cd10ac95be6c97fd67134ba14b6edee4b2c189`已在 [公开仓库](
 
 这两个是源码提交`73cd10a`的原始编译归档，未打包Qt5/OpenSSL运行依赖；对应的含依赖可运行包已更新到上方R108。该提交原生完整CI `42332515396`终态failure，Windows CLI端口选择测试失败，其他三个runner成功。后续`cef3759`运行`42336003722`终态failure，Apple Silicon核心/GUI控制器及协议测试失败，Ubuntu、Intel、Windows成功。最新`6eea9d2`复验见下节。
 
-## `6eea9d2`原生复验（进行中）
+## `6eea9d2`原生复验（终态失败，原件保留）
 
-[GitHub Actions运行42340140189](https://github.com/29583855/dukto-next/actions/runs/42340140189)对应精确源码提交`6eea9d23a254ac0095e588b03d76c19faf7bf5cf`。截至2026-11-07 05:35 UTC，Apple Silicon与Intel均完成GUI/CLI编译并分别上传[`macos-compiled-ARM64`](https://github.com/29583855/dukto-next/actions/runs/42340140189/artifacts/13561031943)和[`macos-compiled-X64`](https://github.com/29583855/dukto-next/actions/runs/42340140189/artifacts/13560769150)归档；Ubuntu完整job已成功，Windows及两种Mac架构仍在协议集成阶段。归档只包含编译产物，不含Qt/OpenSSL运行依赖。当前编译成功不代表四平台整轮通过，待运行终态后核验归档、报告和失败项。
+[GitHub Actions运行42340140189](https://github.com/29583855/dukto-next/actions/runs/42340140189)对应精确源码`6eea9d23a254ac0095e588b03d76c19faf7bf5cf`，已终态failure。两架构GUI/CLI编译均成功；Windows、Ubuntu和Apple Silicon job成功，Intel `transfer-retry`在1秒总时限内未进入queued状态，排队期限断言失败且未生成该项报告。原job日志、执行清单和官方附件摘要已[收验保存](validation/2026-11-07/client-cleanup-r109-prior-ci/receipt.json)，未授予整轮通过资格。当前最新编译归档和核心结果见上方R109；R108含依赖包仍单独标记其源码身份。
 
 ## R105含依赖部署包（历史）
 

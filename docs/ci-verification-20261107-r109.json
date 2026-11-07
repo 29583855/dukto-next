@@ -1,0 +1,2748 @@
+{
+  "observedUtc": "2026-11-07T06:58:18.130649+00:00",
+  "sourceCommit": "bea5d8181fd4e474216ad613120e20c3c086f217",
+  "repositoryUrl": "https://github.com/29583855/dukto-next",
+  "planVersion": "v0.109",
+  "nativeRunId": 42347962868,
+  "nativeRunStatus": "in_progress",
+  "nativeRunConclusion": null,
+  "nativeFullProtocolPending": true,
+  "nativeCoreTargetsEach": 25,
+  "nativeQtXmlReportsEach": 24,
+  "nativeCleanupRowsEach": 16,
+  "nativeCleanupJUnitMethodsEach": 13,
+  "allFourNativeCoreSuitesVerified": true,
+  "explicitDarwinExpectedFailures": 2,
+  "localToolchains": [
+    "UCRT Qt5.15.19",
+    "MSVC Qt5.15.2"
+  ],
+  "localRelatedTargetsEach": 7,
+  "localEvidence": {
+    "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/receipt.json",
+    "bytes": 21345,
+    "sha256": "8993dfbaa509deb0f499bc3d9a180cc46784fb58774ac04f5629f2211a104b8d"
+  },
+  "macosCompiledEvidence": {
+    "path": "docs/validation/2026-11-07/client-cleanup-r109-macos-compiled/receipt.json",
+    "bytes": 2645,
+    "sha256": "338760448a459cece9ff92ce6809d8506dc953ee3c7519a5457fa57d2a780b51"
+  },
+  "nativeCoreEvidence": {
+    "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/receipt.json",
+    "bytes": 36854,
+    "sha256": "d923fa30a3c9753b53363588fa1925cd7ed31d31113de6e06145398008420fde"
+  },
+  "priorCiFailureEvidence": {
+    "path": "docs/validation/2026-11-07/client-cleanup-r109-prior-ci/receipt.json",
+    "bytes": 34269,
+    "sha256": "37e8b61b3ba92569847ec36814d0b220006f00675954a24f017fe433a62ee841"
+  },
+  "macosCompiledPackages": [
+    {
+      "sourceCommit": "bea5d8181fd4e474216ad613120e20c3c086f217",
+      "architecture": "arm64",
+      "artifactId": 13564775658,
+      "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42347962868/artifacts/13564775658",
+      "artifactSha256": "b9cadc32ba39beab41316cb98dc9ee040973b1e35f4c103513ccd077e46023b2",
+      "archive": "DuktoNext-macos-ARM64-compiled.tar.gz",
+      "sha256": "71fca3707db61d1750e5b71421d82eafa6d68c8ce2f1cfe07abc6fd1aa095512",
+      "binaries": [
+        {
+          "path": "dukto-cli",
+          "sha256": "b31e616c976ca4a86799579a989173c156cfef4fa57bd4d1fc0cc1653cf08966",
+          "architecture": "arm64",
+          "executable": true
+        },
+        {
+          "path": "dukto-gui.app/Contents/MacOS/dukto-gui",
+          "sha256": "b44f1531f11b414966bde1f52561ec9d2a6ac1a25754ffc1b50f4850649d590c",
+          "architecture": "arm64",
+          "executable": true
+        }
+      ],
+      "compileStepsPassed": true,
+      "dependenciesDeployed": false
+    },
+    {
+      "sourceCommit": "bea5d8181fd4e474216ad613120e20c3c086f217",
+      "architecture": "x86_64",
+      "artifactId": 13564417308,
+      "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42347962868/artifacts/13564417308",
+      "artifactSha256": "22a57ffda0573c70c13a00c5f989534ed543bacb38a8f00c9d682a492ce1bb22",
+      "archive": "DuktoNext-macos-X64-compiled.tar.gz",
+      "sha256": "e7eac194d2e7bb16a5fda861f61ec270d637a69f739d0c791e0ecbe6daa2480b",
+      "binaries": [
+        {
+          "path": "dukto-cli",
+          "sha256": "ae6a64e4d280020989cf3221e6502e2fd985283dca26d2e9140844fd85080299",
+          "architecture": "x86_64",
+          "executable": true
+        },
+        {
+          "path": "dukto-gui.app/Contents/MacOS/dukto-gui",
+          "sha256": "d66265d19dcce2a48aeb66ba50997534312016205b62cb997b579e09bad4fd71",
+          "architecture": "x86_64",
+          "executable": true
+        }
+      ],
+      "compileStepsPassed": true,
+      "dependenciesDeployed": false
+    }
+  ],
+  "macosDependenciesDeployedForR109": false,
+  "currentSelfContainedMacPreviewSource": "641920f75b76149d49ee01f134bf70097857dc3d",
+  "buildInputs": [
+    {
+      "path": ".clang-format",
+      "bytes": 135,
+      "sha256": "6fae9c693a9c50d2bbb43267923289eea60b10328e71893d79bb155d4b5db6c3"
+    },
+    {
+      "path": ".github/docker/musl/Dockerfile",
+      "bytes": 723,
+      "sha256": "d38b5e50a08685601b5c7d2a5b92e4ec52a14166e9e2dabceb09df91ea059633"
+    },
+    {
+      "path": ".github/workflows/build.yml",
+      "bytes": 9819,
+      "sha256": "b51e185fcac3edad330fee3dbf1cd30c6c8ac1d0e5970c17a1736978e8a993fa"
+    },
+    {
+      "path": ".github/workflows/concurrent-commit.yml",
+      "bytes": 2159,
+      "sha256": "beb3462213456f69f002a34d5ea990bd1576704d1e7e00da4a278aa95b566779"
+    },
+    {
+      "path": ".github/workflows/credential-rotation.yml",
+      "bytes": 2050,
+      "sha256": "5bc554dc7980889c21d0c4a962aa9c417bd657c02f4ff3fd32c1eb3fcbe248b6"
+    },
+    {
+      "path": ".github/workflows/linux-musl.yml",
+      "bytes": 5152,
+      "sha256": "05244d01c3b63e8e49fbfac81bb8ef4ae2d7b72cecad1cb927a849933f562745"
+    },
+    {
+      "path": ".github/workflows/linux-package.yml",
+      "bytes": 4720,
+      "sha256": "3e48c31a48a18857003bb9072399ca66dc0954c3c5b29797b15ba9691060d304"
+    },
+    {
+      "path": ".github/workflows/macos-diagnostics.yml",
+      "bytes": 3789,
+      "sha256": "8867f07314ca69422997042df07db71bd49c88a70a82a73645f5b4c2b1d0bd02"
+    },
+    {
+      "path": ".github/workflows/macos-discovery.yml",
+      "bytes": 3491,
+      "sha256": "9422af630a53c28b2f9ce4f5cf8da933d01f99a563db6b3314acc72ab6e2bed5"
+    },
+    {
+      "path": ".github/workflows/macos-disk.yml",
+      "bytes": 6926,
+      "sha256": "eebee0bf38ed41af0d4ebe4cd11a3528b46c56e5edf703ea256e795aa12105b6"
+    },
+    {
+      "path": ".github/workflows/macos-listener-diagnostics.yml",
+      "bytes": 3637,
+      "sha256": "2f45895d9bb5f740c08b60915ca454bec6cf1d1b92adb1b1a54ef541e174178f"
+    },
+    {
+      "path": ".github/workflows/macos-listener-regression.yml",
+      "bytes": 5373,
+      "sha256": "a240eee4b2227dda06e8686296090228574555f9aec1fd42a7b487dfea54c457"
+    },
+    {
+      "path": ".github/workflows/macos-listener-reuse-diagnostics.yml",
+      "bytes": 1562,
+      "sha256": "c667fccac81114c71196c3b65508ec5dbabc11eada557c5362ac571c16593ce6"
+    },
+    {
+      "path": ".github/workflows/macos-package-recheck.yml",
+      "bytes": 3894,
+      "sha256": "ee2f5c7c64332db11ca161c68d0bcacbad8c8a5f317525fd67664b6a63e868a5"
+    },
+    {
+      "path": ".github/workflows/macos-package.yml",
+      "bytes": 2193,
+      "sha256": "5a6dd31a022fef419ecad2d417d30f8d9e6df5b0501d9b1231a14749022b6bea"
+    },
+    {
+      "path": ".github/workflows/macos-recovery.yml",
+      "bytes": 2554,
+      "sha256": "1a2074b85ca67bbf7fc40fb4ad82c5b37fa00507b6b51b0a4c51a71344ae3d41"
+    },
+    {
+      "path": ".github/workflows/overwrite-qualification.yml",
+      "bytes": 4787,
+      "sha256": "cc8214fc78d75f0b918d0247e4b4450e77142c670cc7fe3bd41b612444d27b1d"
+    },
+    {
+      "path": ".github/workflows/terminal-failure.yml",
+      "bytes": 2863,
+      "sha256": "ab70dcf389830d2ee301c3c9c57605e42e77952d1b098445120c560d40947c08"
+    },
+    {
+      "path": "CMakeLists.txt",
+      "bytes": 10301,
+      "sha256": "b186035604101cc1661e4a8bd6c79a6c25058979f2db9947e46c293aaa8ead46"
+    },
+    {
+      "path": "resources/app.qrc",
+      "bytes": 177,
+      "sha256": "5cc7b2b8ac66e68429ed3e8f2c0da87db7053b083f5d16bfdc19f9d86a9a4afc"
+    },
+    {
+      "path": "scripts/audit.py",
+      "bytes": 4632,
+      "sha256": "13756fc733d6a68eaebecd8572053068443824073f05d641b789d43cfbe2532f"
+    },
+    {
+      "path": "scripts/build-ucrt.ps1",
+      "bytes": 1207,
+      "sha256": "065aa9cffdbf5e9b944fa8f2bf3601289fe91093214edf4edd4c9bd8bbaf00c3"
+    },
+    {
+      "path": "scripts/build.ps1",
+      "bytes": 787,
+      "sha256": "ce7b93d200642427cd1c5045d94389fd0d2fc16e1030331abc897e4afc3a2962"
+    },
+    {
+      "path": "scripts/ci_concurrent_commits.py",
+      "bytes": 3554,
+      "sha256": "8d59f0a94c17fa7f9445067856d415d98409d2f27443b5f8d048080594be2da1"
+    },
+    {
+      "path": "scripts/ci_macos_disk_cleanup.sh",
+      "bytes": 490,
+      "sha256": "00b1931ca23941ba64129197e4cb247028db44a0d5d95b9654dacba38b1e81a3"
+    },
+    {
+      "path": "scripts/ci_macos_parallel_exit.py",
+      "bytes": 4867,
+      "sha256": "a231b94c7a4178ff678d00eff49550f8d546b567bdcb69c9be754df46d60fb33"
+    },
+    {
+      "path": "scripts/ci_musl_container.sh",
+      "bytes": 804,
+      "sha256": "990abfdaa58742ab39a39a7eb8816488f5437b4c725829bd8906b9602b7e4d66"
+    },
+    {
+      "path": "scripts/ci_protocol.py",
+      "bytes": 8246,
+      "sha256": "83ccc54bb6c1faa580b8d9a451d8c7fae92bd5e30100ab2e07d72cacfc454f4c"
+    },
+    {
+      "path": "scripts/ci_tls_runtime.py",
+      "bytes": 2114,
+      "sha256": "0b8adaa03ddf9364c186617c9198091f7b70c68ed5d9a16279991e6094510cf5"
+    },
+    {
+      "path": "scripts/macos_disk_cleanup.py",
+      "bytes": 6039,
+      "sha256": "64e16114d20f3a4c32a8d2ab29763bc421bbae7c4d056c3879436ab592d06b30"
+    },
+    {
+      "path": "scripts/package_linux.py",
+      "bytes": 10999,
+      "sha256": "dc8d0bb00b25fedb06d36a009d06ad9a24a4d18215862507fae9b4062ff29933"
+    },
+    {
+      "path": "scripts/package_macos.py",
+      "bytes": 14513,
+      "sha256": "e55ff4171aaed27cb6978f0cbdf88bbc535b59166e469facbb497d67c1186fef"
+    },
+    {
+      "path": "scripts/package_windows.py",
+      "bytes": 11441,
+      "sha256": "de7830a4ad21168702b5e84df44945f32db437cf8ca28242d7cf3134f3d87b15"
+    },
+    {
+      "path": "scripts/source_snapshot.py",
+      "bytes": 8014,
+      "sha256": "494dd6adc2d494fa2c5f06553feed95b1ecc1faf44c4018d26e167b47b42a477"
+    },
+    {
+      "path": "scripts/verify.ps1",
+      "bytes": 7924,
+      "sha256": "e444511bd97e1d4bb8b9c5bd1d6edd96fcd308932ac830c177943bdbd712c2e0"
+    },
+    {
+      "path": "src/app/avatars.cpp",
+      "bytes": 11359,
+      "sha256": "947331b85b2d5ca977584b45172f88e0c3effbc4050a1558f2648f975fa94d55"
+    },
+    {
+      "path": "src/app/avatars.h",
+      "bytes": 2308,
+      "sha256": "336e5fecb118b3bd0c2cae81be43724594d370d83d7248067ff156fc75f1d461"
+    },
+    {
+      "path": "src/app/controller.cpp",
+      "bytes": 36994,
+      "sha256": "3cc535920e4bfb1730f359cf5fb3253518534a842c8cbb7c0784bd65bd6c6064"
+    },
+    {
+      "path": "src/app/controller.h",
+      "bytes": 11907,
+      "sha256": "0047642d5e6678e7768d530135883b5c97bfce1e26d7e9c986a20fb6aa50603a"
+    },
+    {
+      "path": "src/app/main.cpp",
+      "bytes": 7578,
+      "sha256": "30535f27e7559d40eec1d500c1c4cc7243459f54ba12cbc6a1eebae8fe479323"
+    },
+    {
+      "path": "src/app/serverpanel.cpp",
+      "bytes": 30981,
+      "sha256": "4f7c41e75a9f338e1f077503e4058614acba4404071d38f350f09910055aa659"
+    },
+    {
+      "path": "src/app/serverpanel.h",
+      "bytes": 7521,
+      "sha256": "c3a6a9dc7905ab9f5638d7550da3dd95a164f25925798b9b30eba8a9b894532b"
+    },
+    {
+      "path": "src/cli/input.cpp",
+      "bytes": 7051,
+      "sha256": "0904c80c8295390b3321b6d7ea1f5c918fd898d901ff6ca1ddfa15c1f789cf66"
+    },
+    {
+      "path": "src/cli/input.h",
+      "bytes": 322,
+      "sha256": "87617913e922142884b450981a2ffa57e14be8553f8cbc3b80f92a832ae53526"
+    },
+    {
+      "path": "src/cli/main.cpp",
+      "bytes": 37011,
+      "sha256": "0cca7303756602d0fb2f704524d2efa466b903fdeec24888ca8f1728cbd81716"
+    },
+    {
+      "path": "src/cli/servicecommands.cpp",
+      "bytes": 33398,
+      "sha256": "27b3f70e6ec903affe2aa64885089571568982289c60c49e301405e979d779e8"
+    },
+    {
+      "path": "src/cli/servicecommands.h",
+      "bytes": 527,
+      "sha256": "19b98c52925f7f42b72783751e95281ab4bfaaa2efcee9b765d995abccc990dd"
+    },
+    {
+      "path": "src/core/auth.cpp",
+      "bytes": 15862,
+      "sha256": "a5715b08ad1827bf2ab1d4cecb2fb7944d475f2466291c0db7e34308d3ef2e22"
+    },
+    {
+      "path": "src/core/auth.h",
+      "bytes": 2978,
+      "sha256": "7e3042053f8f150a17b6b5c829e48c71d23e5fbad3ec72881381fe3eb44aea5e"
+    },
+    {
+      "path": "src/core/browse.cpp",
+      "bytes": 11805,
+      "sha256": "50f037e30344a0c04d58942345d44ced31afa519db5b75e138ab88e281c0723f"
+    },
+    {
+      "path": "src/core/browse.h",
+      "bytes": 1413,
+      "sha256": "6adb2e39cf9a11fd18b0ba3ddf3abd86c022457bca71e4fe16f725254c1a59a4"
+    },
+    {
+      "path": "src/core/buffercredit.cpp",
+      "bytes": 2394,
+      "sha256": "f176f5d6619044ed8ad5f9b4c27edcfffbf1b3d92a4394eb5e0d9399e47e3a75"
+    },
+    {
+      "path": "src/core/buffercredit.h",
+      "bytes": 928,
+      "sha256": "e03a6b1257d657f858e7d87ce05821f340dfa8a948dc811bf974df2a28533360"
+    },
+    {
+      "path": "src/core/catalog.cpp",
+      "bytes": 11129,
+      "sha256": "da1996feaacac4307687c11db98fdeb21bb63ed3024a8c3cf9c9f75019230d4d"
+    },
+    {
+      "path": "src/core/catalog.h",
+      "bytes": 2213,
+      "sha256": "ad75456bf3eff71dd8a319669cfa1963e54268cdfa738a8860cea56204a0e580"
+    },
+    {
+      "path": "src/core/clientdownloadcleanup.cpp",
+      "bytes": 16552,
+      "sha256": "2b0bfac58fec8bf139c8af9c60a710ac97a2f50af61534d41d505082387671be"
+    },
+    {
+      "path": "src/core/clientdownloadcleanup.h",
+      "bytes": 436,
+      "sha256": "169759d89cd9f831897f476b607a568548a9345ea3c51b6b91e8339497d9714a"
+    },
+    {
+      "path": "src/core/diagnostics.cpp",
+      "bytes": 12589,
+      "sha256": "1076cf1911765dfcc1f555f1ddd2cb7f8df2d511d8e54a2a2f0c164da8f51aa8"
+    },
+    {
+      "path": "src/core/diagnostics.h",
+      "bytes": 944,
+      "sha256": "54baf93e7a551ee563f9aec313a0ec06e3c24bc9c8c7af1d22b70366b8cd88b3"
+    },
+    {
+      "path": "src/core/discovery.cpp",
+      "bytes": 8276,
+      "sha256": "ed7a5dad49691c0c84457b0120cbfe31915f146f18176b0cb747744548ddacbe"
+    },
+    {
+      "path": "src/core/discovery.h",
+      "bytes": 2105,
+      "sha256": "cf6dae20158296c7b38054d2669899781fe55b49ec9664ee3278815c5497c2a1"
+    },
+    {
+      "path": "src/core/dispositionjournal.cpp",
+      "bytes": 17420,
+      "sha256": "bfbffcafaf675b0adf63aff7d2be9fecf982ccb48fca5f166249d29f8905f168"
+    },
+    {
+      "path": "src/core/dispositionjournal.h",
+      "bytes": 2940,
+      "sha256": "dcec2ac92670e9a18dbb0706d27bcbc6dc10da36e80c9b1b80686511b2ebc127"
+    },
+    {
+      "path": "src/core/durablereceive.cpp",
+      "bytes": 59142,
+      "sha256": "53d545b3b415bb7d96a4140dacea7ed6330be0b839e5b881a21c64376cda134d"
+    },
+    {
+      "path": "src/core/durablereceive.h",
+      "bytes": 8845,
+      "sha256": "2038f74f2f223d8d7a3b5a3f796aa77b1546c01b940827b3698b8b427cfb3d75"
+    },
+    {
+      "path": "src/core/endpoint.cpp",
+      "bytes": 2266,
+      "sha256": "11c0d8a8ee6b03bf72733d8cb3113dca5c8de4494aa778bd48b26638b875b260"
+    },
+    {
+      "path": "src/core/endpoint.h",
+      "bytes": 304,
+      "sha256": "cbb0ec779a78f7d8d89bcef2bc47fb098a03130521ed77392bf14a47d5c36f40"
+    },
+    {
+      "path": "src/core/error.cpp",
+      "bytes": 600,
+      "sha256": "7d8b93bd22b0fc5a86e81e51a9f1dfb2ba3b2c57fa93794c4ffceed0c4c4f19d"
+    },
+    {
+      "path": "src/core/error.h",
+      "bytes": 698,
+      "sha256": "c857030c57164adb5f57d829432bcbae2adfbd931fbcf9b6bae20b458fb1804d"
+    },
+    {
+      "path": "src/core/expiredtaskcleanup.cpp",
+      "bytes": 15698,
+      "sha256": "8b257c04ee05f1bb09b6889750aae77b24262b718e2b9d7e9eb567102c86cafe"
+    },
+    {
+      "path": "src/core/expiredtaskcleanup.h",
+      "bytes": 473,
+      "sha256": "0a0eacd72b654969695867d35879ce02501869dd3f3a5803fa48df9614a65003"
+    },
+    {
+      "path": "src/core/filecredit.cpp",
+      "bytes": 1139,
+      "sha256": "f1b8fa7bea4782377899c2e9804e0b27f5fdc7b8727b2ca8d7f3680bcd1e6d88"
+    },
+    {
+      "path": "src/core/filecredit.h",
+      "bytes": 684,
+      "sha256": "242578c5f631421397df6997acfebb6cca2d0465ce3e3563066455c80714ce3e"
+    },
+    {
+      "path": "src/core/fileexchange.cpp",
+      "bytes": 25349,
+      "sha256": "6cd859f09f33b435398b8dcf42183dde5770dc51bc37eb690e8f8329157d7226"
+    },
+    {
+      "path": "src/core/fileexchange.h",
+      "bytes": 2804,
+      "sha256": "3f8a6cbc36b529622c26407bc6c9a327638aa0bc0339299ce51a2838960a0e24"
+    },
+    {
+      "path": "src/core/files.cpp",
+      "bytes": 14525,
+      "sha256": "4a82b68dafebe9207259e2fd12a64a9c67f164c27cd59a1e86e8063b5ff5b0b2"
+    },
+    {
+      "path": "src/core/files.h",
+      "bytes": 3955,
+      "sha256": "3d0a482745ad9eebf944306085bb49b415fdc5393fdec5491fb0c2edbd9fc575"
+    },
+    {
+      "path": "src/core/identity.cpp",
+      "bytes": 14010,
+      "sha256": "8125bcbf4dab8d0b1c7dd7827e10527f1b6adbaad3752bd93dc56adc6c6e73ee"
+    },
+    {
+      "path": "src/core/identity.h",
+      "bytes": 1876,
+      "sha256": "e6cd83c5ba52919967bcb19bd146eee38afc7c2fd9705c0757d7045dc709a7d7"
+    },
+    {
+      "path": "src/core/legacy.cpp",
+      "bytes": 25729,
+      "sha256": "1ed160c739177e6d6f6e9faf894c9adbe5c17bb9afc81aad02928eb76240b177"
+    },
+    {
+      "path": "src/core/legacy.h",
+      "bytes": 4144,
+      "sha256": "711cf84fade4896c290958a59ad1d872bdf3b83178f08ee9198baa3e2ca345bb"
+    },
+    {
+      "path": "src/core/manifest.cpp",
+      "bytes": 7001,
+      "sha256": "1f261d55e4af608567849f43e9178cda81fd2a723a2a819e005509bad15ed1de"
+    },
+    {
+      "path": "src/core/manifest.h",
+      "bytes": 1441,
+      "sha256": "d5612912c19718881327db516e97a94283c97c2cb0fecf4e3705e13d4ec10d27"
+    },
+    {
+      "path": "src/core/nativecommit.cpp",
+      "bytes": 35720,
+      "sha256": "2ab7c436872bece49539fe516287ba1cbe66f577c0466880459ca3ca7e93a276"
+    },
+    {
+      "path": "src/core/nativecommit.h",
+      "bytes": 6673,
+      "sha256": "5651fa92bb3eea7a9a95aa82717eb98aebe0a120b301d014349d497a31e609e9"
+    },
+    {
+      "path": "src/core/paralleltransfer.cpp",
+      "bytes": 45060,
+      "sha256": "957d4b17894ff69a9a93ab32df57ebcaee36ab9883c2c410b697ee43b3c187eb"
+    },
+    {
+      "path": "src/core/paralleltransfer.h",
+      "bytes": 4015,
+      "sha256": "794fc278181c2654b66fa5273fc7c397b9a1ab4708d97999b53d161650407096"
+    },
+    {
+      "path": "src/core/privatestore.cpp",
+      "bytes": 21732,
+      "sha256": "375d23c3cd6daf4228f8a40bea5d419b61986dc2124fb2926ee5e9be36615763"
+    },
+    {
+      "path": "src/core/privatestore.h",
+      "bytes": 2220,
+      "sha256": "cf7f0f640545d1d6394fe3ded227bec70f03a0e19fc762a97a357c87d9f6bf0e"
+    },
+    {
+      "path": "src/core/protocol.cpp",
+      "bytes": 16008,
+      "sha256": "58f279c5a0ae504d585fa5b02c94ed7c886509c498ffd02f885ae379ad3136d5"
+    },
+    {
+      "path": "src/core/protocol.h",
+      "bytes": 3538,
+      "sha256": "0229274fa500b9b22d61f725a1fa0538c43d49de644925ebc7e068593ceca400"
+    },
+    {
+      "path": "src/core/receiveskip.cpp",
+      "bytes": 11334,
+      "sha256": "69e582e5c2750fc84f0909c011758007842ecf382f5744ebee1ad4ea09b89dd6"
+    },
+    {
+      "path": "src/core/receiveskipfinal.cpp",
+      "bytes": 12590,
+      "sha256": "ff3b49fc389d564ab12b708a2de27f254002bf5f8b90b27508006b64fecd0db8"
+    },
+    {
+      "path": "src/core/receiveskipproof.h",
+      "bytes": 1977,
+      "sha256": "66d9c626cbb23c537ba002803113da5efe034a58716334bfe640e31088c70c13"
+    },
+    {
+      "path": "src/core/receivetree.cpp",
+      "bytes": 11395,
+      "sha256": "2b7389899474cf04d885de83563dd23ed46dbcf5cc773f1af6eb655e698b9ac3"
+    },
+    {
+      "path": "src/core/securechannel.cpp",
+      "bytes": 20491,
+      "sha256": "95231165bfb65bcc8952a3e070083004eec6508108fddc4b37d4dfa0537a9fde"
+    },
+    {
+      "path": "src/core/securechannel.h",
+      "bytes": 4279,
+      "sha256": "d68470495078dfd744f43bf3832ccc3421e4aa4dc84e27be654a95b7b5510c3b"
+    },
+    {
+      "path": "src/core/service.cpp",
+      "bytes": 38738,
+      "sha256": "d44aad1d1d33150c5bdd6e82990d8fb82c6ca50fe0bd087b2965025a61630bf6"
+    },
+    {
+      "path": "src/core/service.h",
+      "bytes": 8403,
+      "sha256": "b963fe526bf4f9c5ee9a1594595f42a2e62d72042ed85758390fb9c8defc87b6"
+    },
+    {
+      "path": "src/core/sessionpolicy.cpp",
+      "bytes": 2700,
+      "sha256": "aec8d7bcff026d36a5b0c486b33f7e095b49c0a21b51a7637c6892fef034aac4"
+    },
+    {
+      "path": "src/core/sessionpolicy.h",
+      "bytes": 1291,
+      "sha256": "41730ff155f6c3b2c54e60d7b371589ad4a3a7c41dc11da9afff1bc0290b0abe"
+    },
+    {
+      "path": "src/core/shares.cpp",
+      "bytes": 7934,
+      "sha256": "0c5b18de866fcfc076be594cd0fc21bb5d5574bb36d944e06a2e7a816f5fd45d"
+    },
+    {
+      "path": "src/core/shares.h",
+      "bytes": 2403,
+      "sha256": "4eb9366bb71e5eb7d4600dfdafe6bb93d90cdf36c069f11909ec8ac18c26b57f"
+    },
+    {
+      "path": "src/core/sourcefile.cpp",
+      "bytes": 7415,
+      "sha256": "7180681632259b96ace1c8613c67cbee32046846f9c1f5ab18e27e3b7bb46e47"
+    },
+    {
+      "path": "src/core/sourcefile.h",
+      "bytes": 1843,
+      "sha256": "c7f4b001ff6481165e81f7a9f793a3dd46ed21a0dc875835d52b656214094903"
+    },
+    {
+      "path": "src/core/sqlitecache.cpp",
+      "bytes": 1876,
+      "sha256": "fa2973cd6475677e519478df418ae5a51f1003cc3a2855b01440e0d4870b56af"
+    },
+    {
+      "path": "src/core/sqlitecache.h",
+      "bytes": 738,
+      "sha256": "af13a671d21dd94c41c7a9c5d456a415fc2c1c7ba4fee088bf09bf035989adb5"
+    },
+    {
+      "path": "src/core/strongmanifest.cpp",
+      "bytes": 24620,
+      "sha256": "0f4cd856ed3e288cd60518aeb707674e5977bd8ec323fc9e30e0f45ea3e5ab67"
+    },
+    {
+      "path": "src/core/strongmanifest.h",
+      "bytes": 5003,
+      "sha256": "393955e7f3fbf65e9ddc765075e85bc2d7c3d5d38e47af86444592a170a39604"
+    },
+    {
+      "path": "src/core/taskstore.cpp",
+      "bytes": 36193,
+      "sha256": "7122581d83fce280421280c5585e42dc1379ac3add06e24620289de29cd0f874"
+    },
+    {
+      "path": "src/core/taskstore.h",
+      "bytes": 5050,
+      "sha256": "2e8cec3c41482f806c0cb46bd31a292c51b978834ef3449d8de7678fcd4b70b1"
+    },
+    {
+      "path": "src/core/tcplistener.cpp",
+      "bytes": 15399,
+      "sha256": "fdb9b61bb0264ff4441fb3249776596b594b9085022e518824fa2861189c0645"
+    },
+    {
+      "path": "src/core/tcplistener.h",
+      "bytes": 952,
+      "sha256": "ff6cf511056653565e2b449317bf8501ba70b1f29dba654cfdb3fd66404b9d15"
+    },
+    {
+      "path": "src/core/transferaccounting.cpp",
+      "bytes": 7739,
+      "sha256": "3647c1930b3b645a2053db78fc37051ac6225d64a41d7db944b49ade131c48a0"
+    },
+    {
+      "path": "src/core/transferaccounting.h",
+      "bytes": 2461,
+      "sha256": "f7414a56500473f558d183b59ac1567a7c43ab8425cc380fb4c22216cfa21ed0"
+    },
+    {
+      "path": "src/core/transferclient.cpp",
+      "bytes": 50163,
+      "sha256": "0b6554896933eb1758e8b3adc3025eae6d71b78aec8f10199d4674c172b9a361"
+    },
+    {
+      "path": "src/core/transferdisposition.cpp",
+      "bytes": 5442,
+      "sha256": "dd69134f1ea57268f59271d6671acf1506490ce95c793352d189835efe2ed4b6"
+    },
+    {
+      "path": "src/core/transferdisposition.h",
+      "bytes": 1082,
+      "sha256": "62f6c1789faecf432436bf3e9ac4fc6a6c023aa8380c60dbffd2b7f7222ed5af"
+    },
+    {
+      "path": "src/core/transferitems.cpp",
+      "bytes": 23926,
+      "sha256": "bb2e43b605b5ef17714dc0cd059aebe088b09b13985c15951b652d31dd867041"
+    },
+    {
+      "path": "src/core/transferitems.h",
+      "bytes": 1095,
+      "sha256": "9be5685b26e59056e8b0dce710a22adcd80edc21d69219a832e784e646b80bd9"
+    },
+    {
+      "path": "src/core/transferoperation.cpp",
+      "bytes": 8274,
+      "sha256": "7666ff82752b53a172cf16c9868a59f4237dd79b96388acd211dca4e177dc00d"
+    },
+    {
+      "path": "src/core/transferoperation.h",
+      "bytes": 2917,
+      "sha256": "1caeffb75900021bf405f1a8aa83d2fac36eb011e4fd3763c695a8f68f264ad2"
+    },
+    {
+      "path": "src/core/transferprogress.cpp",
+      "bytes": 6816,
+      "sha256": "89ec4b4c66a44a907d2558f285e2a9ae5b0fe5bca033e1ed40ed2aff4a30362e"
+    },
+    {
+      "path": "src/core/transferprogress.h",
+      "bytes": 2657,
+      "sha256": "4d19d84df70a5cc9018a37e9e1e527abaac82cd2cb8b5fc0eafee6f0bc209d69"
+    },
+    {
+      "path": "src/core/transferscheduler.cpp",
+      "bytes": 6584,
+      "sha256": "7f0939864b38d7508e9f3233958bdea6597b91b5b146a31a419320fe3209aa14"
+    },
+    {
+      "path": "src/core/transferscheduler.h",
+      "bytes": 2662,
+      "sha256": "214d98c0161c3bb25f820c75dc15b85e519911f8ef2bc9664725122a8763bfe0"
+    },
+    {
+      "path": "src/core/transferservice.cpp",
+      "bytes": 33701,
+      "sha256": "2709bc19e5052d409a059fb040d28d3e8ec787b2e99a4da152db3a5ea8ce571a"
+    },
+    {
+      "path": "src/core/transferservice.h",
+      "bytes": 755,
+      "sha256": "f01b1a9047e156443ae31d80979de7a53b3923bb091f7f72756aaa8311227d4a"
+    },
+    {
+      "path": "src/core/updates.cpp",
+      "bytes": 5397,
+      "sha256": "b31dbd7cf837dd1f6b71bcae9a5d0f184762fbd0ac1dd225aadffd9effa32e32"
+    },
+    {
+      "path": "src/core/updates.h",
+      "bytes": 1236,
+      "sha256": "8ac7767b8a10283998ff9d2cd901dc465caf660c40fc8b2bd47bebf5b8ac3efe"
+    },
+    {
+      "path": "src/core/uploadmanifest.cpp",
+      "bytes": 6143,
+      "sha256": "ba074aa6dd7016b0b963a35697935200b17e3e1faadbbbe2d761f0a62200e4d9"
+    },
+    {
+      "path": "src/core/uploadmanifest.h",
+      "bytes": 887,
+      "sha256": "6a1b00a3b1ad6b6f072d9a3e89ac82005eaaa8448afee9277742dc7dd76cce90"
+    },
+    {
+      "path": "tests/avatars_tests.cpp",
+      "bytes": 6209,
+      "sha256": "34d484fae6de07ed98b1b3378b4af907da80dff497857a0bb7e1b3e33c879c6f"
+    },
+    {
+      "path": "tests/browse_stability.py",
+      "bytes": 9565,
+      "sha256": "dce5c197304f75628a1802d92ec1605ec978a0a38499b3b7c065f4be62950d60"
+    },
+    {
+      "path": "tests/browse_tests.cpp",
+      "bytes": 8054,
+      "sha256": "f5aa6166ed9092fef4bbc5b707c3084afab8b7e8e378c383cfd9a2c33182819d"
+    },
+    {
+      "path": "tests/buffer_credit_tests.cpp",
+      "bytes": 23266,
+      "sha256": "88089dff704536178a6b1aca4fbd703a8fc66164060da3b56eb43ee80bc943d2"
+    },
+    {
+      "path": "tests/byte_progress_integration.py",
+      "bytes": 10895,
+      "sha256": "23b9374407feaba5a222282d0606294af6de96689c1f8b969e33095a597befd3"
+    },
+    {
+      "path": "tests/certificate_lifecycle_integration.py",
+      "bytes": 17271,
+      "sha256": "4e12cf00763ce2a305379742ec919a275a18c40befb6b1d04b6da76f1c051795"
+    },
+    {
+      "path": "tests/checkpoint_gate.py",
+      "bytes": 5072,
+      "sha256": "7a5e976bdcbb3b102bcc7f6b87028866cf4e3439ad876eb4957fd21f60fbcc5e"
+    },
+    {
+      "path": "tests/cli_contracts.py",
+      "bytes": 11910,
+      "sha256": "57305cbe5bfdd5c0b2f33a98734e060b07a6803e205c4d0431f40f9ef95e3d7a"
+    },
+    {
+      "path": "tests/client_accounting_integration.py",
+      "bytes": 17105,
+      "sha256": "855b2f7eea63b219e18a2aaf38b4578e9824fb3aa0e3b5791a5b535b92e547c8"
+    },
+    {
+      "path": "tests/client_download_cleanup_tests.cpp",
+      "bytes": 23964,
+      "sha256": "b21a211c34d72ba0206efe2de64dead44dd7534fa6220947e34031f0f235616f"
+    },
+    {
+      "path": "tests/client_list_integration.py",
+      "bytes": 11475,
+      "sha256": "895111c56cd48ceb52775de4f8fc4063a690e361c5722202f5ab40a7dc26524b"
+    },
+    {
+      "path": "tests/completed_transfer_integration.py",
+      "bytes": 15949,
+      "sha256": "7e8ff44c0d59d8954f89685c9a067f78a6016aa5378ffff46bb31227740d8547"
+    },
+    {
+      "path": "tests/conflict_fail_integration.py",
+      "bytes": 8749,
+      "sha256": "81e7325aa2819a2acb9f0ec79da54953b394e5c8f07cad34cd3d91343b57a26a"
+    },
+    {
+      "path": "tests/conflict_overwrite_integration.py",
+      "bytes": 8569,
+      "sha256": "e1fed93966a2978a1ad8ad595acb7606c5ce9d59bc79811af1f2d27cf37cdd00"
+    },
+    {
+      "path": "tests/conflict_skip_integration.py",
+      "bytes": 19678,
+      "sha256": "c3117507c5ab60e92e55edf1b69bacfb47ab3552ea90cd49934785ad7d252ff0"
+    },
+    {
+      "path": "tests/controller_tests.cpp",
+      "bytes": 17218,
+      "sha256": "81469e2e80cf387f0444d9fb1c06379867fdf7b8d8acfb83abe66e44a53b29ac"
+    },
+    {
+      "path": "tests/core_tests.cpp",
+      "bytes": 56381,
+      "sha256": "59f56bcd4b0d41efa16690f3f739ef351cfe4e62350bc09eccf4d2b6ffd0419c"
+    },
+    {
+      "path": "tests/crash_integration.py",
+      "bytes": 4991,
+      "sha256": "01e453e4457c29c5a41a61518d2d056d8c3e8190b62bbfbd05a41d4dbdc93323"
+    },
+    {
+      "path": "tests/credential_rotation_integration.py",
+      "bytes": 21427,
+      "sha256": "996df218cef421f1683f032e731a6aa25f79dd6ba8c33fa3ff394bb401419d86"
+    },
+    {
+      "path": "tests/cross_platform_transfer.py",
+      "bytes": 15950,
+      "sha256": "689381d721ca4bafd25dd65b7f2b0a7d3989fe6faea7092f403fefef10daaa97"
+    },
+    {
+      "path": "tests/discovery_identity_tests.cpp",
+      "bytes": 4360,
+      "sha256": "ce253d483f5172bceb78088ab551b4cd870c7f50e408a76c83abfa26c645c1e4"
+    },
+    {
+      "path": "tests/discovery_signature_probe.cpp",
+      "bytes": 1721,
+      "sha256": "f3d73dee25790a3a4b5e698374c9dd29547816f4d920c743ee8c7d2d9a35f35d"
+    },
+    {
+      "path": "tests/disk_integration.py",
+      "bytes": 6618,
+      "sha256": "9198746ad72f7b01feae608ac15f2ec08d50712686257874391334e43c1a19d3"
+    },
+    {
+      "path": "tests/disposition_journal_tests.cpp",
+      "bytes": 24055,
+      "sha256": "6b23f7dbe7f8bfcc6259b5ad50ae30ea90927afae7114e41d370bb3800d81f62"
+    },
+    {
+      "path": "tests/disposition_summary_integration.py",
+      "bytes": 19954,
+      "sha256": "2831e2d42d51e6c0951cf91bf7b85815ec433f157619862b136c45d275e89130"
+    },
+    {
+      "path": "tests/disposition_transfer_integration.py",
+      "bytes": 12800,
+      "sha256": "9620346bb9a81801c54b5c130f96d7f0c0f7902cc086f9d23466045e8cce1450"
+    },
+    {
+      "path": "tests/doctor_integration.py",
+      "bytes": 10187,
+      "sha256": "f216e6a024c6ef3e1b14203dec9fe566335b786d32e5668a51a905a5922938fc"
+    },
+    {
+      "path": "tests/durable_receive_tests.cpp",
+      "bytes": 82268,
+      "sha256": "b01b8f2434f8c06fc549a12b2832d33ca94c6476aa17b1c2214adf4b53c1176a"
+    },
+    {
+      "path": "tests/expired_task_cleanup_tests.cpp",
+      "bytes": 25081,
+      "sha256": "fa7c723de4f81f066e01292ecd4df7a089c147334ebc0ac6d37f2bf07195fbf6"
+    },
+    {
+      "path": "tests/file_exchange_tests.cpp",
+      "bytes": 87219,
+      "sha256": "f979a02900431a1e96c8e67979b962c24019cd821dde0e81a4f046e9aeb6c2a8"
+    },
+    {
+      "path": "tests/final_ack_integration.py",
+      "bytes": 16408,
+      "sha256": "bc66e0116938a843d6a6449737dc5d800a0548bd8c3e95b59bf554c25323eb1e"
+    },
+    {
+      "path": "tests/gui_native_render_integration.py",
+      "bytes": 5073,
+      "sha256": "6dc121d7b1b4066eb6a95049c105840b59af423e0670aeb365a49fa54fd17afd"
+    },
+    {
+      "path": "tests/gui_process_recovery_integration.py",
+      "bytes": 11311,
+      "sha256": "f2aee0bea7aabcf0025e5520485d8e649158bd9c500a183ea5e54e2de3f7dfd0"
+    },
+    {
+      "path": "tests/identity_tests.cpp",
+      "bytes": 26946,
+      "sha256": "88c68a43f82f5fcf28ef12f0c0ba90589ab572e1477c1acb70525a25c929fa1b"
+    },
+    {
+      "path": "tests/idle_resources.py",
+      "bytes": 5455,
+      "sha256": "41aab48478ff12962ecc2500c9d61429178a2390a4138bb62fa724f95791310c"
+    },
+    {
+      "path": "tests/item_failures_integration.py",
+      "bytes": 10209,
+      "sha256": "10062e2c7a460a7ded23b56bfec8f358f5cf3991e1247b3dee87e46d133609b6"
+    },
+    {
+      "path": "tests/large_transfer.py",
+      "bytes": 6667,
+      "sha256": "a4cdc804b870f1dfb5e31648ef3b42a0e2063a074292786923b97a0c98113817"
+    },
+    {
+      "path": "tests/legacy_integration.py",
+      "bytes": 9800,
+      "sha256": "5bdb91368ec90e9c967062a14700fd66a72552e23e3e1353416c3f09a87c01c2"
+    },
+    {
+      "path": "tests/legacy_text_credit_integration.py",
+      "bytes": 8959,
+      "sha256": "e9da41039d4f1fa37004c8e1ad36241cf16c176bd0833b2a8f1ca16c670fc3e7"
+    },
+    {
+      "path": "tests/legacy_timeout_integration.py",
+      "bytes": 4903,
+      "sha256": "203345719c62625bf8d83020f87d0a1b6afea56481f76ff7cd6e41841d9e04f8"
+    },
+    {
+      "path": "tests/limited_filesystem.py",
+      "bytes": 2693,
+      "sha256": "874a7795247c8922cfe300ab3150f1bc6c15463764b3831571c7975f1020f3cf"
+    },
+    {
+      "path": "tests/linux_package_integration.py",
+      "bytes": 12372,
+      "sha256": "e0d0bed4903a43b8a7d02ad364178f7450c5b29ac328e9141c1ccc63517f8c55"
+    },
+    {
+      "path": "tests/linux_package_sampling_integration.py",
+      "bytes": 3181,
+      "sha256": "2112af1aeb1bb8f7f917dcf7c352439a0eb9c1a437fa6b2040529b52e877012c"
+    },
+    {
+      "path": "tests/listener_probe/CMakeLists.txt",
+      "bytes": 873,
+      "sha256": "57b6fcb339d18be8b03602e136302eae2db3b7dfe0727db0a9407b9c6bc63d97"
+    },
+    {
+      "path": "tests/listener_probe/main.cpp",
+      "bytes": 6958,
+      "sha256": "1ada82ca738ef99161a5bf69207eee88c1e40868f8a3ca328df8e01e84ae8745"
+    },
+    {
+      "path": "tests/listener_probe/reuse.cpp",
+      "bytes": 4776,
+      "sha256": "bb17e2db4a2bba74226a64fe8d52794616788141d94ffadc4fc60148a098ce35"
+    },
+    {
+      "path": "tests/macos_disk_cleanup_tests.py",
+      "bytes": 5806,
+      "sha256": "77bf7124b915c25babb41714d8be03f1c3d5ca4bc1a8cb329bb9f6a71835a49a"
+    },
+    {
+      "path": "tests/macos_package_integration.py",
+      "bytes": 9999,
+      "sha256": "a5d29cff1c644c9595c8a6cb693b87c459ce4d7dd0d231514269d58a5656b762"
+    },
+    {
+      "path": "tests/macos_process_sampling.py",
+      "bytes": 2981,
+      "sha256": "37f42e1113a9a0edcba89c6b3bc5eeddd51a6e90806c826f50f7a7eb1a957284"
+    },
+    {
+      "path": "tests/main_window_navigation_integration.py",
+      "bytes": 6531,
+      "sha256": "3975c2a6873ee7d78d4556c09cfcb0b83e344fa2157eef5d7bb6ec8e531e320f"
+    },
+    {
+      "path": "tests/parallel_attach_integration.py",
+      "bytes": 5854,
+      "sha256": "239caf4bd87ec38dbe3395dd4a7682e3d11a8b2f40a56e345eb233e073a04927"
+    },
+    {
+      "path": "tests/parallel_disk_integration.py",
+      "bytes": 11065,
+      "sha256": "83598774aebc5437bb15fd85b906be6b0c68cd4362bfad78ca7b4c5852285990"
+    },
+    {
+      "path": "tests/parallel_failure_integration.py",
+      "bytes": 10028,
+      "sha256": "d5e213ff18deb0c56d4e81d676f74076fe2aa96c8304ef5fa9b46e964617fed3"
+    },
+    {
+      "path": "tests/parallel_isolation_integration.py",
+      "bytes": 13142,
+      "sha256": "4e5dcdc59f069e6cd4049d70a5d83234c95ea63b707d9f26748c3f05fea61400"
+    },
+    {
+      "path": "tests/parallel_scale_integration.py",
+      "bytes": 13325,
+      "sha256": "09a404bc635d26f999eff0a80283a818a609d177cdf99f1de4a163f166054bc7"
+    },
+    {
+      "path": "tests/parallel_soak_integration.py",
+      "bytes": 17051,
+      "sha256": "08208e7b4474a1cf463de177e088f945e6161d4e0cdc97e13605fb1d7f2dae6d"
+    },
+    {
+      "path": "tests/parallel_soak_portable_integration.py",
+      "bytes": 1473,
+      "sha256": "0ba6803fd9cf2d022013b97da79e1902bc90bc6d440cde4b91621fd585560803"
+    },
+    {
+      "path": "tests/parallel_transfer_integration.py",
+      "bytes": 11647,
+      "sha256": "c43b7e0b88b67739ce40e9d145332c64a5c6abc01592b368676879f988d569ae"
+    },
+    {
+      "path": "tests/posix_path_integration.py",
+      "bytes": 5766,
+      "sha256": "8e017b46a0a3762a2a9edf1bfcd718ac0adfdf7efde1b7feef5b9fd4eaaacb9f"
+    },
+    {
+      "path": "tests/process_output.py",
+      "bytes": 2659,
+      "sha256": "7cd67efb91d0fd9b61b4d81c859916447d34bb569208236925f2015e5dfe1558"
+    },
+    {
+      "path": "tests/process_sampling.py",
+      "bytes": 1787,
+      "sha256": "2bd2052265669a471106f51bedc75ca66cd44f097205435dbbe8242176036971"
+    },
+    {
+      "path": "tests/process_sampling_integration.py",
+      "bytes": 3070,
+      "sha256": "b901c903081ada613fb24a06fd3b1697ae8df0659cc77006fa9ca99acdd521fe"
+    },
+    {
+      "path": "tests/protocol_tests.cpp",
+      "bytes": 11476,
+      "sha256": "5d1497c49348d15f18d6bdc5d039aa80a2b3c193c4e0a1426f0b7d0a3c43a01d"
+    },
+    {
+      "path": "tests/proxy_pacing.py",
+      "bytes": 945,
+      "sha256": "1138f64ba4ef2129d76eec29bc92a7e154865b6608d7179286e283e536c5a2a1"
+    },
+    {
+      "path": "tests/proxy_pacing_integration.py",
+      "bytes": 3605,
+      "sha256": "ffda7b31ed87524ecba6698d20a1e79f05e598903c9b538a85ea2c7153642ca6"
+    },
+    {
+      "path": "tests/receive_skip_tests.cpp",
+      "bytes": 63731,
+      "sha256": "f30af432ca252f56e9ab6e8c3908759986911c7f7e3c22dce7e5b2284ffbfc45"
+    },
+    {
+      "path": "tests/runtime_probe.cpp",
+      "bytes": 1274,
+      "sha256": "da688ce05d5759848c593128ac1fb1e0dfaa651832f48f5fd526b9302c07049f"
+    },
+    {
+      "path": "tests/secure_channel_integration.py",
+      "bytes": 16449,
+      "sha256": "4792e104aca5db57e7316b4d6e1c77c69b1f596650814bc16c2784304617ace4"
+    },
+    {
+      "path": "tests/secure_channel_probe.cpp",
+      "bytes": 8199,
+      "sha256": "8a185ebca01a239612ece143dcdd059c340db8724acdd56cb3403172914f5356"
+    },
+    {
+      "path": "tests/server_panel_process_probe.cpp",
+      "bytes": 7180,
+      "sha256": "db435c5ad0e302782d9abe35531dd2e03adc4090d22e0065f73fea1ff38ea0df"
+    },
+    {
+      "path": "tests/server_panel_tests.cpp",
+      "bytes": 62836,
+      "sha256": "3467a46b99cd654ba3d989b972f93653bbfccf4b06cb399418aa87f4d27df849"
+    },
+    {
+      "path": "tests/service_accounting_integration.py",
+      "bytes": 28116,
+      "sha256": "07f5bafaba9becc6e32c0c912c532cb9b304458ca3362a391a63028d486f7eb4"
+    },
+    {
+      "path": "tests/service_integration.py",
+      "bytes": 8877,
+      "sha256": "09b20992c2f3bc9aa527e8bab55e62ebef97012ac3c54918a8f18570e2f1bdc7"
+    },
+    {
+      "path": "tests/session_expiry_integration.py",
+      "bytes": 29600,
+      "sha256": "bcc6d55db5a8b541d3466e27b4e880859f04a9d2156648d6b4219117cb293b75"
+    },
+    {
+      "path": "tests/soak_transfer.py",
+      "bytes": 10598,
+      "sha256": "1a8db466a8f495998d47c8d4004563f744b53b45192115d7389e5e0bbe92ee9b"
+    },
+    {
+      "path": "tests/source_snapshot_integration.py",
+      "bytes": 4922,
+      "sha256": "ba4fcf21b313a7e7ca4422b970a5703067f2d82152f4caf8ee319800b368f004"
+    },
+    {
+      "path": "tests/sqlite_cache_tests.cpp",
+      "bytes": 5773,
+      "sha256": "fa10c48de9967c510fbf2999c9f343c73599563a35994637b6f366ec13dbeea2"
+    },
+    {
+      "path": "tests/stability_integration.py",
+      "bytes": 12567,
+      "sha256": "92ce44c1856c7ff528fcb1cdf6d1820ed19f49a475f693f83ae2817123955d6e"
+    },
+    {
+      "path": "tests/strong_manifest_tests.cpp",
+      "bytes": 21860,
+      "sha256": "7ffcef16967538ade1fbaf0f81992ef01706c63faafecbc76bc2df3ec26f81a8"
+    },
+    {
+      "path": "tests/task_admission_integration.py",
+      "bytes": 18954,
+      "sha256": "cdbbd888e111273fffdd9528a69bf4067a768d9d9eaf486f57799247bc425b0b"
+    },
+    {
+      "path": "tests/task_items_integration.py",
+      "bytes": 12320,
+      "sha256": "800fc227b229720a3d374cf07bd69d425733e83fb37d7c0103bf770507c81e54"
+    },
+    {
+      "path": "tests/task_store_integration.py",
+      "bytes": 14086,
+      "sha256": "62eef7ab0ad7fb1c6c294fc499fdfecd0536085a4a73d7468e5e3b416797e439"
+    },
+    {
+      "path": "tests/task_store_probe.cpp",
+      "bytes": 2919,
+      "sha256": "ad35befe3f1a3ea994a5b5958566f150dc1cc801e29eacccb9816d251888bd31"
+    },
+    {
+      "path": "tests/task_store_tests.cpp",
+      "bytes": 46917,
+      "sha256": "868cafe45f96d5d74a5f0567b60adb30a8cecf34e550d244b9e8525003e03d53"
+    },
+    {
+      "path": "tests/text_preview_integration.py",
+      "bytes": 3297,
+      "sha256": "2565f76b7bb4c0f60f0d0421efbbd4933ff82153c61a133f32890e46cf205c4f"
+    },
+    {
+      "path": "tests/tls_integration.py",
+      "bytes": 2554,
+      "sha256": "8fc49e0aa1c23cb3c2a0e73948abac07f6a57102b1e3075a386e682d111f1502"
+    },
+    {
+      "path": "tests/tls_probe.cpp",
+      "bytes": 1907,
+      "sha256": "2feacfa08ff36cc1abbb49fc5336ef5a8eb3f3d02595711e7e68d6d46b42d566"
+    },
+    {
+      "path": "tests/transfer_accounting_tests.cpp",
+      "bytes": 12302,
+      "sha256": "36cf7cd8b3722261dfdf112ab852ac7213d0288467503e1e68a99f8852e9775a"
+    },
+    {
+      "path": "tests/transfer_faults_integration.py",
+      "bytes": 11041,
+      "sha256": "d4d3062c01dc3b9bd9365e79a08b1cfb403810fc0203555a47bce7df27419069"
+    },
+    {
+      "path": "tests/transfer_integration.py",
+      "bytes": 9882,
+      "sha256": "31ae5d9e2f2a89cf039c5e875ce7ae548ddeb04220d4f6cda94cfd742a0ddd13"
+    },
+    {
+      "path": "tests/transfer_items_tests.cpp",
+      "bytes": 25030,
+      "sha256": "9dc0aa55c36ded2e82ab485d1e6b14313c9395ae1b89300d073c82bc2c64da1c"
+    },
+    {
+      "path": "tests/transfer_operation_tests.cpp",
+      "bytes": 10912,
+      "sha256": "a423def7be09e0d054c632b8dc8c00de6d52ca4757b4cfd6891b2d616128e013"
+    },
+    {
+      "path": "tests/transfer_recovery_integration.py",
+      "bytes": 27061,
+      "sha256": "79d7e3caba8e5dad28a08798892a6dd79863becf23b7c420c7a62a7391bc5e07"
+    },
+    {
+      "path": "tests/transfer_retry_integration.py",
+      "bytes": 17799,
+      "sha256": "00e739a3460e26c92c75f85bb3560b5fdf2ce7a1a90c2663f1fccf730eb67801"
+    },
+    {
+      "path": "tests/transfer_scheduler_tests.cpp",
+      "bytes": 6485,
+      "sha256": "09a3d94ca39e31e7f0858b64991181c671b1e2422160c516bd5aba87e4936b4e"
+    },
+    {
+      "path": "tests/ui_tests.cpp",
+      "bytes": 47071,
+      "sha256": "31979a197f964ce71c4eaac1865b4970e7ebb25940376e30f8e2935c3791eae5"
+    },
+    {
+      "path": "tests/updates_tests.cpp",
+      "bytes": 3666,
+      "sha256": "96f05f8783968034f632188106c58fca9e558e366e83834a0eaca166d17cdfcb"
+    },
+    {
+      "path": "tests/upload_receipt_integration.py",
+      "bytes": 12258,
+      "sha256": "05d49f48a87eed2c9fd80a78b9d1d008b392880c96dc35f4cbb4235bd31bfb62"
+    },
+    {
+      "path": "tests/windows_overwrite_busy_integration.py",
+      "bytes": 9281,
+      "sha256": "64d5aa3ec928e7007d2654a147d48b585dac9b1d8fdcf000eec8625e45810cd3"
+    },
+    {
+      "path": "tests/windows_package_integration.py",
+      "bytes": 14621,
+      "sha256": "7c6f03d4927de32bf617684f30468a9e6f166eecd788b627d5674192a635d376"
+    },
+    {
+      "path": "tests/windows_path_integration.py",
+      "bytes": 5303,
+      "sha256": "22f6e4cd99ada5aab2c0dc987864c223b5f8a55f1f999a425ac046a048359c1e"
+    },
+    {
+      "path": "tests/windows_private_read_integration.py",
+      "bytes": 5485,
+      "sha256": "115ec257e25cffba3154f0a5a666c61343354df7cb079b733d13c2263ac26bc1"
+    },
+    {
+      "path": "tests/windows_signal_integration.py",
+      "bytes": 5825,
+      "sha256": "69b3d4b6ddde42507f4a2a02a6c747e56bbe41a2f8af0880f4b58c9c9515b02a"
+    },
+    {
+      "path": "third-party/README.md",
+      "bytes": 662,
+      "sha256": "97ee0d3e310906668307225f868b985bfdfbc3a4fd21b48ca2394f3c5111439e"
+    },
+    {
+      "path": "ui/Main.qml",
+      "bytes": 33873,
+      "sha256": "80a3e28ac57578404a1a1b019c831c129f4e4573a7880dd776a52cf6f93c3e4d"
+    },
+    {
+      "path": "ui/ServerPage.qml",
+      "bytes": 56155,
+      "sha256": "3f3c0dcd4ce91b2597f43f6245fd9425ae91f60f4b3b763fa4083e04f1b0b552"
+    }
+  ],
+  "evidenceFiles": [
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/build-inputs.json",
+      "bytes": 37673,
+      "sha256": "63bc67cecc7a8223055a24476a1c1d6ba762e051d3b502b039cac91a94b8f902"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/collection-driver.py",
+      "bytes": 8127,
+      "sha256": "8d8d9f7d16ecd8fc5fe0e8062d57be2d31150501f9e4113d6092f57db5e67116"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/frozen-long-test-observation.json",
+      "bytes": 799,
+      "sha256": "6c70418d9d72103f99e6e3a080d6de08f8c6180b10a3108debebad26f0b4ec93"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/initial-failures/mac-arm-job.log",
+      "bytes": 102611,
+      "sha256": "952ff39ec89e72128af59d947246dc6845b3d5e2e6739314835137220fc71db6"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/initial-failures/mac-intel-job.log",
+      "bytes": 103942,
+      "sha256": "fb9f78bb29962c3b54709ed2954f0626ffab07d4989ea54952dd004524d301df"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/initial-failures/ubuntu-job.log",
+      "bytes": 96606,
+      "sha256": "f54fee7188939ed66cbc63b9150c9a612bb570479b502c0d0b22fb33305a2818"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/initial-failures/ucrt-first-test.log",
+      "bytes": 947,
+      "sha256": "ee40920d1b144e1bb8193b564d4ecc87be5e121e31316a2160e0a49c25cdbb0b"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/initial-failures/ucrt-first-test.xml",
+      "bytes": 960,
+      "sha256": "23a2d3777bac75208b7e2d0e6571a624490cfed8489a3c75424981f22c8a284e"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/initial-failures/windows-job.log",
+      "bytes": 136873,
+      "sha256": "da26e1d8f5c8ee23ca0ac8537322b36931ca0bac013a0107afb4874c0e870083"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/msvc/client-download-cleanup-tests.log",
+      "bytes": 1323,
+      "sha256": "5a5d42d5575ff0d4e1137d4e8a55c2c0c77676dcb9500afeeaae9c13473599c3"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/msvc/client-download-cleanup-tests.xml",
+      "bytes": 1197,
+      "sha256": "e70599ab51612d5e04b7e4ada8f19499e86d961fb8fd4987f23a85cc21ee5ac7"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/msvc/core-tests.log",
+      "bytes": 2962,
+      "sha256": "7feae9b110492e7d6c4f9a6897daa273e85f4982e9492c489fc7c491fbe4e638"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/msvc/core-tests.xml",
+      "bytes": 2250,
+      "sha256": "047e5ca57b78e56704ef5381217a01ddbcc6406a72d7dd35709bfe8bfecf8048"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/msvc/durable-receive-tests.log",
+      "bytes": 3167,
+      "sha256": "af8e88580b731636cbcbea19c4cba8e4279d8272e2b6c1ccaa12151a270067ce"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/msvc/durable-receive-tests.xml",
+      "bytes": 2203,
+      "sha256": "3151cf8a179fd949a689f46a61eeb20125e7023b893c7e9edca114569b58418e"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/msvc/expired-task-cleanup-tests.log",
+      "bytes": 1324,
+      "sha256": "a551d39d9213c25f2d87be8da70f7979a29147e6cafa27fd3395ed3ef7a63cda"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/msvc/expired-task-cleanup-tests.xml",
+      "bytes": 1155,
+      "sha256": "903e741db55411f0450f1f7e437f20515248ab54aa168262861b237dc53d6b04"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/msvc/final-test.log",
+      "bytes": 1323,
+      "sha256": "18c74d2318223e24db7d3a7ff9b392b1d64a6f38b4e3b678b9fb3685549b6c8d"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/msvc/final-test.xml",
+      "bytes": 1197,
+      "sha256": "e70599ab51612d5e04b7e4ada8f19499e86d961fb8fd4987f23a85cc21ee5ac7"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/msvc/LastTest.log",
+      "bytes": 6066,
+      "sha256": "c1d45b2ee8fcac409f489f1b638c32b63ad42b543df9754923516d6ac89d355d"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/msvc/related-ctest.log",
+      "bytes": 882,
+      "sha256": "7885003aad45491c39add7ed79e7c5eddbb0250b88a271f2bb6811e2e78b614f"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/msvc/sqlite-cache-tests.log",
+      "bytes": 534,
+      "sha256": "4db3b665247227f467727dc8f04419328faa02bd83c8996119db36d19bab3ea7"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/msvc/sqlite-cache-tests.xml",
+      "bytes": 666,
+      "sha256": "6aea2b8610e5884b4ea133eae23bc17cc5f0ade576e67e7472928921cf3c375a"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/msvc/strong-manifest-tests.log",
+      "bytes": 903,
+      "sha256": "44a56aad85b2766254554149674a732df968de5a4537a691a664cb426a16871e"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/msvc/strong-manifest-tests.xml",
+      "bytes": 1036,
+      "sha256": "a54b99aee3af4e20e772e48dc77ceddc54aa20e551e58364fc3ea1da14cb113e"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/msvc/task-store-tests.log",
+      "bytes": 2503,
+      "sha256": "ea13f2df40d8858c7f48ca25bd372461d7f828deaea2c00534b71e6864875aa5"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/msvc/task-store-tests.xml",
+      "bytes": 1591,
+      "sha256": "7f3b1c681023254fe9455501a3335a4d1ef557ff937691facb260ac224e0dfa2"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/receipt.json",
+      "bytes": 21345,
+      "sha256": "8993dfbaa509deb0f499bc3d9a180cc46784fb58774ac04f5629f2211a104b8d"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/source-audit.json",
+      "bytes": 26090,
+      "sha256": "f7310368a3bc435e38afe151ebb1ad54a04afce52607d9a5774fc2a373f19a90"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/ucrt/client-download-cleanup-tests.log",
+      "bytes": 1326,
+      "sha256": "d724eb4a6ba8b354f1502522ac2f62bd697a44dd3b4455c2dcddb29bb5eef985"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/ucrt/client-download-cleanup-tests.xml",
+      "bytes": 1201,
+      "sha256": "4ac6fc8075c4a60add98c0b79e547177a3b0a4b0b05cc5a5d3a0d33b96765e27"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/ucrt/core-tests.log",
+      "bytes": 2965,
+      "sha256": "f82b90bd750cb8489024bb9e303c67499a096e5f81cafa1f62742ac595d5979c"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/ucrt/core-tests.xml",
+      "bytes": 2254,
+      "sha256": "cb2c2e02714a9207fcafbd79c9cee9c2ccc43e9187879f1449e2f6e3a569b2d8"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/ucrt/durable-receive-tests.log",
+      "bytes": 3170,
+      "sha256": "6a09355fa3acd71d071ff30ec0151649043def6940698af7dea7879bd159906e"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/ucrt/durable-receive-tests.xml",
+      "bytes": 2207,
+      "sha256": "67c53c7f42326cafb38b2377fa0f17f8c55c4f71dcb30b3c5cc494d9489bdf1c"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/ucrt/expired-task-cleanup-tests.log",
+      "bytes": 1327,
+      "sha256": "fc262d56b85fe644bba7dbc1a3a5c9be53abe59fc86c41c0171fd7fbc13cc527"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/ucrt/expired-task-cleanup-tests.xml",
+      "bytes": 1159,
+      "sha256": "b6ee4f500a960527ee3434dbe14a379e7695a7658f875f1d68c1d7b2f95815b0"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/ucrt/final-test.log",
+      "bytes": 1326,
+      "sha256": "a6c1432a0f8b83120e4431dd611679b816f6c4b055b7bdec94e7c3d918b8bc07"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/ucrt/final-test.xml",
+      "bytes": 1201,
+      "sha256": "4ac6fc8075c4a60add98c0b79e547177a3b0a4b0b05cc5a5d3a0d33b96765e27"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/ucrt/LastTest.log",
+      "bytes": 6010,
+      "sha256": "42952c1918887063eaa4d518a6e760f642407835ad73f99094dda9908bbf0602"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/ucrt/related-ctest.log",
+      "bytes": 882,
+      "sha256": "114eca5600bec1c8b40d1ea805ae6ec887894f8dd430ed930e17241545b63f36"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/ucrt/sqlite-cache-tests.log",
+      "bytes": 537,
+      "sha256": "3dd9029fa40e2d51d9541aaf94537688da47f747192582698d6d5f494465faca"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/ucrt/sqlite-cache-tests.xml",
+      "bytes": 670,
+      "sha256": "c3b6ff5391636c3d812626f5e050709507bfca01744e320f6bd5530892ad1705"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/ucrt/strong-manifest-tests.log",
+      "bytes": 906,
+      "sha256": "ba3e500d598985286c5dc32b7b0bdd46923a1ea5a633170e8a4566da875d649e"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/ucrt/strong-manifest-tests.xml",
+      "bytes": 1040,
+      "sha256": "efca2d3380463f4b82bb66ab3e89945bf8c9f0c1c3353ffd4a4fc7d6f1b4b3c2"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/ucrt/task-store-tests.log",
+      "bytes": 2507,
+      "sha256": "30ce83621704b213d3f03a7f8af4bfc179f311b18402c842e4b6ef98f3d33889"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/ucrt/task-store-tests.xml",
+      "bytes": 1595,
+      "sha256": "2a98da1e6c76933c3fdf946fc6f250c4dcb5d66be5b5aec50559f317e6f2ed2a"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-macos-compiled/receipt.json",
+      "bytes": 2645,
+      "sha256": "338760448a459cece9ff92ce6809d8506dc953ee3c7519a5457fa57d2a780b51"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-macos-compiled/verification-driver.py",
+      "bytes": 5721,
+      "sha256": "d29ae4406a60e83ade2d87f7ce7e2455dfdd694c13277246f342424ece76cf4c"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/ctest.log",
+      "bytes": 2811,
+      "sha256": "6a477cd1076f1c1ccddcbf8b86e6dc8bc195920203e9533d5be62c704379fa8c"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/main-window-navigation/native/Testing/QtTest/main-server-360x560.json",
+      "bytes": 535,
+      "sha256": "3a74ee6b79e84523077ce5006811ea98f86b46e27fe7271c6232c8a253d4adec"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/main-window-navigation/native/Testing/QtTest/main-server-430x700.json",
+      "bytes": 535,
+      "sha256": "2a30b997161c31796e1b214e08e00e7eced2e689108ccb6d1d95e8b5acd3a21f"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/main-window-navigation/offscreen-150/Testing/QtTest/main-server-360x560.json",
+      "bytes": 541,
+      "sha256": "e3e0b8c059219b6fbb82286aca371f37cfb575c6c25ffe8ecd22346d48768ec6"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/main-window-navigation/offscreen-150/Testing/QtTest/main-server-430x700.json",
+      "bytes": 542,
+      "sha256": "df08be1ed3e4125f112497b890708e173405f17781f9df9869cfe3c28bcf0314"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/main-window-navigation/offscreen-200/Testing/QtTest/main-server-360x560.json",
+      "bytes": 540,
+      "sha256": "63d6295d514757ffc23b7ee73c79d51fd20fed7008c549c164e720e831d499c3"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/main-window-navigation/offscreen-200/Testing/QtTest/main-server-430x700.json",
+      "bytes": 540,
+      "sha256": "c1163d2dd31a0b280b47fa77f54e39932c637bc9cf59ec1aad6733f267fc15f3"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/receipt.json",
+      "bytes": 1157,
+      "sha256": "a1b9ff5ff40054985ffd4c0d6445c8a1ebfde88054f37d5a7d335f1847ba92c1"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/avatars-tests.log",
+      "bytes": 658,
+      "sha256": "94113e2f3bfada3efa99f78821ae6826f4e38432ca3cf17456b1f0707772e338"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/avatars-tests.xml",
+      "bytes": 946,
+      "sha256": "98fc362ef45486ffda7a09e2e59e226ed1ab6dfe2a3962c101d7a6b6eccc0098"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/browse-tests.log",
+      "bytes": 552,
+      "sha256": "09f96cf3ae2ca7829d99a494537c2dc0242a7ef2e476ca6852767d2553162f20"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/browse-tests.xml",
+      "bytes": 724,
+      "sha256": "debf9d9f918b77b05f75f473c0b322035eaf7a0454defb11e51ec4888a1d8f3e"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/buffer-credit-tests.log",
+      "bytes": 1327,
+      "sha256": "1c2f836c8c4972471f564275df7868a7e956cd2be5af381111283874ee92ba57"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/buffer-credit-tests.xml",
+      "bytes": 1377,
+      "sha256": "ca3ae2f314959a73275dfa5dfc741c5f7a002e7bd51181dc60f6d21e88094321"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/client-download-cleanup-tests.log",
+      "bytes": 1331,
+      "sha256": "77bbfa0e4e15baa915960d04a818c4fc490f5ea0fd9a972f3c84d77c2a443519"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/client-download-cleanup-tests.xml",
+      "bytes": 1213,
+      "sha256": "2c03a8ff65bd07750f8b0800752230e8e80abf54107214fa9261e0a4e18ac06d"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/controller-tests.log",
+      "bytes": 1223,
+      "sha256": "638558e171c79af7aa427f38f462cf4f15670b7b3d6f030ea6a47676b4310fc3"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/controller-tests.xml",
+      "bytes": 724,
+      "sha256": "057f1ca07675b704753929729a5401cbca86adbbf4a79bafd8be593cc7ec6c49"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/core-tests.log",
+      "bytes": 2595,
+      "sha256": "26e12d65e03936aa669302d320a82e5f180175880ba9b713490ff85b2eb25532"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/core-tests.xml",
+      "bytes": 2592,
+      "sha256": "ec1cc3154b4502343e9554afb7a233250c543a64a76693de9055effc9d2263fa"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/discovery-identity-tests.log",
+      "bytes": 583,
+      "sha256": "3234ea7fd802d4b58cf3f53e622b92b858c615302545b17d2775cc4171177b96"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/discovery-identity-tests.xml",
+      "bytes": 689,
+      "sha256": "ece0e332444c2f26bebd1694cc8331c6af5f387175350cf6ab613a2ab8fc9843"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/disposition-journal-tests.log",
+      "bytes": 2158,
+      "sha256": "348b78d0451380da69b7c17fce2405d566c0bf74b30fbdf337559dbecd12e6e2"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/disposition-journal-tests.xml",
+      "bytes": 1033,
+      "sha256": "67b5f10d61b3bea4d18db8eb32dde2291a51721730c08264e798b796e3b46146"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/durable-receive-tests.log",
+      "bytes": 2504,
+      "sha256": "6d9156afbb8bb9b4ae708b86678bb2d835a17466494fb19705ce8c62f18abdab"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/durable-receive-tests.xml",
+      "bytes": 2084,
+      "sha256": "cb26177f6282c954620c1c01529907903bc737290b4d184ac9c21b04b8f5ac36"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/expired-task-cleanup-tests.log",
+      "bytes": 1330,
+      "sha256": "c94048dbc940baa5bfe3f5b253e9eaa41df17e5d5331a814d838919f13206079"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/expired-task-cleanup-tests.xml",
+      "bytes": 1170,
+      "sha256": "97014a8d166d96373a41bc580683f52ec91f0de5e2c1d10c25a9d0e62ad0931f"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/file-exchange-tests.log",
+      "bytes": 21051,
+      "sha256": "3a8a099e9a0105dcaef0446e6a7268429366b7bc93df86d34b792adcb789f1a3"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/file-exchange-tests.xml",
+      "bytes": 11144,
+      "sha256": "d2c10b0acafc8939573836f1a892928e25e5d7f7b9b4b6fee574826d11beee6f"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/identity-tests.log",
+      "bytes": 1041,
+      "sha256": "8d671f641f78edd57742e10627a8e9797779538d09d5ce6da43b5edf33ede4d0"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/identity-tests.xml",
+      "bytes": 1290,
+      "sha256": "676fa9a9638cac59a455f485bda842f3156a556222e5866080c9e0bc0492c172"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/main-server-360x560.json",
+      "bytes": 539,
+      "sha256": "b908cfea4b02acb42cbb9ea985738ddccbd3d11e0cc98e4a67b72db6625096ec"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/main-server-430x700.json",
+      "bytes": 539,
+      "sha256": "20bcd48af7cf9efde8602735851289a29e411b93a35d2444f3672881733633db"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/protocol-tests.log",
+      "bytes": 788,
+      "sha256": "3419ae664b3246fe4b61a0c51dd25bf1b6f3e88ade3efc736803ee7a46290bcc"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/protocol-tests.xml",
+      "bytes": 994,
+      "sha256": "1f90bff6ad5d9eee3f0f27ec18d64533bddd844cf704606859cf4542292bc542"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/receive-skip-tests.log",
+      "bytes": 3349,
+      "sha256": "e9ff41aff22de04999c92ba853ab37b69b656438a3735f5d6824ff774be7923e"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/receive-skip-tests.xml",
+      "bytes": 1908,
+      "sha256": "55cd1b88e92809c16a0c9bfa623b37284d47bec0c9227eac9b02c093c16d6159"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/server-panel-tests.log",
+      "bytes": 687,
+      "sha256": "16831042bff5f6957871ce2aac8af6484485652cb3db67740674c4847440ea04"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/server-panel-tests.xml",
+      "bytes": 838,
+      "sha256": "8e3bd0003140231e4619a66407ab66403d632adb175e9e9eb3b4579fd73d1a91"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/sqlite-cache-tests.log",
+      "bytes": 554,
+      "sha256": "32697493910ed5c502bb17000cd15b90302d90cd23ee47b627fa9b6bc827c9f4"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/sqlite-cache-tests.xml",
+      "bytes": 691,
+      "sha256": "db87dec3300a0a7002d7446505a37f8661576fdba117c72b8c30c6b370a72c82"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/strong-manifest-tests.log",
+      "bytes": 917,
+      "sha256": "6953efd47ebaefb668268819e82eed2f3a88f036758594454e8c75f10994ae7e"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/strong-manifest-tests.xml",
+      "bytes": 1055,
+      "sha256": "2e72f4287342d822e82f6e841c4642a79036c05bc884d3e21c4facaf7fbf018f"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/task-store-tests.log",
+      "bytes": 2488,
+      "sha256": "22ed4754b5f74e8707660e2d3a7feb7c75f41c77c3e8d7dea5f7c110b74996db"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/task-store-tests.xml",
+      "bytes": 1600,
+      "sha256": "c42d76cfffeb20cd508109a825a7960fede7308f35b83c5a6ab270185525262d"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/transfer-accounting-tests.log",
+      "bytes": 2447,
+      "sha256": "5f3c2588757fefbd3f00ada89ff3cd6d67c488f2f32e21073563a6a496b3e6d4"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/transfer-accounting-tests.xml",
+      "bytes": 973,
+      "sha256": "fbf1d572e17890121258643b2eafdcef4cdff0713cc15c68180943df44669ed2"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/transfer-items-tests.log",
+      "bytes": 2058,
+      "sha256": "aacde7b4673de232f64255bb0ece7e91eb4df4422ec3f6a4f594895f181ba6d4"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/transfer-items-tests.xml",
+      "bytes": 962,
+      "sha256": "d679793aa871acd5f9f0365fd770d8dde110007f3717de234c7fa4bbd2ac71c8"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/transfer-operation-tests.log",
+      "bytes": 935,
+      "sha256": "2fd7dbbfc6230906b8ce488ae6ffe5b96e5bfbf9c91fdc63a024d32d05c228a3"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/transfer-operation-tests.xml",
+      "bytes": 1040,
+      "sha256": "eb697c90b4de16b10df4377200025fb305785e20e889c66177d6e264b8533cca"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/transfer-scheduler-tests.log",
+      "bytes": 672,
+      "sha256": "a539791cf6b0266d741f3c0d1d8be505e72dadf29d0f7b0e5cc5c5e2de7f1b33"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/transfer-scheduler-tests.xml",
+      "bytes": 780,
+      "sha256": "075c7bc8ec9059afacbf5efa766cb559f031530321b13158708fe5ae2b31d200"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/ui-tests.log",
+      "bytes": 1160,
+      "sha256": "09a2b1e965f4d99f78da704c24d968e456dac2c5213b038b5cfbbe8f8dffc056"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/ui-tests.xml",
+      "bytes": 996,
+      "sha256": "44e4c44919efca153e35330b1b7ebdc7e7ca19df4d88642232e2a7330cee2c02"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/updates-tests.log",
+      "bytes": 484,
+      "sha256": "e50b9a840b46e4ea7d93bb938714c776d48512ae94aac6877899dc7838941813"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15/Testing/QtTest/updates-tests.xml",
+      "bytes": 640,
+      "sha256": "f08561ae215a6c781bccf4363a02844448e03e30c084e8558d2e514140173e84"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/ctest.log",
+      "bytes": 2811,
+      "sha256": "775c0d6cd7c4939355bffc345374785cfce07742841d4693d118583b39a63f73"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/main-window-navigation/native/Testing/QtTest/main-server-360x560.json",
+      "bytes": 535,
+      "sha256": "3a74ee6b79e84523077ce5006811ea98f86b46e27fe7271c6232c8a253d4adec"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/main-window-navigation/native/Testing/QtTest/main-server-430x700.json",
+      "bytes": 535,
+      "sha256": "805284c143a265ad8a62d26a7e8a86cd30c756c4daee4f5758b9b087fd405766"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/main-window-navigation/offscreen-150/Testing/QtTest/main-server-360x560.json",
+      "bytes": 541,
+      "sha256": "e3e0b8c059219b6fbb82286aca371f37cfb575c6c25ffe8ecd22346d48768ec6"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/main-window-navigation/offscreen-150/Testing/QtTest/main-server-430x700.json",
+      "bytes": 542,
+      "sha256": "df08be1ed3e4125f112497b890708e173405f17781f9df9869cfe3c28bcf0314"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/main-window-navigation/offscreen-200/Testing/QtTest/main-server-360x560.json",
+      "bytes": 540,
+      "sha256": "63d6295d514757ffc23b7ee73c79d51fd20fed7008c549c164e720e831d499c3"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/main-window-navigation/offscreen-200/Testing/QtTest/main-server-430x700.json",
+      "bytes": 540,
+      "sha256": "c1163d2dd31a0b280b47fa77f54e39932c637bc9cf59ec1aad6733f267fc15f3"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/receipt.json",
+      "bytes": 1163,
+      "sha256": "a571892466b3c2ee12d70cc286dd160795640a46b97d392fa56285045fffe0fc"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/avatars-tests.log",
+      "bytes": 660,
+      "sha256": "75ddac8d7ddb666aa62bd46b2bd17b8f497ca8143422eead013036c5335bfdc0"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/avatars-tests.xml",
+      "bytes": 948,
+      "sha256": "ce561226063a62ee70137cb25815dc133191be7e16e8ae45dc108f5858591238"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/browse-tests.log",
+      "bytes": 554,
+      "sha256": "37275be9e92365a65f89d5b7f24f28d7baa6b7badb17c3004c8772c4e03d23d0"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/browse-tests.xml",
+      "bytes": 726,
+      "sha256": "e8be11b060139ae990b6a6aaf3b042801a2834614cb391caa3146a207ead542e"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/buffer-credit-tests.log",
+      "bytes": 1329,
+      "sha256": "d20e2a99b6d421dbcdc4d2072f0e9fe8889a79cd4f301f5e126d79077af0d1ad"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/buffer-credit-tests.xml",
+      "bytes": 1379,
+      "sha256": "3ace4e7f4b1e17d948020d9b9532790ed64cd4d70f7f8335fb4f619143071167"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/client-download-cleanup-tests.log",
+      "bytes": 1333,
+      "sha256": "83fd5c65d14bef2dbc31d1036c6b411c60b3158df6724c698c9267ea8934c735"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/client-download-cleanup-tests.xml",
+      "bytes": 1215,
+      "sha256": "1eb7ffb3c994a4bc104dc1de396d77a44138080a6930d38f3e35a37033f17aa4"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/controller-tests.log",
+      "bytes": 1225,
+      "sha256": "d1968c4056f3ca181b45934554467533a9a6558c15ce092865a53fd408f631b5"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/controller-tests.xml",
+      "bytes": 726,
+      "sha256": "aaac1ddd7d7b579eda4030fd793daa6589287dbd1ff12414c612f9e6bf589bf2"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/core-tests.log",
+      "bytes": 2597,
+      "sha256": "969981e9a3694e7b142976e15855499d6f49b990b3b0e954ba95e8f2b937fc17"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/core-tests.xml",
+      "bytes": 2594,
+      "sha256": "4ee399f53d74cface803d2206b2d6abfc8bb0d6a09f67d75f8291917ffccd419"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/discovery-identity-tests.log",
+      "bytes": 585,
+      "sha256": "4789fa327ac7012fcc17aab0387032288e329ab6096c924660defcb77a7c98c9"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/discovery-identity-tests.xml",
+      "bytes": 691,
+      "sha256": "309306d2cd18f41abad0ec902ba68217335f6a0ad110ab55221e3a3f5d7b714a"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/disposition-journal-tests.log",
+      "bytes": 2160,
+      "sha256": "c241e2b4f9e984b8e7e53aabb5064c14b24de34f38902cd705d5f51645d38536"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/disposition-journal-tests.xml",
+      "bytes": 1035,
+      "sha256": "86e121e317432453dcf8e806783c3428b0efc64da2e50e20c1255686c2cae7d2"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/durable-receive-tests.log",
+      "bytes": 2506,
+      "sha256": "0b3adb09c84484c6d3813419b14d383e01c506cc60ecc24de351cdf77d48a275"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/durable-receive-tests.xml",
+      "bytes": 2086,
+      "sha256": "e48edfc39c525a5bc1ed4f5c4ec0ac3b6ff6174e330f108f73f1d4f86dfdee50"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/expired-task-cleanup-tests.log",
+      "bytes": 1332,
+      "sha256": "09f3a3c4b7fc873e2aa73900e627390bc99878735c482297d3f7d08193c7c5fb"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/expired-task-cleanup-tests.xml",
+      "bytes": 1172,
+      "sha256": "e76ceaff825250a16818047e99134cd6f7fee3a8a3cade8fef8b0ec582e9f608"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/file-exchange-tests.log",
+      "bytes": 21061,
+      "sha256": "f1ed804bc4a9f5028949c1d690442b382962241b54e514f21037f52505bd8164"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/file-exchange-tests.xml",
+      "bytes": 11162,
+      "sha256": "9006c498ebee3faf15e3e287da9f6239790fb8054aeb9f301bca085b4d2ed5c8"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/identity-tests.log",
+      "bytes": 1043,
+      "sha256": "f8ee5f845138a0d38105db53b2cba33d123cf4c3cf7c2b94b10bd005eb9d065d"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/identity-tests.xml",
+      "bytes": 1292,
+      "sha256": "a915c622d2668bca6de5dd06aa0b8db8cd8be030d14122c225c9ab3722e6f336"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/main-server-360x560.json",
+      "bytes": 539,
+      "sha256": "b908cfea4b02acb42cbb9ea985738ddccbd3d11e0cc98e4a67b72db6625096ec"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/main-server-430x700.json",
+      "bytes": 539,
+      "sha256": "20bcd48af7cf9efde8602735851289a29e411b93a35d2444f3672881733633db"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/protocol-tests.log",
+      "bytes": 790,
+      "sha256": "881212cd0634ceb951ff6ebf9ffad97a9292b655724629f35c369625b080f0ee"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/protocol-tests.xml",
+      "bytes": 996,
+      "sha256": "9dadcbd69c98b9b43182968c27193f005eb4a207715252c615a5febd7612c730"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/receive-skip-tests.log",
+      "bytes": 3351,
+      "sha256": "903a8932ba005692cb78fef92733e3b1f22f2b316aa67f017d3559aae3844ad5"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/receive-skip-tests.xml",
+      "bytes": 1910,
+      "sha256": "0e38fc02e19bbcfcef3faaf2daab488d60296c0d7d0ef0bfade059997bca3cae"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/server-panel-tests.log",
+      "bytes": 689,
+      "sha256": "8868b568cbfa13794b7111bb9f221fd993fb2d5ae5f2b8f7cf093432cb131043"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/server-panel-tests.xml",
+      "bytes": 840,
+      "sha256": "4d1be145cc82daed0da82208ebccac28fe7077d22d7282331cb0a19b4b58659a"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/sqlite-cache-tests.log",
+      "bytes": 557,
+      "sha256": "da9f5dfc7320527eafb06db314217b8b6120b6c19c80b8da91832cafbbed85ca"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/sqlite-cache-tests.xml",
+      "bytes": 693,
+      "sha256": "c6f1fbcd9c0e6af8d72a88cea7b4a697b24eb7ec68f7011dabb0bd96f87719fc"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/strong-manifest-tests.log",
+      "bytes": 919,
+      "sha256": "e2d7cad5d25199172586afd57fe6d0c7822b9463112c36d8089720b8f76ab108"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/strong-manifest-tests.xml",
+      "bytes": 1057,
+      "sha256": "8f088e4286ddf9f786876974856bdab4eca465a246ed8d99a6b40c216bc6cdfb"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/task-store-tests.log",
+      "bytes": 2491,
+      "sha256": "289c3086485dc676595ae709c979554d9c106cd55e5cf0f167787a3c0ebab574"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/task-store-tests.xml",
+      "bytes": 1602,
+      "sha256": "7d30ddb8bb9f018c7821d15ab8f6fc63847913b47720647c56f237c29c8d8f31"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/transfer-accounting-tests.log",
+      "bytes": 2449,
+      "sha256": "4e22a63355833252f7190119690ca61ae28a9f61331b85c2c023292360c67e06"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/transfer-accounting-tests.xml",
+      "bytes": 975,
+      "sha256": "bba84f473eb311d0227b078c97160cde6326893b7319a2eefe2f5f991cc10032"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/transfer-items-tests.log",
+      "bytes": 2060,
+      "sha256": "90397d360162b0e77a2b8851b76f93cb0e504b094dabf7ffb66e717b3962b209"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/transfer-items-tests.xml",
+      "bytes": 964,
+      "sha256": "b9b436132f123d9313fc6b66fb67eb3962ea490759a526e82f3b4f43cc06d3e0"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/transfer-operation-tests.log",
+      "bytes": 937,
+      "sha256": "8933cc1bc12b826c6b5b128da66356159269b58fc85e8de7c49045bacb01bb66"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/transfer-operation-tests.xml",
+      "bytes": 1042,
+      "sha256": "f15699cd29e70f752db53e82c0d25bbd07b99657cc288b7fe07126c3bd3d86a7"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/transfer-scheduler-tests.log",
+      "bytes": 675,
+      "sha256": "010565b05774d70f0f5925548fa725052c14b1a60af3dfc4f4b38ddf210a7af2"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/transfer-scheduler-tests.xml",
+      "bytes": 782,
+      "sha256": "74cfe3fc10ffb42c65d4182ebd03597e1b846abb50673596a6d9739b82e77224"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/ui-tests.log",
+      "bytes": 1163,
+      "sha256": "a28ea4093bf56602cd77e5e9295017ee8d5e6cdb9c034f8fbc4c588dd470db6b"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/ui-tests.xml",
+      "bytes": 998,
+      "sha256": "21ea2bbf836f77a1dc2a25b736682305184b469970b01182cade124c225d4a5e"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/updates-tests.log",
+      "bytes": 487,
+      "sha256": "b2a33ddf37e1f4b77903b50032153e9d4ba07e4e0c2d10c3b32abb1e7212dc65"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/macos-15-intel/Testing/QtTest/updates-tests.xml",
+      "bytes": 642,
+      "sha256": "3be3d7f6916dafbcabe0259a66cd44b2b0cf9d0b8813bcce676ceadebf6db019"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/receipt.json",
+      "bytes": 36854,
+      "sha256": "d923fa30a3c9753b53363588fa1925cd7ed31d31113de6e06145398008420fde"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/ctest.log",
+      "bytes": 2942,
+      "sha256": "fbe6c703cc4db9e01f3e36e78d88765635028a9d2de614dbc999623c75314334"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/main-window-navigation/native/Testing/QtTest/main-server-360x560.json",
+      "bytes": 523,
+      "sha256": "8add592dab6a043d2574c8e9d53f1a255325db9f3901b70c690a9bbf782ed69c"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/main-window-navigation/native/Testing/QtTest/main-server-430x700.json",
+      "bytes": 523,
+      "sha256": "d55f3c577079cb0877db547e938a43211c41b697dad803fb686f1717a13872a9"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/main-window-navigation/offscreen-150/Testing/QtTest/main-server-360x560.json",
+      "bytes": 531,
+      "sha256": "c262812a1119f31342b84ff6b9ccd7a28982af09a0fd4997ed62b1972643cfcd"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/main-window-navigation/offscreen-150/Testing/QtTest/main-server-430x700.json",
+      "bytes": 532,
+      "sha256": "41f72da5001fe65ea94e4379683e2969b1027b6d8d27702da635a52961ecc5f8"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/main-window-navigation/offscreen-200/Testing/QtTest/main-server-360x560.json",
+      "bytes": 530,
+      "sha256": "10e4f181a8e60aae879a2fa36c6062b045406f6191246c274f5c0837a40d25ef"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/main-window-navigation/offscreen-200/Testing/QtTest/main-server-430x700.json",
+      "bytes": 530,
+      "sha256": "b709394c1ae5638dfe2e259839b8a6e3c72e71e90d9a659df92bbc9ce68f0d65"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/receipt.json",
+      "bytes": 964,
+      "sha256": "6e81a82ad41107ccc300f767c30cb1457908e42ddf7262fa8966fadcbf681177"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/avatars-tests.log",
+      "bytes": 632,
+      "sha256": "af7ae566eefd292f4c8985ce0c50e972a327a1c1cff00ad3b2619863ecdc2fa2"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/avatars-tests.xml",
+      "bytes": 908,
+      "sha256": "4f25b82b709c5f706ddfa79d2ea7db0a39e32aed267761b1812a9caa4f4997f3"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/browse-tests.log",
+      "bytes": 525,
+      "sha256": "44032216993c1f2d55def9d9b10189518146e84ca47a039320fad2f67cfac005"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/browse-tests.xml",
+      "bytes": 686,
+      "sha256": "77463fc04695e8139a1ed337cdf21c33fd552eafa6134c9584695be4c8c2feb1"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/buffer-credit-tests.log",
+      "bytes": 1301,
+      "sha256": "37324d1129c7efb389631e8bbdcb5bf2bb1a5c01a2b190a49c8bf028d300fbf3"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/buffer-credit-tests.xml",
+      "bytes": 1339,
+      "sha256": "df591e4708fa1fd0298f71cc635539f6b216b98c99204e122bb232989faab4a7"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/client-download-cleanup-tests.log",
+      "bytes": 1305,
+      "sha256": "758a5c7eb3b5401f0f095b2cf91c3a7f7755100b17c2061cb623bd0b6ffcb959"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/client-download-cleanup-tests.xml",
+      "bytes": 1175,
+      "sha256": "f646b20414f3872940f0a63e44fbb46fa0135d2193285e5380e78b3e3bf5226d"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/controller-tests.log",
+      "bytes": 1263,
+      "sha256": "50dd65776c63c348c6cd4df83618187d49e1d86c8599df8a38196eb7cf9ea34a"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/controller-tests.xml",
+      "bytes": 759,
+      "sha256": "79828bf7f116a0e265bc01be739a0f1a4544f2da52d66a10b60771ec79bc6593"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/core-tests.log",
+      "bytes": 2287,
+      "sha256": "dc8ec1bcf2c85a5d2320045465e34feee3c048eb20ab0901976447ec56622434"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/core-tests.xml",
+      "bytes": 2155,
+      "sha256": "ecfd8b1400ac2def03e8e80d55c0f67a5879656030e2a11df72e372bbb64092b"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/discovery-identity-tests.log",
+      "bytes": 557,
+      "sha256": "be4753e024f442ee211aafd480d99f8000bc07755816c8ae9cf00255243f20b8"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/discovery-identity-tests.xml",
+      "bytes": 651,
+      "sha256": "1a445f9c960de11689beb746dffa19d2ad5bf4dc130268a1d26c05d4183c19e1"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/disposition-journal-tests.log",
+      "bytes": 2132,
+      "sha256": "72f69739e3d304e53b612cf4c6388759c26896890738deb6d1b597aba5d7fd39"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/disposition-journal-tests.xml",
+      "bytes": 995,
+      "sha256": "f346eb1fcf825184029dd28d29e35a1463b6dcd560946c56fd075027a36de35d"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/durable-receive-tests.log",
+      "bytes": 2478,
+      "sha256": "5d133151c7af6fa858334c44a7495629e3bbb1619df1c975b51784cb8d486a9d"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/durable-receive-tests.xml",
+      "bytes": 2046,
+      "sha256": "a2dd273018409b356861c5028d9d430dec11f91f72d44b521695dcc52002f1bb"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/expired-task-cleanup-tests.log",
+      "bytes": 1304,
+      "sha256": "4537f1c42b082492c393211042d7de9b576bdac6fd5bc6ffadd1cf1edfc2f73b"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/expired-task-cleanup-tests.xml",
+      "bytes": 1132,
+      "sha256": "7e99e83225476bfb326c49283c5b24d02a77742f97c1958f56701dc3579d2e35"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/file-exchange-tests.log",
+      "bytes": 20995,
+      "sha256": "803d4c3018eb68ac35981425083328fa3badebdaf69ffcbc2c43cf44d95170fb"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/file-exchange-tests.xml",
+      "bytes": 11046,
+      "sha256": "a89217f431ef793a931e9b60cc44cd83ebf50584d1996b46f63d72c9bf8999fa"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/identity-tests.log",
+      "bytes": 1015,
+      "sha256": "37c06acb2574d63561018333c5845319f37a3d3518c7b8e570811e048c547f05"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/identity-tests.xml",
+      "bytes": 1252,
+      "sha256": "febdcc2539405141b59f29720a22ef4a59dbb2771108c566d09cc65e50d64c00"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/main-server-360x560.json",
+      "bytes": 529,
+      "sha256": "26e65b3e91b66f572bcce3afea1f17314dab051b8eb5c09eadb9b0d59357db55"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/main-server-430x700.json",
+      "bytes": 529,
+      "sha256": "57447e590720ee08620794916c837dddddb97d6704a0cf3f7075a80cc937d150"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/protocol-tests.log",
+      "bytes": 762,
+      "sha256": "de5811042602503c61b21909ac1f38334905441fa3d75f48010fc0c2a9144345"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/protocol-tests.xml",
+      "bytes": 956,
+      "sha256": "d44980fd9cccba49a15cd8bbf8c1c27c2734628facb48811612c393279adc301"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/receive-skip-tests.log",
+      "bytes": 3323,
+      "sha256": "a9d0e9aa5ae417f91b9840a5a14a9d709176e92f07bd7b69657ac26fa8beee5d"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/receive-skip-tests.xml",
+      "bytes": 1870,
+      "sha256": "07504a96790aaf808b2617d404a549808cdabbf9371981c631026bad4b310d9b"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/server-panel-tests.log",
+      "bytes": 660,
+      "sha256": "701606dbc57c93397dabf9381b1044dad637e2147bcee91150236a5da1f5392a"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/server-panel-tests.xml",
+      "bytes": 800,
+      "sha256": "15e42e83fa4e94a5ad8386b82da99de0608b36a87d0a76fea19bde337a2476c1"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/sqlite-cache-tests.log",
+      "bytes": 528,
+      "sha256": "5cd8e06c8de9f27e747609264a000243607cb672961dc5938e9a64abc26f4b50"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/sqlite-cache-tests.xml",
+      "bytes": 653,
+      "sha256": "f025a466a0b7f647e2b067167fe0f7cba58176a66b37d188986a8a8c154049c1"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/strong-manifest-tests.log",
+      "bytes": 891,
+      "sha256": "a7b3bc5697bb6150f211aef4a29d8b7a5b65ea71ddf207d72f62a09798a2f254"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/strong-manifest-tests.xml",
+      "bytes": 1017,
+      "sha256": "3e69650245f4a274d0b29519f83ea0fb9d949527ae4bf30b1ada3cf9b22e917d"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/task-store-tests.log",
+      "bytes": 2462,
+      "sha256": "0817bb4dbdfe79add4f6eb1bfd736631f4888eb45cf5ea58915b6e8799d5d35b"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/task-store-tests.xml",
+      "bytes": 1562,
+      "sha256": "d1864a1770da01d142dda29489836524c466f0c4256434c77850bed45d237354"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/transfer-accounting-tests.log",
+      "bytes": 2421,
+      "sha256": "d4d9c0721b27a8516db30d590f6dbc27939e842eca838aab123d22c1a1ced9bf"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/transfer-accounting-tests.xml",
+      "bytes": 935,
+      "sha256": "7debdf4ed2a01f5f3aee2cc340f654dc3e6990b1dc0c5d3aa6d9f6c780ee6c80"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/transfer-items-tests.log",
+      "bytes": 2032,
+      "sha256": "17c27b990f151b2a9f2f1eef49f3cd0e0a9227788d7cd7b3ab915f0e6bbb75d1"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/transfer-items-tests.xml",
+      "bytes": 924,
+      "sha256": "1f4ab6c50f0ebe486dffef93f140b93a6d29bb79658bc27ace8ae464e7eed7b8"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/transfer-operation-tests.log",
+      "bytes": 909,
+      "sha256": "35202f2fde742b1e9ae990fa585c9f49033f474d270d35accccaf6b4d28df631"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/transfer-operation-tests.xml",
+      "bytes": 1002,
+      "sha256": "d94b2a36b4440526952f95c571b2eb12e35916041cacde0e36cd9ece36e62f69"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/transfer-scheduler-tests.log",
+      "bytes": 646,
+      "sha256": "4e6b3c6a5cf150dcfceb4560c8367d32869586e3a3b2a188bb76ef3c7b50d4a5"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/transfer-scheduler-tests.xml",
+      "bytes": 742,
+      "sha256": "858f698c4f2a17a761d7175a010d8f5bd66fb61e71f100eba96dd3183b8794e8"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/ui-tests.log",
+      "bytes": 1134,
+      "sha256": "333a7872f6c8168f77fa24a5d114d2af7d90308d42e1cdc62cc77bceac128ea5"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/ui-tests.xml",
+      "bytes": 958,
+      "sha256": "1ed578fcd82ddeddf65c676b558993a8908bcda92e24fe70d1a80df06902979c"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/updates-tests.log",
+      "bytes": 458,
+      "sha256": "8f6851d1adcad43938234c085eb69d6a8bb35a0914fb97330abed57fb7490c49"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/ubuntu-22.04/Testing/QtTest/updates-tests.xml",
+      "bytes": 602,
+      "sha256": "7422f74fdaa61e895774875d49861da5e81818f6ba2f1c88b5a62b8faeaa382e"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/verification-driver.py",
+      "bytes": 9528,
+      "sha256": "94796c82671b2847e7188652ef281a65b91b5e56c8b350bd7ae787686014b58a"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/ctest.log",
+      "bytes": 2976,
+      "sha256": "8133701ef191f9b10cc586351d0f7ee8c52ba0c60656b4961eae451e52194f9a"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/main-window-navigation/native/Testing/QtTest/main-server-360x560.json",
+      "bytes": 528,
+      "sha256": "58ff9b0edc509a62b747050d59d3b15ebf8b4f27b9a1d79819e1a72248b581b4"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/main-window-navigation/native/Testing/QtTest/main-server-430x700.json",
+      "bytes": 528,
+      "sha256": "2c49fd7b94f1c5e1389354e75b01cc968bd721f82204eae5b4a67506ae1ca469"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/main-window-navigation/offscreen-150/Testing/QtTest/main-server-360x560.json",
+      "bytes": 532,
+      "sha256": "87e102fba75f33392647382ecc2349612413d86cbebc56123108f2c427abe749"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/main-window-navigation/offscreen-150/Testing/QtTest/main-server-430x700.json",
+      "bytes": 533,
+      "sha256": "f08f69d9c243420bfb18225eb632f3e62537ed39e5617c7964378d53d6bcaf9d"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/main-window-navigation/offscreen-200/Testing/QtTest/main-server-360x560.json",
+      "bytes": 531,
+      "sha256": "d8913293eadd4082fb2e23e1efd4b41f92fecdf586c031132e9dbc0b3fbadb1f"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/main-window-navigation/offscreen-200/Testing/QtTest/main-server-430x700.json",
+      "bytes": 531,
+      "sha256": "65ec8daab09b97d8b01e062a70d57f7d6f2a185f9e066b72b4b7c4f7870b7bc7"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/receipt.json",
+      "bytes": 964,
+      "sha256": "89abb3e39d988d6847739a9d5f61e562593d8c2e6d33f5eefe95b2e77b73c1cb"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/avatars-tests.log",
+      "bytes": 648,
+      "sha256": "d8cb71da5fd14f047a98cead48e6904fe3b6769b7fb1207ba7fe9e3e7f33f872"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/avatars-tests.xml",
+      "bytes": 926,
+      "sha256": "f908c8cea413e82dd2a8a14bbe83d3050c72c6febdddafb3b8683195590a0e55"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/browse-tests.log",
+      "bytes": 599,
+      "sha256": "c11f3ac6af1189bd8703adda2b32cc41ca66f30035e0e94e874e8483592569d9"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/browse-tests.xml",
+      "bytes": 769,
+      "sha256": "87332940174863a08293e7769b9718a32915fdfe6746cd33b7bfa12dc274501e"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/buffer-credit-tests.log",
+      "bytes": 1327,
+      "sha256": "4d29d084a2c2a9244202001b2d97a99e45b652911cdd9b43c7915e6bef6e8dc4"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/buffer-credit-tests.xml",
+      "bytes": 1362,
+      "sha256": "28900985ab50a25ecbdf5e7d5a3c4bac40b725b0b1ba990fe64144c85780ed8e"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/client-download-cleanup-tests.log",
+      "bytes": 1332,
+      "sha256": "e53d3b5315633700aadb077f80b0571ec0376e77d62ee2837e90bf4dc2d76cab"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/client-download-cleanup-tests.xml",
+      "bytes": 1197,
+      "sha256": "e70599ab51612d5e04b7e4ada8f19499e86d961fb8fd4987f23a85cc21ee5ac7"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/controller-tests.log",
+      "bytes": 1221,
+      "sha256": "f25a33bb834176a89eb07743164bb8f42de70aa93ae2a3090682e446e6cd4b68"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/controller-tests.xml",
+      "bytes": 700,
+      "sha256": "b298c47bdc747c241cde2179432cb5d5f33d293fdcb72394df5b6c4339302e8d"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/core-tests.log",
+      "bytes": 2971,
+      "sha256": "26373c7c02a861f0fecc599f9091d2928c0952f3349d3efba9d1b149684d1323"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/core-tests.xml",
+      "bytes": 2250,
+      "sha256": "047e5ca57b78e56704ef5381217a01ddbcc6406a72d7dd35709bfe8bfecf8048"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/discovery-identity-tests.log",
+      "bytes": 571,
+      "sha256": "8f87c528c36bba8b4310eaf79cb30c28a1a167700bb32231605095884e3928a9"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/discovery-identity-tests.xml",
+      "bytes": 664,
+      "sha256": "63a5828c65420c1a4068b220db0028ede3a65cadd55122f507a15ebb5570c354"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/disposition-journal-tests.log",
+      "bytes": 2171,
+      "sha256": "721b990d8b717867aba33fb27d5e71b242972d7b07dc4ba7e676097449f46976"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/disposition-journal-tests.xml",
+      "bytes": 1014,
+      "sha256": "b92fb521213fc227e1d19bc4974563382b79e9e6fc580cec679d65f78222725d"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/durable-receive-tests.log",
+      "bytes": 3175,
+      "sha256": "a7f764e5bc833405abbf183c2b766be0c5e217fdf83a4dc80f6bcb2303544dc6"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/durable-receive-tests.xml",
+      "bytes": 2203,
+      "sha256": "3151cf8a179fd949a689f46a61eeb20125e7023b893c7e9edca114569b58418e"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/expired-task-cleanup-tests.log",
+      "bytes": 1333,
+      "sha256": "ca39e7d323db2e7f587958c778f5d06a7b52a6c3c9355202eefc800c241cb2b2"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/expired-task-cleanup-tests.xml",
+      "bytes": 1155,
+      "sha256": "903e741db55411f0450f1f7e437f20515248ab54aa168262861b237dc53d6b04"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/file-exchange-tests.log",
+      "bytes": 21315,
+      "sha256": "0d5074969c30541f4b4e13c713def66f63b98ba7f36fa1e0ca7e573d9c03320b"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/file-exchange-tests.xml",
+      "bytes": 11265,
+      "sha256": "3e8936e05bcae8cf5b790f33fdc1fb00c39c4ffc1a31e637f192daa43fd97b04"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/identity-tests.log",
+      "bytes": 1040,
+      "sha256": "16ff20003eec88d64ad374a6f26d9b8e98308ac06495f7063fa6861e2bdf54c6"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/identity-tests.xml",
+      "bytes": 1276,
+      "sha256": "3e63df1fb20eb4d32496705c2462681bc2e98f57b627b350a322b32d94d63675"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/main-server-360x560.json",
+      "bytes": 530,
+      "sha256": "6abb32a9d5978090a5338bf89cda6882e46f4d41c25c0179ec7492f4ef16cafa"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/main-server-430x700.json",
+      "bytes": 530,
+      "sha256": "ee1b0cac243411b05aba57048feb588af415fee0c4bfb463a9ae5cf1c2a5f9b7"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/protocol-tests.log",
+      "bytes": 782,
+      "sha256": "d96ce72b7449d558157bdcb8a5c377ddf4e8aa8ccecab6172d463a26543d7d09"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/protocol-tests.xml",
+      "bytes": 975,
+      "sha256": "b0da4f0880ef781c314071af9dbdfd17a0eefd37c176bb0871422f7916e1795b"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/receive-skip-tests.log",
+      "bytes": 3336,
+      "sha256": "f9a05f0252c53b93bac16d225f1811285ac1c1324f20abc316cfde4351b4cd58"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/receive-skip-tests.xml",
+      "bytes": 1849,
+      "sha256": "4fcf812d7cb31210b1e0d27959a7cafac28001a5ff59d108b9b014857b041484"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/server-panel-tests.log",
+      "bytes": 677,
+      "sha256": "2d535d16b384aee5a5a2380cba917f13f72f76756f4bb60fa135f72c20e76f47"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/server-panel-tests.xml",
+      "bytes": 816,
+      "sha256": "fde49e950634ef17398a9ca7fae3e224780cb39614e4ee51580673b46a5df756"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/sqlite-cache-tests.log",
+      "bytes": 543,
+      "sha256": "1a187fa9d2762ed644f31a8077ab8c61b2954b88eda577790a9843277a565d86"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/sqlite-cache-tests.xml",
+      "bytes": 666,
+      "sha256": "6aea2b8610e5884b4ea133eae23bc17cc5f0ade576e67e7472928921cf3c375a"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/strong-manifest-tests.log",
+      "bytes": 912,
+      "sha256": "ca0bc4243a874b03060be2756bbc867c4622aa647a2a16c0cd2276636b7731d6"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/strong-manifest-tests.xml",
+      "bytes": 1036,
+      "sha256": "a54b99aee3af4e20e772e48dc77ceddc54aa20e551e58364fc3ea1da14cb113e"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/task-store-tests.log",
+      "bytes": 2512,
+      "sha256": "995c79364dc94ad02660d808faaf904b07412b5edfe120ec47b95769f5f3c721"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/task-store-tests.xml",
+      "bytes": 1591,
+      "sha256": "7f3b1c681023254fe9455501a3335a4d1ef557ff937691facb260ac224e0dfa2"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/transfer-accounting-tests.log",
+      "bytes": 2463,
+      "sha256": "5d6cc9dd12c433f2548d22adafd9202c0ef9bb2afb13ed821462f33726dab226"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/transfer-accounting-tests.xml",
+      "bytes": 954,
+      "sha256": "31d2e6341b62b29535de388d8b2837ea9d243b7bdfb72659b4d02e47198eee01"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/transfer-items-tests.log",
+      "bytes": 2073,
+      "sha256": "157110ef9d283d4fc8d88a6e8e66f55c45c010f6c151b236ef9e64a89e9c0c64"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/transfer-items-tests.xml",
+      "bytes": 943,
+      "sha256": "8fdad474c46b756bfe2c1be5be21046d8591c72fccb0cdc909668c0419325711"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/transfer-operation-tests.log",
+      "bytes": 930,
+      "sha256": "b99bd4ceb43172834f3ef9ae4d16bf5918bd62579cbc9afc5fe5d8a4863be313"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/transfer-operation-tests.xml",
+      "bytes": 1022,
+      "sha256": "958a81286481a9bd3b6fea2486b38ed62fd98f5e5342604886102fd9df7e414b"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/transfer-scheduler-tests.log",
+      "bytes": 662,
+      "sha256": "ad9c5d41cb4aea685b99a343ced66092bdfac38c368824da3987108c5d0bcca1"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/transfer-scheduler-tests.xml",
+      "bytes": 757,
+      "sha256": "347541a121a5464d5814d59e5ea6a9c0e17aee697337e2760ba946bbfa568d1d"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/ui-tests.log",
+      "bytes": 1160,
+      "sha256": "a95f8c8f2d45d5ba103824540be8d6fe4bba2f4af8e8ce3f2e5e8b92cb629bb9"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/ui-tests.xml",
+      "bytes": 976,
+      "sha256": "9581550cd8a807a5b5512ae70322f8d465c0d20bc58b4096be4c6d5279194082"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/updates-tests.log",
+      "bytes": 472,
+      "sha256": "9145541891c7f3b4e29290686a206f6b29688f2ebf2a3099a482764b880ba5ce"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/windows-2022/Testing/QtTest/updates-tests.xml",
+      "bytes": 615,
+      "sha256": "541adec5ecee8f0b6d52bc2d800a026ca02a37bcb09ea3bf4b9cee09eb08c219"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-prior-ci/build/protocol-suite.json",
+      "bytes": 13305,
+      "sha256": "4461a960141be101f1a36edf7e8d7917cdc361839fe83313f5894d36518169c8"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-prior-ci/collection-driver.py",
+      "bytes": 4422,
+      "sha256": "28dbf69471dbec83337f98fda4b5a39944bcc934236b34855ceee28c09b59427"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-prior-ci/intel-job.log",
+      "bytes": 785717,
+      "sha256": "679ffe757d34464c9f8c0fc525a321078e7445234e871ff1be0bcf82c563067f"
+    },
+    {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-prior-ci/receipt.json",
+      "bytes": 34269,
+      "sha256": "37e8b61b3ba92569847ec36814d0b220006f00675954a24f017fe433a62ee841"
+    }
+  ],
+  "sourceAudit": {
+    "files": 213,
+    "findings": 0,
+    "cxx14Configuration": true,
+    "formattingChangedCppPassed": true,
+    "changedFilesUtf8NoBomLf": true
+  },
+  "frozenLongObservation": {
+    "path": "docs/validation/2026-11-07/client-cleanup-r109-local-verified/frozen-long-test-observation.json",
+    "bytes": 799,
+    "sha256": "6c70418d9d72103f99e6e3a080d6de08f8c6180b10a3108debebad26f0b4ec93"
+  },
+  "deliveryComplete": false,
+  "releaseQualified": false,
+  "openScope": [
+    "full native protocol terminal",
+    "directory temporary cleanup",
+    "global GC and disk budgets",
+    "full R6 GUI",
+    "physical LAN and 3x3 matrix",
+    "24-hour stability",
+    "dependency source rebuild",
+    "clean systems and signed distribution"
+  ]
+}

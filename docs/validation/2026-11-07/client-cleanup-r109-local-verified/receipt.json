@@ -1,0 +1,616 @@
+{
+  "observedUtc": "2026-11-07T06:42:00.761769+00:00",
+  "sourceCommit": "bea5d8181fd4e474216ad613120e20c3c086f217",
+  "scope": "Two local Windows toolchains; seven related CTest targets each; final cleanup tests 16 each including init/cleanup",
+  "passed": true,
+  "results": [
+    {
+      "toolchain": "ucrt",
+      "passed": true,
+      "targets": {
+        "core-tests": {
+          "tests": 30,
+          "methods": [
+            "initTestCase",
+            "diagnosticBoundedConfiguration",
+            "diagnosticPortAndDirectoryFailures",
+            "diagnosticAtomicExport",
+            "exclusiveTcpBinding",
+            "tcpAddressFamilies",
+            "tcpGracefulRestart",
+            "privateStoreContracts",
+            "privateReadSharingContention",
+            "privateAtomicWriteContention",
+            "privateMutableFileValidation",
+            "sourceObjectPinned",
+            "sourceMutationRejected",
+            "storageSpacePreflight",
+            "windowsParentDirectoryPinned",
+            "catalogOwnershipAndInterruptedState",
+            "catalogPersistenceAndPages",
+            "endpointBoundaries",
+            "rejectsUnsafePaths",
+            "atomicConflictAndCleanup",
+            "reservationCreatePermission",
+            "concurrentExclusiveCommits",
+            "nativeCommitFailureCleansTemporary",
+            "shortWritesAndDiskFailures",
+            "manifestRoundTrip",
+            "uniqueManifestRoots",
+            "discoveryYieldsAndRejectsMalformedGoodbye",
+            "discoveryAggregatesAddresses",
+            "cancelReceiveReleasesResources",
+            "cleanupTestCase"
+          ]
+        },
+        "sqlite-cache-tests": {
+          "tests": 4,
+          "methods": [
+            "initTestCase",
+            "allProductionConnectionsAccounted",
+            "saturationPreservesControlAndReturnsCredits",
+            "cleanupTestCase"
+          ]
+        },
+        "strong-manifest-tests": {
+          "tests": 10,
+          "methods": [
+            "initTestCase",
+            "independentCanonicalVector",
+            "scanBlocksAndRoundtrip",
+            "invalidAndIncompleteRecords",
+            "pagingAndCancellation",
+            "persistentTamperingRejected",
+            "uploadFrozenHistorySurvivesSourceRemoval",
+            "uploadIdentityAndOwnership",
+            "uploadCancellationAndCorruption",
+            "cleanupTestCase"
+          ]
+        },
+        "task-store-tests": {
+          "tests": 20,
+          "methods": [
+            "initTestCase",
+            "accountingContract",
+            "requiredAccountingReset",
+            "damagedContract",
+            "versionOneMigration",
+            "unsupportedSchema",
+            "migrationRollsBack",
+            "persistentAccountingAndReset",
+            "damagedAccounting",
+            "rejectedAccountingTransaction",
+            "internalSkipNotPublished",
+            "conflictRequestBinding",
+            "unboundQueuePauseAndResume",
+            "changedCreationRejected",
+            "persistentIdempotencyAndOwnership",
+            "simultaneousCreation",
+            "completionAndCompareExchange",
+            "boundedTaskPages",
+            "pauseCancellationAndRecoveryStates",
+            "cleanupTestCase"
+          ]
+        },
+        "expired-task-cleanup-tests": {
+          "tests": 14,
+          "methods": [
+            "initTestCase",
+            "retentionAndIdempotency",
+            "crashAfterRemoval",
+            "replacedTemporary",
+            "guards",
+            "unresolvedCommit",
+            "boundedPages",
+            "ownership",
+            "terminalRetention",
+            "replacementAfterConfirmation",
+            "replacedRoot",
+            "commandLine",
+            "versionTwoMigration",
+            "cleanupTestCase"
+          ]
+        },
+        "client-download-cleanup-tests": {
+          "tests": 13,
+          "methods": [
+            "initTestCase",
+            "previewRunAndResume",
+            "missingTemporaryAfterCrash",
+            "replacedTemporaryIsPreserved",
+            "processExitAfterRemoval",
+            "cancellationRollsBackCheckpointReset",
+            "walModeIsRejectedWithoutSidecars",
+            "paginationAndRepeatedRun",
+            "policies",
+            "replacedRootIsRejected",
+            "maintenanceAndReceiveLeaseRequired",
+            "commandLine",
+            "cleanupTestCase"
+          ],
+          "actualRowsIncludingData": 16
+        },
+        "durable-receive-tests": {
+          "tests": 30,
+          "methods": [
+            "initTestCase",
+            "sharedDataFileBudget",
+            "completedReadOnlyVerification",
+            "itemFailureRecoveryAndScopes",
+            "itemFailureWriteAndLegacy",
+            "itemPageByteBudgetAndBinding",
+            "itemPageActiveAndCompleted",
+            "conflictPolicyStrictDecode",
+            "overwriteCrash",
+            "overwriteContention",
+            "overwriteBusyCommitRecovery",
+            "overwritePublicationFailure",
+            "targetReservationAcrossProcesses",
+            "overwriteDirectoryAndTypes",
+            "failExistingTarget",
+            "failBindingAndCompletedRecovery",
+            "failFilePublicationRace",
+            "failDirectoryPublicationRace",
+            "concurrentFilesAndWindow",
+            "sparseCrashAndRepair",
+            "sparsePartialLimit",
+            "processCrash",
+            "corruptBlockAndKeepBoth",
+            "emptyAndBinding",
+            "committedReplacement",
+            "multipleFilesAndCancellation",
+            "rootReplacement",
+            "directoryCrash",
+            "directoryConflictAndReplacement",
+            "cleanupTestCase"
+          ]
+        }
+      },
+      "binaries": [
+        {
+          "name": "dukto-cli.exe",
+          "bytes": 2294222,
+          "sha256": "07264787eb2b533ac23e0e7e8cd1ea076781484f1710f1bf0270e991ee396149"
+        },
+        {
+          "name": "client-download-cleanup-tests.exe",
+          "bytes": 680958,
+          "sha256": "6ecfec305195bc7f325b0d669ed467dc773dc08dd50877d1ad037ab8d52f14d1"
+        }
+      ],
+      "cmakeCache": [
+        "CMAKE_CXX_COMPILER:STRING=E:/project/dukto/.tools/msys64/ucrt64/bin/g++.exe",
+        "CMAKE_PREFIX_PATH:UNINITIALIZED=E:/project/dukto/.tools/msys64/ucrt64",
+        "DUKTO_BUILD_GUI:BOOL=OFF",
+        "OPENSSL_ROOT_DIR:UNINITIALIZED=E:/project/dukto/.tools/msys64/ucrt64"
+      ]
+    },
+    {
+      "toolchain": "msvc",
+      "passed": true,
+      "targets": {
+        "core-tests": {
+          "tests": 30,
+          "methods": [
+            "initTestCase",
+            "diagnosticBoundedConfiguration",
+            "diagnosticPortAndDirectoryFailures",
+            "diagnosticAtomicExport",
+            "exclusiveTcpBinding",
+            "tcpAddressFamilies",
+            "tcpGracefulRestart",
+            "privateStoreContracts",
+            "privateReadSharingContention",
+            "privateAtomicWriteContention",
+            "privateMutableFileValidation",
+            "sourceObjectPinned",
+            "sourceMutationRejected",
+            "storageSpacePreflight",
+            "windowsParentDirectoryPinned",
+            "catalogOwnershipAndInterruptedState",
+            "catalogPersistenceAndPages",
+            "endpointBoundaries",
+            "rejectsUnsafePaths",
+            "atomicConflictAndCleanup",
+            "reservationCreatePermission",
+            "concurrentExclusiveCommits",
+            "nativeCommitFailureCleansTemporary",
+            "shortWritesAndDiskFailures",
+            "manifestRoundTrip",
+            "uniqueManifestRoots",
+            "discoveryYieldsAndRejectsMalformedGoodbye",
+            "discoveryAggregatesAddresses",
+            "cancelReceiveReleasesResources",
+            "cleanupTestCase"
+          ]
+        },
+        "sqlite-cache-tests": {
+          "tests": 4,
+          "methods": [
+            "initTestCase",
+            "allProductionConnectionsAccounted",
+            "saturationPreservesControlAndReturnsCredits",
+            "cleanupTestCase"
+          ]
+        },
+        "strong-manifest-tests": {
+          "tests": 10,
+          "methods": [
+            "initTestCase",
+            "independentCanonicalVector",
+            "scanBlocksAndRoundtrip",
+            "invalidAndIncompleteRecords",
+            "pagingAndCancellation",
+            "persistentTamperingRejected",
+            "uploadFrozenHistorySurvivesSourceRemoval",
+            "uploadIdentityAndOwnership",
+            "uploadCancellationAndCorruption",
+            "cleanupTestCase"
+          ]
+        },
+        "task-store-tests": {
+          "tests": 20,
+          "methods": [
+            "initTestCase",
+            "accountingContract",
+            "requiredAccountingReset",
+            "damagedContract",
+            "versionOneMigration",
+            "unsupportedSchema",
+            "migrationRollsBack",
+            "persistentAccountingAndReset",
+            "damagedAccounting",
+            "rejectedAccountingTransaction",
+            "internalSkipNotPublished",
+            "conflictRequestBinding",
+            "unboundQueuePauseAndResume",
+            "changedCreationRejected",
+            "persistentIdempotencyAndOwnership",
+            "simultaneousCreation",
+            "completionAndCompareExchange",
+            "boundedTaskPages",
+            "pauseCancellationAndRecoveryStates",
+            "cleanupTestCase"
+          ]
+        },
+        "expired-task-cleanup-tests": {
+          "tests": 14,
+          "methods": [
+            "initTestCase",
+            "retentionAndIdempotency",
+            "crashAfterRemoval",
+            "replacedTemporary",
+            "guards",
+            "unresolvedCommit",
+            "boundedPages",
+            "ownership",
+            "terminalRetention",
+            "replacementAfterConfirmation",
+            "replacedRoot",
+            "commandLine",
+            "versionTwoMigration",
+            "cleanupTestCase"
+          ]
+        },
+        "client-download-cleanup-tests": {
+          "tests": 13,
+          "methods": [
+            "initTestCase",
+            "previewRunAndResume",
+            "missingTemporaryAfterCrash",
+            "replacedTemporaryIsPreserved",
+            "processExitAfterRemoval",
+            "cancellationRollsBackCheckpointReset",
+            "walModeIsRejectedWithoutSidecars",
+            "paginationAndRepeatedRun",
+            "policies",
+            "replacedRootIsRejected",
+            "maintenanceAndReceiveLeaseRequired",
+            "commandLine",
+            "cleanupTestCase"
+          ],
+          "actualRowsIncludingData": 16
+        },
+        "durable-receive-tests": {
+          "tests": 30,
+          "methods": [
+            "initTestCase",
+            "sharedDataFileBudget",
+            "completedReadOnlyVerification",
+            "itemFailureRecoveryAndScopes",
+            "itemFailureWriteAndLegacy",
+            "itemPageByteBudgetAndBinding",
+            "itemPageActiveAndCompleted",
+            "conflictPolicyStrictDecode",
+            "overwriteCrash",
+            "overwriteContention",
+            "overwriteBusyCommitRecovery",
+            "overwritePublicationFailure",
+            "targetReservationAcrossProcesses",
+            "overwriteDirectoryAndTypes",
+            "failExistingTarget",
+            "failBindingAndCompletedRecovery",
+            "failFilePublicationRace",
+            "failDirectoryPublicationRace",
+            "concurrentFilesAndWindow",
+            "sparseCrashAndRepair",
+            "sparsePartialLimit",
+            "processCrash",
+            "corruptBlockAndKeepBoth",
+            "emptyAndBinding",
+            "committedReplacement",
+            "multipleFilesAndCancellation",
+            "rootReplacement",
+            "directoryCrash",
+            "directoryConflictAndReplacement",
+            "cleanupTestCase"
+          ]
+        }
+      },
+      "binaries": [
+        {
+          "name": "dukto-cli.exe",
+          "bytes": 1245696,
+          "sha256": "4184a32bcc398d6d9524bb8c615566039c29eb5e9d34194565179a51446fa7b6"
+        },
+        {
+          "name": "client-download-cleanup-tests.exe",
+          "bytes": 328192,
+          "sha256": "b5c1357cd06e5d043e6f698ce26ab495388b010e30dcb60259f0cd9b267a098b"
+        }
+      ],
+      "cmakeCache": [
+        "CMAKE_PREFIX_PATH:UNINITIALIZED=E:/project/dukto/.tools/Qt/5.15.2/msvc2019_64",
+        "DUKTO_BUILD_GUI:BOOL=OFF",
+        "OPENSSL_ROOT_DIR:UNINITIALIZED=E:/project/dukto/.tools/openssl/Library"
+      ]
+    }
+  ],
+  "inputCount": 238,
+  "audit": {
+    "files": 213,
+    "findings": 0,
+    "cxx14Configuration": true,
+    "formattingChangedCppPassed": true,
+    "changedFilesUtf8NoBomLf": true
+  },
+  "failuresPreserved": [
+    "4884016: all four CI runners failed compiling private openFile calls; fixed public open API",
+    "first UCRT fixture: QTemporaryFile replacement rename failed; fixed move-original/create-replacement fixture",
+    "initial PATH inspection missed preinstalled .tools CMake/Qt/MSVC/UCRT; corrected explicit tool paths",
+    "initial evidence collector expected 16 JUnit method elements; Qt emits 13 methods and four policy rows in text; checked both originals after correction"
+  ],
+  "files": [
+    {
+      "path": "build-inputs.json",
+      "bytes": 37673,
+      "sha256": "63bc67cecc7a8223055a24476a1c1d6ba762e051d3b502b039cac91a94b8f902"
+    },
+    {
+      "path": "initial-failures/mac-arm-job.log",
+      "bytes": 102611,
+      "sha256": "952ff39ec89e72128af59d947246dc6845b3d5e2e6739314835137220fc71db6"
+    },
+    {
+      "path": "initial-failures/mac-intel-job.log",
+      "bytes": 103942,
+      "sha256": "fb9f78bb29962c3b54709ed2954f0626ffab07d4989ea54952dd004524d301df"
+    },
+    {
+      "path": "initial-failures/ubuntu-job.log",
+      "bytes": 96606,
+      "sha256": "f54fee7188939ed66cbc63b9150c9a612bb570479b502c0d0b22fb33305a2818"
+    },
+    {
+      "path": "initial-failures/ucrt-first-test.log",
+      "bytes": 947,
+      "sha256": "ee40920d1b144e1bb8193b564d4ecc87be5e121e31316a2160e0a49c25cdbb0b"
+    },
+    {
+      "path": "initial-failures/ucrt-first-test.xml",
+      "bytes": 960,
+      "sha256": "23a2d3777bac75208b7e2d0e6571a624490cfed8489a3c75424981f22c8a284e"
+    },
+    {
+      "path": "initial-failures/windows-job.log",
+      "bytes": 136873,
+      "sha256": "da26e1d8f5c8ee23ca0ac8537322b36931ca0bac013a0107afb4874c0e870083"
+    },
+    {
+      "path": "msvc/client-download-cleanup-tests.log",
+      "bytes": 1323,
+      "sha256": "5a5d42d5575ff0d4e1137d4e8a55c2c0c77676dcb9500afeeaae9c13473599c3"
+    },
+    {
+      "path": "msvc/client-download-cleanup-tests.xml",
+      "bytes": 1197,
+      "sha256": "e70599ab51612d5e04b7e4ada8f19499e86d961fb8fd4987f23a85cc21ee5ac7"
+    },
+    {
+      "path": "msvc/core-tests.log",
+      "bytes": 2962,
+      "sha256": "7feae9b110492e7d6c4f9a6897daa273e85f4982e9492c489fc7c491fbe4e638"
+    },
+    {
+      "path": "msvc/core-tests.xml",
+      "bytes": 2250,
+      "sha256": "047e5ca57b78e56704ef5381217a01ddbcc6406a72d7dd35709bfe8bfecf8048"
+    },
+    {
+      "path": "msvc/durable-receive-tests.log",
+      "bytes": 3167,
+      "sha256": "af8e88580b731636cbcbea19c4cba8e4279d8272e2b6c1ccaa12151a270067ce"
+    },
+    {
+      "path": "msvc/durable-receive-tests.xml",
+      "bytes": 2203,
+      "sha256": "3151cf8a179fd949a689f46a61eeb20125e7023b893c7e9edca114569b58418e"
+    },
+    {
+      "path": "msvc/expired-task-cleanup-tests.log",
+      "bytes": 1324,
+      "sha256": "a551d39d9213c25f2d87be8da70f7979a29147e6cafa27fd3395ed3ef7a63cda"
+    },
+    {
+      "path": "msvc/expired-task-cleanup-tests.xml",
+      "bytes": 1155,
+      "sha256": "903e741db55411f0450f1f7e437f20515248ab54aa168262861b237dc53d6b04"
+    },
+    {
+      "path": "msvc/final-test.log",
+      "bytes": 1323,
+      "sha256": "18c74d2318223e24db7d3a7ff9b392b1d64a6f38b4e3b678b9fb3685549b6c8d"
+    },
+    {
+      "path": "msvc/final-test.xml",
+      "bytes": 1197,
+      "sha256": "e70599ab51612d5e04b7e4ada8f19499e86d961fb8fd4987f23a85cc21ee5ac7"
+    },
+    {
+      "path": "msvc/LastTest.log",
+      "bytes": 6066,
+      "sha256": "c1d45b2ee8fcac409f489f1b638c32b63ad42b543df9754923516d6ac89d355d"
+    },
+    {
+      "path": "msvc/related-ctest.log",
+      "bytes": 882,
+      "sha256": "7885003aad45491c39add7ed79e7c5eddbb0250b88a271f2bb6811e2e78b614f"
+    },
+    {
+      "path": "msvc/sqlite-cache-tests.log",
+      "bytes": 534,
+      "sha256": "4db3b665247227f467727dc8f04419328faa02bd83c8996119db36d19bab3ea7"
+    },
+    {
+      "path": "msvc/sqlite-cache-tests.xml",
+      "bytes": 666,
+      "sha256": "6aea2b8610e5884b4ea133eae23bc17cc5f0ade576e67e7472928921cf3c375a"
+    },
+    {
+      "path": "msvc/strong-manifest-tests.log",
+      "bytes": 903,
+      "sha256": "44a56aad85b2766254554149674a732df968de5a4537a691a664cb426a16871e"
+    },
+    {
+      "path": "msvc/strong-manifest-tests.xml",
+      "bytes": 1036,
+      "sha256": "a54b99aee3af4e20e772e48dc77ceddc54aa20e551e58364fc3ea1da14cb113e"
+    },
+    {
+      "path": "msvc/task-store-tests.log",
+      "bytes": 2503,
+      "sha256": "ea13f2df40d8858c7f48ca25bd372461d7f828deaea2c00534b71e6864875aa5"
+    },
+    {
+      "path": "msvc/task-store-tests.xml",
+      "bytes": 1591,
+      "sha256": "7f3b1c681023254fe9455501a3335a4d1ef557ff937691facb260ac224e0dfa2"
+    },
+    {
+      "path": "source-audit.json",
+      "bytes": 26090,
+      "sha256": "f7310368a3bc435e38afe151ebb1ad54a04afce52607d9a5774fc2a373f19a90"
+    },
+    {
+      "path": "ucrt/client-download-cleanup-tests.log",
+      "bytes": 1326,
+      "sha256": "d724eb4a6ba8b354f1502522ac2f62bd697a44dd3b4455c2dcddb29bb5eef985"
+    },
+    {
+      "path": "ucrt/client-download-cleanup-tests.xml",
+      "bytes": 1201,
+      "sha256": "4ac6fc8075c4a60add98c0b79e547177a3b0a4b0b05cc5a5d3a0d33b96765e27"
+    },
+    {
+      "path": "ucrt/core-tests.log",
+      "bytes": 2965,
+      "sha256": "f82b90bd750cb8489024bb9e303c67499a096e5f81cafa1f62742ac595d5979c"
+    },
+    {
+      "path": "ucrt/core-tests.xml",
+      "bytes": 2254,
+      "sha256": "cb2c2e02714a9207fcafbd79c9cee9c2ccc43e9187879f1449e2f6e3a569b2d8"
+    },
+    {
+      "path": "ucrt/durable-receive-tests.log",
+      "bytes": 3170,
+      "sha256": "6a09355fa3acd71d071ff30ec0151649043def6940698af7dea7879bd159906e"
+    },
+    {
+      "path": "ucrt/durable-receive-tests.xml",
+      "bytes": 2207,
+      "sha256": "67c53c7f42326cafb38b2377fa0f17f8c55c4f71dcb30b3c5cc494d9489bdf1c"
+    },
+    {
+      "path": "ucrt/expired-task-cleanup-tests.log",
+      "bytes": 1327,
+      "sha256": "fc262d56b85fe644bba7dbc1a3a5c9be53abe59fc86c41c0171fd7fbc13cc527"
+    },
+    {
+      "path": "ucrt/expired-task-cleanup-tests.xml",
+      "bytes": 1159,
+      "sha256": "b6ee4f500a960527ee3434dbe14a379e7695a7658f875f1d68c1d7b2f95815b0"
+    },
+    {
+      "path": "ucrt/final-test.log",
+      "bytes": 1326,
+      "sha256": "a6c1432a0f8b83120e4431dd611679b816f6c4b055b7bdec94e7c3d918b8bc07"
+    },
+    {
+      "path": "ucrt/final-test.xml",
+      "bytes": 1201,
+      "sha256": "4ac6fc8075c4a60add98c0b79e547177a3b0a4b0b05cc5a5d3a0d33b96765e27"
+    },
+    {
+      "path": "ucrt/LastTest.log",
+      "bytes": 6010,
+      "sha256": "42952c1918887063eaa4d518a6e760f642407835ad73f99094dda9908bbf0602"
+    },
+    {
+      "path": "ucrt/related-ctest.log",
+      "bytes": 882,
+      "sha256": "114eca5600bec1c8b40d1ea805ae6ec887894f8dd430ed930e17241545b63f36"
+    },
+    {
+      "path": "ucrt/sqlite-cache-tests.log",
+      "bytes": 537,
+      "sha256": "3dd9029fa40e2d51d9541aaf94537688da47f747192582698d6d5f494465faca"
+    },
+    {
+      "path": "ucrt/sqlite-cache-tests.xml",
+      "bytes": 670,
+      "sha256": "c3b6ff5391636c3d812626f5e050709507bfca01744e320f6bd5530892ad1705"
+    },
+    {
+      "path": "ucrt/strong-manifest-tests.log",
+      "bytes": 906,
+      "sha256": "ba3e500d598985286c5dc32b7b0bdd46923a1ea5a633170e8a4566da875d649e"
+    },
+    {
+      "path": "ucrt/strong-manifest-tests.xml",
+      "bytes": 1040,
+      "sha256": "efca2d3380463f4b82bb66ab3e89945bf8c9f0c1c3353ffd4a4fc7d6f1b4b3c2"
+    },
+    {
+      "path": "ucrt/task-store-tests.log",
+      "bytes": 2507,
+      "sha256": "30ce83621704b213d3f03a7f8af4bfc179f311b18402c842e4b6ef98f3d33889"
+    },
+    {
+      "path": "ucrt/task-store-tests.xml",
+      "bytes": 1595,
+      "sha256": "2a98da1e6c76933c3fdf946fc6f250c4dcb5d66be5b5aec50559f317e6f2ed2a"
+    }
+  ],
+  "deliveryComplete": false,
+  "releaseQualified": false,
+  "openScope": [
+    "final native four-runner regression",
+    "directory temporary cleanup",
+    "global GC and disk budgets",
+    "full R6 GUI",
+    "physical LAN and 3x3 matrix",
+    "24-hour stability",
+    "clean-system signed distribution"
+  ]
+}

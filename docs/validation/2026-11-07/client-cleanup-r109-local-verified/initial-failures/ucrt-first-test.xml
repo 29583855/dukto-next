@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="0" failures="1" tests="7" name="ClientDownloadCleanupTests">
+  <properties>
+    <property value="5.15.19" name="QTestVersion"/>
+    <property value="5.15.19" name="QtVersion"/>
+    <property value="Qt 5.15.19 (x86_64&#x002D;little_endian&#x002D;llp64 shared (dynamic) release build; by GCC 16.1.0)" name="QtBuild"/>
+  </properties>
+  <testcase result="pass" name="initTestCase"/>
+  <testcase result="pass" name="previewRunAndResume"/>
+  <testcase result="pass" name="missingTemporaryAfterCrash"/>
+  <testcase result="fail" name="replacedTemporaryIsPreserved">
+    <failure message="&apos;QFile::rename(replacement.fileName(), path)&apos; returned FALSE. ()" result="fail"/>
+  </testcase>
+  <testcase result="pass" name="walModeIsRejectedWithoutSidecars"/>
+  <testcase result="pass" name="commandLine"/>
+  <testcase result="pass" name="cleanupTestCase"/>
+  <system-err/>
+</testsuite>

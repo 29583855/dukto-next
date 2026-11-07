@@ -1,7 +1,7 @@
 {
-  "observedUtc": "2026-11-07T04:02:01.404344+00:00",
-  "productionCommit": "641920f75b76149d49ee01f134bf70097857dc3d",
-  "testCommit": "cef3759b642d783b78a3262ce1072b4da5643d9d",
+  "observedUtc": "2026-11-07T06:58:18.130649+00:00",
+  "productionCommit": "bea5d8181fd4e474216ad613120e20c3c086f217",
+  "testCommit": "bea5d8181fd4e474216ad613120e20c3c086f217",
   "packages": [
     {
       "architecture": "x86_64",
@@ -215,17 +215,19 @@
   "focusedRunUrl": "https://github.com/29583855/dukto-next/actions/runs/42036473915",
   "focusedWorkflowConclusion": "success",
   "nativeFull": {
-    "sourceCommit": "cef3759b642d783b78a3262ce1072b4da5643d9d",
-    "runId": 42336003722,
-    "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42336003722",
+    "sourceCommit": "bea5d8181fd4e474216ad613120e20c3c086f217",
+    "runId": 42347962868,
+    "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42347962868",
     "status": "in_progress",
     "workflowConclusion": null,
     "fullProtocolPending": true,
+    "coreTargetsEach": 25,
+    "allFourCoreSuitesVerified": true,
     "allOriginalReportsVerified": false,
-    "expectedCoreTargetsEach": 24,
     "evidence": {
-      "path": "docs/validation/2026-11-07/expiry-r108-macos-compiled/native-fault-assertion-followup.json",
-      "sha256": "40a0960a6f54e8e5b03d69bd97d8cc71063a6969ebce60631c973be984fbdc75"
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-native-core/receipt.json",
+      "bytes": 36854,
+      "sha256": "d923fa30a3c9753b53363588fa1925cd7ed31d31113de6e06145398008420fde"
     }
   },
   "nativeMuslRunUrl": "https://github.com/29583855/dukto-next/actions/runs/42135996839",
@@ -243,8 +245,8 @@
   ],
   "releaseQualified": false,
   "deliveryComplete": false,
-  "planVersion": "v0.108",
-  "currentSourceStage": "R108 Mac package and Ubuntu/Apple Silicon terminal verified; precise POSIX fault fixture commit rerunning on four platforms",
+  "planVersion": "v0.109",
+  "currentSourceStage": "R109 four native core suites and both Mac compilation archives verified; full protocol running",
   "nativeMusl": {
     "sourceCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
     "productionCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
@@ -17614,8 +17616,7 @@
       "sha256": "872c369563c6beb92b4421968bdf88a82f6621aae9bcad048f3a3fe316c7c56a"
     }
   },
-  "currentSourceCommit": "cef3759b642d783b78a3262ce1072b4da5643d9d",
-  "productionImplementationUnchangedFrom": "88f33b2c83f2950307c362fb64c693f7e9e5929d",
+  "currentSourceCommit": "bea5d8181fd4e474216ad613120e20c3c086f217",
   "nativeRegressionGuardR98": {
     "date": "2026-11-07",
     "planVersion": "v0.98",
@@ -19648,7 +19649,7 @@
     }
   },
   "currentGuiSourceCommitPending": false,
-  "coreProductionCommit": "88f33b2c83f2950307c362fb64c693f7e9e5929d",
+  "coreProductionCommit": "bea5d8181fd4e474216ad613120e20c3c086f217",
   "linuxPreviewR98": {
     "sourceCommit": "b2e4659b347c65eef24c8e568e07e96a2d6ff2d7",
     "run": {
@@ -20625,7 +20626,7 @@
     "path": "docs/validation/2026-11-07/cancel-r102-native-terminal/receipt.json",
     "sha256": "93384dac8e1ae928a2cb54494b861638b6bc418f66dc24d2de5a514c0185f238"
   },
-  "currentGuiSourceCommit": "641920f75b76149d49ee01f134bf70097857dc3d",
+  "currentGuiSourceCommit": "bea5d8181fd4e474216ad613120e20c3c086f217",
   "r103CompleteTerminal": {
     "path": "docs/validation/2026-11-07/diagnostics-r103-native-terminal/receipt.json",
     "sha256": "e4fbf6ba33cf3e04747c1f06619ba3465b4ec412d9eda295d9310221e204194d"
@@ -20921,6 +20922,61 @@
     "evidence": {
       "path": "docs/validation/2026-11-07/expiry-r108-fault-assertion-windows/receipt.json",
       "sha256": "dfceb25b7a8ec21372a7c651d4ade1620148efed8d08d8cda07f3822e529b09d"
+    }
+  },
+  "previousSourceBeforeR109": {
+    "productionCommit": "641920f75b76149d49ee01f134bf70097857dc3d",
+    "testCommit": "cef3759b642d783b78a3262ce1072b4da5643d9d",
+    "coreProductionCommit": "88f33b2c83f2950307c362fb64c693f7e9e5929d",
+    "currentGuiSourceCommit": "641920f75b76149d49ee01f134bf70097857dc3d",
+    "productionImplementationUnchangedFrom": "88f33b2c83f2950307c362fb64c693f7e9e5929d"
+  },
+  "nativeFullBeforeR109": {
+    "sourceCommit": "cef3759b642d783b78a3262ce1072b4da5643d9d",
+    "runId": 42336003722,
+    "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42336003722",
+    "status": "in_progress",
+    "workflowConclusion": null,
+    "fullProtocolPending": true,
+    "allOriginalReportsVerified": false,
+    "expectedCoreTargetsEach": 24,
+    "evidence": {
+      "path": "docs/validation/2026-11-07/expiry-r108-macos-compiled/native-fault-assertion-followup.json",
+      "sha256": "40a0960a6f54e8e5b03d69bd97d8cc71063a6969ebce60631c973be984fbdc75"
+    }
+  },
+  "clientDownloadCleanupR109": {
+    "sourceCommit": "bea5d8181fd4e474216ad613120e20c3c086f217",
+    "manifest": {
+      "path": "docs/ci-verification-20261107-r109.json",
+      "bytes": 112805,
+      "sha256": "acae459c8086f548f21c1e492a93e3977ff61761c682fb4e7d49c95c149c83a2"
+    },
+    "localRelatedTargetsEach": 7,
+    "nativeCleanupRowsEach": 16,
+    "allFourNativeCoreSuitesVerified": true,
+    "bothMacArchitecturesCompiledAndVerified": true,
+    "fullNativeProtocolPending": true,
+    "globalGcAndDiskBudgetComplete": false
+  },
+  "macOSCompilationR109": {
+    "sourceCommit": "bea5d8181fd4e474216ad613120e20c3c086f217",
+    "evidence": {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-macos-compiled/receipt.json",
+      "bytes": 2645,
+      "sha256": "338760448a459cece9ff92ce6809d8506dc953ee3c7519a5457fa57d2a780b51"
+    },
+    "bothArchitecturesCompiledAndVerified": true,
+    "dependenciesDeployed": false
+  },
+  "priorNative6eea9d2Terminal": {
+    "runId": 42340140189,
+    "conclusion": "failure",
+    "originalFailureRetained": true,
+    "evidence": {
+      "path": "docs/validation/2026-11-07/client-cleanup-r109-prior-ci/receipt.json",
+      "bytes": 34269,
+      "sha256": "37e8b61b3ba92569847ec36814d0b220006f00675954a24f017fe433a62ee841"
     }
   }
 }
