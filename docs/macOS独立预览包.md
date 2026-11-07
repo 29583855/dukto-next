@@ -15,7 +15,18 @@
 
 解压ZIP后用tar保留权限和框架链接，启动方式见下方示例。当前是adhoc开发预览；Developer ID、公证、干净系统、最低系统、完整GUI/选择器、第三方源码独立重建及正式发行继续验收。完整协议和长期按各自真实终态收验。
 
-## R103最新编译产物（2026-11-07）
+## R104最新编译产物（2026-11-07）
+
+精确源码9c1e9419f7acb9bc3ddf2b8133eb330ead0c3fa6的双Mac GUI/独立CLI已编译、归档并上传；附件及内部tar摘要、源码、Mach-O架构、执行位和许可已逐项核验。
+
+| 架构 | 编译产物 | 内部tar.gz SHA-256 |
+| --- | --- | --- |
+| arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42316601470/artifacts/13551071933) | 2177469af5c44bc8a4e3c1972ec6459163c41538e7021850a03dba6eacc82a60 |
+| x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42316601470/artifacts/13551037372) | 52023b03e3485504d06560f31e45a071f50d847314b4c3a3030df9955eb50014 |
+
+[编译回执](validation/2026-11-07/state-use-r104-macos-compiled/receipt.json)。这些编译归档仍需匹配Qt5/OpenSSL运行依赖；含依赖预览仍为顶部R100。R104四runner各23核心/88份Qt原报告已验，新增状态目录共享/独占互斥方法实际通过，两条精确Darwin预期失败保留。[核心回执](validation/2026-11-07/state-use-r104-native-core/receipt.json)。完整协议和POSIX八进程/链接拒绝专项仍待原件收验，过期回收及整个R04继续。
+
+## R103编译记录（2026-11-07）
 
 精确源码cd92c43f301e5a60584b7896a450247855f0bdfd已公开；[原生CI 42311369310](https://github.com/29583855/dukto-next/actions/runs/42311369310)的Apple Silicon/Intel编译、归档及上传成功。两份GUI/独立CLI的GitHub附件/内部tar摘要、源码、Mach-O架构、执行位及许可已逐件核验。
 

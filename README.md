@@ -6,13 +6,13 @@
 
 当前已建立 C++14 共用核心、Qt Quick 2 桌面端和独立 CLI。Windows 已验证与原版文件/目录/文本双向互传、超过 4 GiB、10 万文件、100 轮接收，以及首次说明/设置/截图/单实例和有界头像模块。完整原版交互、服务器、多线程、恢复和跨平台验收继续按计划推进。原版目录保留用于对照。
 
-公开仓库为[29583855/dukto-next](https://github.com/29583855/dukto-next)。最新R103源码cd92c43的双Mac GUI/独立CLI编译及四原生各23核心/88份Qt原报告已验，新增本地诊断/原子导出核心和GUI方法通过；完整协议与真实CLI诊断原生专项继续。[最新Mac编译产物](docs/macOS独立预览包.md)。含依赖部署包仍为R100精确ed4f5cf：[Windows](docs/Windows独立预览包.md)、[macOS Apple Silicon/Intel](docs/macOS独立预览包.md)、[Linux](docs/Linux独立预览包.md)，均含GUI/独立CLI；其四平台188协议已验，两条精确Darwin端口共享XFAIL披露。真实长期、完整GUI/选择器、物理网络及正式交付继续，见[计划](开发计划与进度.md)和[当前索引](docs/current-validation.json)。
+公开仓库为[29583855/dukto-next](https://github.com/29583855/dukto-next)。最新R104源码9c1e941的双Mac GUI/独立CLI编译及四原生各23核心/88份Qt原报告已验，新增状态目录维护互斥方法通过；完整协议/POSIX多进程、独立Ubuntu及安全回收继续。[最新Mac编译产物](docs/macOS独立预览包.md)。含依赖部署包仍为R100精确ed4f5cf：[Windows](docs/Windows独立预览包.md)、[macOS Apple Silicon/Intel](docs/macOS独立预览包.md)、[Linux](docs/Linux独立预览包.md)，均含GUI/独立CLI；其四平台188协议已验，两条精确Darwin端口共享XFAIL披露。真实长期、完整GUI/选择器、物理网络及正式交付继续，见[计划](开发计划与进度.md)和[当前索引](docs/current-validation.json)。
 
 新增[b9d9b78上传发送端确认](docs/decisions/0022-上传发送端持久处置与证据恢复.md)已通过本机专项；原CI终态failure保留：四平台临时库glob误判，另Windows并发隔离空闲线程5/基线3的原因未确认。旧运行不再视为进行中，完整历史见主计划v0.64。
 
 新增[3fbec42覆盖占用修正](docs/decisions/0023-Windows覆盖共享占用与同任务恢复.md)已包含于当前Mac包。其完整四runner终态failure：各21核心通过，协议154/155，Windows改共享根时私有配置替换失败；Ubuntu/双Mac各38、Alpine另38协议通过。新[私有状态修复](docs/decisions/0024-私有状态原子替换与读者竞争.md)按7772151单独复验。
 
-R104已增加状态目录共享使用/独占维护保护，双Windows子项已验，新Mac/Linux原生验证继续；过期回收及全局配额仍待实现。R102四平台完整终态success及188协议已严格收验。详见[状态维护边界](docs/状态目录维护保护.md)和[本轮回执](docs/validation/2026-11-07/state-use-r104-qualified/receipt.json)。
+R104已增加状态目录共享使用/独占维护保护，四原生核心与双Windows多进程子项已验，完整协议继续；过期回收及全局配额仍待实现。R102四平台完整终态success及188协议已严格收验。详见[状态维护边界](docs/状态目录维护保护.md)和[本轮回执](docs/validation/2026-11-07/state-use-r104-qualified/receipt.json)。
 
 ## 文档入口
 
