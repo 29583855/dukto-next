@@ -1,0 +1,160 @@
+{
+  "observedUtc": "2026-11-07T01:34:15.435302+00:00",
+  "productionSourceCommit": "9c1e9419f7acb9bc3ddf2b8133eb330ead0c3fa6",
+  "productionCodeChanged": false,
+  "diagnostics": [
+    {
+      "diagnostic": "task-items-r106-glibc-diagnostic",
+      "straceEnabled": true,
+      "samples": 76,
+      "events": 58,
+      "publishedFiles": 0,
+      "publishedHashesVerifiedOnlyForNonemptySubset": false,
+      "cpuPsiSomeAvg10Percent": {
+        "minimum": 7.81,
+        "median": 84.86,
+        "maximum": 96.42
+      },
+      "actualTransferDeadlineSeconds": 90,
+      "timedOut": true,
+      "deadlineTriggeredCancellationCode": 7,
+      "driverAndCollectionActuallyExitedZero": true,
+      "diagnosticBinaryUnchanged": true,
+      "fullTaskItemsQualified": false,
+      "stracePerturbsSchedulingAndNotTimingBaseline": true
+    },
+    {
+      "diagnostic": "task-items-r106-glibc-untraced",
+      "straceEnabled": false,
+      "samples": 54,
+      "events": 314,
+      "publishedFiles": 126,
+      "publishedHashesVerifiedOnlyForNonemptySubset": true,
+      "cpuPsiSomeAvg10Percent": {
+        "minimum": 8.26,
+        "median": 86.42,
+        "maximum": 99.13
+      },
+      "actualTransferDeadlineSeconds": 90,
+      "timedOut": true,
+      "deadlineTriggeredCancellationCode": 7,
+      "driverAndCollectionActuallyExitedZero": true,
+      "diagnosticBinaryUnchanged": true,
+      "fullTaskItemsQualified": false
+    }
+  ],
+  "originalTimeoutCauseEstablished": false,
+  "cpuPressureObservedDuringDiagnosticOnly": true,
+  "automaticRetriesNotAdded": true,
+  "original90SecondDeadlineNotIncreased": true,
+  "independentUbuntuFullTaskItemsQualified": false,
+  "evidence": [
+    {
+      "path": "docs/validation/2026-11-07/task-items-r106-glibc-diagnostic/client-sync.trace",
+      "sha256": "1d336d49270c20572cbb7adfe401440a3f5284a24a5a2ab5db34c45718d69605"
+    },
+    {
+      "path": "docs/validation/2026-11-07/task-items-r106-glibc-diagnostic/client.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/validation/2026-11-07/task-items-r106-glibc-diagnostic/collection-exit.json",
+      "sha256": "d45db54bba0c56e2691a52869729c0a3eade7f5d50545e7832a20e3262a9d422"
+    },
+    {
+      "path": "docs/validation/2026-11-07/task-items-r106-glibc-diagnostic/collection.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/validation/2026-11-07/task-items-r106-glibc-diagnostic/diagnostic-result.json",
+      "sha256": "4c696cbb8a25b892d584b3d3d0d2b7ad361caf3105c447de99ddbf23919544c4"
+    },
+    {
+      "path": "docs/validation/2026-11-07/task-items-r106-glibc-diagnostic/driver-exit.json",
+      "sha256": "d45db54bba0c56e2691a52869729c0a3eade7f5d50545e7832a20e3262a9d422"
+    },
+    {
+      "path": "docs/validation/2026-11-07/task-items-r106-glibc-diagnostic/driver.log",
+      "sha256": "0f91cee0614f1d4d307eb880de59a3c1d5ba4e53305af7c3bf6fe30de9965ea5"
+    },
+    {
+      "path": "docs/validation/2026-11-07/task-items-r106-glibc-diagnostic/events.jsonl",
+      "sha256": "c9f0e3e2ea8f2d2d88359d31ecb6e7c657e1855ee97ccfab436cccb9a1fdc703"
+    },
+    {
+      "path": "docs/validation/2026-11-07/task-items-r106-glibc-diagnostic/remote-driver.py",
+      "sha256": "e7507c93837622ade3109c9b9f987b73b0eb8287c0fb6074ba60d6d44180f6c5"
+    },
+    {
+      "path": "docs/validation/2026-11-07/task-items-r106-glibc-diagnostic/results.tar.gz",
+      "sha256": "5783b3f2f16704727f0c36446cfe9e1b194ef51617d008b4e529f0dac65b105d"
+    },
+    {
+      "path": "docs/validation/2026-11-07/task-items-r106-glibc-diagnostic/samples.jsonl",
+      "sha256": "8e94a49896bce80408dbfa5be6dd3027c3a7553dca732b73df35d66ed681dbf1"
+    },
+    {
+      "path": "docs/validation/2026-11-07/task-items-r106-glibc-diagnostic/server-sync.trace",
+      "sha256": "bc08aef95bfa7ae2ef41a79e114c731ac9ee1d0a38a22b033944140cd923c60b"
+    },
+    {
+      "path": "docs/validation/2026-11-07/task-items-r106-glibc-diagnostic/server.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/validation/2026-11-07/task-items-r106-glibc-diagnostic/validation-driver.py",
+      "sha256": "6c9da09e8680395569a94b73201adb6c4ad6912a3fb950366de6d3b3f1a47a80"
+    },
+    {
+      "path": "docs/validation/2026-11-07/task-items-r106-glibc-untraced/client.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/validation/2026-11-07/task-items-r106-glibc-untraced/collection-exit.json",
+      "sha256": "d45db54bba0c56e2691a52869729c0a3eade7f5d50545e7832a20e3262a9d422"
+    },
+    {
+      "path": "docs/validation/2026-11-07/task-items-r106-glibc-untraced/collection.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/validation/2026-11-07/task-items-r106-glibc-untraced/diagnostic-result.json",
+      "sha256": "1e240c7f5081df5beaa4b2011b2ef3ad0048c29070e748d42aa8edf80ff0ffe7"
+    },
+    {
+      "path": "docs/validation/2026-11-07/task-items-r106-glibc-untraced/driver-exit.json",
+      "sha256": "d45db54bba0c56e2691a52869729c0a3eade7f5d50545e7832a20e3262a9d422"
+    },
+    {
+      "path": "docs/validation/2026-11-07/task-items-r106-glibc-untraced/driver.log",
+      "sha256": "47350fc36b889cc341d4a4e8237545e4790243c1468ad506dcc30497a529ef01"
+    },
+    {
+      "path": "docs/validation/2026-11-07/task-items-r106-glibc-untraced/events.jsonl",
+      "sha256": "713da51decdf671ee3b16050474a8832f40ec1678e04003388f3c273a2e1acb6"
+    },
+    {
+      "path": "docs/validation/2026-11-07/task-items-r106-glibc-untraced/remote-driver.py",
+      "sha256": "cbf1d054d5f67de2f57e007d91f2967c8d9c2473b5bdd83fc7b12e87dde09060"
+    },
+    {
+      "path": "docs/validation/2026-11-07/task-items-r106-glibc-untraced/results.tar.gz",
+      "sha256": "a39e127c9d97376df1537ad1c19b9ec9537d468dd014fd3af082ec418f196891"
+    },
+    {
+      "path": "docs/validation/2026-11-07/task-items-r106-glibc-untraced/samples.jsonl",
+      "sha256": "ceef4da3274e30c7596abb955a9da3ac885af91080ed581233ba5799c8ed73e4"
+    },
+    {
+      "path": "docs/validation/2026-11-07/task-items-r106-glibc-untraced/server.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/validation/2026-11-07/task-items-r106-glibc-untraced/validation-driver.py",
+      "sha256": "b134c6c560308318b3dfd675135a35f39b505ed0e4257d5bd38652c4df0b0de8"
+    }
+  ],
+  "diagnosticEvidenceVerified": true,
+  "releaseQualified": false,
+  "deliveryComplete": false
+}

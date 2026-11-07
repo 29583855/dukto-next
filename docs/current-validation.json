@@ -1,5 +1,5 @@
 {
-  "observedUtc": "2026-11-07T01:12:54.897306+00:00",
+  "observedUtc": "2026-11-07T01:36:50.700334+00:00",
   "productionCommit": "ed4f5cf08c96f04671e49e5138eda8ce1790ead3",
   "testCommit": "ed4f5cf08c96f04671e49e5138eda8ce1790ead3",
   "packages": [
@@ -213,7 +213,7 @@
   ],
   "releaseQualified": false,
   "deliveryComplete": false,
-  "planVersion": "v0.105",
+  "planVersion": "v0.106",
   "currentSourceStage": "R105 dual Mac deployed previews verified; R104 independent Ubuntu core and POSIX checks passed; original protocol failures and Ubuntu timeout retained; full qualification pending",
   "nativeMusl": {
     "sourceCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
@@ -20573,7 +20573,19 @@
     "armTerminalEvidence": {
       "path": "docs/validation/2026-11-07/state-use-r104-macos-arm-terminal/subset-verification.json",
       "sha256": "a370f2e97e54fc94ddbb0a458bd6600afc0779ed703b44a6149c6724abf6dbe2"
-    }
+    },
+    "intelTerminalEvidence": {
+      "path": "docs/validation/2026-11-07/state-use-r104-macos-intel-terminal/subset-verification.json",
+      "sha256": "cbab57f13e240f7e06c9ebbfcbfa483d509739ac452b7f1caf0ff0f92da8a881"
+    },
+    "originalIntelJobConclusion": "failure",
+    "windowsTerminalEvidence": {
+      "path": "docs/validation/2026-11-07/state-use-r104-windows-terminal/subset-verification.json",
+      "sha256": "15cb2bb949ad949a0310c55235a03ce46e2599efa09684807d4f5c86e721a31d"
+    },
+    "originalWindowsJobConclusion": "failure",
+    "originalNativeRunConclusion": "failure",
+    "allOriginalNativeJobsCompleted": true
   },
   "r102CompleteTerminal": {
     "path": "docs/validation/2026-11-07/cancel-r102-native-terminal/receipt.json",
@@ -20587,7 +20599,7 @@
   "taskItemsFixtureR105": {
     "manifest": {
       "path": "docs/ci-verification-20261107-r105.json",
-      "sha256": "fdee3e6f072ac3d7222740f2ae20b71fcc4ee15eb799e7c3465b6268f167093c"
+      "sha256": "1d4146db43cd611073fee07b8ec8963a18c7c3c5ee939091af95bea8d3066539"
     },
     "evidence": {
       "path": "docs/validation/2026-11-07/task-items-r105-qualified/receipt.json",
@@ -20608,6 +20620,24 @@
     "independentUbuntuAfterCoreTimeoutEvidence": {
       "path": "docs/validation/2026-11-07/task-items-r105-glibc-after-core/failure-verification.json",
       "sha256": "e6e4e2abaa1029dc4330cbb953d35c121d5f97e74dbb67cffd619b82db5e9000"
+    },
+    "verifiedNativeJobTerminals": [
+      {
+        "path": "docs/validation/2026-11-07/task-items-r105-native-job-terminals/macos-15/receipt.json",
+        "sha256": "135c7e84e0d5ff981191078d8af677cba6d49792e88ae36ea2923ccfa4ce0cef",
+        "runner": "macos-15",
+        "protocolReports": 47
+      },
+      {
+        "path": "docs/validation/2026-11-07/task-items-r105-native-job-terminals/ubuntu-22.04/receipt.json",
+        "sha256": "f4d780776d02eab6b04519180817aaf69409b55be1f1a2bf7d17ce23d47ea879",
+        "runner": "ubuntu-22.04",
+        "protocolReports": 47
+      }
+    ],
+    "independentUbuntuDiagnosticEvidence": {
+      "path": "docs/validation/2026-11-07/task-items-r106-diagnostic-qualified/receipt.json",
+      "sha256": "f03f30ef47700a723c14adf788809797cbce727d2c491d7b4839d7a61f653127"
     }
   },
   "previousMacOSPreviewBeforeR105": {
@@ -20749,5 +20779,9 @@
       "zipSha256": "1589dff0456402ea603c8a9c381cdcdc85313d00c92e5ade6033a26d36c1c294",
       "localArchive": "dist/macos-preview-20261107-r100-clipboard/macos-preview-X64/package-output/DuktoNext-macos-x86_64-preview.tar.gz"
     }
-  ]
+  ],
+  "evidenceCheckpointR106": {
+    "path": "docs/ci-verification-20261107-r106.json",
+    "sha256": "8e096860047589797118f32d5d99cf5d6f304029eca2851a71b4fd5367aee0f3"
+  }
 }
