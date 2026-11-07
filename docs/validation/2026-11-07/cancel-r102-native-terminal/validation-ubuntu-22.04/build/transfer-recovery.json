@@ -1,0 +1,331 @@
+{
+  "date": "2026-11-05",
+  "passed": true,
+  "payloadBytes": 25165828,
+  "binarySha256": "887677562c4f88cbb622a16e0f385ab7cdd966b8f8e4193bfe94c87d48cf2a96",
+  "inPlaceExecution": false,
+  "scriptSha256": "79d7e3caba8e5dad28a08798892a6dd79863becf23b7c420c7a62a7391bc5e07",
+  "resumeBudgetSeconds": 90,
+  "readyBudgetSeconds": 30,
+  "defaultTimingGatesPassed": true,
+  "payloadSha256": "d86576159786f1576a95257e2f606cec7f3d608151b63bbe03aa20d611210783",
+  "cases": [
+    {
+      "direction": "upload",
+      "fault": "pause",
+      "confirmedBeforeFault": 4194304,
+      "checkpointBarrier": {
+        "direction": "upload",
+        "accepting": false,
+        "released": false,
+        "streams": [
+          {
+            "index": 0,
+            "limit": 4325376,
+            "reserved": 4221698,
+            "forwarded": 4205314,
+            "waiting": false,
+            "finished": false,
+            "grants": 1
+          }
+        ],
+        "scope": "opaque TLS forwarding barrier; forwarded bytes include protocol overhead"
+      },
+      "finalState": "completed",
+      "resumeSeconds": 5.666,
+      "dispositionJournalVerified": true,
+      "passed": true
+    },
+    {
+      "direction": "download",
+      "fault": "pause",
+      "confirmedBeforeFault": 4194304,
+      "checkpointBarrier": {
+        "direction": "download",
+        "accepting": false,
+        "released": false,
+        "streams": [
+          {
+            "index": 0,
+            "limit": 4325376,
+            "reserved": 4224647,
+            "forwarded": 4208263,
+            "waiting": false,
+            "finished": false,
+            "grants": 1
+          }
+        ],
+        "scope": "opaque TLS forwarding barrier; forwarded bytes include protocol overhead"
+      },
+      "finalState": "completed",
+      "resumeSeconds": 5.497,
+      "dispositionJournalVerified": true,
+      "passed": true
+    },
+    {
+      "direction": "upload",
+      "fault": "kill-client",
+      "confirmedBeforeFault": 4194304,
+      "checkpointBarrier": {
+        "direction": "upload",
+        "accepting": false,
+        "released": false,
+        "streams": [
+          {
+            "index": 0,
+            "limit": 4325376,
+            "reserved": 4221634,
+            "forwarded": 4205250,
+            "waiting": false,
+            "finished": false,
+            "grants": 1
+          }
+        ],
+        "scope": "opaque TLS forwarding barrier; forwarded bytes include protocol overhead"
+      },
+      "finalState": "completed",
+      "resumeSeconds": 5.38,
+      "dispositionJournalVerified": true,
+      "passed": true
+    },
+    {
+      "direction": "download",
+      "fault": "kill-client",
+      "confirmedBeforeFault": 4194304,
+      "checkpointBarrier": {
+        "direction": "download",
+        "accepting": false,
+        "released": false,
+        "streams": [
+          {
+            "index": 0,
+            "limit": 4325376,
+            "reserved": 4224595,
+            "forwarded": 4208211,
+            "waiting": false,
+            "finished": false,
+            "grants": 1
+          }
+        ],
+        "scope": "opaque TLS forwarding barrier; forwarded bytes include protocol overhead"
+      },
+      "finalState": "completed",
+      "resumeSeconds": 5.383,
+      "dispositionJournalVerified": true,
+      "passed": true
+    },
+    {
+      "direction": "upload",
+      "fault": "kill-server",
+      "confirmedBeforeFault": 4194304,
+      "checkpointBarrier": {
+        "direction": "upload",
+        "accepting": false,
+        "released": false,
+        "streams": [
+          {
+            "index": 0,
+            "limit": 4325376,
+            "reserved": 4221704,
+            "forwarded": 4205320,
+            "waiting": false,
+            "finished": false,
+            "grants": 1
+          }
+        ],
+        "scope": "opaque TLS forwarding barrier; forwarded bytes include protocol overhead"
+      },
+      "finalState": "completed",
+      "resumeSeconds": 5.428,
+      "dispositionJournalVerified": true,
+      "passed": true
+    },
+    {
+      "direction": "download",
+      "fault": "kill-server",
+      "confirmedBeforeFault": 4194304,
+      "checkpointBarrier": {
+        "direction": "download",
+        "accepting": false,
+        "released": false,
+        "streams": [
+          {
+            "index": 0,
+            "limit": 4325376,
+            "reserved": 4240979,
+            "forwarded": 4224595,
+            "waiting": false,
+            "finished": false,
+            "grants": 1
+          }
+        ],
+        "scope": "opaque TLS forwarding barrier; forwarded bytes include protocol overhead"
+      },
+      "finalState": "completed",
+      "resumeSeconds": 5.434,
+      "dispositionJournalVerified": true,
+      "passed": true
+    },
+    {
+      "direction": "upload",
+      "fault": "cancel",
+      "confirmedBeforeFault": 4194304,
+      "checkpointBarrier": {
+        "direction": "upload",
+        "accepting": false,
+        "released": false,
+        "streams": [
+          {
+            "index": 0,
+            "limit": 4325376,
+            "reserved": 4221629,
+            "forwarded": 4205245,
+            "waiting": false,
+            "finished": false,
+            "grants": 1
+          }
+        ],
+        "scope": "opaque TLS forwarding barrier; forwarded bytes include protocol overhead"
+      },
+      "finalState": "cancelled",
+      "resumeSeconds": null,
+      "dispositionJournalVerified": false,
+      "passed": true
+    },
+    {
+      "direction": "download",
+      "fault": "cancel",
+      "confirmedBeforeFault": 4194304,
+      "checkpointBarrier": {
+        "direction": "download",
+        "accepting": false,
+        "released": false,
+        "streams": [
+          {
+            "index": 0,
+            "limit": 4325376,
+            "reserved": 4224595,
+            "forwarded": 4208211,
+            "waiting": false,
+            "finished": false,
+            "grants": 1
+          }
+        ],
+        "scope": "opaque TLS forwarding barrier; forwarded bytes include protocol overhead"
+      },
+      "finalState": "cancelled",
+      "resumeSeconds": null,
+      "dispositionJournalVerified": false,
+      "passed": true
+    }
+  ],
+  "foreignOwnerRefused": true,
+  "revokedQueryRefused": true,
+  "conflictPolicy": "rename",
+  "channelsRequested": 1,
+  "resumeChannelsRequested": 1,
+  "regularFiles": 1,
+  "checkpointPercentRequested": 0,
+  "serverOutput": [
+    {
+      "bytes": 643,
+      "events": {
+        "paired": 1,
+        "service-connection-closed": 4
+      },
+      "lastEvents": [
+        {
+          "client": "8a68b53d-9527-4dd2-b382-2fbbb32400e2",
+          "event": "paired",
+          "eventVersion": 1
+        },
+        {
+          "code": 2,
+          "event": "service-connection-closed",
+          "eventVersion": 1,
+          "message": "当前任务修订、状态或停止请求不允许更新计量",
+          "stage": "task"
+        },
+        {
+          "code": 2,
+          "event": "service-connection-closed",
+          "eventVersion": 1,
+          "message": "当前任务修订、状态或停止请求不允许更新计量",
+          "stage": "task"
+        },
+        {
+          "code": 3,
+          "event": "service-connection-closed",
+          "eventVersion": 1,
+          "message": "安全连接已断开或无法连接",
+          "stage": "protocol"
+        },
+        {
+          "code": 3,
+          "event": "service-connection-closed",
+          "eventVersion": 1,
+          "message": "安全连接已断开",
+          "stage": "transfer"
+        }
+      ]
+    },
+    {
+      "bytes": 0,
+      "events": {},
+      "lastEvents": []
+    },
+    {
+      "bytes": 760,
+      "events": {
+        "service-connection-closed": 5,
+        "paired": 1
+      },
+      "lastEvents": [
+        {
+          "code": 2,
+          "event": "service-connection-closed",
+          "eventVersion": 1,
+          "message": "当前任务状态不能恢复",
+          "stage": "task"
+        },
+        {
+          "code": 2,
+          "event": "service-connection-closed",
+          "eventVersion": 1,
+          "message": "当前任务修订、状态或停止请求不允许更新计量",
+          "stage": "task"
+        },
+        {
+          "code": 2,
+          "event": "service-connection-closed",
+          "eventVersion": 1,
+          "message": "当前任务修订、状态或停止请求不允许更新计量",
+          "stage": "task"
+        },
+        {
+          "code": 2,
+          "event": "service-connection-closed",
+          "eventVersion": 1,
+          "message": "当前任务状态不能恢复",
+          "stage": "task"
+        },
+        {
+          "client": "211d5ae4-6ba7-466b-8084-1756f8a7ba12",
+          "event": "paired",
+          "eventVersion": 1
+        },
+        {
+          "code": 4,
+          "event": "service-connection-closed",
+          "eventVersion": 1,
+          "message": "任务不存在或无权访问",
+          "stage": "task"
+        }
+      ]
+    }
+  ],
+  "fileSha256": {
+    "payload.bin": "d86576159786f1576a95257e2f606cec7f3d608151b63bbe03aa20d611210783"
+  },
+  "scope": "public CLI with selected channels and requested durable-byte threshold; process faults, actual pause/cancel/resume; power loss and arbitrary instruction offsets require further validation"
+}

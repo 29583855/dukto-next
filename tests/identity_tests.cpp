@@ -14,6 +14,41 @@
 class IdentityTests final : public QObject {
     Q_OBJECT
   private slots:
+    // 日期：2026-11-07；同进程共享/独占互斥、异常后释放及保留锁键保护，不改变真实任务或用户文件。
+    void stateDirectoryUseGuard() {
+        QTemporaryDir root;
+        const auto directory = root.filePath("state");
+        {
+            dukto::PrivateStore first(directory, true);
+            first.write("record.json", "preserve");
+            QVERIFY(!first.maintenance());
+            dukto::PrivateStore second(directory);
+            QCOMPARE(second.read("record.json"), QByteArray("preserve"));
+            QVERIFY_EXCEPTION_THROWN(
+                dukto::PrivateStore(directory, false, dukto::PrivateStore::Use::Maintenance),
+                dukto::Error);
+            for (const auto &key : {QString("state-use.lock"), QString("STATE-USE.LOCK")}) {
+                QVERIFY_EXCEPTION_THROWN(first.read(key), dukto::Error);
+                QVERIFY_EXCEPTION_THROWN(first.write(key, ""), dukto::Error);
+                QVERIFY_EXCEPTION_THROWN(first.remove(key), dukto::Error);
+                QVERIFY_EXCEPTION_THROWN(first.exists(key), dukto::Error);
+                QVERIFY_EXCEPTION_THROWN(first.validateFile(key), dukto::Error);
+            }
+            QCOMPARE(first.read("record.json"), QByteArray("preserve"));
+        }
+        {
+            dukto::PrivateStore exclusive(directory, false, dukto::PrivateStore::Use::Maintenance);
+            QVERIFY(exclusive.maintenance());
+            QVERIFY_EXCEPTION_THROWN(dukto::PrivateStore(directory, false), dukto::Error);
+            QVERIFY_EXCEPTION_THROWN(
+                dukto::PrivateStore(directory, false, dukto::PrivateStore::Use::Maintenance),
+                dukto::Error);
+            QCOMPARE(exclusive.read("record.json"), QByteArray("preserve"));
+        }
+        dukto::PrivateStore restored(directory);
+        QCOMPARE(restored.read("record.json"), QByteArray("preserve"));
+        QCOMPARE(QFileInfo(directory + "/state-use.lock").size(), qint64(0));
+    }
     // 日期：2026-11-05；错误确认/非法期限/锁占用/损坏材料不得覆盖身份，成功续期保留UUID和名称。
     void certificateRenewal() {
         QTemporaryDir root;

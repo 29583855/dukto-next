@@ -1,5 +1,5 @@
 {
-  "observedUtc": "2026-11-06T23:35:10.899089+00:00",
+  "observedUtc": "2026-11-07T00:06:36.234660+00:00",
   "productionCommit": "ed4f5cf08c96f04671e49e5138eda8ce1790ead3",
   "testCommit": "ed4f5cf08c96f04671e49e5138eda8ce1790ead3",
   "packages": [
@@ -213,8 +213,8 @@
   ],
   "releaseQualified": false,
   "deliveryComplete": false,
-  "planVersion": "v0.103",
-  "currentSourceStage": "R103 exact Mac compilation and four-runner core/diagnostic GUI methods verified; real native CLI doctor/protocol and entire delivery pending",
+  "planVersion": "v0.104",
+  "currentSourceStage": "R104 state directory use guard; Windows subset verified; native CI and complete safe GC pending",
   "nativeMusl": {
     "sourceCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
     "productionCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
@@ -638,7 +638,7 @@
       "sourceCommit": "31f3db3bfb5a8bf70b6217afd50df3284e27934c"
     }
   ],
-  "publicVerificationReceipt": "docs/ci-verification-20261107-r103.json",
+  "publicVerificationReceipt": "docs/ci-verification-20261107-r104.json",
   "lastVerifiedCopiedFull": {
     "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42065923177",
     "sourceCommit": "74dd5cec71fde472b940e869661d6e8533042a65",
@@ -19613,7 +19613,7 @@
       "sha256": "4e925961855239abe68898110d7e27d2d842a6676373cc2ab724a1f18d5af3a0"
     }
   },
-  "currentGuiSourceCommitPending": false,
+  "currentGuiSourceCommitPending": true,
   "coreProductionCommit": "88f33b2c83f2950307c362fb64c693f7e9e5929d",
   "linuxPreviewR98": {
     "sourceCommit": "b2e4659b347c65eef24c8e568e07e96a2d6ff2d7",
@@ -20528,5 +20528,18 @@
   "originalR101TerminalFailureAndProtocolSubset": {
     "path": "docs/validation/2026-11-07/cancel-r101-native-terminal/verified-subsets.json",
     "sha256": "3346dc8d8ba564d6cb7964ad949f08e0a0b8d8e37158295e9221046dd80e9444"
+  },
+  "stateUseR104": {
+    "windowsEvidence": {
+      "path": "docs/validation/2026-11-07/state-use-r104-qualified/receipt.json",
+      "sha256": "0c250720ab18c775aa87da666c3230018b316c95ffef8bd1636c471d720342af"
+    },
+    "nativeCIPending": true,
+    "expiredCollectionImplemented": false,
+    "entireR04Qualified": false
+  },
+  "r102CompleteTerminal": {
+    "path": "docs/validation/2026-11-07/cancel-r102-native-terminal/receipt.json",
+    "sha256": "93384dac8e1ae928a2cb54494b861638b6bc418f66dc24d2de5a514c0185f238"
   }
 }

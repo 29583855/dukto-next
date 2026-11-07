@@ -1,0 +1,15 @@
+{
+  "date": "2026-11-07",
+  "initialDriverExitCode": 1,
+  "bothOriginalCoreTargetCounts": 23,
+  "initialTaskStoreExitCodes": [
+    1,
+    1
+  ],
+  "cause": "the process list retained completed/killed state-use probes, then reused them as task-creation results",
+  "correction": "separate creation_processes while retaining all process cleanup ownership",
+  "productionCodeChanged": false,
+  "compiledExecutablesUnchangedForRecheck": true,
+  "originalResults": "../state-use-r104-windows-recheck/driver-result.json",
+  "correctedResults": "../state-use-r104-process-recheck/driver-result.json"
+}

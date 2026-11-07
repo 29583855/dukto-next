@@ -6,10 +6,12 @@
 #include <memory>
 
 namespace dukto {
+class StateUseGuard;
 class PrivateStore final {
   public:
-    // 日期：2026-11-04；新目录使用原生账户权限；已有目录权限过宽时拒绝，不修改其他目录。
-    explicit PrivateStore(const QString &directory, bool create = false);
+    enum class Use { Shared, Maintenance };
+    // 日期：2026-11-07；普通使用共享原生锁，维护独占且不等待；已有根权限不安全时拒绝。
+    explicit PrivateStore(const QString &directory, bool create = false, Use use = Use::Shared);
     // 日期：2026-11-04；关闭本状态根持有的原生目录句柄。
     ~PrivateStore();
     // 日期：2026-11-04；核对目录及文件访问控制后有界读取，缺失/错误均明确报告。
@@ -24,6 +26,8 @@ class PrivateStore final {
     void remove(const QString &name) const;
     // 日期：2026-11-04；返回受保护状态根，调用方仍须通过本类访问秘密文件。
     QString directory() const;
+    // 日期：2026-11-07；维护调用方显式核对独占模式，普通状态实例不能冒充维护所有者。
+    bool maintenance() const;
 
   private:
     // 日期：2026-11-04；重复核对根权限，防止启动后无意放宽状态目录访问控制仍继续写秘密。
@@ -36,5 +40,6 @@ class PrivateStore final {
 #else
     std::unique_ptr<PosixDirectory> root_;
 #endif
+    std::unique_ptr<StateUseGuard> use_;
 };
 } // namespace dukto

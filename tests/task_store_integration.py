@@ -2,6 +2,8 @@
 import argparse
 from contextlib import closing
 import json
+import hashlib
+import os
 from pathlib import Path
 import sqlite3
 import subprocess
@@ -17,7 +19,78 @@ def finish(process, expected=0):
     return json.loads(out)
 
 
-# 日期：2026-11-06；隔离目录验证幂等/进程退出及八进程旧库升级，不访问用户状态。
+# 日期：2026-11-07；真实进程占用覆盖共享并行、独占拒绝、崩溃恢复及恶意锁对象；数据逐字节保持。
+def state_use_cases(executable, root, processes):
+    directory = root / "state-use"
+    base = [executable, "state-shared", str(directory), "unused", "unused", "unused"]
+
+    # 日期：2026-11-07；持有/拒绝均使用同一生产构造函数，探针不替代内核锁实现。
+    def start(mode):
+        command = base[:]
+        command[1] = mode
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
+        processes.append(process)
+        return process
+
+    readers = [start("state-shared") for _ in range(8)]
+    for process in readers:
+        assert json.loads(process.stdout.readline()) == {"maintenanceHeld": False, "stateHeld": True}
+    ordinary = directory / "keep.json"
+    ordinary.write_bytes(b'preserved task/recovery/idempotency data')
+    if os.name != "nt":
+        ordinary.chmod(0o600)
+    before = hashlib.sha256(ordinary.read_bytes()).hexdigest()
+    started = time.monotonic()
+    assert finish(start("state-exclusive-once"), 4)["stage"] == "state-use"
+    first_refusal_seconds = time.monotonic() - started
+    assert first_refusal_seconds < 2 and all(p.poll() is None for p in readers)
+    for process in readers[:-1]:
+        process.kill()
+        process.communicate(timeout=5)
+    assert finish(start("state-exclusive-once"), 4)["stage"] == "state-use"
+    readers[-1].kill()
+    readers[-1].communicate(timeout=5)
+    holder = start("state-exclusive")
+    assert json.loads(holder.stdout.readline()) == {"maintenanceHeld": True, "stateHeld": True}
+    for mode in ("state-shared-once", "state-exclusive-once"):
+        assert finish(start(mode), 4)["stage"] == "state-use"
+    holder.kill()
+    holder.communicate(timeout=5)
+    assert finish(start("state-exclusive-once"))["maintenanceHeld"]
+    assert not finish(start("state-shared-once"))["maintenanceHeld"]
+    assert hashlib.sha256(ordinary.read_bytes()).hexdigest() == before
+    guard = directory / "state-use.lock"
+    assert guard.read_bytes() == b""
+    guard.write_bytes(b"invalid")
+    assert finish(start("state-shared-once"), 4)["stage"] == "state-use"
+    assert guard.read_bytes() == b"invalid"
+    guard.write_bytes(b"")
+    posix_checks = []
+    if os.name != "nt":
+        guard.chmod(0o644)
+        assert finish(start("state-shared-once"), 4)["stage"] == "state-use"
+        assert guard.stat().st_mode & 0o777 == 0o644
+        guard.chmod(0o600)
+        posix_checks.append("broad-permissions-refused-without-chmod")
+        alias = directory / "alias.lock"
+        os.link(guard, alias)
+        assert finish(start("state-shared-once"), 4)["stage"] == "state-use"
+        alias.unlink()
+        posix_checks.append("hard-link-refused")
+        guard.unlink()
+        guard.symlink_to(ordinary)
+        assert finish(start("state-shared-once"), 4)["stage"] in ("receive", "read", "state-use")
+        assert guard.is_symlink() and hashlib.sha256(ordinary.read_bytes()).hexdigest() == before
+        guard.unlink()
+        posix_checks.append("symbolic-link-refused-without-touching-target")
+    assert not finish(start("state-shared-once"))["maintenanceHeld"]
+    return {"sharedProcesses": 8, "exclusiveRefusedUntilLastReaderExited": True,
+            "sharedAndExclusiveRefusedDuringMaintenance": True, "recoveredAfterKill": True,
+            "ordinaryDataUnchanged": True, "nonemptyGuardRefusedWithoutTruncation": True,
+            "firstRefusalSeconds": round(first_refusal_seconds, 3), "posixChecks": posix_checks}
+
+
+# 日期：2026-11-07；隔离目录验证目录维护互斥、任务幂等/进程退出及八进程旧库升级。
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("executable")
@@ -30,10 +103,13 @@ def main():
         root = Path(temporary).resolve()
         command = [executable, "create", str(root / "private"), owner, request, str(root)]
         try:
+            state_use = state_use_cases(executable, root, processes)
+            creation_processes = []
             for _ in range(8):
                 process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
                 processes.append(process)
-            events = [finish(process) for process in processes]
+                creation_processes.append(process)
+            events = [finish(process) for process in creation_processes]
             task_id = events[0]["taskId"]
             assert all(value["taskId"] == task_id for value in events)
             with closing(sqlite3.connect(root / "private/tasks.sqlite")) as database:
@@ -128,7 +204,7 @@ def main():
                 if process.poll() is None:
                     process.kill()
                     process.communicate(timeout=5)
-    report = {"date": "2026-11-04", "passed": True, "competingProcesses": 8,
+    report = {"date": "2026-11-07", "passed": True, "stateDirectoryUse": state_use, "competingProcesses": 8,
               "persistedTasks": 1, "activeLeaseRefused": True, "leaseRecoveredAfterKill": True,
               "schemaMigrationProcesses": 8, "schemaMigrationSeconds": round(migration_seconds, 3),
               "oldFifteenColumnsUnchanged": True, "migratedSchemaVersion": 2,

@@ -19,6 +19,8 @@
 #include <io.h>
 #include <sddl.h>
 #else
+#include <cerrno>
+#include <sys/file.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #endif
@@ -141,8 +143,127 @@ void verifyFile(QFile &file) {
 }
 } // namespace
 
-// 日期：2026-11-04；根已存在时只核对安全性，不自动收紧或更改用户已有目录权限。
-PrivateStore::PrivateStore(const QString &directory, bool create)
+class StateUseGuard final {
+  public:
+    // 日期：2026-11-07；锁文件永久保留且为空，禁止按PID删锁；进程退出由内核释放占用。
+    StateUseGuard(const QString &directory, PrivateStore::Use use
+#ifndef Q_OS_WIN
+                  ,
+                  const PosixDirectory &root
+#endif
+                  )
+        : maintenance_(use == PrivateStore::Use::Maintenance)
+#ifndef Q_OS_WIN
+          ,
+          root_(root)
+#endif
+    {
+#ifdef Q_OS_WIN
+        const auto name = longPath(QDir(directory).filePath("state-use.lock"));
+        auto security = privateSecurity();
+        SECURITY_ATTRIBUTES attributes{sizeof(SECURITY_ATTRIBUTES), security, FALSE};
+        handle_ = CreateFileW(reinterpret_cast<LPCWSTR>(name.utf16()),
+                              GENERIC_READ | GENERIC_WRITE | READ_CONTROL,
+                              FILE_SHARE_READ | FILE_SHARE_WRITE, &attributes, OPEN_ALWAYS,
+                              FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OPEN_REPARSE_POINT, nullptr);
+        LocalFree(security);
+        if (handle_ == INVALID_HANDLE_VALUE)
+            throw Error(ExitCode::Permission, QStringLiteral("无法安全打开状态占用锁"),
+                        "state-use");
+#else
+        Q_UNUSED(directory)
+        try {
+            descriptor_ = root_.openUpdate("state-use.lock", true);
+        } catch (const Error &) {
+            // 日期：2026-11-07；并发首次创建只重开同名单项，仍由原生接口拒绝链接/特殊文件。
+            descriptor_ = root_.openUpdate("state-use.lock", false);
+        }
+#endif
+        try {
+            verify();
+#ifdef Q_OS_WIN
+            OVERLAPPED position{};
+            const DWORD flags =
+                LOCKFILE_FAIL_IMMEDIATELY | (maintenance_ ? LOCKFILE_EXCLUSIVE_LOCK : 0);
+            if (!LockFileEx(handle_, flags, 0, 1, 0, &position))
+#else
+            int result;
+            do {
+                result = ::flock(descriptor_, (maintenance_ ? LOCK_EX : LOCK_SH) | LOCK_NB);
+            } while (result != 0 && errno == EINTR);
+            if (result != 0)
+#endif
+                throw Error(ExitCode::Permission,
+                            QStringLiteral("状态目录正被使用或维护，未取得所需占用锁"),
+                            "state-use");
+            verify();
+        } catch (...) {
+            release();
+            throw;
+        }
+    }
+
+    // 日期：2026-11-07；只关闭本实例句柄，不截断、替换或删除其他进程仍需使用的锁文件。
+    ~StateUseGuard() {
+        release();
+    }
+
+    // 日期：2026-11-07；每次访问重验零字节普通文件/私有权限；POSIX另核对路径与已锁inode一致。
+    void verify() const {
+#ifdef Q_OS_WIN
+        BY_HANDLE_FILE_INFORMATION info;
+        if (!GetFileInformationByHandle(handle_, &info) ||
+            (info.dwFileAttributes &
+             (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_REPARSE_POINT | FILE_ATTRIBUTE_DEVICE)) ||
+            info.nNumberOfLinks != 1 || info.nFileSizeHigh != 0 || info.nFileSizeLow != 0)
+            throw Error(ExitCode::Permission, QStringLiteral("状态占用锁不是独立空普通文件"),
+                        "state-use");
+        verifyAcl(handle_, false);
+#else
+        struct stat info;
+        if (::fstat(descriptor_, &info) != 0 || !S_ISREG(info.st_mode) ||
+            info.st_uid != ::geteuid() || (info.st_mode & 0077) != 0 || info.st_nlink != 1 ||
+            info.st_size != 0)
+            throw Error(ExitCode::Permission, QStringLiteral("状态占用锁类型或权限不安全"),
+                        "state-use");
+        const auto current = root_.fileInformation("state-use.lock");
+        if (current.st_dev != info.st_dev || current.st_ino != info.st_ino)
+            throw Error(ExitCode::Permission, QStringLiteral("状态占用锁路径已被替换"),
+                        "state-use");
+#endif
+    }
+
+    // 日期：2026-11-07；返回构造时固定模式，锁不支持就地升级以免两个共享使用者互相等待。
+    bool maintenance() const {
+        return maintenance_;
+    }
+
+  private:
+    // 日期：2026-11-07；构造异常及析构共用释放路径，不能泄漏原生锁或句柄。
+    void release() {
+#ifdef Q_OS_WIN
+        if (handle_ != INVALID_HANDLE_VALUE) {
+            CloseHandle(handle_);
+            handle_ = INVALID_HANDLE_VALUE;
+        }
+#else
+        if (descriptor_ >= 0) {
+            ::close(descriptor_);
+            descriptor_ = -1;
+        }
+#endif
+    }
+    bool maintenance_;
+#ifdef Q_OS_WIN
+    HANDLE handle_ = INVALID_HANDLE_VALUE;
+#else
+    const PosixDirectory &root_;
+    int descriptor_ = -1;
+#endif
+};
+
+// 日期：2026-11-07；先固定安全根，再取得共享或独占占用；锁的生命周期覆盖本实例的所有使用。
+PrivateStore::PrivateStore(const QString &directory, bool create, Use use)
     : directory_(QDir::cleanPath(QFileInfo(directory).absoluteFilePath())) {
 #ifdef Q_OS_WIN
     NativeDirectoryLock parent(QFileInfo(directory_).absolutePath(), false);
@@ -153,12 +274,19 @@ PrivateStore::PrivateStore(const QString &directory, bool create)
     root_.reset(new PosixDirectory(directory_, create));
 #endif
     verify();
+    use_.reset(new StateUseGuard(directory_, use
+#ifndef Q_OS_WIN
+                                 ,
+                                 *root_
+#endif
+                                 ));
+    verify();
 }
 
 // 日期：2026-11-04；目录句柄由当前实例独占，析构不对状态文件做隐式删除。
 PrivateStore::~PrivateStore() = default;
 
-// 日期：2026-11-04；Windows 通过原生安全描述符验证，不能用 QFile 权限标志冒充 ACL 验收。
+// 日期：2026-11-07；重验根和当前持有的原生占用，路径被替换或权限放宽时不继续访问。
 void PrivateStore::verify() const {
 #ifdef Q_OS_WIN
     const auto native = longPath(directory_);
@@ -183,15 +311,23 @@ void PrivateStore::verify() const {
 #else
     root_->verifyPrivate();
 #endif
+    if (use_)
+        use_->verify();
 }
 
-// 日期：2026-11-04；扩展名可以区分身份/令牌/元数据，其他字符、路径与保留名称一律拒绝。
+// 日期：2026-11-07；保留占用锁名称及大小写变体，普通状态接口不能读取、替换或删除原生锁。
 QString PrivateStore::path(const QString &name) const {
     static const QRegularExpression allowed("\\A[a-zA-Z0-9][a-zA-Z0-9_.-]{0,95}\\z");
-    if (!allowed.match(name).hasMatch())
+    if (!allowed.match(name).hasMatch() || name.compare("state-use.lock", Qt::CaseInsensitive) == 0)
         throw Error(ExitCode::Permission, QStringLiteral("私有状态键无效"), "identity");
     validateRelativePath(name);
     return QDir(directory_).filePath(name);
+}
+
+// 日期：2026-11-07；核对锁仍有效后返回维护资格，后续清理入口必须显式检查此结果。
+bool PrivateStore::maintenance() const {
+    verify();
+    return use_->maintenance();
 }
 
 // 日期：2026-11-04；大数据库只核对原生权限、文件类型及固定对象，避免整体读取。

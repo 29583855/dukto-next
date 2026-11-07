@@ -12,6 +12,8 @@
 
 新增[3fbec42覆盖占用修正](docs/decisions/0023-Windows覆盖共享占用与同任务恢复.md)已包含于当前Mac包。其完整四runner终态failure：各21核心通过，协议154/155，Windows改共享根时私有配置替换失败；Ubuntu/双Mac各38、Alpine另38协议通过。新[私有状态修复](docs/decisions/0024-私有状态原子替换与读者竞争.md)按7772151单独复验。
 
+R104已增加状态目录共享使用/独占维护保护，双Windows子项已验，新Mac/Linux原生验证继续；过期回收及全局配额仍待实现。R102四平台完整终态success及188协议已严格收验。详见[状态维护边界](docs/状态目录维护保护.md)和[本轮回执](docs/validation/2026-11-07/state-use-r104-qualified/receipt.json)。
+
 ## 文档入口
 
 | 文档 | 用途 |
