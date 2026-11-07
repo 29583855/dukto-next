@@ -1400,6 +1400,10 @@
       "sha256": "05432ffb0fe3a87106ca2f0c0fab33776928479f27516f0ec1e90471dce0089a"
     },
     {
+      "path": "docs/validation/2026-11-07/sqlite-vfs-r119-final-publication/status-text-verification.json",
+      "sha256": "8ceb50d5ef38d6c0b6180a227cea57378fff5fd03f0784a65993637bd2b6ddca"
+    },
+    {
       "path": "docs/validation/2026-11-07/sqlite-vfs-r119-local-protocol/msvc/receipt.json",
       "sha256": "3ce24df3922131dd81b7acf5eba1d5e576c41a90f6e5ca7e67b491102c2f4c4b"
     },
@@ -1421,7 +1425,11 @@
     },
     {
       "path": "docs/validation/2026-11-07/sqlite-vfs-r119-native-terminal/receipt.json",
-      "sha256": "14ce72c835a737e043fbbea06ce8941ef6f2c6b393ee0b4b7d63f927f476b36e"
+      "sha256": "8d9e8bdf2f8dbed0aa22a77c275f0d47af8f43d72adc42679cb7140821c34f06"
+    },
+    {
+      "path": "docs/validation/2026-11-07/sqlite-vfs-r119-native-terminal/windows-2022/verified-protocol-subset.json",
+      "sha256": "5db9e4f5b79aa2beabeb986b1c681a4ce046d26514554356ec9765c50874afd7"
     },
     {
       "path": "docs/validation/2026-11-07/sqlite-vfs-r119-observable-directory/r119-directory-fixture-msvc.xml",
@@ -1446,10 +1454,6 @@
     {
       "path": "docs/validation/2026-11-07/sqlite-vfs-r119-windows-regression/receipt.json",
       "sha256": "56850b7239a731ccd355eb4b89205ff7b3e054e7fc9b2fec7cb93a6f34f8c8bd"
-    },
-    {
-      "path": "docs/validation/2026-11-07/sqlite-vfs-r119-final-publication/status-text-verification.json",
-      "sha256": "8ceb50d5ef38d6c0b6180a227cea57378fff5fd03f0784a65993637bd2b6ddca"
     }
   ],
   "localWindowsAllCoreQualified": true,
@@ -1509,8 +1513,8 @@
   "nativeRun": {
     "id": 42390256303,
     "head_sha": "325c60cc2a4230cad1b837ecace356117574777a",
-    "status": "in_progress",
-    "conclusion": null,
+    "status": "completed",
+    "conclusion": "failure",
     "html_url": "https://github.com/29583855/dukto-next/actions/runs/42390256303"
   },
   "macosPackageRun": {
@@ -1522,5 +1526,8 @@
   },
   "localFullCoreInputSourceCommit": "de6f38c9381e84a19466f5ecf0e0996e087bae23",
   "localCurrentStorageTargetQualified": true,
-  "nativeTerminalJobsVerified": 3
+  "nativeTerminalJobsVerified": 3,
+  "allFourProtocolSubsetsVerified": true,
+  "windowsFullJobConclusion": "failure",
+  "windowsProtocolSubsetCasesVerified": 51
 }
