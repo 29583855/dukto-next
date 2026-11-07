@@ -166,17 +166,38 @@ def main():
             original, saved = client / 'transfers', root / 'saved-transfers'
             unavailable = root / 'unavailable-transfers'
             assert original.resolve().is_relative_to(root.resolve()) and saved.resolve().is_relative_to(root.resolve())
+            original_root, _ = run(executable, client, ['state', 'root', 'show', '--state-root', 'transfers'])
+            budget_before, _ = run(executable, client, ['state', 'budget', 'show'])
             original.rename(saved)
             try:
                 missing = pages(executable, client, results[1]['taskId'])[0]
                 assert not missing['available'] and missing['reason'] == 'local-receipt-unavailable'
+                # 日期：2026-11-08；新空根仅登记固定256字节标记，重复查询不能生成清单/接收库或继续增加预算。
+                replacement, _ = run(executable, client, ['state', 'root', 'show', '--state-root', 'transfers'])
+                budget_after, _ = run(executable, client, ['state', 'budget', 'show'])
+                assert replacement['domain'] == original_root['domain'] == budget_before['domain']
+                assert replacement['rootGeneration'] != original_root['rootGeneration']
+                assert int(budget_after['committed']) - int(budget_before['committed']) == 256
+                assert budget_after['reserved'] == budget_before['reserved'] == '0'
+                controls = {path.name: path.read_bytes() for path in original.iterdir()}
+                assert set(controls) == {'state-use.lock', 'state-domain.bin'}
+                assert pages(executable, client, results[1]['taskId'])[0] == missing
+                assert {path.name: path.read_bytes() for path in original.iterdir()} == controls
+                assert run(executable, client, ['state', 'budget', 'show'])[0] == budget_after
             finally:
                 # 日期：2026-11-07；缺失状态查询会创建永久占用锁；只移动本测试目录，恢复原凭据，不删锁。
                 assert not unavailable.exists() and not unavailable.is_symlink()
                 original.rename(unavailable)
                 saved.rename(original)
-            # 日期：2026-11-07；仍须严格证明仅生成零字节普通单链接占用锁，不能接受其他恢复/结果文件。
-            assert {path.name for path in unavailable.iterdir()} == {'state-use.lock'}
+            # 日期：2026-11-08；仅允许零字节占用锁及已交叉核对的固定域标记，不能接受其他恢复/结果文件。
+            assert {path.name for path in unavailable.iterdir()} == {'state-use.lock', 'state-domain.bin'}
+            marker = (unavailable / 'state-domain.bin').lstat()
+            assert stat.S_ISREG(marker.st_mode) and marker.st_nlink == 1 and marker.st_size == 256
+            assert (unavailable / 'state-domain.bin').read_bytes() == controls['state-domain.bin']
+            restored, _ = run(executable, client, ['state', 'root', 'show', '--state-root', 'transfers'])
+            assert restored['rootGeneration'] == original_root['rootGeneration']
+            assert restored['domain'] == original_root['domain']
+            assert restored['committed'] == budget_after['committed']
             guard = (unavailable / 'state-use.lock').lstat()
             assert stat.S_ISREG(guard.st_mode) and guard.st_nlink == 1 and guard.st_size == 0
             offer2, _ = run(executable, server, ['serve', 'pairing', *rights])
@@ -205,6 +226,7 @@ def main():
     report.write_text(json.dumps({'date': '2026-11-05', 'passed': True, 'cases': results,
                                  'partial': partial, 'foreignOwnerRefused': True, 'revokedRefused': True,
                                  'restartStable': True, 'missingLocalReceiptExplicit': True,
+                                 'missingLocalReceiptControlsOnly': True, 'missingLocalReceiptFixedMarkerCharge': 256,
                                  'executableSha256': digest(Path(executable)), 'scriptSha256': digest(Path(__file__)),
                                  'scope': 'loopback CLI/TLS receive evidence pagination; skip/overwrite/full release remain incomplete'},
                                 ensure_ascii=False, indent=2) + '\n', encoding='utf-8')

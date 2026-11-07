@@ -183,8 +183,25 @@ def main():
                           "--request-id", str(uuid.uuid4())]
                 completed = transfer(executable, client, upload)
                 old_session = IndependentSession(port, initial)
+                # 日期：2026-11-08；整根复制保留原生绑定，必须被本机拒绝；另建受保护根只复制资料，保留真正旧凭据网络负例。
+                cloned = root / "cloned-native-root"
+                # 日期：2026-11-08；先建立正确ACL/所有者，再覆盖旧原生标记，确保明确验证绑定拒绝。
+                run(executable, cloned, ["profile-info"], 5)
+                shutil.copy2(client / "clients/state-domain.bin", cloned / "clients/state-domain.bin")
+                shutil.copy2(profile_path, cloned / "clients/profile-default.json")
+                cloned_marker = (cloned / "clients/state-domain.bin").read_bytes()
+                cloned_profile = (cloned / "clients/profile-default.json").read_bytes()
+                invalid, _ = run(executable, cloned, ["auth"], 6)
+                assert invalid["stage"] == "state-domain"
+                assert (cloned / "clients/state-domain.bin").read_bytes() == cloned_marker
+                assert (cloned / "clients/profile-default.json").read_bytes() == cloned_profile
+                assert record(proxy.account)["credentialHash"] == proxy.previous_hash
                 stale = root / "stale"
-                shutil.copytree(client / "clients", stale / "clients")
+                # 日期：2026-11-08；生产CLI先创建本机新域/私有根，缺资料返回原磁盘错误；不复制旧标记、锁或原生身份。
+                run(executable, stale, ["profile-info"], 5)
+                shutil.copy2(profile_path, stale / "clients/profile-default.json")
+                assert record(stale / "clients/profile-default.json") == initial
+                checks.append("copied native root binding refused without changing marker, profile or server credential")
                 proxy.mode = "drop-confirmation"
                 failed, output = run(executable, client, ["rotate"], 3)
                 collected.append(output)
@@ -216,7 +233,7 @@ def main():
                 assert len(list(shared.iterdir())) == 1
                 checks.extend(["real lost TLS rotation response with durable pending secret",
                                "recovery confirms new credential without a second rotation",
-                               "old connections and fresh old-credential connections denied",
+                               "old connections and fresh locally bound old-credential connections denied",
                                "same principal, grants, original request and task preserved without duplicate file"])
 
                 proxy.hit.clear()
