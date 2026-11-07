@@ -26,6 +26,8 @@ def verify_xml(path):
                 'hardLinksCountPerName', 'nativeIdentityMatchesSqliteAndAliases', 'visitorFailureIsReusable',
                 'inventoryPreservesSqliteWriteLock', 'nestedDataIsExcluded', 'nativeSymbolicLinkIsExcluded',
                 'maintenanceCancellationAndMutation', 'manyEntriesKeepReportBounded', 'realCli', 'cleanupTestCase'}
+    if os.name != 'nt':
+        expected.add('fifoIsExcludedWithoutOpeningBody')
     cases = tree.findall('testcase')
     assert len(cases) == len(expected) and {case.get('name') for case in cases} == expected
     skipped = 0
@@ -40,8 +42,9 @@ def verify_xml(path):
             assert case.get('result') == 'pass', case.attrib
     assert int(tree.get('errors', '0')) == skipped
     text = path.with_suffix('.log').read_text('utf-8-sig')
-    assert re.search(r'Totals: ' + str(14 - skipped) + r' passed, 0 failed, ' + str(skipped) + r' skipped', text)
-    return {'testMethods': len(cases), 'rowsPassed': 14 - skipped, 'permissionRowsSkipped': skipped,
+    rows = len(expected) + 1 - skipped
+    assert re.search(r'Totals: ' + str(rows) + r' passed, 0 failed, ' + str(skipped) + r' skipped', text)
+    return {'testMethods': len(cases), 'rowsPassed': rows, 'permissionRowsSkipped': skipped,
             'newNativeIdentityAllocationAndLockMethodsPassed': 3}
 
 
