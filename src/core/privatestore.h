@@ -18,6 +18,8 @@ class PrivateStore final {
     QByteArray read(const QString &name, qint64 maximum = 65536) const;
     // 日期：2026-11-04；大状态数据库仅核对原生权限和普通文件身份，不把整个数据库读入内存。
     qint64 validateFile(const QString &name) const;
+    // 日期：2026-11-07；独占维护只校验规范SQLite回滚日志，保留私有DACL与独立普通对象要求。
+    qint64 validateSqliteJournal(const QString &name) const;
     // 日期：2026-11-04；在受保护根内写入、同步并原子替换，内容不进入日志或命令行。
     void write(const QString &name, const QByteArray &bytes) const;
     // 日期：2026-11-04；仅查询固定根的单个合法文件名，不解析客户端路径。
@@ -30,6 +32,8 @@ class PrivateStore final {
     bool maintenance() const;
 
   private:
+    // 日期：2026-11-07；内部共用原生对象核验，普通调用不能选择日志所有者策略。
+    qint64 validateFileObject(const QString &name, bool sqliteJournal) const;
     // 日期：2026-11-04；重复核对根权限，防止启动后无意放宽状态目录访问控制仍继续写秘密。
     void verify() const;
     // 日期：2026-11-04；状态键只允许固定 ASCII 名称，不能通过它穿越根目录或打开数据流。

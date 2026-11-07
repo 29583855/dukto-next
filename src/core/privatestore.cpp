@@ -48,8 +48,36 @@ QByteArray accountSid() {
     return result;
 }
 
+// 日期：2026-11-07；SQLite原生日志仅接受已提升进程的默认Administrators所有者，查询失败即拒绝。
+bool defaultSqliteJournalOwner(PSID owner) {
+    if (!IsWellKnownSid(owner, WinBuiltinAdministratorsSid))
+        return false;
+    HANDLE token = nullptr;
+    if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token))
+        return false;
+    struct TokenGuard {
+        HANDLE value;
+        // 日期：2026-11-07；令牌查询正常返回或分配异常时均关闭原生句柄。
+        ~TokenGuard() {
+            CloseHandle(value);
+        }
+    } guard{token};
+    DWORD length = 0;
+    TOKEN_ELEVATION elevation{};
+    if (!GetTokenInformation(token, TokenElevation, &elevation, sizeof(elevation), &length) ||
+        !elevation.TokenIsElevated)
+        return false;
+    GetTokenInformation(token, TokenOwner, nullptr, 0, &length);
+    if (length == 0)
+        return false;
+    QByteArray bytes(static_cast<int>(length), '\0');
+    if (!GetTokenInformation(token, TokenOwner, bytes.data(), length, &length))
+        return false;
+    return EqualSid(owner, reinterpret_cast<TOKEN_OWNER *>(bytes.data())->Owner);
+}
+
 // 日期：2026-11-04；只有当前账户可以获得允许 ACE；NULL DACL、其他账户、复杂对象 ACE 均拒绝。
-void verifyAcl(HANDLE handle, bool directory) {
+void verifyAcl(HANDLE handle, bool directory, bool sqliteJournal = false) {
     const auto account = accountSid();
     PSID owner = nullptr;
     PACL dacl = nullptr;
@@ -67,8 +95,10 @@ void verifyAcl(HANDLE handle, bool directory) {
     } guard{security};
     SECURITY_DESCRIPTOR_CONTROL control;
     DWORD revision;
-    if (!owner || !dacl || !EqualSid(owner, const_cast<char *>(account.constData())) ||
-        !GetSecurityDescriptorControl(security, &control, &revision) ||
+    const bool ownerAllowed =
+        owner && (EqualSid(owner, const_cast<char *>(account.constData())) ||
+                  (sqliteJournal && !directory && defaultSqliteJournalOwner(owner)));
+    if (!ownerAllowed || !dacl || !GetSecurityDescriptorControl(security, &control, &revision) ||
         (directory && !(control & SE_DACL_PROTECTED)))
         throw Error(ExitCode::Permission, QStringLiteral("私有状态所有者或继承策略不安全"),
                     "identity");
@@ -130,13 +160,19 @@ void createPrivateDirectory(const QString &path) {
 #endif
 
 // 日期：2026-11-04；校验打开的对象权限，避免通过路径检查后重新打开另一个宽权限文件。
-void verifyFile(QFile &file) {
+void verifyFile(QFile &file, bool sqliteJournal = false) {
 #ifdef Q_OS_WIN
-    verifyAcl(reinterpret_cast<HANDLE>(_get_osfhandle(file.handle())), false);
+    const auto handle = reinterpret_cast<HANDLE>(_get_osfhandle(file.handle()));
+    verifyAcl(handle, false, sqliteJournal);
+    BY_HANDLE_FILE_INFORMATION info;
+    if (sqliteJournal && (!GetFileInformationByHandle(handle, &info) || info.nNumberOfLinks != 1))
+        throw Error(ExitCode::Permission, QStringLiteral("SQLite回滚日志不是独立普通文件"),
+                    "identity");
 #else
     struct stat info;
     if (::fstat(file.handle(), &info) != 0 || info.st_uid != ::geteuid() ||
-        (info.st_mode & 0077) != 0 || !S_ISREG(info.st_mode))
+        (info.st_mode & 0077) != 0 || !S_ISREG(info.st_mode) ||
+        (sqliteJournal && info.st_nlink != 1))
         throw Error(ExitCode::Permission, QStringLiteral("私有状态文件的所有者或权限不安全"),
                     "identity");
 #endif
@@ -332,15 +368,27 @@ bool PrivateStore::maintenance() const {
 
 // 日期：2026-11-04；大数据库只核对原生权限、文件类型及固定对象，避免整体读取。
 qint64 PrivateStore::validateFile(const QString &name) const {
+    return validateFileObject(name, false);
+}
+
+// 日期：2026-11-07；仅独占维护接受规范SQLite回滚日志，不能通过此接口放宽数据库、凭据或WAL。
+qint64 PrivateStore::validateSqliteJournal(const QString &name) const {
+    if (!maintenance() || !name.endsWith(".sqlite-journal", Qt::CaseSensitive))
+        throw Error(ExitCode::Permission, QStringLiteral("SQLite回滚日志校验条件无效"), "identity");
+    return validateFileObject(name, true);
+}
+
+// 日期：2026-11-07；两种策略共用已打开对象/原生身份核验，只有日志所有者及单链接检查不同。
+qint64 PrivateStore::validateFileObject(const QString &name, bool sqliteJournal) const {
     verify();
     SourceFile source(path(name), SourceFile::OpenPolicy::PrivateState);
     // 日期：2026-11-06；共享占用等待后再次核对根ACL，随后仍核对已打开文件的所有者和类型。
     verify();
-    verifyFile(source.device());
+    verifyFile(source.device(), sqliteJournal);
     const auto size = source.device().size();
     // 日期：2026-11-05；SQLite连接可并发更新页，不把mtime/大小变化误报成源替换；类型/路径/所有者仍重验。
     source.verifyObject();
-    verifyFile(source.device());
+    verifyFile(source.device(), sqliteJournal);
     return size;
 }
 

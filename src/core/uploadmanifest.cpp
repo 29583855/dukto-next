@@ -53,7 +53,8 @@ qint64 scanBytes(PrivateStore &store, const QString &name) {
     for (const auto &suffix : QStringList{"-journal", "-wal", "-shm"}) {
         if (!store.exists(name + suffix))
             continue;
-        const auto size = store.validateFile(name + suffix);
+        const auto size = suffix == "-journal" ? store.validateSqliteJournal(name + suffix)
+                                               : store.validateFile(name + suffix);
         if (suffix != "-journal" || size > MaxMetadataBytes - bytes)
             throw Error(ExitCode::Config, QStringLiteral("源扫描旁路类型或预算无效"), "cleanup");
         bytes += size;

@@ -13,7 +13,6 @@
 #include <QSqlQuery>
 #include <QTemporaryDir>
 #include <QtTest>
-#include <cstdio>
 #include <cstdlib>
 #ifdef Q_OS_WIN
 #ifndef NOMINMAX
@@ -21,6 +20,8 @@
 #endif
 #include <aclapi.h>
 #include <windows.h>
+#else
+#include <unistd.h>
 #endif
 
 namespace {
@@ -55,15 +56,8 @@ struct Fixture {
                       {"--abandon-scan", root.path(), request.toString(QUuid::WithoutBraces),
                        profile.server.toString(QUuid::WithoutBraces),
                        profile.client.toString(QUuid::WithoutBraces), phase});
-        const bool finished = process.waitForFinished(30000);
-        const auto diagnostic = process.readAllStandardError();
-        if (!diagnostic.isEmpty())
-            std::fprintf(stderr, "%s", diagnostic.constData());
-        if (!finished || process.exitCode() != 47)
-            throw dukto::Error(dukto::ExitCode::Runtime,
-                               "fixture abandoned scan: " + QString::number(process.exitCode()) +
-                                   " " + QString::fromUtf8(process.readAllStandardError()),
-                               "test");
+        if (!process.waitForFinished(30000) || process.exitCode() != 47)
+            throw dukto::Error(dukto::ExitCode::Runtime, "fixture abandoned scan", "test");
     }
 
     // 日期：2026-11-07；只修改自有测试时钟字段，避免实际等待七天；产品使用真实UTC时间。
@@ -74,64 +68,6 @@ struct Fixture {
         store.write(stem() + ".scan.json", dukto::next::encodeControl(value));
     }
 };
-
-// 日期：2026-11-07；记录真实journal的所有者与令牌默认所有者/用户比较，不打印SID或数据库内容。
-void reportJournalOwner(const QString &path) {
-#ifdef Q_OS_WIN
-    const auto native = QDir::toNativeSeparators(path);
-    HANDLE file = CreateFileW(reinterpret_cast<LPCWSTR>(native.utf16()), READ_CONTROL,
-                              FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
-                              OPEN_EXISTING, FILE_FLAG_OPEN_REPARSE_POINT, nullptr);
-    HANDLE token = nullptr;
-    PSID owner = nullptr;
-    PACL dacl = nullptr;
-    PSECURITY_DESCRIPTOR security = nullptr;
-    if (file == INVALID_HANDLE_VALUE ||
-        !OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token) ||
-        GetSecurityInfo(file, SE_FILE_OBJECT,
-                        OWNER_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION, &owner, nullptr,
-                        &dacl, nullptr, &security) != ERROR_SUCCESS)
-        std::_Exit(96);
-    DWORD length = 0;
-    GetTokenInformation(token, TokenUser, nullptr, 0, &length);
-    QByteArray user(int(length), '\0');
-    if (!GetTokenInformation(token, TokenUser, user.data(), DWORD(user.size()), &length))
-        std::_Exit(97);
-    GetTokenInformation(token, TokenOwner, nullptr, 0, &length);
-    QByteArray defaultOwner(int(length), '\0');
-    if (!GetTokenInformation(token, TokenOwner, defaultOwner.data(), DWORD(defaultOwner.size()),
-                             &length))
-        std::_Exit(98);
-    TOKEN_ELEVATION elevation{};
-    if (!GetTokenInformation(token, TokenElevation, &elevation, sizeof(elevation), &length))
-        std::_Exit(99);
-    const auto currentUser = reinterpret_cast<TOKEN_USER *>(user.data())->User.Sid;
-    const auto tokenOwner = reinterpret_cast<TOKEN_OWNER *>(defaultOwner.data())->Owner;
-    bool otherAllowed = false;
-    if (!dacl)
-        std::_Exit(100);
-    for (DWORD index = 0; index < dacl->AceCount; ++index) {
-        void *entry = nullptr;
-        if (!GetAce(dacl, index, &entry))
-            std::_Exit(101);
-        const auto ace = static_cast<ACCESS_ALLOWED_ACE *>(entry);
-        if (ace->Header.AceType != ACCESS_ALLOWED_ACE_TYPE ||
-            !EqualSid(const_cast<DWORD *>(&ace->SidStart), currentUser))
-            otherAllowed = true;
-    }
-    std::fprintf(
-        stderr,
-        "journal-owner user=%d token-default=%d builtin-admins=%d elevated=%d other-allowed=%d\n",
-        !!EqualSid(owner, currentUser), !!EqualSid(owner, tokenOwner),
-        !!IsWellKnownSid(owner, WinBuiltinAdministratorsSid), !!elevation.TokenIsElevated,
-        int(otherAllowed));
-    LocalFree(security);
-    CloseHandle(token);
-    CloseHandle(file);
-#else
-    Q_UNUSED(path)
-#endif
-}
 
 // 日期：2026-11-07；在真实库创建小缓存未提交事务，物理溢写产生可由SQLite自身恢复的热日志。
 void leaveHotJournal(const QString &path) {
@@ -154,7 +90,6 @@ void leaveHotJournal(const QString &path) {
     QFile journal(path + "-journal");
     if (!journal.open(QIODevice::ReadOnly) || journal.read(8).toHex() != "d9d505f920a163d7")
         std::_Exit(94);
-    reportJournalOwner(path + "-journal");
     std::_Exit(47);
 }
 } // namespace
@@ -389,6 +324,149 @@ class UploadScanCleanupTests final : public QObject {
         QCOMPARE(source.readAll(), QByteArray("abc"));
     }
 
+    // 日期：2026-11-07；专门校验只能在独占维护下用于规范journal，普通文件所有者规则仍严格。
+    void journalAccessBoundary() {
+        Fixture fixture;
+        fixture.abandon("hot");
+        const auto name = fixture.stem() + ".sqlite-journal";
+        const auto path = fixture.state + "/" + name;
+        const auto before = dukto::hashFile(path);
+        {
+            dukto::PrivateStore shared(fixture.state);
+            QVERIFY_EXCEPTION_THROWN(shared.validateSqliteJournal(name), dukto::Error);
+        }
+        dukto::PrivateStore store(fixture.state, false, dukto::PrivateStore::Use::Maintenance);
+        QVERIFY(store.validateSqliteJournal(name) > 0);
+        for (const auto &invalid : {fixture.stem() + ".sqlite", name + "-wal", name + "-shm",
+                                    "../" + name, QString("state-use.lock")})
+            QVERIFY_EXCEPTION_THROWN(store.validateSqliteJournal(invalid), dukto::Error);
+#ifdef Q_OS_WIN
+        const auto native = QDir::toNativeSeparators(path);
+        PSID owner = nullptr;
+        PSECURITY_DESCRIPTOR security = nullptr;
+        QCOMPARE(GetNamedSecurityInfoW(
+                     const_cast<LPWSTR>(reinterpret_cast<LPCWSTR>(native.utf16())), SE_FILE_OBJECT,
+                     OWNER_SECURITY_INFORMATION, &owner, nullptr, nullptr, nullptr, &security),
+                 DWORD(ERROR_SUCCESS));
+        const bool defaultAdmin = IsWellKnownSid(owner, WinBuiltinAdministratorsSid);
+        LocalFree(security);
+        if (defaultAdmin) {
+            QVERIFY_EXCEPTION_THROWN(store.validateFile(name), dukto::Error);
+            QVERIFY_EXCEPTION_THROWN(store.read(name), dukto::Error);
+        } else
+            QCOMPARE(store.validateFile(name), QFileInfo(path).size());
+#else
+        QCOMPARE(store.validateFile(name), QFileInfo(path).size());
+#endif
+        QCOMPARE(dukto::hashFile(path), before);
+    }
+
+    // 日期：2026-11-07；真实热日志一旦向其他主体开放读取，预览与执行都必须拒绝且不恢复或删除原件。
+    void unsafeJournalPermissions() {
+        Fixture fixture;
+        fixture.abandon("hot");
+        fixture.age();
+        const auto database = fixture.state + "/" + fixture.stem() + ".sqlite";
+        const auto journal = database + "-journal";
+        const auto before = dukto::hashFile(database);
+        const auto journalBefore = dukto::hashFile(journal);
+        dukto::PrivateStore store(fixture.state, false, dukto::PrivateStore::Use::Maintenance);
+        const auto marker = store.read(fixture.stem() + ".scan.json");
+#ifdef Q_OS_WIN
+        const auto native = QDir::toNativeSeparators(journal);
+        auto name = const_cast<LPWSTR>(reinterpret_cast<LPCWSTR>(native.utf16()));
+        PACL original = nullptr;
+        PSECURITY_DESCRIPTOR security = nullptr;
+        QCOMPARE(GetNamedSecurityInfoW(name, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, nullptr,
+                                       nullptr, &original, nullptr, &security),
+                 DWORD(ERROR_SUCCESS));
+        BYTE everyone[SECURITY_MAX_SID_SIZE];
+        DWORD length = sizeof(everyone);
+        QVERIFY(CreateWellKnownSid(WinWorldSid, nullptr, everyone, &length));
+        EXPLICIT_ACCESSW entry{};
+        entry.grfAccessPermissions = FILE_GENERIC_READ;
+        entry.grfAccessMode = GRANT_ACCESS;
+        entry.grfInheritance = NO_INHERITANCE;
+        BuildTrusteeWithSidW(&entry.Trustee, everyone);
+        PACL widened = nullptr;
+        const auto result = SetEntriesInAclW(1, &entry, original, &widened);
+        LocalFree(security);
+        QCOMPARE(result, DWORD(ERROR_SUCCESS));
+        const auto applied = SetNamedSecurityInfoW(name, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION,
+                                                   nullptr, nullptr, widened, nullptr);
+        LocalFree(widened);
+        QCOMPARE(applied, DWORD(ERROR_SUCCESS));
+#else
+        QVERIFY(
+            QFile::setPermissions(journal, QFile::permissions(journal) | QFileDevice::ReadOther));
+#endif
+        for (const bool apply : {false, true}) {
+            bool rejected = false;
+            try {
+                dukto::cleanupUploadScan(store, fixture.request, QDateTime::currentDateTimeUtc(),
+                                         apply);
+            } catch (const dukto::Error &error) {
+                QCOMPARE(error.code, dukto::ExitCode::Permission);
+                QCOMPARE(error.stage, QString("identity"));
+                rejected = true;
+            }
+            QVERIFY(rejected);
+            QCOMPARE(dukto::hashFile(database), before);
+            QCOMPARE(dukto::hashFile(journal), journalBefore);
+            QCOMPARE(store.read(fixture.stem() + ".scan.json"), marker);
+        }
+    }
+
+    // 日期：2026-11-07；回滚日志的硬链接和符号链接均不能借用专门所有者规则进入SQLite恢复。
+    void unsafeJournalLinks_data() {
+        QTest::addColumn<bool>("symbolic");
+        QTest::newRow("hard-link") << false;
+        QTest::newRow("symbolic-link") << true;
+    }
+
+    // 日期：2026-11-07；替换为指向外部原日志的真实链接，拒绝后外部日志/数据库/清理凭据保持原字节。
+    void unsafeJournalLinks() {
+        QFETCH(bool, symbolic);
+        Fixture fixture;
+        fixture.abandon("hot");
+        fixture.age();
+        const auto database = fixture.state + "/" + fixture.stem() + ".sqlite";
+        const auto path = database + "-journal";
+        const auto target = fixture.root.filePath("outside-journal");
+        const auto before = dukto::hashFile(database);
+        const auto journalBefore = dukto::hashFile(path);
+        QVERIFY(QFile::rename(path, target));
+#ifdef Q_OS_WIN
+        const auto native = QDir::toNativeSeparators(path);
+        const auto destination = QDir::toNativeSeparators(target);
+        const auto link = reinterpret_cast<LPCWSTR>(native.utf16());
+        const auto source = reinterpret_cast<LPCWSTR>(destination.utf16());
+        if (symbolic) {
+            if (!CreateSymbolicLinkW(link, source, 2) && !CreateSymbolicLinkW(link, source, 0))
+                QSKIP("Windows account cannot create a native symbolic link");
+        } else
+            QVERIFY(CreateHardLinkW(link, source, nullptr));
+#else
+        if (symbolic)
+            QVERIFY(QFile::link(target, path));
+        else
+            QCOMPARE(
+                ::link(QFile::encodeName(target).constData(), QFile::encodeName(path).constData()),
+                0);
+#endif
+        dukto::PrivateStore store(fixture.state, false, dukto::PrivateStore::Use::Maintenance);
+        const auto marker = store.read(fixture.stem() + ".scan.json");
+        for (const bool apply : {false, true}) {
+            QVERIFY_EXCEPTION_THROWN(dukto::cleanupUploadScan(store, fixture.request,
+                                                              QDateTime::currentDateTimeUtc(),
+                                                              apply),
+                                     dukto::Error);
+            QCOMPARE(dukto::hashFile(database), before);
+            QCOMPARE(dukto::hashFile(target), journalBefore);
+            QCOMPARE(store.read(fixture.stem() + ".scan.json"), marker);
+        }
+    }
+
     // 日期：2026-11-07；持久删除后正常取消必须留下意图供恢复，不能只在进程崩溃时才可重入。
     void cancelledCleanup() {
         Fixture fixture;
@@ -501,7 +579,7 @@ class UploadScanCleanupTests final : public QObject {
 };
 
 // 日期：2026-11-07；真实进程退出留原件，其余调用交给QtTest，测试生产代码无需专用环境开关。
-int runTestApplication(int argc, char **argv) {
+int main(int argc, char **argv) {
     QCoreApplication application(argc, argv);
     const auto args = application.arguments();
     if (args.size() == 7 && args[1] == "--abandon-scan") {
@@ -537,19 +615,6 @@ int runTestApplication(int argc, char **argv) {
     }
     UploadScanCleanupTests tests;
     return QTest::qExec(&tests, argc, argv);
-}
-
-// 日期：2026-11-07；保留QtTest原失败，并输出跨进程原始错误码/阶段；诊断不把异常转换为成功。
-int main(int argc, char **argv) {
-    try {
-        return runTestApplication(argc, argv);
-    } catch (const dukto::Error &error) {
-        std::fprintf(stderr, "scan diagnostic code=%d stage=%s message=%s\n", int(error.code),
-                     error.stage.toUtf8().constData(), error.message.toUtf8().constData());
-    } catch (const std::exception &error) {
-        std::fprintf(stderr, "scan diagnostic exception=%s\n", error.what());
-    }
-    return 1;
 }
 
 #include "upload_scan_cleanup_tests.moc"
