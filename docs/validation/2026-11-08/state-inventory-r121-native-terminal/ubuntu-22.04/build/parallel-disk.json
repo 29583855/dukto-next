@@ -1,0 +1,178 @@
+{
+  "date": "2026-11-05",
+  "passed": true,
+  "filesystemBytes": 67108864,
+  "cases": [
+    {
+      "direction": "upload",
+      "channels": 4,
+      "passed": true,
+      "bytes": "33554469",
+      "confirmedBeforeFull": 4194304,
+      "fillerBytes": 62910464,
+      "kernelError": "ENOSPC",
+      "failure": {
+        "code": 5,
+        "event": "error",
+        "eventVersion": 1,
+        "message": "No space left on device",
+        "stage": "write"
+      },
+      "checkpointGateBeforeRelease": {
+        "direction": "upload",
+        "accepting": false,
+        "released": false,
+        "streams": [
+          {
+            "index": 0,
+            "limit": 131072,
+            "reserved": 20014,
+            "forwarded": 3630,
+            "waiting": false,
+            "finished": false,
+            "grants": 0
+          },
+          {
+            "index": 1,
+            "limit": 131072,
+            "reserved": 131072,
+            "forwarded": 131072,
+            "waiting": true,
+            "finished": false,
+            "grants": 0
+          },
+          {
+            "index": 2,
+            "limit": 131072,
+            "reserved": 131072,
+            "forwarded": 131072,
+            "waiting": true,
+            "finished": false,
+            "grants": 0
+          },
+          {
+            "index": 3,
+            "limit": 4325376,
+            "reserved": 4325376,
+            "forwarded": 4325376,
+            "waiting": true,
+            "finished": false,
+            "grants": 1
+          },
+          {
+            "index": 4,
+            "limit": 131072,
+            "reserved": 131072,
+            "forwarded": 131072,
+            "waiting": true,
+            "finished": false,
+            "grants": 0
+          }
+        ],
+        "scope": "opaque TLS forwarding barrier; forwarded bytes include protocol overhead"
+      },
+      "exhaustion": {
+        "fillerBytes": 62910464,
+        "physicalBytes": 62910464,
+        "method": "bounded writes on dedicated filesystem",
+        "kernelError": "ENOSPC",
+        "elapsedSeconds": 0.047
+      },
+      "retainedPartCountAfterFailure": 1,
+      "recovery": "new request after explicit failed upload",
+      "sha256": "43efea34edcd658289bf43d8afd0e36417785c1847dfab95a2cab88090a538d4",
+      "originalPreservedBeforePublication": true,
+      "sameNameOriginalPreserved": true,
+      "originalReplacedAfterRecovery": false,
+      "conflictPolicy": "rename"
+    },
+    {
+      "direction": "download",
+      "channels": 4,
+      "passed": true,
+      "bytes": "33554469",
+      "confirmedBeforeFull": 4194304,
+      "fillerBytes": 62910464,
+      "kernelError": "ENOSPC",
+      "failure": {
+        "code": 5,
+        "event": "error",
+        "eventVersion": 1,
+        "message": "No space left on device",
+        "stage": "write"
+      },
+      "checkpointGateBeforeRelease": {
+        "direction": "download",
+        "accepting": false,
+        "released": false,
+        "streams": [
+          {
+            "index": 0,
+            "limit": 131072,
+            "reserved": 23234,
+            "forwarded": 6850,
+            "waiting": false,
+            "finished": false,
+            "grants": 0
+          },
+          {
+            "index": 1,
+            "limit": 131072,
+            "reserved": 131072,
+            "forwarded": 131072,
+            "waiting": true,
+            "finished": false,
+            "grants": 0
+          },
+          {
+            "index": 2,
+            "limit": 131072,
+            "reserved": 131072,
+            "forwarded": 131072,
+            "waiting": true,
+            "finished": false,
+            "grants": 0
+          },
+          {
+            "index": 3,
+            "limit": 131072,
+            "reserved": 131072,
+            "forwarded": 131072,
+            "waiting": true,
+            "finished": false,
+            "grants": 0
+          },
+          {
+            "index": 4,
+            "limit": 4325376,
+            "reserved": 4325376,
+            "forwarded": 4325376,
+            "waiting": true,
+            "finished": false,
+            "grants": 1
+          }
+        ],
+        "scope": "opaque TLS forwarding barrier; forwarded bytes include protocol overhead"
+      },
+      "exhaustion": {
+        "fillerBytes": 62910464,
+        "physicalBytes": 62910464,
+        "method": "bounded writes on dedicated filesystem",
+        "kernelError": "ENOSPC",
+        "elapsedSeconds": 0.047
+      },
+      "retainedPartCountAfterFailure": 1,
+      "recovery": "same download task resumed",
+      "sha256": "43efea34edcd658289bf43d8afd0e36417785c1847dfab95a2cab88090a538d4",
+      "originalPreservedBeforePublication": true,
+      "sameNameOriginalPreserved": true,
+      "originalReplacedAfterRecovery": false,
+      "conflictPolicy": "rename"
+    }
+  ],
+  "platform": "Linux",
+  "conflictPolicy": "rename",
+  "executableSha256": "5ad94fdf2a4dbbc8938cc71cd953f986650e99e634307e9302600ab32f038df7",
+  "scriptSha256": "83598774aebc5437bb15fd85b906be6b0c68cd4362bfad78ca7b4c5852285990",
+  "scope": "newer TLS real data and isolated actual ENOSPC on the reported native filesystem; no power-loss or untested operating-system qualification"
+}

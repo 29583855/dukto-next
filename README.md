@@ -4,11 +4,11 @@
 
 项目以 `Dukto/` 内的 Dukto R6 为功能参考，开发 Windows、macOS、Linux 共用内核的桌面应用和独立命令行程序，增加服务器上传/下载、多线程提速及可靠恢复能力。
 
-R121应用源d924ba5c已公开，四原生状态专项在CI源30169754全部通过：Windows14条、Ubuntu/Apple Silicon/Intel各15条，均无跳过。完整30核心已按原件核验4/4；新双Mac含依赖包继续收验，当前下载仍为已验R120。跨进程总预算及自动GC未完成。 [四原生原件](docs/validation/2026-11-08/state-inventory-r121-native/receipt.json)。
+R121应用源d924ba5c、CI源30169754的四原生状态专项和各30完整核心已验；双Mac GUI/独立CLI、含Qt5/OpenSSL包、迁移运行及四张截图已验，下载已更新。完整协议终态已验1/4；独立Ubuntu干净构建仍在执行。R120四原生完整协议全部终态通过。跨进程总预算、自动GC及完整交付仍未完成。 [Mac下载](docs/macOS独立预览包.md)。
 
-R121状态根原生观察已实现：直接普通文件可与SQLite句柄按原生身份关联，CLI分别报告逻辑长度和系统分配量；双Windows各30完整核心/29份Qt XML通过，计量专项各13通过/1权限跳过，新增身份/异常恢复/SQLite锁三方法全部通过。当前Mac含依赖预览仍为已验R120；新原生验证、所有状态根归属、跨进程总预算及自动GC继续。 [本轮证据](docs/ci-verification-20261108-r121.json)。
+R121状态根原生观察已实现：直接普通文件可与SQLite句柄按原生身份关联，CLI分别报告逻辑长度和系统分配量；双Windows各30完整核心/29份Qt XML通过，计量专项各13通过/1权限跳过，新增身份/异常恢复/SQLite锁三方法全部通过。双Mac含依赖预览已更新到R121；所有状态根归属、跨进程总预算及自动GC继续。 [本轮证据](docs/ci-verification-20261108-r121.json)。
 
-R120精确c9872f72四原生各30完整核心/29份Qt XML、新文件专项各11条已验；Apple Silicon/Intel含Qt5/OpenSSL的GUI及独立CLI预览、迁移/传输和四张截图全部核验。环境修正c19aa40a的专项另按原件收验（当前4/4），完整协议终态已验2/4。总预算/跨进程账本、自动GC及完整项目仍未完成。 [Mac下载](docs/macOS独立预览包.md)、[接口](docs/SQLite原生占用观察.md)、[证据](docs/ci-verification-20261108-r120.json)。
+R120精确c9872f72四原生各30完整核心/29份Qt XML、新文件专项各11条已验；Apple Silicon/Intel含Qt5/OpenSSL的GUI及独立CLI预览、迁移/传输和四张截图全部核验。环境修正c19aa40a的专项另按原件收验（当前4/4），完整协议终态已验4/4。总预算/跨进程账本、自动GC及完整项目仍未完成。 [Mac下载](docs/macOS独立预览包.md)、[接口](docs/SQLite原生占用观察.md)、[证据](docs/ci-verification-20261108-r120.json)。
 
 R119最终夹具d2c8c4ff已公开：三个POSIX各29核心/28份Qt XML及VFS10条通过，Windows原28/29失败保留，新计量11条及20轮专项通过；双Mac GUI/CLI编译与含Qt5/OpenSSL预览、迁移/传输和四截图全部核验。[Mac下载](docs/macOS独立预览包.md)、[本轮回执](docs/ci-verification-20261107-r119.json)。完整协议、总配额/自动GC与整体交付继续。
 

@@ -1,6 +1,8 @@
 # macOS独立开发预览包
 
-R120精确c9872f72四原生各30完整核心/29份Qt XML、新文件专项各11条已验；Apple Silicon/Intel含Qt5/OpenSSL的GUI及独立CLI预览、迁移/传输和四张截图全部核验。环境修正c19aa40a的专项另按原件收验（当前4/4），完整协议终态已验2/4。总预算/跨进程账本、自动GC及完整项目仍未完成。
+R121应用源d924ba5c、CI源30169754的四原生状态专项和各30完整核心已验；双Mac GUI/独立CLI、含Qt5/OpenSSL包、迁移运行及四张截图已验，下载已更新。完整协议终态已验1/4；独立Ubuntu干净构建仍在执行。R120四原生完整协议全部终态通过。跨进程总预算、自动GC及完整交付仍未完成。
+
+R120精确c9872f72四原生各30完整核心/29份Qt XML、新文件专项各11条已验；Apple Silicon/Intel含Qt5/OpenSSL的GUI及独立CLI预览、迁移/传输和四张截图全部核验。环境修正c19aa40a的专项另按原件收验（当前4/4），完整协议终态已验4/4。总预算/跨进程账本、自动GC及完整项目仍未完成。
 
 R119应用精确325c60cc2a4230cad1b837ecace356117574777a已公开，固定SQLite 3.53.4与Qt完整驱动；三个POSIX各29核心、28份Qt XML及VFS10条通过。Windows原28/29夹具失败保留，后续d2c8c4ff完整计量11条及20轮专项通过，115份应用/依赖输入完全相同。双架构GUI/独立CLI、含Qt5/OpenSSL预览、固定依赖源码/许可、迁移运行及四张截图已验。完整协议和正式发布资格继续另验。
 
@@ -18,7 +20,27 @@ R111精确`dfe245b502f586e7df7219e8fb0d5e4030a6b032`已在Apple Silicon和Intel�
 
 R115仅修正面板测试的读取时序，产品应用输入与R114完全一致。双Mac各两轮完整面板专项已通过，四轮各7方法；原Intel失败日志继续保留。[专项回执](validation/2026-11-07/panel-timing-r115-macos/receipt.json)。
 
-## R120含依赖开发预览
+## R121含依赖开发预览
+
+应用源`d924ba5c569212bd015885739c2017b40fbf2fe3`；实际构建/打包源`301697546ef1002ab35fe39decdd8446dd389aee`只修正CI计数器，产品输入相同。[逐层回执](validation/2026-11-08/state-inventory-r121-macos-package/receipt.json)。双架构GUI/独立CLI、Qt5/OpenSSL、迁移运行、五项业务及四张截图均已验。adhoc开发签名，正式签名/公证及最低干净系统继续验收。
+
+| 架构 | 下载 | 官方ZIP SHA-256 | 内部tar.gz SHA-256 |
+| --- | --- | --- | --- |
+| arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42399486035/artifacts/13584948386) | 01dcc6f234e208f1e1e5b4b43c477f573b50bc03411ed8f4c458fc1d7a99c70e | c716f4673815a79d13e8152245cd9ee19244d78fd91d808bb3f942ff432e8f37 |
+| x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42399486035/artifacts/13585631999) | 3e7eaa1d5434aebb19e91cc740da41b2859727019545a923cfc92ab5e75a9f50 | b3f3f77b81b1178d123bb3e72e7d867fcfcb631f667e41d7f51b9e8bf72d81c3 |
+
+本机副本：dist/macos-preview-20261108-r121-state-inventory/。解压和独立CLI用法见下文。
+
+## R121原生编译归档
+
+[回执](validation/2026-11-08/state-inventory-r121-macos-compiled/receipt.json)。仅编译归档需要匹配运行库；上方预览已部署依赖。
+
+| 架构 | 下载 | 内部tar.gz SHA-256 |
+| --- | --- | --- |
+| arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42399470349/artifacts/13584468299) | 44b2bf56e6216b3c77c7847579a03af7b0c4ff33be65fe8d8e7a95c705b50f9a |
+| x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42399470349/artifacts/13584609277) | 8cc492025efa587c809901b9ba121fe4be28e836ed314cfba3f3b4e3aeece435 |
+
+## R120含依赖开发预览（历史）
 
 [逐层回执](validation/2026-11-08/sqlite-file-info-r120-macos-package/receipt.json)。双架构含Qt5/OpenSSL，GUI与独立CLI、迁移运行与实际传输恢复均已验；adhoc开发签名，正式签名/公证和最低干净系统继续验收。
 
