@@ -6,7 +6,7 @@
 
 当前已建立 C++14 共用核心、Qt Quick 2 桌面端和独立 CLI。Windows 已验证与原版文件/目录/文本双向互传、超过 4 GiB、10 万文件、100 轮接收，以及首次说明/设置/截图/单实例和有界头像模块。完整原版交互、服务器、多线程、恢复和跨平台验收继续按计划推进。原版目录保留用于对照。
 
-公开仓库为[29583855/dukto-next](https://github.com/29583855/dukto-next)。R108[过期上传临时文件维护CLI](docs/过期任务临时文件清理.md)通过双Windows和独立Ubuntu专项；新四平台CI继续。R107 ARM完整故障测试有精确断言失败并保留，GUI/CLI编译结果不变；[含依赖双Mac预览](docs/macOS独立预览包.md)仍为R105。完整状态见[计划](开发计划与进度.md)和[本轮证据](docs/ci-verification-20261107-r108.json)。
+公开仓库为[29583855/dukto-next](https://github.com/29583855/dukto-next)。R108[过期上传临时文件维护CLI](docs/过期任务临时文件清理.md)通过双Windows和独立Ubuntu专项；修正提交`6eea9d2`已公开，Apple Silicon与Intel的GUI/CLI编译归档均成功，四平台完整CI仍在运行。较早测试修正提交的Apple Silicon失败和原Windows CLI端口测试失败均保留；[含依赖双Mac预览](docs/macOS独立预览包.md)仍基于旧源码`641920f`，新提交预览包尚待验证。完整状态见[计划](开发计划与进度.md)和[本轮证据](docs/ci-verification-20261107-r108.json)。
 
 新增[b9d9b78上传发送端确认](docs/decisions/0022-上传发送端持久处置与证据恢复.md)已通过本机专项；原CI终态failure保留：四平台临时库glob误判，另Windows并发隔离空闲线程5/基线3的原因未确认。旧运行不再视为进行中，完整历史见主计划v0.64。
 
@@ -233,7 +233,7 @@ R87 macOS下载已更新到409a73b：Intel/Apple Silicon的GUI和独立CLI、各
 
 2026-11-07 R100：传输进度刷新不再反复读取剪贴板正文，双Windows实际QML及相关GUI回归通过；R98独立Ubuntu干净编译与23核心/退出专项通过。新GUI原生回归及整体交付继续，当前下载包身份不变。
 
-2026-11-07 R108：过期服务器上传临时正文清理预览/执行CLI已通过双Windows与独立Ubuntu专项。[公开仓库](https://github.com/29583855/dukto-next)已发布双架构Mac GUI/CLI与含依赖预览；五项运行报告、Cocoa与高DPI导航及四张截图已核验。R108 Ubuntu/Apple Silicon完整原生CI通过，Intel/Windows及故障断言修正后的四平台复验仍在运行。当前包、摘要和剩余资格见[计划](开发计划与进度.md)及[macOS下载说明](docs/macOS独立预览包.md)。
+2026-11-07 R108：过期服务器上传临时正文清理预览/执行CLI已通过双Windows与独立Ubuntu专项。[公开仓库](https://github.com/29583855/dukto-next)已发布双架构Mac GUI/CLI与含依赖预览；五项运行报告、Cocoa与高DPI导航及四张截图已核验。原四平台完整CI最终因Windows CLI端口测试失败；后续测试修正复验在Apple Silicon失败，失败原件均保留。新提交`6eea9d2`的两种Mac架构编译归档均已生成，四平台测试仍运行。当前预览包和剩余资格见[计划](开发计划与进度.md)及[macOS下载说明](docs/macOS独立预览包.md)。
 
 ## R100公开上传、双Mac编译与Linux长测启动（2026-11-07）
 

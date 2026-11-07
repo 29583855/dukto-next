@@ -1,6 +1,6 @@
 # macOS独立开发预览包
 
-更新日期：2026-11-07。当前含依赖开发预览为R108，打包源码`641920f75b76149d49ee01f134bf70097857dc3d`；使用C++14、Qt5及CMake，两种架构均含GUI、独立CLI和Qt5/OpenSSL运行依赖。后续`cef3759`仅调整POSIX故障测试断言，四平台新CI正在运行，未改生产GUI/CLI代码。
+更新日期：2026-11-07。当前含依赖开发预览为R108，打包源码`641920f75b76149d49ee01f134bf70097857dc3d`；使用C++14、Qt5及CMake，两种架构均含GUI、独立CLI和Qt5/OpenSSL运行依赖。最新修正提交`6eea9d2`加入头像请求单次中止保护并调整跨平台测试；Apple Silicon和Intel的GUI/CLI编译归档均已生成，四平台原生完整回归仍在运行。下方预览包尚未包含该新提交。
 
 ## 当前R108含依赖部署包
 
@@ -34,7 +34,11 @@ R108应用源码`73cd10ac95be6c97fd67134ba14b6edee4b2c189`已在 [公开仓库](
 | arm64 | [macos-compiled-ARM64](https://github.com/29583855/dukto-next/actions/runs/42332515396/artifacts/13557513668) | `8262cd8a5910e77b553198406137a5fd61bcd153477c67b71322f243721ce360` | `11300e5cdeafa83603849ac5b0f6c6609a13b6b27983f1b4032484daa3c4c25c` |
 | x86_64 | [macos-compiled-X64](https://github.com/29583855/dukto-next/actions/runs/42332515396/artifacts/13558426195) | `fb4b8c0396308396fff7d5b761a81d324e610043c9cb5495a3ec4f4c81e46a23` | `3d0322b09639c58c85d979468d10671034d00c9bf8f20a8aa8b62aa3210f2deb` |
 
-这两个是源码提交`73cd10a`的原始编译归档，未打包Qt5/OpenSSL运行依赖；对应的含依赖可运行包已更新到上方R108。原生完整CI的Ubuntu及Apple Silicon作业已成功，Intel/Windows仍在收尾。测试断言更新提交`cef3759`的四平台CI `42336003722`正在运行。
+这两个是源码提交`73cd10a`的原始编译归档，未打包Qt5/OpenSSL运行依赖；对应的含依赖可运行包已更新到上方R108。该提交原生完整CI `42332515396`终态failure，Windows CLI端口选择测试失败，其他三个runner成功。后续`cef3759`运行`42336003722`终态failure，Apple Silicon核心/GUI控制器及协议测试失败，Ubuntu、Intel、Windows成功。最新`6eea9d2`复验见下节。
+
+## `6eea9d2`原生复验（进行中）
+
+[GitHub Actions运行42340140189](https://github.com/29583855/dukto-next/actions/runs/42340140189)对应精确源码提交`6eea9d23a254ac0095e588b03d76c19faf7bf5cf`。截至2026-11-07 05:15 UTC，Apple Silicon与Intel均完成GUI/CLI编译并分别上传[`macos-compiled-ARM64`](https://github.com/29583855/dukto-next/actions/runs/42340140189/artifacts/13561031943)和[`macos-compiled-X64`](https://github.com/29583855/dukto-next/actions/runs/42340140189/artifacts/13560769150)归档；两种架构、Ubuntu和Windows均在协议集成阶段。归档只包含编译产物，不含Qt/OpenSSL运行依赖。当前编译成功不代表四平台整轮通过，待运行终态后核验归档、报告和失败项。
 
 ## R105含依赖部署包（历史）
 
