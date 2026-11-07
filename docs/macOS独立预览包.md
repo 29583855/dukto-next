@@ -1,6 +1,8 @@
 # macOS独立开发预览包
 
-R121应用源d924ba5c、CI源30169754的四原生状态专项和各30完整核心已验；双Mac GUI/独立CLI、含Qt5/OpenSSL包、迁移运行及四张截图已验，下载已更新。完整协议终态已验3/4；独立Ubuntu干净构建及15条状态专项已验。R120四原生完整协议全部终态通过。跨进程总预算、自动GC及完整交付仍未完成。
+R122精确15bd1d0c的四原生账本专项各23条通过；完整核心已验4/4。双Mac GUI/独立CLI及含Qt5/OpenSSL包、迁移运行、五项业务与四截图已验，下载已更新。独立Ubuntu仍在新目录构建。R121四原生完整协议全部通过。生产总预算、自动GC与完整交付仍未完成。
+
+R121应用源d924ba5c、CI源30169754的四原生状态专项和各30完整核心已验；双Mac GUI/独立CLI、含Qt5/OpenSSL包、迁移运行及四张截图已验，下载已更新。完整协议终态已验4/4；独立Ubuntu干净构建及15条状态专项已验。R120四原生完整协议全部终态通过。跨进程总预算、自动GC及完整交付仍未完成。
 
 R120精确c9872f72四原生各30完整核心/29份Qt XML、新文件专项各11条已验；Apple Silicon/Intel含Qt5/OpenSSL的GUI及独立CLI预览、迁移/传输和四张截图全部核验。环境修正c19aa40a的专项另按原件收验（当前4/4），完整协议终态已验4/4。总预算/跨进程账本、自动GC及完整项目仍未完成。
 
@@ -20,7 +22,27 @@ R111精确`dfe245b502f586e7df7219e8fb0d5e4030a6b032`已在Apple Silicon和Intel�
 
 R115仅修正面板测试的读取时序，产品应用输入与R114完全一致。双Mac各两轮完整面板专项已通过，四轮各7方法；原Intel失败日志继续保留。[专项回执](validation/2026-11-07/panel-timing-r115-macos/receipt.json)。
 
-## R121含依赖开发预览
+## R122含依赖开发预览
+
+精确源码`15bd1d0c5e0a484a28da9a1596af726b512d5b8a`；[逐层回执](validation/2026-11-08/state-budget-r122-macos-package/receipt.json)。双架构GUI/独立CLI、Qt5/OpenSSL部署、迁移运行、每包五项实际业务及四截图已验。开发adhoc签名，正式签名/公证及最低干净系统继续。
+
+| 架构 | 下载 | 官方ZIP SHA-256 | 内部tar.gz SHA-256 |
+| --- | --- | --- | --- |
+| arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42406043266/artifacts/13587359832) | eb6bb4d1171e777a765edb273ef35637830c6f67c1b178c098e71ec33bb83087 | e32150f27979b218d40338262b0bf5f76449b82a5470b61287315942a2a60296 |
+| x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42406043266/artifacts/13587443831) | bcccd317e0c3fe9a40b1840e34a0dc775c4b42b1d6967001760d5bc96e780a97 | adcaa5726226074376966099cb6257408550fae27f088a6f8f6ff903adb12e8c |
+
+本机副本：dist/macos-preview-20261108-r122-state-budget/。解压和独立CLI用法见下文。
+
+## R122原生编译归档
+
+[回执](validation/2026-11-08/state-budget-r122-macos-compiled/receipt.json)。
+
+| 架构 | 下载 | 内部tar.gz SHA-256 |
+| --- | --- | --- |
+| arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42406029767/artifacts/13587866014) | eae2bffbf048b65d3ecc388f589f13b474e89a7c3fa0499c08b10521bcc9fb5c |
+| x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42406029767/artifacts/13587642645) | 6602cde79d7f60f2c2cb5a550a39981f421b2dce5518e4335b299758f56d554e |
+
+## R121含依赖开发预览（历史）
 
 应用源`d924ba5c569212bd015885739c2017b40fbf2fe3`；实际构建/打包源`301697546ef1002ab35fe39decdd8446dd389aee`只修正CI计数器，产品输入相同。[逐层回执](validation/2026-11-08/state-inventory-r121-macos-package/receipt.json)。双架构GUI/独立CLI、Qt5/OpenSSL、迁移运行、五项业务及四张截图均已验。adhoc开发签名，正式签名/公证及最低干净系统继续验收。
 
