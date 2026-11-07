@@ -92,6 +92,18 @@ qint64 finalSkipCleaned(const QString &journal) {
     return cleaned;
 }
 
+// 日期：2026-11-07；独立读取维护确认位，区分已确认与记录缺失，不能只判断待办行消失。
+qint64 directoryIntentCleaned(const QString &journal) {
+    qint64 cleaned = -1;
+    database(journal, [&](QSqlDatabase db) {
+        QSqlQuery query(db);
+        if (!query.exec("SELECT cleaned FROM directory_cleanup WHERE id=3") || !query.next())
+            throw dukto::Error(dukto::ExitCode::Disk, "fixture cleanup confirmation", "test");
+        cleaned = query.value(0).toLongLong();
+    });
+    return cleaned;
+}
+
 struct Fixture {
     QTemporaryDir root;
     bool server;
@@ -223,6 +235,29 @@ struct Fixture {
                       : dukto::cleanupClientDownload(store, task, apply, after, check);
     }
 
+    // 日期：2026-11-07；真实维护子进程在FULL意图提交后或删除后退出，不执行析构或补确认。
+    void crashCleanup(bool afterRemoval) {
+        QProcess process;
+        process.start(QCoreApplication::applicationFilePath(),
+                      {afterRemoval ? "--crash-cleanup" : "--crash-before-cleanup",
+                       server ? "server" : "client", state, owner.toString(QUuid::WithoutBraces),
+                       task.toString(QUuid::WithoutBraces), expiry.toString(Qt::ISODate),
+                       temporary()});
+        if (!process.waitForFinished(30000) || process.exitCode() != 47)
+            throw dukto::Error(dukto::ExitCode::Runtime, "fixture cleanup did not crash", "test");
+    }
+
+    // 日期：2026-11-07；维护退出后新建原接收器，使用真实持久决定完成跳过，不修改任务授权或终态。
+    void resumeSkippedDirectory() {
+        dukto::PrivateStore store(state);
+        dukto::StrongManifest manifest(store, manifestName, false);
+        dukto::DurableReceive receiver(store, QFileInfo(journal).fileName(), task, manifest, output,
+                                       policy);
+        const auto result = receiver.prepareDisposition(3);
+        if (!result.skipped || result.skippedRoot != 3 || result.path != mapped + "/b-pending")
+            throw dukto::Error(dukto::ExitCode::Runtime, "fixture skip recovery", "test");
+    }
+
     // 日期：2026-11-07；返回原日志中的随机临时路径，不依赖清理函数输出定位删除对象。
     QString temporary() const {
         return QDir(output).filePath(directoryRow(journal)["temporary"].toString());
@@ -258,6 +293,92 @@ QJsonObject pendingEntry(const QJsonObject &result) {
 class DirectoryCleanupTests final : public QObject {
     Q_OBJECT
   private slots:
+    // 日期：2026-11-07；两个角色各覆盖删除前后真实进程退出，再由原接收器完成确认的交错顺序。
+    void finalSkipReceiverMaintenanceConvergence_data() {
+        QTest::addColumn<bool>("server");
+        QTest::addColumn<bool>("afterRemoval");
+        for (const bool server : {false, true})
+            for (const bool afterRemoval : {false, true})
+                QTest::newRow(((server ? "server-" : "client-") +
+                               QString(afterRemoval ? "after-delete" : "before-delete"))
+                                  .toUtf8())
+                    << server << afterRemoval;
+    }
+
+    // 日期：2026-11-07；接收器已确认时维护仅补日志；预览、事务回滚和重入均保留同名新目录内容。
+    void finalSkipReceiverMaintenanceConvergence() {
+        QFETCH(bool, server);
+        QFETCH(bool, afterRemoval);
+        Fixture fixture(server, "skip", 0, dukto::ConflictPolicy::Skip);
+        const auto temporary = fixture.temporary();
+        fixture.crashCleanup(afterRemoval);
+        QCOMPARE(QFileInfo::exists(temporary), !afterRemoval);
+        QCOMPARE(finalSkipCleaned(fixture.journal), qint64(0));
+        QCOMPARE(directoryIntentCleaned(fixture.journal), qint64(0));
+        fixture.resumeSkippedDirectory();
+        QVERIFY(!QFileInfo::exists(temporary));
+        QCOMPARE(finalSkipCleaned(fixture.journal), qint64(1));
+        QCOMPARE(directoryIntentCleaned(fixture.journal), qint64(0));
+        QVERIFY(QDir().mkdir(temporary));
+        QFile keep(temporary + "/keep.bin");
+        QVERIFY(keep.open(QIODevice::WriteOnly));
+        QCOMPARE(keep.write("external replacement"), qint64(20));
+        keep.close();
+        QJsonObject preview;
+        try {
+            preview = fixture.cleanup(false);
+        } catch (const dukto::Error &error) {
+            QFAIL(qPrintable(error.message));
+        }
+        QCOMPARE(pendingEntry(preview)["action"].toString(), QString("pending-confirmation"));
+        QCOMPARE(directoryIntentCleaned(fixture.journal), qint64(0));
+        fixture.change(
+            "CREATE TRIGGER reject_adoption BEFORE UPDATE OF cleaned ON directory_cleanup "
+            "WHEN NEW.cleaned=1 BEGIN SELECT RAISE(ABORT,'fixture adoption failure'); END");
+        QVERIFY_EXCEPTION_THROWN(fixture.cleanup(true), dukto::Error);
+        QCOMPARE(directoryIntentCleaned(fixture.journal), qint64(0));
+        QCOMPARE(finalSkipCleaned(fixture.journal), qint64(1));
+        fixture.change("DROP TRIGGER reject_adoption");
+        QCOMPARE(fixture.cleanup(true)["cleanedDirectories"].toString(), QString("1"));
+        QCOMPARE(directoryIntentCleaned(fixture.journal), qint64(1));
+        QCOMPARE(finalSkipCleaned(fixture.journal), qint64(1));
+        QCOMPARE(fixture.cleanup(true)["cleanedDirectories"].toString(), QString("1"));
+        fixture.resumeSkippedDirectory();
+        QVERIFY(keep.open(QIODevice::ReadOnly));
+        QCOMPARE(keep.readAll(), QByteArray("external replacement"));
+        QVERIFY(fixture.completedDataPreserved());
+    }
+
+    // 日期：2026-11-07；接收器完成后的日志协调仍须拒绝损坏证明和不可能的反向完成状态。
+    void finalSkipReconciliationRejectsDamage_data() {
+        QTest::addColumn<bool>("server");
+        QTest::addColumn<QString>("damage");
+        for (const bool server : {false, true})
+            for (const auto &damage : QStringList{"directory-proof", "skip-proof", "reverse"})
+                QTest::newRow(((server ? "server-" : "client-") + damage).toUtf8())
+                    << server << damage;
+    }
+
+    // 日期：2026-11-07；原生新对象与已完成正文保留，不能仅凭cleaned=1绕过原决定和维护意图。
+    void finalSkipReconciliationRejectsDamage() {
+        QFETCH(bool, server);
+        QFETCH(QString, damage);
+        Fixture fixture(server, "skip", 0, dukto::ConflictPolicy::Skip);
+        const auto temporary = fixture.temporary();
+        fixture.crashCleanup(true);
+        fixture.resumeSkippedDirectory();
+        QVERIFY(QDir().mkdir(temporary));
+        fixture.change(damage == "directory-proof" ? "UPDATE directory_cleanup SET spec=x'7b7d'"
+                       : damage == "skip-proof"    ? "UPDATE skip_final SET spec=x'7b7d'"
+                                                   : "UPDATE skip_final SET cleaned=0");
+        if (damage == "reverse")
+            fixture.change("UPDATE directory_cleanup SET cleaned=1");
+        QVERIFY_EXCEPTION_THROWN(fixture.cleanup(false), dukto::Error);
+        QVERIFY_EXCEPTION_THROWN(fixture.cleanup(true), dukto::Error);
+        QVERIFY(QFileInfo::exists(temporary));
+        QVERIFY(fixture.completedDataPreserved());
+    }
+
     // 日期：2026-11-07；最终skip目录清理、删除后取消重入和幂等确认同时覆盖客户端与服务器。
     void finalSkipCleanup_data() {
         QTest::addColumn<bool>("server");

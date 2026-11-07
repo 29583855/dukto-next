@@ -153,14 +153,14 @@ void confirm(QSqlDatabase database, const DirectoryCleanupEntry &entry, const QB
     }
 }
 
-// 日期：2026-11-07；skip临时目录与最终决定在同一FULL事务内确认，任一记录不匹配则一并回滚。
+// 日期：2026-11-07；同一FULL事务确认两个证明；接收器已确认时仅接续原维护意图，任一不匹配整体回滚。
 void confirmSkip(QSqlDatabase database, const DirectoryCleanupEntry &entry,
                  const QByteArray &directoryProof, const QByteArray &skipProof,
                  const std::function<void()> &check) {
     sql(database, "BEGIN IMMEDIATE");
     try {
         QSqlQuery query(database);
-        query.prepare("UPDATE skip_final SET cleaned=1 WHERE id=? AND spec=? AND cleaned=0 "
+        query.prepare("UPDATE skip_final SET cleaned=1 WHERE id=? AND spec=? AND cleaned IN(0,1) "
                       "AND typeof(cleaned)='integer'");
         query.addBindValue(static_cast<qlonglong>(entry.id));
         query.addBindValue(skipProof);
@@ -292,9 +292,12 @@ QString cleanupReceiveDirectory(QSqlDatabase database, const DirectoryCleanupEnt
                         "cleanup");
         const bool skipCleaned = skipProof.finalCleanupComplete(entry.id);
         if (skipCleaned) {
-            if (saved.exists && !saved.cleaned)
-                throw Error(ExitCode::Integrity, QStringLiteral("跳过与目录清理状态不一致"),
-                            "cleanup");
+            if (saved.exists && !saved.cleaned) {
+                // 日期：2026-11-07；原接收器已持久确认删除；维护只补日志，不再次访问或删除同名新对象。
+                if (!apply)
+                    return "pending-confirmation";
+                confirmSkip(database, entry, proof, next::encodeControl(finalSkip), checkpoint);
+            }
             return "already-cleaned";
         }
         if (saved.cleaned)
