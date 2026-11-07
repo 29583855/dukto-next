@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="1" failures="1" tests="10" name="UploadScanCleanupTests">
+  <properties>
+    <property value="5.15.2" name="QTestVersion"/>
+    <property value="5.15.2" name="QtVersion"/>
+    <property value="Qt 5.15.2 (x86_64&#x002D;little_endian&#x002D;llp64 shared (dynamic) release build; by MSVC 2019)" name="QtBuild"/>
+  </properties>
+  <testcase result="pass" name="initTestCase"/>
+  <testcase result="pass" name="retainedPreviewAndCleanup"/>
+  <testcase result="pass" name="interruptedCleanup"/>
+  <testcase result="pass" name="damagedEvidence"/>
+  <testcase result="pass" name="publishedAndLocks"/>
+  <testcase result="pass" name="unsafeObjects">
+    <!-- tag="symbolic&#x002D;link" message="Windows account cannot create a native symbolic link" type="skip" -->
+  </testcase>
+  <testcase result="pass" name="cancelledCleanup"/>
+  <testcase result="fail" name="corruptDatabase">
+    <failure message="Compared values are not the same" result="fail"/>
+  </testcase>
+  <testcase result="pass" name="realCli"/>
+  <testcase result="pass" name="cleanupTestCase"/>
+  <system-err>
+<![CDATA[Windows account cannot create a native symbolic link]]>
+  </system-err>
+</testsuite>

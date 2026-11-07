@@ -74,6 +74,33 @@ int runServiceCommand(const QCommandLineParser &parser, const QStringList &argum
                       const std::function<bool()> &interrupted) {
     auto command = arguments.value(0);
     const bool resuming = command == "resume";
+    if (command == "client" && arguments.value(1) == "scan-cleanup") {
+        const auto operation = arguments.value(2);
+        const QUuid request(parser.value("request-id"));
+        const QStringList allowed{"request-id", "state-directory", "j", "json", "non-interactive"};
+        for (const auto &option : parser.optionNames())
+            if (!allowed.contains(option) || parser.values(option).size() > 1 ||
+                parser.optionNames().count(option) > 1)
+                throw dukto::Error(dukto::ExitCode::Config,
+                                   QStringLiteral("源扫描清理选项无效或重复"), "arguments");
+        if (arguments.size() != 3 || (operation != "preview" && operation != "run") ||
+            request.isNull() ||
+            parser.value("request-id") != request.toString(QUuid::WithoutBraces))
+            throw dukto::Error(
+                dukto::ExitCode::Config,
+                QStringLiteral("用法：client scan-cleanup preview|run --request-id UUID"),
+                "arguments");
+        dukto::PrivateStore store(QDir(stateDirectory).filePath("transfers"), false,
+                                  dukto::PrivateStore::Use::Maintenance);
+        output(dukto::cleanupUploadScan(
+            store, request, QDateTime::currentDateTimeUtc(), operation == "run", [&]() {
+                // 日期：2026-11-07；显式中断保存已持久删除意图，同一请求可再次续做。
+                if (interrupted())
+                    throw dukto::Error(dukto::ExitCode::Cancelled,
+                                       QStringLiteral("源扫描清理已中断"), "cleanup");
+            }));
+        return 0;
+    }
     if (command == "client" && arguments.value(1) == "cleanup") {
         const auto operation = arguments.value(2);
         const QUuid task(parser.value("task"));

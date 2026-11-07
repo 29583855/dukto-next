@@ -1,0 +1,207 @@
+{
+  "date": "2026-11-06",
+  "passed": true,
+  "cases": [
+    {
+      "entries": 106,
+      "files": 103,
+      "directories": 3,
+      "bytes": 8394077,
+      "taskVersion": 3,
+      "bindingVersion": 3,
+      "itemsVerified": true,
+      "direction": "upload",
+      "conflict": "rename",
+      "channels": 1,
+      "contractDowngradeRefusedBeforeCreate": true,
+      "malformedBindingRefused": true,
+      "historicalReadOnly": true
+    },
+    {
+      "entries": 106,
+      "files": 103,
+      "directories": 3,
+      "bytes": 8394077,
+      "taskVersion": 3,
+      "bindingVersion": 3,
+      "itemsVerified": true,
+      "direction": "upload",
+      "conflict": "fail",
+      "channels": 4,
+      "contractDowngradeRefusedBeforeCreate": true,
+      "malformedBindingRefused": true,
+      "historicalReadOnly": true
+    },
+    {
+      "entries": 106,
+      "files": 103,
+      "directories": 3,
+      "bytes": 8394077,
+      "taskVersion": 3,
+      "bindingVersion": 3,
+      "itemsVerified": true,
+      "direction": "upload",
+      "conflict": "overwrite",
+      "channels": 16,
+      "contractDowngradeRefusedBeforeCreate": true,
+      "malformedBindingRefused": true,
+      "historicalReadOnly": true
+    },
+    {
+      "entries": 106,
+      "files": 103,
+      "directories": 3,
+      "bytes": 8394077,
+      "taskVersion": 3,
+      "bindingVersion": 3,
+      "itemsVerified": true,
+      "direction": "download",
+      "conflict": "rename",
+      "channels": 1,
+      "contractDowngradeRefusedBeforeCreate": true,
+      "malformedBindingRefused": true,
+      "historicalReadOnly": true
+    },
+    {
+      "entries": 106,
+      "files": 103,
+      "directories": 3,
+      "bytes": 8394077,
+      "taskVersion": 3,
+      "bindingVersion": 3,
+      "itemsVerified": true,
+      "direction": "download",
+      "conflict": "fail",
+      "channels": 4,
+      "contractDowngradeRefusedBeforeCreate": true,
+      "malformedBindingRefused": true,
+      "historicalReadOnly": true
+    },
+    {
+      "entries": 106,
+      "files": 103,
+      "directories": 3,
+      "bytes": 8394077,
+      "taskVersion": 3,
+      "bindingVersion": 3,
+      "itemsVerified": true,
+      "direction": "download",
+      "conflict": "overwrite",
+      "channels": 16,
+      "contractDowngradeRefusedBeforeCreate": true,
+      "malformedBindingRefused": true,
+      "historicalReadOnly": true
+    }
+  ],
+  "legacyCompatibility": [
+    {
+      "direction": "upload",
+      "oldBindingRetained": true,
+      "sameTaskAfterUpgrade": true,
+      "legacyDerivedRecoveryVerified": false
+    },
+    {
+      "direction": "download",
+      "oldBindingRetained": true,
+      "sameTaskAfterUpgrade": true,
+      "legacyDerivedRecoveryVerified": true
+    }
+  ],
+  "attacks": [
+    {
+      "direction": "upload",
+      "attack": "initial-contract",
+      "code": 6,
+      "refused": true,
+      "sameTaskRecovery": false
+    },
+    {
+      "direction": "upload",
+      "attack": "ready-contract",
+      "code": 6,
+      "refused": true,
+      "sameTaskRecovery": false
+    },
+    {
+      "direction": "upload",
+      "attack": "final-missing-version",
+      "code": 6,
+      "refused": true,
+      "sameTaskRecovery": true
+    },
+    {
+      "direction": "upload",
+      "attack": "final-classification",
+      "code": 6,
+      "refused": true,
+      "sameTaskRecovery": true
+    },
+    {
+      "direction": "upload",
+      "attack": "final-missing-counter",
+      "code": 6,
+      "refused": true,
+      "sameTaskRecovery": true
+    },
+    {
+      "direction": "upload",
+      "attack": "final-restored",
+      "code": 6,
+      "refused": true,
+      "sameTaskRecovery": true
+    },
+    {
+      "direction": "upload",
+      "attack": "progress-six-fields",
+      "code": 6,
+      "refused": true,
+      "sameTaskRecovery": false
+    },
+    {
+      "direction": "download",
+      "attack": "initial-contract",
+      "code": 6,
+      "refused": true,
+      "sameTaskRecovery": false
+    },
+    {
+      "direction": "download",
+      "attack": "ready-contract",
+      "code": 6,
+      "refused": true,
+      "sameTaskRecovery": false
+    },
+    {
+      "direction": "download",
+      "attack": "final-missing-version",
+      "code": 6,
+      "refused": true,
+      "sameTaskRecovery": true
+    },
+    {
+      "direction": "download",
+      "attack": "final-classification",
+      "code": 6,
+      "refused": true,
+      "sameTaskRecovery": true
+    },
+    {
+      "direction": "download",
+      "attack": "final-missing-counter",
+      "code": 6,
+      "refused": true,
+      "sameTaskRecovery": true
+    },
+    {
+      "direction": "download",
+      "attack": "final-restored",
+      "code": 6,
+      "refused": true,
+      "sameTaskRecovery": true
+    }
+  ],
+  "publicSkipEnabled": true,
+  "executableSha256": "f69ce33c0e2b22bce322fe8e7623694e5f5a57675e806d0d11ab5d6d1d201457",
+  "scriptSha256": "ca58932cd7198606b950b9d7db061da9fc80352c2341bc4e446bae6619841647",
+  "scope": "production client mandatory accounting; persisted request binding; independent owned TLS relay mutations"
+}

@@ -2,6 +2,7 @@
 
 #include "files.h"
 #include "strongmanifest.h"
+#include <QDateTime>
 
 namespace dukto {
 struct ClientProfile;
@@ -20,4 +21,8 @@ class UploadManifest final {
     std::unique_ptr<QLockFile> ownership_;
     std::unique_ptr<StrongManifest> manifest_;
 };
+
+// 日期：2026-11-07；独占维护下按原请求回收七天前未发布的源扫描库，冻结及幂等记录始终保留。
+QJsonObject cleanupUploadScan(PrivateStore &store, const QUuid &request, const QDateTime &now,
+                              bool apply, const std::function<void()> &check = {});
 } // namespace dukto

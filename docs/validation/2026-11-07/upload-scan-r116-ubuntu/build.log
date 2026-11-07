@@ -1,0 +1,51 @@
+[1/26] Automatic MOC for target candidate
+[2/26] Building CXX object CMakeFiles/candidate.dir/candidate_autogen/mocs_compilation.cpp.o
+[3/26] Building CXX object CMakeFiles/candidate.dir/src/core/uploadmanifest.cpp.o
+[4/26] Building CXX object CMakeFiles/candidate.dir/src/core/sourcefile.cpp.o
+[5/26] Building CXX object CMakeFiles/candidate.dir/src/core/privatestore.cpp.o
+[6/26] Building CXX object CMakeFiles/candidate.dir/src/core/transferprogress.cpp.o
+[7/26] Building CXX object CMakeFiles/candidate.dir/src/core/transferclient.cpp.o
+[8/26] Building CXX object CMakeFiles/candidate.dir/src/core/transferaccounting.cpp.o
+[9/26] Building CXX object CMakeFiles/candidate.dir/src/core/manifest.cpp.o
+[10/26] Building CXX object CMakeFiles/candidate.dir/src/core/tcplistener.cpp.o
+[11/26] Building CXX object CMakeFiles/candidate.dir/src/core/legacy.cpp.o
+[12/26] Building CXX object CMakeFiles/candidate.dir/src/core/endpoint.cpp.o
+[13/26] Building CXX object CMakeFiles/candidate.dir/src/core/discovery.cpp.o
+[14/26] Building CXX object CMakeFiles/candidate.dir/src/core/updates.cpp.o
+[15/26] Building CXX object CMakeFiles/candidate.dir/src/core/catalog.cpp.o
+[16/26] Linking CXX static library libcandidate.a
+[17/26] Automatic MOC for target dukto-cli
+[18/26] Building CXX object CMakeFiles/dukto-cli.dir/dukto-cli_autogen/mocs_compilation.cpp.o
+[19/26] Automatic MOC for target upload-scan-cleanup-tests
+[20/26] Building CXX object CMakeFiles/dukto-cli.dir/src/cli/input.cpp.o
+[21/26] Building CXX object CMakeFiles/dukto-cli.dir/src/cli/main.cpp.o
+[22/26] Building CXX object CMakeFiles/upload-scan-cleanup-tests.dir/upload-scan-cleanup-tests_autogen/mocs_compilation.cpp.o
+[23/26] Building CXX object CMakeFiles/dukto-cli.dir/src/cli/servicecommands.cpp.o
+[24/26] Linking CXX executable dukto-cli
+FAILED: dukto-cli 
+: && /usr/bin/c++ -O3 -DNDEBUG  CMakeFiles/dukto-cli.dir/dukto-cli_autogen/mocs_compilation.cpp.o CMakeFiles/dukto-cli.dir/src/cli/main.cpp.o CMakeFiles/dukto-cli.dir/src/cli/input.cpp.o CMakeFiles/dukto-cli.dir/src/cli/servicecommands.cpp.o -o dukto-cli  libcandidate.a  /usr/lib/x86_64-linux-gnu/libQt5Network.so.5.15.13  /usr/lib/x86_64-linux-gnu/libQt5Sql.so.5.15.13  /usr/lib/x86_64-linux-gnu/libQt5Core.so.5.15.13  /usr/lib/x86_64-linux-gnu/libcrypto.so && :
+/usr/bin/ld: CMakeFiles/dukto-cli.dir/src/cli/servicecommands.cpp.o: in function `runServiceCommand(QCommandLineParser const&, QStringList const&, QString const&, std::function<void (QJsonObject const&)> const&, std::function<bool ()> const&)':
+servicecommands.cpp:(.text+0x560b): undefined reference to `dukto::ServiceListener::event(QJsonObject const&)'
+/usr/bin/ld: servicecommands.cpp:(.text+0x56d4): undefined reference to `dukto::ServiceListener::staticMetaObject'
+/usr/bin/ld: libcandidate.a(service.cpp.o): in function `dukto::ServiceWorker::ServiceWorker(long long, QString, dukto::ServiceIdentity, int, QObject*)':
+service.cpp:(.text+0x41e6): undefined reference to `vtable for dukto::ServiceWorker'
+/usr/bin/ld: libcandidate.a(service.cpp.o): in function `dukto::ServiceWorker::~ServiceWorker()':
+service.cpp:(.text+0x4267): undefined reference to `vtable for dukto::ServiceWorker'
+/usr/bin/ld: libcandidate.a(service.cpp.o): in function `dukto::ServiceListener::ServiceListener(QString const&, int, QObject*)':
+service.cpp:(.text+0x8d56): undefined reference to `vtable for dukto::ServiceListener'
+/usr/bin/ld: libcandidate.a(service.cpp.o): in function `dukto::ServiceListener::~ServiceListener()':
+service.cpp:(.text+0x9167): undefined reference to `vtable for dukto::ServiceListener'
+/usr/bin/ld: libcandidate.a(service.cpp.o): in function `dukto::ServiceWorker::run()':
+service.cpp:(.text+0xb06c): undefined reference to `dukto::ServiceWorker::event(QJsonObject const&)'
+/usr/bin/ld: service.cpp:(.text+0xb318): undefined reference to `dukto::ServiceWorker::event(QJsonObject const&)'
+/usr/bin/ld: libcandidate.a(service.cpp.o): in function `dukto::ServiceListener::incomingConnection(long long)':
+service.cpp:(.text+0xbeef): undefined reference to `dukto::ServiceWorker::event(QJsonObject const&)'
+/usr/bin/ld: service.cpp:(.text+0xbf28): undefined reference to `dukto::ServiceListener::event(QJsonObject const&)'
+/usr/bin/ld: service.cpp:(.text+0xbf7a): undefined reference to `dukto::ServiceWorker::staticMetaObject'
+/usr/bin/ld: service.cpp:(.text+0xc21a): undefined reference to `dukto::ServiceListener::event(QJsonObject const&)'
+/usr/bin/ld: libcandidate.a(service.cpp.o): in function `dukto::ServiceWorker::run() [clone .cold]':
+service.cpp:(.text.unlikely+0x5223): undefined reference to `dukto::ServiceWorker::event(QJsonObject const&)'
+/usr/bin/ld: service.cpp:(.text.unlikely+0x52be): undefined reference to `dukto::ServiceWorker::event(QJsonObject const&)'
+collect2: error: ld returned 1 exit status
+[25/26] Building CXX object CMakeFiles/upload-scan-cleanup-tests.dir/tests/upload_scan_cleanup_tests.cpp.o
+ninja: build stopped: subcommand failed.

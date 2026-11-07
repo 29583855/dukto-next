@@ -1,11 +1,11 @@
 {
-  "observedUtc": "2026-11-07T12:29:43.862184+00:00",
+  "observedUtc": "2026-11-07T12:56:52.059247+00:00",
   "sourceCommit": "400e0621745dc250b3390ad01a5e9f47dfc924a4",
   "run": {
     "id": 42368086270,
     "head_sha": "400e0621745dc250b3390ad01a5e9f47dfc924a4",
-    "status": "in_progress",
-    "conclusion": null,
+    "status": "completed",
+    "conclusion": "success",
     "html_url": "https://github.com/29583855/dukto-next/actions/runs/42368086270"
   },
   "records": [
@@ -1579,12 +1579,550 @@
       ]
     },
     {
+      "observedUtc": "2026-11-07T12:56:51.992129+00:00",
+      "sourceCommit": "400e0621745dc250b3390ad01a5e9f47dfc924a4",
       "runner": "windows-2022",
-      "status": "in_progress",
-      "qualified": false
+      "jobId": 128390315409,
+      "status": "completed",
+      "conclusion": "success",
+      "artifactId": 13574464131,
+      "artifactSha256": "80321b2a67d8c7100dabb1314851e3584c64ebc8e00ce8ade9774b1569d81206",
+      "jobLogSha256": "cbf920bd8c834bf08f61906e9bed307d7f85bd29cabf90106efda01fd1cf41fd",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-07T11:25:06Z",
+          "completed_at": "2026-11-07T11:25:13Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-07T11:25:13Z",
+          "completed_at": "2026-11-07T11:25:35Z"
+        },
+        {
+          "name": "Run actions/setup-python@v5",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-11-07T11:25:35Z",
+          "completed_at": "2026-11-07T11:25:35Z"
+        },
+        {
+          "name": "Install Windows Qt",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-11-07T11:25:35Z",
+          "completed_at": "2026-11-07T11:26:26Z"
+        },
+        {
+          "name": "Install Linux Qt",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 5,
+          "started_at": "2026-11-07T11:26:26Z",
+          "completed_at": "2026-11-07T11:26:26Z"
+        },
+        {
+          "name": "Install macOS Qt5",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 6,
+          "started_at": "2026-11-07T11:26:26Z",
+          "completed_at": "2026-11-07T11:26:26Z"
+        },
+        {
+          "name": "Record native macOS toolchain",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 7,
+          "started_at": "2026-11-07T11:26:26Z",
+          "completed_at": "2026-11-07T11:26:26Z"
+        },
+        {
+          "name": "Windows early development TLS runtime",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-11-07T11:26:26Z",
+          "completed_at": "2026-11-07T11:26:28Z"
+        },
+        {
+          "name": "Install validation sampler",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-11-07T11:26:28Z",
+          "completed_at": "2026-11-07T11:26:30Z"
+        },
+        {
+          "name": "Validate source snapshot timestamps and contents",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-11-07T11:26:30Z",
+          "completed_at": "2026-11-07T11:26:30Z"
+        },
+        {
+          "name": "Validate bounded process sampling",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-11-07T11:26:30Z",
+          "completed_at": "2026-11-07T11:26:32Z"
+        },
+        {
+          "name": "Validate bounded proxy pacing",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-11-07T11:26:32Z",
+          "completed_at": "2026-11-07T11:26:37Z"
+        },
+        {
+          "name": "Configure",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-11-07T11:26:37Z",
+          "completed_at": "2026-11-07T11:26:47Z"
+        },
+        {
+          "name": "Compile",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-11-07T11:26:47Z",
+          "completed_at": "2026-11-07T11:28:59Z"
+        },
+        {
+          "name": "Archive macOS compilation outputs",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 15,
+          "started_at": "2026-11-07T11:28:59Z",
+          "completed_at": "2026-11-07T11:28:59Z"
+        },
+        {
+          "name": "Preserve macOS compiled GUI and CLI",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 16,
+          "started_at": "2026-11-07T11:28:59Z",
+          "completed_at": "2026-11-07T11:28:59Z"
+        },
+        {
+          "name": "Independent TLS certificate and protocol boundaries",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 17,
+          "started_at": "2026-11-07T11:28:59Z",
+          "completed_at": "2026-11-07T11:28:59Z"
+        },
+        {
+          "name": "Core and GUI controller tests",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18,
+          "started_at": "2026-11-07T11:28:59Z",
+          "completed_at": "2026-11-07T11:39:45Z"
+        },
+        {
+          "name": "Windows main window server navigation",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19,
+          "started_at": "2026-11-07T11:39:45Z",
+          "completed_at": "2026-11-07T11:39:59Z"
+        },
+        {
+          "name": "Cocoa main window server navigation",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 20,
+          "started_at": "2026-11-07T11:39:59Z",
+          "completed_at": "2026-11-07T11:39:59Z"
+        },
+        {
+          "name": "X11 main window server navigation",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 21,
+          "started_at": "2026-11-07T11:39:59Z",
+          "completed_at": "2026-11-07T11:39:59Z"
+        },
+        {
+          "name": "Preserve core diagnostics before protocol suite",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 22,
+          "started_at": "2026-11-07T11:39:59Z",
+          "completed_at": "2026-11-07T11:40:02Z"
+        },
+        {
+          "name": "Native Cocoa GUI render and process recovery",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 23,
+          "started_at": "2026-11-07T11:40:02Z",
+          "completed_at": "2026-11-07T11:40:02Z"
+        },
+        {
+          "name": "Protocol integration all independent cases",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 24,
+          "started_at": "2026-11-07T11:40:02Z",
+          "completed_at": "2026-11-07T12:42:11Z"
+        },
+        {
+          "name": "Real disk exhaustion on isolated Linux tmpfs",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 25,
+          "started_at": "2026-11-07T12:42:11Z",
+          "completed_at": "2026-11-07T12:42:11Z"
+        },
+        {
+          "name": "Real TLS transfer disk exhaustion and recovery",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 26,
+          "started_at": "2026-11-07T12:42:11Z",
+          "completed_at": "2026-11-07T12:42:11Z"
+        },
+        {
+          "name": "Preserve validation logs",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 27,
+          "started_at": "2026-11-07T12:42:11Z",
+          "completed_at": "2026-11-07T12:42:13Z"
+        },
+        {
+          "name": "Post Install Windows Qt",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 52,
+          "started_at": "2026-11-07T12:42:13Z",
+          "completed_at": "2026-11-07T12:42:13Z"
+        },
+        {
+          "name": "Post Run actions/setup-python@v5",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 53,
+          "started_at": "2026-11-07T12:42:13Z",
+          "completed_at": "2026-11-07T12:42:14Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 54,
+          "started_at": "2026-11-07T12:42:14Z",
+          "completed_at": "2026-11-07T12:42:15Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 55,
+          "started_at": "2026-11-07T12:42:15Z",
+          "completed_at": "2026-11-07T12:42:15Z"
+        }
+      ],
+      "qualified": true,
+      "deliveryComplete": false,
+      "releaseQualified": false,
+      "verifiedProtocol": {
+        "suite": {
+          "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/protocol-suite.json",
+          "sha256": "a802b50983cc072481e791f67b83fbfa06aed87134a28b77add993a25e8c1f90"
+        },
+        "cases": 51,
+        "reports": [
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/parallel-failure.json",
+            "sha256": "e7b874762a5ed2938cd9dd92a1a205a247bf5c56d868fa499483253fc7797c43",
+            "name": "parallel-failure"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/legacy.json",
+            "sha256": "5c76f82027db9e8981ed2363270d535a8aa973dad1fda095688d82abfa992b08",
+            "name": "legacy"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/legacy-text-credit.json",
+            "sha256": "ca6ca277c102206be0c90db806bf3a87801f0cc7a62580e6e7d2fdc2cfc0d12c",
+            "name": "legacy-text-credit"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/text-preview.json",
+            "sha256": "dface041c331e1af17c8bd0851a40a9d21b138b08fb708c742bfee017dbf80da",
+            "name": "text-preview"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/legacy-timeout.json",
+            "sha256": "2b82b9a8b1d2b600c64d9b61900176e8d1e86002327fa672118b76d5a5cd1606",
+            "name": "legacy-timeout"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/parallel-attach.json",
+            "sha256": "04db39f625bd5177e55e94a4fe049db4c934e745715e5ae63af564caa1a0f448",
+            "name": "parallel-attach"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/cli.json",
+            "sha256": "e84d9024b3cd20db3f9d60fa6a06181160cd4ae30e3a21f30916cd4cf6426020",
+            "name": "cli"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/doctor.json",
+            "sha256": "fd51d6d45928d7c63edadf49150055d7cfd16daeaaf5880e7330e6cb936fb8e2",
+            "name": "doctor"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/crash.json",
+            "sha256": "da311383d5961b8f3b8c28eb276484b7b09e5cec1c203391322c926f39b534a5",
+            "name": "crash"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/windows-path.json",
+            "sha256": "62c357638a24d17580d482d6deb20029386fba5cf8f63faf561760b8be7b95a1",
+            "name": "windows-path"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/windows-signal.json",
+            "sha256": "8e3e8c2b41d9e6e6ef54bd5e2bd5ca2a7b58966b6db6192c31ac133c51823bf3",
+            "name": "windows-signal"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/windows-overwrite-busy.json",
+            "sha256": "c8c7f5b93038579084dc231da90a7a533e9df360502fd163f0025304a171a067",
+            "name": "windows-overwrite-busy"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/windows-private-read.json",
+            "sha256": "70a80e0c1f4759d05eb532764f85e8a662ab2584a23472bc7cbc8411b47665d3",
+            "name": "windows-private-read"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/service.json",
+            "sha256": "704cd08e7c2e33398096cbb32a755b5dac5ab66f1f1077f9a3f28258ae28da83",
+            "name": "service"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/service-accounting.json",
+            "sha256": "c2262b134bf4c4ab9097e982a84c9dc9c34eb4450e8ec35f33edbbcbfaf13d5c",
+            "name": "service-accounting"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/client-accounting.json",
+            "sha256": "c91e1290e7e5e8b45b8da18282729645dffa425151fc7daf2f9ff649181ddf44",
+            "name": "client-accounting"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/client-list.json",
+            "sha256": "37026cc4d7bd8b65c2c0985bb3c19485757ba8089e63acd49a25bf5e9205bb2c",
+            "name": "client-list"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/credential-rotation.json",
+            "sha256": "8c97dacbeb167b1c937eaac30542766be3298608ba369086a6a6143e12eab931",
+            "name": "credential-rotation"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/certificate-lifecycle.json",
+            "sha256": "a28a50f5088f8929745af40e3091e59724455d26854405ba40e450cf1fca90a6",
+            "name": "certificate-lifecycle"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/session-expiry.json",
+            "sha256": "eba57849b7ca4f52edb45e6337aeca35bcea2d6293d5179240ac11cdba48d449",
+            "name": "session-expiry"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/task-admission-upload.json",
+            "sha256": "fdc668876e354b20e118d510ab8a01029dc28e6de9ec93a6e393cbe54578ac0e",
+            "name": "task-admission-upload"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/task-admission-download.json",
+            "sha256": "daea38bbf0f0776ef4cbc8db3103f312599e82b2f891e8c5e194f7065b59912e",
+            "name": "task-admission-download"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/task-admission-mixed.json",
+            "sha256": "f47f0238b156b1af98529d99d02b91b5db794ecb01e24826598f0ce58ef624a9",
+            "name": "task-admission-mixed"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/transfer-retry.json",
+            "sha256": "621fd2ff76bd859f03798836fb040a7c61fc72a0814a037e824c59d52edd7ed7",
+            "name": "transfer-retry"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/conflict-fail.json",
+            "sha256": "c7861aa1d17a3f265a0d0a785b678cb5916d974bd120349df728a56a8495e254",
+            "name": "conflict-fail"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/conflict-overwrite.json",
+            "sha256": "79a028b00328e9c669e20c02cd1c79d8b643d4b4248e9ec71fa33fedd4f3cbc8",
+            "name": "conflict-overwrite"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/conflict-skip.json",
+            "sha256": "1d9c6d4733e1fdbcc80c90ac0fb711dc36315b435017fc3d6c3654afff6b1624",
+            "name": "conflict-skip"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/task-items.json",
+            "sha256": "36b5a0ef531651b0fa8362d3b99104c2fb26a91aae506b5ab37ad201383a839b",
+            "name": "task-items"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/disposition-transfer.json",
+            "sha256": "7202c20d308e89405d7854f485ba651a3b4f52fa53b58dbcb1cca91e747fcc64",
+            "name": "disposition-transfer"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/disposition-summary.json",
+            "sha256": "066d85e8a437403759aeba2097476e3206c5b3ba70a82a7f7b32e12673292aff",
+            "name": "disposition-summary"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/upload-receipt.json",
+            "sha256": "973d89b4b8b3b3905ebbe5d7dd48a7337f918ae8959acef54653a3a8a1e03028",
+            "name": "upload-receipt"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/completed-history.json",
+            "sha256": "736343bbd17d93262acb54bed28ef7d2426195d8029557d3981ce1f676621885",
+            "name": "completed-history"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/item-failures.json",
+            "sha256": "18b335640b4d7b8ad2f34027dfc59b62c82b1494d7c929672511199fcc307a3c",
+            "name": "item-failures"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/conflict-fail-recovery.json",
+            "sha256": "fcc7f404121cf4438800ccc564bc0a05e5db29f76a6fc533cb1b0644f53e27d8",
+            "name": "conflict-fail-recovery"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/conflict-overwrite-recovery.json",
+            "sha256": "cd086fd0855e35097695a15e1637e8c24805e95a19c13aaca9ac6b5d4e713409",
+            "name": "conflict-overwrite-recovery"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/conflict-skip-recovery.json",
+            "sha256": "30d834e5c50e2302c681d4e8452ba69fe9a241110b60d9aa4c643fae4e076c19",
+            "name": "conflict-skip-recovery"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/transfer.json",
+            "sha256": "463ba313ff86dfc70aad58b15890b71241a07477de723a4dbc701596ba09a168",
+            "name": "transfer"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/transfer-recovery.json",
+            "sha256": "2cc544be7d192263b6a90ceaf4a9130035a2af1049988739a004dd7e95637169",
+            "name": "transfer-recovery"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/parallel-transfer.json",
+            "sha256": "505b2cf8941fce99a3be4bdcee6d4f3c89d22c3aed04c46d40b528e868f99d5a",
+            "name": "parallel-transfer"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/parallel-recovery.json",
+            "sha256": "ebdbc43967e169ffaf66113a1dcab74ed88c0b18d2260d1f1865118d6b7e37a5",
+            "name": "parallel-recovery"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/parallel-isolation.json",
+            "sha256": "f9f90e6a91ad8de0460666df3448871e9b44228a6797481739431e9116be06f7",
+            "name": "parallel-isolation"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/byte-progress.json",
+            "sha256": "db9d0241827ada7954fc2c87874026d2298bbaa133d07a1f3c2f41c51d27d17a",
+            "name": "byte-progress"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/transfer-faults.json",
+            "sha256": "0f9ed958fc19118eb3f591ac7bed4d4a316a505d55ab35fc72115d3805660987",
+            "name": "transfer-faults"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/final-ack.json",
+            "sha256": "a9e1aeac60558996a63c568669a0f55f39c67a7cac1301f5f08d67b4cbc98e60",
+            "name": "final-ack"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/final-ack-auto-retry.json",
+            "sha256": "4dd7b187f0bcf655f58221acf88f7c14b971878d7194f063f689fe1a054d8728",
+            "name": "final-ack-auto-retry"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/overwrite-faults.json",
+            "sha256": "f888f39686717c376c8d3492a3c79d4ed1ab748d81ce4da83fa97db5db660d57",
+            "name": "overwrite-faults"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/overwrite-final-ack.json",
+            "sha256": "03007ad0bde8e7ed3de2d4d7222cc706814a5a0976dc0ec27b7404ad48a020e5",
+            "name": "overwrite-final-ack"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/overwrite-final-ack-auto-retry.json",
+            "sha256": "4c4c98ba692456963cc39a94d855544898e5f5e988fa87ef3e9017581fc6502d",
+            "name": "overwrite-final-ack-auto-retry"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/gui-process-recovery.json",
+            "sha256": "0d49fed8e7628f35f6e607d9e0b5198b004816cf9375b809b0d7d7ae90e5ee9e",
+            "name": "gui-process-recovery"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/task-store.json",
+            "sha256": "777f685ee19d2b97dfc9abcf73fcca55a3ede06faccb1268fdc45b85fc506161",
+            "name": "task-store"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/secure-channel.json",
+            "sha256": "f0af344e176de70a33092274d451f54d3de412b5769e2ca68bddf0c8330e9f97",
+            "name": "secure-channel"
+          }
+        ],
+        "passed": true
+      },
+      "secureChannelCases": 31,
+      "taskStoreCompetingProcesses": 8,
+      "sharedStateProcesses": 8,
+      "doctorChecks": 12,
+      "additionalReports": [
+        {
+          "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/proxy-pacing.json",
+          "sha256": "49a6e2367c842fe69f0058c780bb1a0fff804d50aca814a15e2a231e37d1aada"
+        },
+        {
+          "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-07/skip-reconcile-r113-native-terminal/windows-2022/build/main-window-navigation.json",
+          "sha256": "e1fbff4da7a5b537548fa6bc92958f82a1ce9da058b5dc58630406b5ce1af99e"
+        }
+      ]
     }
   ],
-  "allFourNativeProtocolJobsVerified": false,
+  "allFourNativeProtocolJobsVerified": true,
   "releaseQualified": false,
   "deliveryComplete": false
 }
