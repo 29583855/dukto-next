@@ -19,3 +19,5 @@ SQLite文件锁、同步、短读和WAL锁仍由平台原生VFS处理。包装�
 仍需完成：跨进程持久预算、所有状态根/原子替换/正文预算接入、真实身份和失败后重新核对、活动与历史/幂等分类、自动GC、资源压力及故障恢复。生产目前没有安装实际总配额策略，quotaEnforced=false。任意外部程序对目录直接写入不受应用策略保证。
 
 Git检出时third-party/sqlite-runtime目录使用-text属性保留原件字节，源码快照和对应源码包均保留.gitattributes。真实Git core.autocrlf=true检出验证通过；首次Windows配置摘要拒绝及原日志继续保留。
+
+2026-11-08补充：应用325c60cc三个POSIX各29完整CTest/28份Qt原件及新专项10条通过；Windows原28/29失败保留，d2c8c4ff完整计量11条及20轮专项通过；双Mac对应源码/许可、含依赖包及迁移运行已验。目录测试显式设置可观测mtime，首次Windows检出摘要失败和Ubuntu夹具失败继续保留；总配额/自动GC仍未完成。

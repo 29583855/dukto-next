@@ -1,8 +1,10 @@
 # macOS独立开发预览包
 
-R118精确e84f34f5dfec9c1edd465a443b37c3bc2696c633已公开，新增客户端/服务器状态占用查询；双Windows各28核心通过。双Mac C++14 GUI、独立CLI及含Qt5/OpenSSL预览、迁移运行和四截图已验。[ubuntu-22.04、macos-15、macos-15-intel、windows-2022各28核心已验](ci-verification-20261107-r118.json)；完整协议另按终态核验。
+R119应用精确325c60cc2a4230cad1b837ecace356117574777a已公开，固定SQLite 3.53.4与Qt完整驱动；三个POSIX各29核心、28份Qt XML及VFS10条通过。Windows原28/29夹具失败保留，后续d2c8c4ff完整计量11条及20轮专项通过，115份应用/依赖输入完全相同。双架构GUI/独立CLI、含Qt5/OpenSSL预览、固定依赖源码/许可、迁移运行及四张截图已验。完整协议和正式发布资格继续另验。
 
-R117精确`a46454d0ece59d178f1763c56f60cc61298e3154`已公开，修复Windows提升进程创建SQLite热日志时的默认所有者误拒绝，保留私有ACL及普通文件严格规则。双Windows各27核心及GitHub Windows两轮专项各29条通过。Apple Silicon/Intel C++14 GUI、独立CLI及含Qt5/OpenSSL预览均已核验；迁移运行、各五项CLI/传输、Cocoa导航/高DPI和四张截图通过。[完整CI](https://github.com/29583855/dukto-next/actions/runs/42379391549)继续按终态收验，[打包](https://github.com/29583855/dukto-next/actions/runs/42379506896)双架构终态success。
+R118精确e84f34f5dfec9c1edd465a443b37c3bc2696c633已公开，新增客户端/服务器状态占用查询；双Windows各28核心通过。双Mac C++14 GUI、独立CLI及含Qt5/OpenSSL预览、迁移运行和四截图已验。[四平台各28核心和完整协议终态已验](ci-verification-20261107-r118.json)，Windows51项、三个POSIX各47项通过。
+
+R117精确`a46454d0ece59d178f1763c56f60cc61298e3154`已公开，修复Windows提升进程创建SQLite热日志时的默认所有者误拒绝，保留私有ACL及普通文件严格规则。双Windows各27核心及GitHub Windows两轮专项各29条通过。Apple Silicon/Intel C++14 GUI、独立CLI及含Qt5/OpenSSL预览均已核验；迁移运行、各五项CLI/传输、Cocoa导航/高DPI和四张截图通过。[完整CI](https://github.com/29583855/dukto-next/actions/runs/42379391549)四平台终态success且原件已验，[打包](https://github.com/29583855/dukto-next/actions/runs/42379506896)双架构终态success。
 
 R116精确`0a60da9120b6be49d1768fa500d042ff394ac9f7`已公开，增加上传扫描中断后的按请求清理及资源申请失败恢复。Apple Silicon/Intel C++14 GUI和独立CLI编译归档均已核验；[含依赖打包](https://github.com/29583855/dukto-next/actions/runs/42375918838)双架构终态success；[完整原生CI](https://github.com/29583855/dukto-next/actions/runs/42375666807)继续按终态原件收验，Windows热journal所有权诊断单独保留。下方R116含依赖双架构预览、迁移运行和四张截图已验，R114包保留为历史版本。
 
@@ -14,7 +16,27 @@ R111精确`dfe245b502f586e7df7219e8fb0d5e4030a6b032`已在Apple Silicon和Intel�
 
 R115仅修正面板测试的读取时序，产品应用输入与R114完全一致。双Mac各两轮完整面板专项已通过，四轮各7方法；原Intel失败日志继续保留。[专项回执](validation/2026-11-07/panel-timing-r115-macos/receipt.json)。
 
-## R118含依赖开发预览
+## R119含依赖开发预览
+
+[逐层回执](validation/2026-11-07/sqlite-vfs-r119-final-macos-package/receipt.json)。adhoc开发预览，正式签名/公证、最低干净系统及完整项目继续验收。
+
+| 架构 | 下载 | 官方ZIP SHA-256 | 内部tar.gz SHA-256 |
+| --- | --- | --- | --- |
+| arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42390326679/artifacts/13581309466) | 9d0ba58e121e841e2b6689dce17340597549de4c359b6e7767c38b8adb65f6ac | e81a010a6dbd840df153d3727f7b1387e2c2cc575562fdad2145af72fe88bcaa |
+| x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42390326679/artifacts/13582052293) | 263f2db9fff58a797952ab04d16b9cc4bffcde18c0a6e43a3d5ad3867522143b | 1b95e21aaede55ec4acdbb4fd920cc921009be2ce5206c7b41ab63ac291ce8cc |
+
+本机副本：dist/macos-preview-20261107-r119-final-sqlite-vfs/。解压与CLI用法见下文。
+
+## R119原生编译归档
+
+[回执](validation/2026-11-07/sqlite-vfs-r119-final-macos-compiled/receipt.json)。仅编译归档需要匹配运行库；上方预览已包含部署依赖。
+
+| 架构 | 下载 | 内部tar.gz SHA-256 |
+| --- | --- | --- |
+| arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42390256303/artifacts/13581242567) | 1c0f74a945aae64789713f6ab5e558a776216d669b67ca567ada9b91fd62c8bf |
+| x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42390256303/artifacts/13581231810) | 294844bf6958817b48fd823792b4a6a60f6ad469073ef019415a6dd97988f414 |
+
+## R118含依赖开发预览（历史）
 
 [逐层回执](validation/2026-11-07/state-storage-r118-macos-package/receipt.json)。这是adhoc开发预览，正式签名/公证、最低干净系统及完整项目仍待验。
 

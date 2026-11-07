@@ -4,6 +4,8 @@
 
 项目以 `Dukto/` 内的 Dukto R6 为功能参考，开发 Windows、macOS、Linux 共用内核的桌面应用和独立命令行程序，增加服务器上传/下载、多线程提速及可靠恢复能力。
 
+R119最终夹具d2c8c4ff已公开：三个POSIX各29核心/28份Qt XML及VFS10条通过，Windows原28/29失败保留，新计量11条及20轮专项通过；双Mac GUI/CLI编译与含Qt5/OpenSSL预览、迁移/传输和四截图全部核验。[Mac下载](docs/macOS独立预览包.md)、[本轮回执](docs/ci-verification-20261107-r119.json)。完整协议、总配额/自动GC与整体交付继续。
+
 R119固定SQLite 3.53.4与Qt完整驱动，每连接VFS支持写入前策略；双Windows各29完整CTest/28份XML通过，新专项各10条全通过。原件依赖与许可进入源码包；首次259份输入已公开，Windows自动换行导致摘要拒绝的原失败保留；检出修正后260份输入重新原生验证。实际总预算/自动GC仍待接入。[设计](docs/SQLite运行时与写入拦截.md)、[证据](docs/ci-verification-20261107-r119.json)。
 
 R118精确e84f34f已公开，状态占用查询及双Windows各28完整CTest/27份XML通过。双Mac GUI/独立CLI、含Qt5/OpenSSL预览、迁移运行及四截图已验；ubuntu-22.04、macos-15、macos-15-intel、windows-2022各28核心已验，完整协议继续。总配额/自动GC和完整项目继续按计划实施。[Mac下载](docs/macOS独立预览包.md)、[用法](docs/状态占用查询.md)、[证据](docs/ci-verification-20261107-r118.json)。

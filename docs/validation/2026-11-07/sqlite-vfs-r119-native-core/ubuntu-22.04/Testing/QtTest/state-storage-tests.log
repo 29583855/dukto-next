@@ -1,0 +1,17 @@
+********* Start testing of StateStorageTests *********
+Config: Using QtTest library 5.15.3, Qt 5.15.3 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.3.0), ubuntu 22.04
+PASS   : StateStorageTests::initTestCase()
+PASS   : StateStorageTests::logicalLengthsAndCategories()
+PASS   : StateStorageTests::hotJournalIsObservedWithoutRecovery()
+PASS   : StateStorageTests::hardLinksCountPerName()
+PASS   : StateStorageTests::nestedDataIsExcluded()
+PASS   : StateStorageTests::nativeSymbolicLinkIsExcluded()
+PASS   : StateStorageTests::fifoIsExcludedWithoutOpeningBody()
+FAIL!  : StateStorageTests::maintenanceCancellationAndMutation() Directory mutation was accepted
+   Loc: [/home/runner/work/dukto-next/dukto-next/tests/state_storage_tests.cpp(259)]
+PASS   : StateStorageTests::manyEntriesKeepReportBounded()
+PASS   : StateStorageTests::realCli(client)
+PASS   : StateStorageTests::realCli(serve)
+PASS   : StateStorageTests::cleanupTestCase()
+Totals: 11 passed, 1 failed, 0 skipped, 0 blacklisted, 332ms
+********* Finished testing of StateStorageTests *********
