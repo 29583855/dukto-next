@@ -356,6 +356,42 @@ class ExpiredTaskCleanupTests final : public QObject {
         QCOMPARE(replacement.readAll(), QByteArray("new owner"));
     }
 
+    // 日期：2026-11-07；损坏日志中的超32位整数不能经截断被接受为普通文件的0/1确认标志。
+    void wideConfirmationFlag_data() {
+        QTest::addColumn<QString>("flag");
+        QTest::newRow("wide-zero") << "4294967296";
+        QTest::newRow("wide-one") << "4294967297";
+    }
+
+    // 日期：2026-11-07；预览及执行均拒绝损坏意图，并保持清理后新出现的同名对象正文不变。
+    void wideConfirmationFlag() {
+        QFETCH(QString, flag);
+        Fixture fixture;
+        dukto::PrivateStore store(fixture.root.filePath("private"), false,
+                                  dukto::PrivateStore::Use::Maintenance);
+        dukto::cleanupExpiredUpload(store, fixture.owner, fixture.id, fixture.updated.addDays(8),
+                                    true);
+        const auto journal = "receive-" + fixture.id.toString(QUuid::WithoutBraces) + ".sqlite";
+        database(store, journal, [&](QSqlDatabase db) {
+            QSqlQuery query(db);
+            if (!query.exec("PRAGMA ignore_check_constraints=ON") ||
+                !query.exec("UPDATE expired_cleanup SET cleaned=" + flag))
+                throw dukto::Error(dukto::ExitCode::Disk, "fixture wide confirmation", "test");
+        });
+        QFile replacement(fixture.root.filePath("output/" + fixture.pending));
+        QVERIFY(replacement.open(QIODevice::WriteOnly));
+        QCOMPARE(replacement.write("new owner"), qint64(9));
+        replacement.close();
+        QVERIFY_EXCEPTION_THROWN(dukto::cleanupExpiredUpload(store, fixture.owner, fixture.id,
+                                                             fixture.updated.addDays(8), false),
+                                 dukto::Error);
+        QVERIFY_EXCEPTION_THROWN(dukto::cleanupExpiredUpload(store, fixture.owner, fixture.id,
+                                                             fixture.updated.addDays(8), true),
+                                 dukto::Error);
+        QVERIFY(replacement.open(QIODevice::ReadOnly));
+        QCOMPARE(replacement.readAll(), QByteArray("new owner"));
+    }
+
     // 日期：2026-11-07；目录被改名并换成同名目录后，根身份不同，拒绝访问其中的任何正文。
     void replacedRoot() {
         Fixture fixture;

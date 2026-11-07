@@ -1,0 +1,452 @@
+{
+  "observedUtc": "2026-11-07T07:30:00.445077+00:00",
+  "sourceBaseCommit": "619567b03157481766279d3f25b96ff93eb5b10c",
+  "scope": "Local Windows UCRT/Qt5.15.19 and MSVC/Qt5.15.2; exact build inputs attached; native CI pending",
+  "passed": true,
+  "results": [
+    {
+      "toolchain": "ucrt",
+      "exitCode": 0,
+      "targets": [
+        "directory-cleanup-tests",
+        "client-download-cleanup-tests",
+        "expired-task-cleanup-tests",
+        "durable-receive-tests",
+        "core-tests",
+        "sqlite-cache-tests",
+        "strong-manifest-tests",
+        "task-store-tests"
+      ],
+      "seconds": 39.891,
+      "tests": {
+        "core-tests": {
+          "junitMethods": 30,
+          "actualRowsIncludingData": 47
+        },
+        "sqlite-cache-tests": {
+          "junitMethods": 4,
+          "actualRowsIncludingData": 4
+        },
+        "strong-manifest-tests": {
+          "junitMethods": 10,
+          "actualRowsIncludingData": 10
+        },
+        "task-store-tests": {
+          "junitMethods": 20,
+          "actualRowsIncludingData": 39
+        },
+        "expired-task-cleanup-tests": {
+          "junitMethods": 15,
+          "actualRowsIncludingData": 20
+        },
+        "client-download-cleanup-tests": {
+          "junitMethods": 13,
+          "actualRowsIncludingData": 16
+        },
+        "directory-cleanup-tests": {
+          "junitMethods": 15,
+          "actualRowsIncludingData": 45
+        },
+        "durable-receive-tests": {
+          "junitMethods": 30,
+          "actualRowsIncludingData": 47
+        }
+      },
+      "binaries": [
+        {
+          "path": "dukto-cli.exe",
+          "bytes": 2345360,
+          "sha256": "b71f3c00a05352ba3cb5b037fd52ef13f3b685700936935964af524e9f167a90"
+        },
+        {
+          "path": "directory-cleanup-tests.exe",
+          "bytes": 1027449,
+          "sha256": "9b207f983eef1aa37502acd7e90b4a060f7e5399ee4ee7db11bfb41bb1c5e333"
+        },
+        {
+          "path": "expired-task-cleanup-tests.exe",
+          "bytes": 993698,
+          "sha256": "6a4043283116eefe34f8a633e7be8debaadd54e88af9309245e418e6a8869b2d"
+        }
+      ]
+    },
+    {
+      "toolchain": "msvc",
+      "exitCode": 0,
+      "targets": [
+        "directory-cleanup-tests",
+        "client-download-cleanup-tests",
+        "expired-task-cleanup-tests",
+        "durable-receive-tests",
+        "core-tests",
+        "sqlite-cache-tests",
+        "strong-manifest-tests",
+        "task-store-tests"
+      ],
+      "seconds": 42.765,
+      "tests": {
+        "core-tests": {
+          "junitMethods": 30,
+          "actualRowsIncludingData": 47
+        },
+        "sqlite-cache-tests": {
+          "junitMethods": 4,
+          "actualRowsIncludingData": 4
+        },
+        "strong-manifest-tests": {
+          "junitMethods": 10,
+          "actualRowsIncludingData": 10
+        },
+        "task-store-tests": {
+          "junitMethods": 20,
+          "actualRowsIncludingData": 39
+        },
+        "expired-task-cleanup-tests": {
+          "junitMethods": 15,
+          "actualRowsIncludingData": 20
+        },
+        "client-download-cleanup-tests": {
+          "junitMethods": 13,
+          "actualRowsIncludingData": 16
+        },
+        "directory-cleanup-tests": {
+          "junitMethods": 15,
+          "actualRowsIncludingData": 45
+        },
+        "durable-receive-tests": {
+          "junitMethods": 30,
+          "actualRowsIncludingData": 47
+        }
+      },
+      "binaries": [
+        {
+          "path": "dukto-cli.exe",
+          "bytes": 1273344,
+          "sha256": "af79ed51cc265db5afb0ae66f47ff880ecf2271f3682b51cec1a0a63acf39a4f"
+        },
+        {
+          "path": "directory-cleanup-tests.exe",
+          "bytes": 466944,
+          "sha256": "5d457c19a0433a5e21c77f483418b32c4a5ba087b9c5b5317a4034126db633df"
+        },
+        {
+          "path": "expired-task-cleanup-tests.exe",
+          "bytes": 397312,
+          "sha256": "2c1046a054da3198395e94aa3f8005ab69a6a2ec8ea2b884379e6f46cef429d0"
+        }
+      ]
+    }
+  ],
+  "sourceAuditFiles": 216,
+  "inputCount": 241,
+  "changedFiles": [
+    {
+      "path": "CMakeLists.txt",
+      "encoding": "UTF-8",
+      "bom": false,
+      "lineEnding": "LF",
+      "existingFormatPreserved": true
+    },
+    {
+      "path": "src/core/clientdownloadcleanup.cpp",
+      "encoding": "UTF-8",
+      "bom": false,
+      "lineEnding": "LF",
+      "existingFormatPreserved": true
+    },
+    {
+      "path": "src/core/expiredtaskcleanup.cpp",
+      "encoding": "UTF-8",
+      "bom": false,
+      "lineEnding": "LF",
+      "existingFormatPreserved": true
+    },
+    {
+      "path": "src/core/nativecommit.cpp",
+      "encoding": "UTF-8",
+      "bom": false,
+      "lineEnding": "LF",
+      "existingFormatPreserved": true
+    },
+    {
+      "path": "src/core/nativecommit.h",
+      "encoding": "UTF-8",
+      "bom": false,
+      "lineEnding": "LF",
+      "existingFormatPreserved": true
+    },
+    {
+      "path": "src/core/directorycleanup.cpp",
+      "encoding": "UTF-8",
+      "bom": false,
+      "lineEnding": "LF",
+      "existingFormatPreserved": false
+    },
+    {
+      "path": "src/core/directorycleanup.h",
+      "encoding": "UTF-8",
+      "bom": false,
+      "lineEnding": "LF",
+      "existingFormatPreserved": false
+    },
+    {
+      "path": "tests/directory_cleanup_tests.cpp",
+      "encoding": "UTF-8",
+      "bom": false,
+      "lineEnding": "LF",
+      "existingFormatPreserved": false
+    },
+    {
+      "path": "tests/expired_task_cleanup_tests.cpp",
+      "encoding": "UTF-8",
+      "bom": false,
+      "lineEnding": "LF",
+      "existingFormatPreserved": true
+    }
+  ],
+  "formattingChangedCppPassed": true,
+  "files": [
+    {
+      "path": "build-directory-cleanup-r110.py",
+      "bytes": 2644,
+      "sha256": "5397937e09484d2def5d17c4eb66a7c443d458e60c3efec5f9a13ef766b3f949"
+    },
+    {
+      "path": "build-inputs.json",
+      "bytes": 38154,
+      "sha256": "4dacc603a3ff8a4989fe6bbc3be8ef4651428856f5efd8438cdec9613303d805"
+    },
+    {
+      "path": "frozen-long-observation.json",
+      "bytes": 918,
+      "sha256": "2330b415fe72be5005e7e6b1085cc9365256e3fea48ea9f8037e4f639eee3cd4"
+    },
+    {
+      "path": "msvc/client-download-cleanup-tests.log",
+      "bytes": 1323,
+      "sha256": "4c0eef5e823231636268718c79c0cbdb3aa761f11c825dbbd2e0a2b151eb529d"
+    },
+    {
+      "path": "msvc/client-download-cleanup-tests.xml",
+      "bytes": 1197,
+      "sha256": "e70599ab51612d5e04b7e4ada8f19499e86d961fb8fd4987f23a85cc21ee5ac7"
+    },
+    {
+      "path": "msvc/configure.log",
+      "bytes": 218,
+      "sha256": "9cc408a802297f57b66c298134e27839ba3b929903f4ecc9150bc17bb5c7b2db"
+    },
+    {
+      "path": "msvc/core-tests.log",
+      "bytes": 2962,
+      "sha256": "c395adb4ce2d3cd0306ada9360ceb6da458ee5eff77199897c22de6ce68ee19d"
+    },
+    {
+      "path": "msvc/core-tests.xml",
+      "bytes": 2250,
+      "sha256": "047e5ca57b78e56704ef5381217a01ddbcc6406a72d7dd35709bfe8bfecf8048"
+    },
+    {
+      "path": "msvc/ctest.log",
+      "bytes": 974,
+      "sha256": "8ce82561612acb6b5efde93f67fcbf358adbbb06f993ba1e59bd7df07e9d4a12"
+    },
+    {
+      "path": "msvc/directory-cleanup-tests.log",
+      "bytes": 3150,
+      "sha256": "c7c6922298131ea00314173e42a672e906790ee92bab1e22e934dd3cbd5136fc"
+    },
+    {
+      "path": "msvc/directory-cleanup-tests.xml",
+      "bytes": 1248,
+      "sha256": "243f0e8badb8298ec4dfafac771be30bc0c2a81a8993885c74922edc2ea15434"
+    },
+    {
+      "path": "msvc/durable-receive-tests.log",
+      "bytes": 3167,
+      "sha256": "e7ed8b0dae82e776d7e2feaf6abe979321a0dc448cff107700ce52256d21327e"
+    },
+    {
+      "path": "msvc/durable-receive-tests.xml",
+      "bytes": 2203,
+      "sha256": "3151cf8a179fd949a689f46a61eeb20125e7023b893c7e9edca114569b58418e"
+    },
+    {
+      "path": "msvc/expired-task-cleanup-tests.log",
+      "bytes": 1457,
+      "sha256": "88fa5f38379ea633c0dcc84205a3bae7948b0fd74bdc4d748b9e4d454ba09a0a"
+    },
+    {
+      "path": "msvc/expired-task-cleanup-tests.xml",
+      "bytes": 1212,
+      "sha256": "da2e1fa319c84f8034754584922063ce10d82fbe88488b8f0be0e312373fc970"
+    },
+    {
+      "path": "msvc/incremental-build.log",
+      "bytes": 3204,
+      "sha256": "2fe7b438de7280a8366694def9815501ccbe9b3a1a6e2352b72628e1ad56d090"
+    },
+    {
+      "path": "msvc/LastTest.log",
+      "bytes": 7032,
+      "sha256": "6e1a7ac1dc147f8034bff9b59487dc7f84328b2f86469e8d793cceebbda54ff5"
+    },
+    {
+      "path": "msvc/sqlite-cache-tests.log",
+      "bytes": 534,
+      "sha256": "e6a725d2ca948a763b63fa10f8f856891b01ab3d1c3b2c7856670a9d7d9a90bf"
+    },
+    {
+      "path": "msvc/sqlite-cache-tests.xml",
+      "bytes": 666,
+      "sha256": "6aea2b8610e5884b4ea133eae23bc17cc5f0ade576e67e7472928921cf3c375a"
+    },
+    {
+      "path": "msvc/strong-manifest-tests.log",
+      "bytes": 903,
+      "sha256": "0a34bcb6c4ad54182eeabe193f13251cea3ebdb38b21c55f779244469860a441"
+    },
+    {
+      "path": "msvc/strong-manifest-tests.xml",
+      "bytes": 1036,
+      "sha256": "a54b99aee3af4e20e772e48dc77ceddc54aa20e551e58364fc3ea1da14cb113e"
+    },
+    {
+      "path": "msvc/task-store-tests.log",
+      "bytes": 2503,
+      "sha256": "1f8b8ac1841c8cea97b300bda362423e734bfad09c142e0a1249d40b2cf96bf0"
+    },
+    {
+      "path": "msvc/task-store-tests.xml",
+      "bytes": 1591,
+      "sha256": "7f3b1c681023254fe9455501a3335a4d1ef557ff937691facb260ac224e0dfa2"
+    },
+    {
+      "path": "prepare-directory-cleanup-r110.py",
+      "bytes": 18759,
+      "sha256": "849dba8aba5ae3e627dc61e764e9b85d5dc586dcec3b09df8980fb148716e57c"
+    },
+    {
+      "path": "source-audit.json",
+      "bytes": 26443,
+      "sha256": "dae2c7003f7ff6a4d7c1537f534d5a904fa2bfd0f4eb2ef0b69b89ce0eaaf4f0"
+    },
+    {
+      "path": "test-directory-cleanup-r110.py",
+      "bytes": 2172,
+      "sha256": "1edd492b51356c34cd8abf5bb32d93ff2f42fdfc0e766031f7790cb7e30fa4c0"
+    },
+    {
+      "path": "ucrt/client-download-cleanup-tests.log",
+      "bytes": 1326,
+      "sha256": "564e153743597ab0d25aaef9aec07415b9e67448052d8ad2369e38e2bdb05b1c"
+    },
+    {
+      "path": "ucrt/client-download-cleanup-tests.xml",
+      "bytes": 1201,
+      "sha256": "4ac6fc8075c4a60add98c0b79e547177a3b0a4b0b05cc5a5d3a0d33b96765e27"
+    },
+    {
+      "path": "ucrt/configure.log",
+      "bytes": 142,
+      "sha256": "2becea690121a3cacef6d291640bad94268e97f4a3f5282f6301606f9419f020"
+    },
+    {
+      "path": "ucrt/core-tests.log",
+      "bytes": 2965,
+      "sha256": "5590923fc259b702208470039491ac4ae0268c785e0b62bbb084a3ed6211c2c5"
+    },
+    {
+      "path": "ucrt/core-tests.xml",
+      "bytes": 2254,
+      "sha256": "cb2c2e02714a9207fcafbd79c9cee9c2ccc43e9187879f1449e2f6e3a569b2d8"
+    },
+    {
+      "path": "ucrt/ctest.log",
+      "bytes": 974,
+      "sha256": "10f99cc0a440edebb17fc16873ff18dbc1a57508093166721ccb2c8a455b85cf"
+    },
+    {
+      "path": "ucrt/directory-cleanup-tests.log",
+      "bytes": 3153,
+      "sha256": "d2e47d3095c5314f224f356e31cad39ff841f16fe67b31970ddf01f418322aae"
+    },
+    {
+      "path": "ucrt/directory-cleanup-tests.xml",
+      "bytes": 1252,
+      "sha256": "7c215d5ac5378f058ccfa8617d7046601b9c74a2ef48121344892121dd79fcc0"
+    },
+    {
+      "path": "ucrt/durable-receive-tests.log",
+      "bytes": 3170,
+      "sha256": "8ac7ca8f53ba90fe9b20e4f5ae6862dc46ffcc125cf3641c38db8b105d506a21"
+    },
+    {
+      "path": "ucrt/durable-receive-tests.xml",
+      "bytes": 2207,
+      "sha256": "67c53c7f42326cafb38b2377fa0f17f8c55c4f71dcb30b3c5cc494d9489bdf1c"
+    },
+    {
+      "path": "ucrt/expired-task-cleanup-tests.log",
+      "bytes": 1460,
+      "sha256": "627998be2df6a82f0abd280bbffe8b09e0103afcfb3ede337ecb7f03aebba7f2"
+    },
+    {
+      "path": "ucrt/expired-task-cleanup-tests.xml",
+      "bytes": 1216,
+      "sha256": "619afd60167d2e5b9ec2ce9e3ea0b07e718f980190e369b1d41172a5c47c9948"
+    },
+    {
+      "path": "ucrt/incremental-build.log",
+      "bytes": 954,
+      "sha256": "b82f3eb14dd783fd40898fe681385ef660495a2e52fce7c984c65d7fd0ded3ce"
+    },
+    {
+      "path": "ucrt/LastTest.log",
+      "bytes": 6968,
+      "sha256": "7db5e50c2574c7456e4f9069d1dbeed732f23822b1cfe6c22a5eeab154903a79"
+    },
+    {
+      "path": "ucrt/sqlite-cache-tests.log",
+      "bytes": 537,
+      "sha256": "e83d7ffcd83ad5b1a44f45fc2dcada247e14cf9b9c2a530f3a30de027f707e13"
+    },
+    {
+      "path": "ucrt/sqlite-cache-tests.xml",
+      "bytes": 670,
+      "sha256": "c3b6ff5391636c3d812626f5e050709507bfca01744e320f6bd5530892ad1705"
+    },
+    {
+      "path": "ucrt/strong-manifest-tests.log",
+      "bytes": 906,
+      "sha256": "47d83f6d9a0132775aa53f3b6ba8677a9266ac019de210473257459cddee7af5"
+    },
+    {
+      "path": "ucrt/strong-manifest-tests.xml",
+      "bytes": 1040,
+      "sha256": "efca2d3380463f4b82bb66ab3e89945bf8c9f0c1c3353ffd4a4fc7d6f1b4b3c2"
+    },
+    {
+      "path": "ucrt/task-store-tests.log",
+      "bytes": 2506,
+      "sha256": "ee7ebc53c3af295b870c17db5c7a62ccf8269112af07bfb05112265246bc7bc3"
+    },
+    {
+      "path": "ucrt/task-store-tests.xml",
+      "bytes": 1595,
+      "sha256": "2a98da1e6c76933c3fdf946fc6f250c4dcb5d66be5b5aec50559f317e6f2ed2a"
+    }
+  ],
+  "openScope": [
+    "native four-platform R110 validation",
+    "skip-policy directory coordination",
+    "unknown-identity temporary directories",
+    "global GC and total disk budgets",
+    "full R6 GUI",
+    "physical LAN and 3x3 matrix",
+    "24-hour stability",
+    "dependency source rebuild and clean signed distribution"
+  ],
+  "deliveryComplete": false,
+  "releaseQualified": false
+}

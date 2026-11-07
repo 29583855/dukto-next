@@ -477,6 +477,26 @@ void PosixDirectory::removeOwnedTemporary(const QString &name, const QByteArray 
     synchronize();
 }
 
+// 日期：2026-11-07；读取固定父目录下的实际目录身份，不把权限错误、符号链接或类型替换当作不存在。
+QByteArray PosixDirectory::childDirectoryIdentity(const QString &name) const {
+    verify();
+    if (name.isEmpty() || name == "." || name == ".." || name.contains('/') ||
+        name.contains(QChar::Null))
+        throw Error(ExitCode::Permission, QStringLiteral("目录身份查询键无效"), "cleanup");
+    const auto encoded = QFile::encodeName(name);
+    struct stat info;
+    if (::fstatat(descriptor_, encoded.constData(), &info, AT_SYMLINK_NOFOLLOW) != 0) {
+        if (errno == ENOENT)
+            return {};
+        throw Error(ExitCode::Disk, QStringLiteral("目录原生身份查询失败"), "cleanup");
+    }
+    if (!S_ISDIR(info.st_mode))
+        throw Error(ExitCode::Integrity, QStringLiteral("目录类型变化或存在链接"), "cleanup");
+    verify();
+    return QByteArray::number(static_cast<qulonglong>(info.st_dev)) + ':' +
+           QByteArray::number(static_cast<qulonglong>(info.st_ino));
+}
+
 // 日期：2026-11-04；目录树同名分配也使用相对固定句柄的 mkdirat，避免符号链接替换重定向。
 bool PosixDirectory::createChild(const QString &name) const {
     verify();
@@ -604,11 +624,14 @@ void replaceReceivedFile(const QString &source, const QString &destination,
 }
 #endif
 
-// 日期：2026-11-05；Windows锁定父目录并以DELETE句柄验证/删除同一对象，POSIX使用固定父描述符。
-void removeReceivedTemporary(const QString &path, const QByteArray &identity, bool directory) {
+// 日期：2026-11-07；删除所用固定父句柄须匹配预约身份，不能仅在另一次路径查询中核对父目录。
+void removeReceivedTemporary(const QString &path, const QByteArray &identity, bool directory,
+                             const QByteArray &parentIdentity) {
     const QFileInfo information(path);
 #ifdef Q_OS_WIN
     NativeDirectoryLock parent(information.absolutePath(), false);
+    if (!parentIdentity.isEmpty() && parent.identity() != parentIdentity)
+        throw Error(ExitCode::Integrity, QStringLiteral("清理父目录原生身份已变化"), "cleanup");
     const auto native = nativeLongPath(path);
     const auto handle = CreateFileW(
         reinterpret_cast<LPCWSTR>(native.utf16()), DELETE | FILE_READ_ATTRIBUTES, FILE_SHARE_READ,
@@ -643,7 +666,49 @@ void removeReceivedTemporary(const QString &path, const QByteArray &identity, bo
         throw Error(ExitCode::Disk, QStringLiteral("临时清理句柄关闭失败"), "receive");
 #else
     PosixDirectory parent(information.absolutePath(), false);
+    if (!parentIdentity.isEmpty() && parent.identity() != parentIdentity)
+        throw Error(ExitCode::Integrity, QStringLiteral("清理父目录原生身份已变化"), "cleanup");
     parent.removeOwnedTemporary(information.fileName(), identity, directory);
+#endif
+}
+
+// 日期：2026-11-07；固定父目录查询子目录原生身份，不能通过QFileInfo空结果推断目录已被清理。
+QByteArray receivedDirectoryIdentity(const QString &path, const QByteArray &parentIdentity) {
+    const QFileInfo information(path);
+#ifdef Q_OS_WIN
+    NativeDirectoryLock parent(information.absolutePath(), false);
+    if (!parentIdentity.isEmpty() && parent.identity() != parentIdentity)
+        throw Error(ExitCode::Integrity, QStringLiteral("查询父目录原生身份已变化"), "cleanup");
+    const auto native = nativeLongPath(path);
+    const auto handle =
+        CreateFileW(reinterpret_cast<LPCWSTR>(native.utf16()), FILE_READ_ATTRIBUTES,
+                    FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING,
+                    FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+    if (handle == INVALID_HANDLE_VALUE) {
+        if (GetLastError() == ERROR_FILE_NOT_FOUND)
+            return {};
+        throw Error(ExitCode::Disk, QStringLiteral("无法读取目录原生身份"), "cleanup");
+    }
+    BY_HANDLE_FILE_INFORMATION info;
+    const bool valid = GetFileType(handle) == FILE_TYPE_DISK &&
+                       GetFileInformationByHandle(handle, &info) &&
+                       !(info.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) &&
+                       (info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
+    if (!valid) {
+        CloseHandle(handle);
+        throw Error(ExitCode::Integrity, QStringLiteral("目录类型变化或存在重解析点"), "cleanup");
+    }
+    const auto identity = QByteArray::number(static_cast<qulonglong>(info.dwVolumeSerialNumber)) +
+                          ':' + QByteArray::number(static_cast<qulonglong>(info.nFileIndexHigh)) +
+                          ':' + QByteArray::number(static_cast<qulonglong>(info.nFileIndexLow));
+    if (!CloseHandle(handle))
+        throw Error(ExitCode::Disk, QStringLiteral("目录身份句柄关闭失败"), "cleanup");
+    return identity;
+#else
+    PosixDirectory parent(information.absolutePath(), false);
+    if (!parentIdentity.isEmpty() && parent.identity() != parentIdentity)
+        throw Error(ExitCode::Integrity, QStringLiteral("查询父目录原生身份已变化"), "cleanup");
+    return parent.childDirectoryIdentity(information.fileName());
 #endif
 }
 

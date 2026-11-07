@@ -1,4 +1,5 @@
 #include "clientdownloadcleanup.h"
+#include "directorycleanup.h"
 #include "error.h"
 #include "files.h"
 #include "protocol.h"
@@ -275,19 +276,12 @@ QJsonObject cleanupClientDownload(PrivateStore &store, const QUuid &task, bool a
     if (schema.lastError().isValid() || tables != QStringList{"blocks", "files"})
         throw Error(ExitCode::Integrity, QStringLiteral("下载接收日志架构不完整"), "cleanup");
     schema.finish();
-    quint64 directories = 0;
-    QSqlQuery directoryCount(database);
-    if (!directoryCount.exec("SELECT COUNT(*) FROM directories") || !directoryCount.next() ||
-        directoryCount.value(0).toULongLong() > 10000000)
-        throw Error(ExitCode::Integrity, QStringLiteral("下载目录记录无法核验"), "cleanup");
-    directories = directoryCount.value(0).toULongLong();
-    if (directoryCount.next() || directoryCount.lastError().isValid())
-        throw Error(ExitCode::Integrity, QStringLiteral("下载目录记录读取失败"), "cleanup");
-    directoryCount.finish();
     QJsonArray entries;
     quint64 cursor = after;
     quint64 cleaned = 0;
     quint64 preserved = 0;
+    quint64 cleanedDirectories = 0;
+    quint64 preservedDirectories = 0;
     bool more = false;
     for (;;) {
         if (check)
@@ -296,15 +290,8 @@ QJsonObject cleanupClientDownload(PrivateStore &store, const QUuid &task, bool a
         root.verify();
 #endif
         QSqlQuery query(database);
-        query.prepare(
-            "SELECT id,CASE WHEN length(spec)<=65536 THEN spec ELSE NULL END,"
-            "CASE WHEN length(CAST(temporary AS BLOB))<=4096 THEN temporary ELSE NULL END,"
-            "CASE WHEN length(CAST(target AS BLOB))<=4096 THEN target ELSE NULL END,"
-            "CASE WHEN length(native)<=128 THEN native ELSE NULL END,"
-            "CASE WHEN length(state)<=16 THEN state ELSE NULL END,confirmed,"
-            "typeof(id),typeof(spec),typeof(temporary),typeof(target),typeof(native),"
-            "typeof(state),typeof(confirmed) "
-            "FROM files WHERE id>? ORDER BY id LIMIT 1");
+        query.prepare(receiveCleanupEntryQuery());
+        query.addBindValue(static_cast<qlonglong>(cursor));
         query.addBindValue(static_cast<qlonglong>(cursor));
         execute(query);
         if (!query.next()) {
@@ -315,6 +302,32 @@ QJsonObject cleanupClientDownload(PrivateStore &store, const QUuid &task, bool a
         if (!apply && entries.size() == 100) {
             more = true;
             break;
+        }
+        if (query.value(14).toBool()) {
+            const auto value = readCleanupDirectory(query, manifest);
+            query.finish();
+            cursor = value.id;
+            const auto directoryCheck = [&]() {
+                // 日期：2026-11-07；目录意图、删除及确认期间持续核对取消和固定接收根。
+                if (check)
+                    check();
+#ifndef Q_OS_WIN
+                root.verify();
+#endif
+            };
+            const auto action = cleanupReceiveDirectory(
+                database, value, binding.root, binding.rootIdentity, apply, true,
+                binding.conflict == ConflictPolicy::Skip, directoryCheck);
+            if (action == "cleaned")
+                ++cleanedDirectories;
+            else
+                ++preservedDirectories;
+            if (!apply)
+                entries.append(QJsonObject{{"id", QString::number(value.id)},
+                                           {"kind", "directory"},
+                                           {"action", action},
+                                           {"temporary", value.temporary}});
+            continue;
         }
         const auto value = candidate(query, manifest);
         query.finish();
@@ -337,6 +350,7 @@ QJsonObject cleanupClientDownload(PrivateStore &store, const QUuid &task, bool a
         }
         if (!apply)
             entries.append(QJsonObject{{"id", QString::number(value.id)},
+                                       {"kind", "file"},
                                        {"action", action},
                                        {"temporary", value.temporary}});
     }
@@ -350,10 +364,10 @@ QJsonObject cleanupClientDownload(PrivateStore &store, const QUuid &task, bool a
         {"entries", entries},
         {"cleanedFiles", QString::number(cleaned)},
         {"preservedFiles", QString::number(preserved)},
-        {"preservedDirectories", QString::number(directories)},
-        {"message", apply
-                        ? QStringLiteral("客户端未完成下载文件清理结束；任务、目录和提交历史已保留")
-                        : QStringLiteral("客户端下载清理预览；未删除文件或修改任务日志")}};
+        {"cleanedDirectories", QString::number(cleanedDirectories)},
+        {"preservedDirectories", QString::number(preservedDirectories)},
+        {"message", apply ? QStringLiteral("客户端下载临时项清理结束；任务与已发布项目保留")
+                          : QStringLiteral("客户端下载清理预览；未删除文件或修改任务日志")}};
     return result;
 }
 } // namespace dukto

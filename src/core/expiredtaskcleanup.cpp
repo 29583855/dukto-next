@@ -1,4 +1,5 @@
 #include "expiredtaskcleanup.h"
+#include "directorycleanup.h"
 #include "error.h"
 #include "protocol.h"
 #include "sourcefile.h"
@@ -56,6 +57,13 @@ class Journal final {
                 throw Error(ExitCode::Disk, QStringLiteral("无法打开原接收日志"), "cleanup");
             credit_.configure(database_);
             sql(database_, "PRAGMA busy_timeout=1000");
+            QSqlQuery mode(database_);
+            if (!mode.exec("PRAGMA journal_mode") || !mode.next() ||
+                mode.value(0).toString().compare(QStringLiteral("delete"), Qt::CaseInsensitive) !=
+                    0 ||
+                mode.next() || mode.lastError().isValid())
+                throw Error(ExitCode::Config, QStringLiteral("清理不接受WAL模式接收库"), "cleanup");
+            mode.finish();
             sql(database_, "PRAGMA temp_store=FILE");
             if (writable) {
                 sql(database_, "PRAGMA synchronous=FULL");
@@ -120,14 +128,6 @@ void verifyBinding(QSqlDatabase database, const TransferTask &task, const QStrin
                     QStringLiteral("接收存在未确定提交结果，必须保留并先恢复核验"), "cleanup");
     if (query.lastError().isValid())
         throw Error(ExitCode::Disk, QStringLiteral("无法核对接收提交状态"), "cleanup");
-    query.finish();
-    query.prepare("SELECT 1 FROM directories WHERE state='committing' LIMIT 1");
-    execute(query);
-    if (query.next())
-        throw Error(ExitCode::Config,
-                    QStringLiteral("目录存在未确定提交结果，必须保留并先恢复核验"), "cleanup");
-    if (query.lastError().isValid())
-        throw Error(ExitCode::Disk, QStringLiteral("无法核对目录提交状态"), "cleanup");
 }
 
 struct Candidate {
@@ -193,16 +193,17 @@ bool intention(QSqlDatabase database, const Candidate &value, bool create) {
         }
     }
     QSqlQuery query(database);
-    query.prepare("SELECT CASE WHEN length(spec)<=65536 THEN spec ELSE NULL END,cleaned,"
+    query.prepare("SELECT CASE WHEN length(spec)<=65536 THEN spec ELSE NULL END,"
+                  "CASE WHEN typeof(cleaned)='integer' THEN cleaned ELSE NULL END,"
                   "typeof(cleaned) FROM expired_cleanup WHERE id=?");
     query.addBindValue(static_cast<qlonglong>(value.id));
     execute(query);
     if (!query.next())
         return false;
     if (query.value(0).toByteArray() != value.proof || query.value(2) != "integer" ||
-        (query.value(1).toInt() != 0 && query.value(1).toInt() != 1))
+        (query.value(1).toLongLong() != 0 && query.value(1).toLongLong() != 1))
         throw Error(ExitCode::Integrity, QStringLiteral("临时清理意图与原条目不符"), "cleanup");
-    return query.value(1).toInt() == 1;
+    return query.value(1).toLongLong() == 1;
 }
 } // namespace
 
@@ -256,6 +257,8 @@ QJsonObject cleanupExpiredUpload(PrivateStore &store, const QUuid &owner, const 
     quint64 cursor = after;
     quint64 cleaned = 0;
     quint64 preserved = 0;
+    quint64 cleanedDirectories = 0;
+    quint64 preservedDirectories = 0;
     bool more = false;
     for (;;) {
         if (check)
@@ -264,13 +267,8 @@ QJsonObject cleanupExpiredUpload(PrivateStore &store, const QUuid &owner, const 
         heldRoot.verify();
 #endif
         QSqlQuery query(database);
-        query.prepare(
-            "SELECT id,CASE WHEN length(spec)<=65536 THEN spec ELSE NULL END,"
-            "CASE WHEN length(CAST(temporary AS BLOB))<=4096 THEN temporary ELSE NULL END,"
-            "CASE WHEN length(CAST(target AS BLOB))<=4096 THEN target ELSE NULL END,"
-            "CASE WHEN length(native)<=128 THEN native ELSE NULL END,"
-            "CASE WHEN length(state)<=16 THEN state ELSE NULL END,confirmed "
-            "FROM files WHERE id>? ORDER BY id LIMIT 1");
+        query.prepare(receiveCleanupEntryQuery());
+        query.addBindValue(static_cast<qlonglong>(cursor));
         query.addBindValue(static_cast<qlonglong>(cursor));
         execute(query);
         if (!query.next()) {
@@ -281,6 +279,32 @@ QJsonObject cleanupExpiredUpload(PrivateStore &store, const QUuid &owner, const 
         if (!apply && entries.size() == 100) {
             more = true;
             break;
+        }
+        if (query.value(14).toBool()) {
+            const auto value = readCleanupDirectory(query, manifest);
+            query.finish();
+            cursor = value.id;
+            const auto directoryCheck = [&]() {
+                // 日期：2026-11-07；独占维护期间仍响应取消并验证POSIX接收根没有被替换。
+                if (check)
+                    check();
+#ifndef Q_OS_WIN
+                heldRoot.verify();
+#endif
+            };
+            const auto action =
+                cleanupReceiveDirectory(database, value, root, heldRoot.identity(), apply, false,
+                                        task.conflict == ConflictPolicy::Skip, directoryCheck);
+            if (action == "cleaned" || action == "already-cleaned")
+                ++cleanedDirectories;
+            else
+                ++preservedDirectories;
+            if (!apply)
+                entries.append(QJsonObject{{"id", QString::number(value.id)},
+                                           {"kind", "directory"},
+                                           {"action", action},
+                                           {"temporary", value.temporary}});
+            continue;
         }
         const auto value = candidate(query, manifest);
         query.finish();
@@ -323,6 +347,7 @@ QJsonObject cleanupExpiredUpload(PrivateStore &store, const QUuid &owner, const 
             ++preserved;
         if (!apply)
             entries.append(QJsonObject{{"id", QString::number(value.id)},
+                                       {"kind", "file"},
                                        {"action", action},
                                        {"temporary", value.temporary}});
     }
@@ -337,6 +362,8 @@ QJsonObject cleanupExpiredUpload(PrivateStore &store, const QUuid &owner, const 
     info["entries"] = entries;
     info["cleanedFiles"] = QString::number(cleaned);
     info["preservedFiles"] = QString::number(preserved);
+    info["cleanedDirectories"] = QString::number(cleanedDirectories);
+    info["preservedDirectories"] = QString::number(preservedDirectories);
     info["message"] = apply ? QStringLiteral("过期临时文件维护结束，任务及幂等记录保留")
                             : QStringLiteral("过期临时文件预览，未终止任务或删除正文");
     return info;
