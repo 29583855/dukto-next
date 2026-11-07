@@ -1,5 +1,5 @@
 {
-  "observedUtc": "2026-11-07T02:59:16.986719+00:00",
+  "observedUtc": "2026-11-07T03:10:01.775482+00:00",
   "productionCommit": "ed4f5cf08c96f04671e49e5138eda8ce1790ead3",
   "testCommit": "ed4f5cf08c96f04671e49e5138eda8ce1790ead3",
   "packages": [
@@ -214,7 +214,7 @@
   "releaseQualified": false,
   "deliveryComplete": false,
   "planVersion": "v0.108",
-  "currentSourceStage": "R108 targeted expired upload temporary body cleanup and CLI; original metadata retained",
+  "currentSourceStage": "R108 Windows and independent Ubuntu cleanup qualified; R107 ARM precise fault fixture failed; new native pending",
   "nativeMusl": {
     "sourceCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
     "productionCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
@@ -17580,7 +17580,7 @@
       "sha256": "872c369563c6beb92b4421968bdf88a82f6621aae9bcad048f3a3fe316c7c56a"
     }
   },
-  "currentSourceCommit": "e220461bdd0a409b10f483a3aaa321db927975c3",
+  "currentSourceCommit": "73cd10ac95be6c97fd67134ba14b6edee4b2c189",
   "productionImplementationUnchangedFrom": "88f33b2c83f2950307c362fb64c693f7e9e5929d",
   "nativeRegressionGuardR98": {
     "date": "2026-11-07",
@@ -19613,7 +19613,7 @@
       "sha256": "4e925961855239abe68898110d7e27d2d842a6676373cc2ab724a1f18d5af3a0"
     }
   },
-  "currentGuiSourceCommitPending": true,
+  "currentGuiSourceCommitPending": false,
   "coreProductionCommit": "88f33b2c83f2950307c362fb64c693f7e9e5929d",
   "linuxPreviewR98": {
     "sourceCommit": "b2e4659b347c65eef24c8e568e07e96a2d6ff2d7",
@@ -20591,7 +20591,7 @@
     "path": "docs/validation/2026-11-07/cancel-r102-native-terminal/receipt.json",
     "sha256": "93384dac8e1ae928a2cb54494b861638b6bc418f66dc24d2de5a514c0185f238"
   },
-  "currentGuiSourceCommit": "e220461bdd0a409b10f483a3aaa321db927975c3",
+  "currentGuiSourceCommit": "73cd10ac95be6c97fd67134ba14b6edee4b2c189",
   "r103CompleteTerminal": {
     "path": "docs/validation/2026-11-07/diagnostics-r103-native-terminal/receipt.json",
     "sha256": "e4fbf6ba33cf3e04747c1f06619ba3465b4ec412d9eda295d9310221e204194d"
@@ -20817,7 +20817,12 @@
     "ubuntuCompleteTerminal": {
       "path": "docs/validation/2026-11-07/secure-ready-r107-native-job-terminals/ubuntu-22.04/receipt.json",
       "sha256": "ca4e8d18c4b064dc1953986aabe1a21b5707ae9dc59cf2602d3389bdc2fb8343"
-    }
+    },
+    "armFailure": {
+      "path": "docs/validation/2026-11-07/secure-ready-r107-arm-failure/receipt.json",
+      "sha256": "d9604ebae380cb230e7b469eea983ce86fa21ddad1e6b9f8c7bfd28896f88e92"
+    },
+    "fullNativeRegressionPassed": false
   },
   "r105IntelNativeTerminal": {
     "path": "docs/validation/2026-11-07/task-items-r105-native-job-terminals/macos-15-intel/receipt.json",
@@ -20834,14 +20839,19 @@
   "expiredUploadCleanupR108": {
     "manifest": {
       "path": "docs/ci-verification-20261107-r108.json",
-      "sha256": "adb2b0b9cbef54b18f5c9ad2056da6ff024224b1da870848dc3ebbcbcf401058"
+      "sha256": "696437744a5b25de4bfa5d9331500526ee86924fb1eefd1f14da66e6dff4e687"
     },
     "windowsEvidence": {
       "path": "docs/validation/2026-11-07/expiry-r108-qualified/receipt.json",
       "sha256": "46741a76867005ccf77a3a4c32e41b56c5959fabbfc26fa40ece91b14ae5f7e7"
     },
     "nativeCIPending": true,
-    "independentUbuntuPending": true,
-    "globalDiskBudgetImplemented": false
+    "independentUbuntuPending": false,
+    "globalDiskBudgetImplemented": false,
+    "independentUbuntuEvidence": {
+      "path": "docs/validation/2026-11-07/expiry-r108-glibc/receipt.json",
+      "sha256": "3a26fead2947b397a3e7de527ca6d9c3c79b434ded31e4c0f7467377455c4414"
+    },
+    "independentUbuntuCleanupAndMigrationQualified": true
   }
 }
