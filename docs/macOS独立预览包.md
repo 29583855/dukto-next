@@ -1,8 +1,32 @@
 # macOS独立开发预览包
 
-R124精确424c78b7四原生各三轮12场景通过，完整核心已验4/4；两Mac旧版对照也各12条通过，历史间歇失败未复现、根因未证明。双Mac GUI/CLI含依赖包及迁移运行已验，下载更新R124。独立Ubuntu12条通过；生产总预算、自动GC及完整交付继续。
+R125精确1b99cd63四原生持久配置/真实CLI各16条通过，完整核心4/4各33项；双Mac GUI/CLI含依赖包、迁移运行及截图已验，下载更新R125。独立Ubuntu16条通过。生产根/历史迁移、实际总预算和自动GC继续。
 
-## R124含依赖开发预览
+## R125含依赖开发预览
+
+精确源码`1b99cd63eb5c3cfa5c97e17d494a119fc3e7ecdb`；[逐层回执](validation/2026-11-08/budget-configuration-r125-macos-package/receipt.json)。开发adhoc签名，正式签名/公证和最低干净系统继续。
+
+[公开开发预览与四份附件](https://github.com/29583855/dukto-next/releases/tag/preview-r125-20261108)。
+
+| 架构 | 下载 | 官方ZIP SHA-256 | 内部tar.gz SHA-256 |
+| --- | --- | --- | --- |
+| arm64 | [下载tar.gz](https://github.com/29583855/dukto-next/releases/download/preview-r125-20261108/DuktoNext-macos-arm64-preview.tar.gz) · [CI原件](https://github.com/29583855/dukto-next/actions/runs/42416797279/artifacts/13592102962) | 4860f458f7a7168afcafadd052e10bfa089f424246749bf2e2cad51322ed144d | e8f7364e5c3fd603a1876a83cc0ed51ec50f402a9071392c23befa928e11b60c |
+| x86_64 | [下载tar.gz](https://github.com/29583855/dukto-next/releases/download/preview-r125-20261108/DuktoNext-macos-x86_64-preview.tar.gz) · [CI原件](https://github.com/29583855/dukto-next/actions/runs/42416797279/artifacts/13592247110) | d70aaada29e968ef1b2c22ca3cc9d5806b463fd4b208eab43d464fb2978f69a8 | 83030aecc5d4e03bfafb08f277afa224784ab1cb39ad7de1d067250e945d0b23 |
+
+本机副本：dist/macos-preview-20261108-r125-budget-configuration/。解压和独立CLI用法见下文。
+
+## R125原生编译归档
+
+[回执](validation/2026-11-08/budget-configuration-r125-macos-compiled/receipt.json)。
+
+| 架构 | 下载 | 内部tar.gz SHA-256 |
+| --- | --- | --- |
+| arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42416770101/artifacts/13591618414) | a3bc66bdc6ce42a435a73b08d39f0a6bfea43cc46d675ebb12737b73a01d8306 |
+| x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42416770101/artifacts/13592280542) | 1be7d0f4ae3950f196765c140501c700f5812098b2e114556e45dabd6ddc4dc7 |
+
+历史记录：R124精确424c78b7四原生各三轮12场景通过，完整核心已验4/4；两Mac旧版对照也各12条通过，历史间歇失败未复现、根因未证明。双Mac GUI/CLI含依赖包及迁移运行已验，下载更新R124。独立Ubuntu12条通过；生产总预算、自动GC及完整交付继续。
+
+## R124含依赖开发预览（历史）
 
 精确源码`424c78b79fd1980ed52f9b2fe78d31a3c28fc39c`；[逐层回执](validation/2026-11-08/legacy-ready-r124-macos-package/receipt.json)。开发adhoc签名，正式签名/公证和最低干净系统继续。
 
