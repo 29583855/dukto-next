@@ -1,0 +1,110 @@
+{
+  "passed": true,
+  "completed": true,
+  "cases": [
+    {
+      "name": "maximum-controls",
+      "jsonLines": 4,
+      "jsonBytes": 50332283,
+      "bytes": 8388608,
+      "sha256": "220d8df25aa59863cd30f83130b4b061c3925db5a076e116f698b2891350b796",
+      "completeTextVerified": true,
+      "peaks": {
+        "receiver": {
+          "rss": 53329920,
+          "private": 53751808,
+          "threads": 6,
+          "handles": 198
+        },
+        "sender": {
+          "rss": 22200320,
+          "private": 11599872,
+          "threads": 6,
+          "handles": 205
+        }
+      },
+      "memorySamplingRequired": true,
+      "memorySamplingObserved": {
+        "receiver": true,
+        "sender": true
+      },
+      "memoryQualified": true,
+      "passed": true
+    },
+    {
+      "name": "unicode-segment",
+      "jsonLines": 4,
+      "jsonBytes": 4740,
+      "bytes": 4111,
+      "sha256": "2396a2f1125f9dfdaa9f1edef54d6a5d8163efe80f228c7f242995dc0b7c7009",
+      "completeTextVerified": true,
+      "peaks": {
+        "receiver": {
+          "rss": 12521472,
+          "private": 2625536,
+          "threads": 6,
+          "handles": 198
+        },
+        "sender": {
+          "rss": 20402176,
+          "private": 10870784,
+          "threads": 5,
+          "handles": 167
+        }
+      },
+      "memorySamplingRequired": false,
+      "memorySamplingObserved": {
+        "receiver": true,
+        "sender": true
+      },
+      "memoryQualified": true,
+      "passed": true
+    },
+    {
+      "name": "empty",
+      "jsonLines": 4,
+      "jsonBytes": 605,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "completeTextVerified": true,
+      "peaks": {
+        "receiver": {
+          "rss": 12500992,
+          "private": 2633728,
+          "threads": 6,
+          "handles": 198
+        },
+        "sender": {
+          "rss": 13373440,
+          "private": 2461696,
+          "threads": 5,
+          "handles": 167
+        }
+      },
+      "memorySamplingRequired": false,
+      "memorySamplingObserved": {
+        "receiver": true,
+        "sender": true
+      },
+      "memoryQualified": true,
+      "passed": true
+    },
+    {
+      "name": "oversized-declaration",
+      "exitCode": 2,
+      "bodySent": false,
+      "passed": true
+    }
+  ],
+  "memoryLimitBytes": 536870912,
+  "outputErrors": [
+    {
+      "mode": "text",
+      "exitCode": 5
+    },
+    {
+      "mode": "json",
+      "exitCode": 5
+    }
+  ]
+}
