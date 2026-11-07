@@ -4,6 +4,7 @@
 #include "protocol.h"
 #include "receiveskipproof.h"
 #include "sourcefile.h"
+#include "sqliteruntime.h"
 
 #include <QDir>
 #include <QFileInfo>
@@ -54,7 +55,7 @@ class CompletedSnapshot final {
                         "completion");
         if (store.validateFile(name) > MaxMetadataBytes)
             throw Error(ExitCode::Disk, QStringLiteral("接收日志超出磁盘预算"), "completion");
-        database_ = QSqlDatabase::addDatabase("QSQLITE", connection_);
+        database_ = addSqliteDatabase(connection_);
         try {
             database_.setConnectOptions("QSQLITE_OPEN_READONLY");
             database_.setDatabaseName(QDir(store.directory()).filePath(name));
@@ -249,7 +250,7 @@ DurableReceive::DurableReceive(PrivateStore &store, const QString &name, const Q
     if (!exists)
         store.write(name, {});
     store.validateFile(name);
-    database_ = QSqlDatabase::addDatabase("QSQLITE", connection_);
+    database_ = addSqliteDatabase(connection_);
     try {
         database_.setDatabaseName(QDir(store.directory()).filePath(name));
         if (!database_.open())

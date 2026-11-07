@@ -2,6 +2,7 @@
 #include "error.h"
 #include "files.h"
 #include "protocol.h"
+#include "sqliteruntime.h"
 #include <QCryptographicHash>
 #include <QDir>
 #include <QSqlError>
@@ -55,7 +56,7 @@ DispositionJournal::DispositionJournal(PrivateStore &store, const QString &name,
         store.write(name, {});
     if (store.validateFile(name) > MaxMetadataBytes)
         throw Error(ExitCode::Disk, QStringLiteral("逐项处置日志超出磁盘预算"), "disposition");
-    database_ = QSqlDatabase::addDatabase("QSQLITE", connection_);
+    database_ = addSqliteDatabase(connection_);
     try {
         if (readOnly_)
             database_.setConnectOptions("QSQLITE_OPEN_READONLY");

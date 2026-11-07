@@ -5,6 +5,7 @@
 #include "protocol.h"
 #include "sourcefile.h"
 #include "sqlitecache.h"
+#include "sqliteruntime.h"
 #include "strongmanifest.h"
 
 #include <QDir>
@@ -50,7 +51,7 @@ class Journal final {
         }
         if (bytes > MaxMetadataBytes)
             throw Error(ExitCode::Disk, QStringLiteral("接收日志超出预算"), "cleanup");
-        database_ = QSqlDatabase::addDatabase("QSQLITE", connection_);
+        database_ = addSqliteDatabase(connection_);
         try {
             if (!writable)
                 database_.setConnectOptions("QSQLITE_OPEN_READONLY");

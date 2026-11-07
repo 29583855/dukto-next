@@ -5,6 +5,7 @@
 #include "core/endpoint.h"
 #include "core/error.h"
 #include "core/files.h"
+#include "core/sqliteruntime.h"
 
 #include <QApplication>
 #include <QClipboard>
@@ -39,7 +40,7 @@ Controller::Controller(quint16 port, QObject *parent, const QString &storageDire
             : storageDirectory;
     if (!QDir().mkpath(dataDirectory))
         throw dukto::Error(dukto::ExitCode::Disk, QStringLiteral("无法创建应用数据目录"));
-    historyDatabase_ = QSqlDatabase::addDatabase("QSQLITE", "gui-history");
+    historyDatabase_ = dukto::addSqliteDatabase("gui-history");
     historyDatabase_.setDatabaseName(QDir(dataDirectory).filePath("history.sqlite"));
     if (!historyDatabase_.open())
         throw dukto::Error(dukto::ExitCode::Disk, historyDatabase_.lastError().text());

@@ -3,6 +3,7 @@
 #include "error.h"
 #include "files.h"
 #include "sourcefile.h"
+#include "sqliteruntime.h"
 #include "tcplistener.h"
 
 #include <QCoreApplication>
@@ -175,7 +176,7 @@ QJsonObject collectDiagnostics(QSettings &settings, const DiagnosticOptions &opt
         if (!exitCode && code)
             exitCode = code;
     };
-    const bool sqlite = QSqlDatabase::isDriverAvailable("QSQLITE");
+    const bool sqlite = sqliteRuntimeAvailable();
     const bool tls = QSslSocket::supportsSsl();
     append("dependencies", sqlite && tls ? "passed" : "failed", sqlite && tls ? 0 : 2,
            sqlite && tls ? QStringLiteral("Qt、SQLite和TLS运行库可用")

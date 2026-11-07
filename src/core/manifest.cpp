@@ -1,6 +1,7 @@
 #include "manifest.h"
 #include "error.h"
 #include "files.h"
+#include "sqliteruntime.h"
 
 #include <QDateTime>
 #include <QDirIterator>
@@ -14,7 +15,7 @@ namespace dukto {
 Manifest::Manifest() : connection_(QUuid::createUuid().toString(QUuid::WithoutBraces)) {
     if (!directory_.isValid())
         throw Error(ExitCode::Disk, QStringLiteral("无法创建清单缓存目录"), "scan");
-    database_ = QSqlDatabase::addDatabase("QSQLITE", connection_);
+    database_ = addSqliteDatabase(connection_);
     try {
         database_.setDatabaseName(directory_.filePath("manifest.sqlite"));
         if (!database_.open())

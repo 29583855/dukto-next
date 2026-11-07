@@ -4,6 +4,7 @@
 #include "manifest.h"
 #include "protocol.h"
 #include "sourcefile.h"
+#include "sqliteruntime.h"
 
 #include <QCryptographicHash>
 #include <QDir>
@@ -110,7 +111,7 @@ StrongManifest::StrongManifest(PrivateStore &store, const QString &name, bool cr
     }
     if (store.validateFile(name) > MaxMetadataBytes)
         throw Error(ExitCode::Disk, QStringLiteral("强清单超出磁盘预算"), "manifest");
-    database_ = QSqlDatabase::addDatabase("QSQLITE", connection_);
+    database_ = addSqliteDatabase(connection_);
     try {
         if (!create)
             database_.setConnectOptions("QSQLITE_OPEN_READONLY");

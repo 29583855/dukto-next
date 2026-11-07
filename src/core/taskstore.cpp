@@ -3,6 +3,7 @@
 #include "error.h"
 #include "files.h"
 #include "protocol.h"
+#include "sqliteruntime.h"
 #include "strongmanifest.h"
 #include "transferaccounting.h"
 
@@ -263,7 +264,7 @@ TaskStore::TaskStore(PrivateStore &store, bool control)
         store.write("tasks.sqlite", {});
     if (store.validateFile("tasks.sqlite") > MaxMetadataBytes)
         throw Error(ExitCode::Disk, QStringLiteral("任务库超过磁盘预算"), "task");
-    database_ = QSqlDatabase::addDatabase("QSQLITE", connection_);
+    database_ = addSqliteDatabase(connection_);
     try {
         database_.setDatabaseName(QDir(store.directory()).filePath("tasks.sqlite"));
         if (!database_.open())

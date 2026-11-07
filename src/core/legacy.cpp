@@ -5,6 +5,7 @@
 #include "files.h"
 #include "manifest.h"
 #include "sourcefile.h"
+#include "sqliteruntime.h"
 
 #include <QCryptographicHash>
 #include <QDateTime>
@@ -380,7 +381,7 @@ QJsonObject LegacyJob::receive() {
     taskId_ = catalog_->begin(total, count, peer);
     SqliteCacheCredit mappingCredit(2048);
     const auto connection = QUuid::createUuid().toString(QUuid::WithoutBraces);
-    QSqlDatabase mapping = QSqlDatabase::addDatabase("QSQLITE", connection);
+    QSqlDatabase mapping = addSqliteDatabase(connection);
     QTemporaryDir metadata;
     // 日期：2026-11-04；先清理查询和数据库引用，确保异常路径也释放连接。
     struct DatabaseGuard {

@@ -1,5 +1,6 @@
 #include "sqlitecache.h"
 #include "error.h"
+#include "sqliteruntime.h"
 #include <QSqlQuery>
 #include <QVariant>
 
@@ -31,7 +32,7 @@ SqliteCacheCredit::SqliteCacheCredit(int mainKiB, bool control)
 
 // 日期：2026-11-05；仅配置已打开的本线程 SQLite；先设置临时存储再限制两种页缓存。
 void SqliteCacheCredit::configure(const QSqlDatabase &database) const {
-    if (!database.isOpen() || database.driverName() != "QSQLITE")
+    if (!database.isOpen() || !sqliteHandle(database))
         throw Error(ExitCode::Config, QStringLiteral("SQLite 缓存需要已打开的连接"), "budget");
     setting(database, "temp_store", 1);
     setting(database, "main.cache_size", -mainKiB_);

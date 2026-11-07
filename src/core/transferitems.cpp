@@ -2,6 +2,7 @@
 #include "error.h"
 #include "protocol.h"
 #include "receiveskipproof.h"
+#include "sqliteruntime.h"
 #include "strongmanifest.h"
 #include <QDir>
 #include <QFileInfo>
@@ -21,7 +22,7 @@ class Snapshot final {
         : connection_(QUuid::createUuid().toString()), credit_(1024, true) {
         if (store.validateFile(name) > MaxMetadataBytes)
             throw Error(ExitCode::Disk, QStringLiteral("明细数据库超出磁盘预算"), "items");
-        database_ = QSqlDatabase::addDatabase("QSQLITE", connection_);
+        database_ = addSqliteDatabase(connection_);
         try {
             database_.setConnectOptions("QSQLITE_OPEN_READONLY");
             database_.setDatabaseName(QDir(store.directory()).filePath(name));

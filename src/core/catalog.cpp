@@ -1,5 +1,6 @@
 #include "catalog.h"
 #include "error.h"
+#include "sqliteruntime.h"
 #include <QDateTime>
 #include <QDir>
 #include <QFileInfo>
@@ -14,7 +15,7 @@ Catalog::Catalog(const QString &path)
     : connection_(QUuid::createUuid().toString(QUuid::WithoutBraces)) {
     if (!QDir().mkpath(QFileInfo(path).absolutePath()))
         throw Error(ExitCode::Disk, QStringLiteral("无法创建接收明细目录"), "catalog");
-    database_ = QSqlDatabase::addDatabase("QSQLITE", connection_);
+    database_ = addSqliteDatabase(connection_);
     try {
         database_.setDatabaseName(QFileInfo(path).absoluteFilePath());
         database_.setConnectOptions("QSQLITE_BUSY_TIMEOUT=2000");

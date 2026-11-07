@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="0" failures="1" tests="9" name="SqliteVfsTests">
+  <properties>
+    <property value="5.15.2" name="QTestVersion"/>
+    <property value="5.15.2" name="QtVersion"/>
+    <property value="Qt 5.15.2 (x86_64&#x002D;little_endian&#x002D;llp64 shared (dynamic) release build; by MSVC 2019)" name="QtBuild"/>
+  </properties>
+  <testcase result="pass" name="initTestCase"/>
+  <testcase result="pass" name="engineAndQtContracts"/>
+  <testcase result="pass" name="pathsReadonlyAndPluginCompatibility"/>
+  <testcase result="pass" name="denyBeforeNativeMutation"/>
+  <testcase result="pass" name="rollbackJournalRefusalAndRetry"/>
+  <testcase result="pass" name="walAndSharedMemory"/>
+  <testcase result="fail" name="temporarySortFilesAreIntercepted">
+    <failure message="&apos;policy&#x002D;&gt;openedFlags &amp; (SQLITE_OPEN_TEMP_DB | SQLITE_OPEN_TRANSIENT_DB)&apos; returned FALSE. ()" result="fail"/>
+  </testcase>
+  <testcase result="pass" name="connectionLifecycleAndIsolation"/>
+  <testcase result="pass" name="cleanupTestCase"/>
+  <system-err/>
+</testsuite>

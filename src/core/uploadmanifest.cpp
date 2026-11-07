@@ -3,6 +3,7 @@
 #include "protocol.h"
 #include "service.h"
 #include "sourcefile.h"
+#include "sqliteruntime.h"
 #include <QCryptographicHash>
 #include <QDir>
 #include <QFileInfo>
@@ -70,7 +71,7 @@ void recoverScanJournal(PrivateStore &store, const QString &name) {
     const auto connection = QUuid::createUuid().toString();
     // 日期：2026-11-07；先申请缓存授信，额度不足时不能留下未进入清理作用域的Qt连接。
     SqliteCacheCredit credit(1024);
-    auto database = QSqlDatabase::addDatabase("QSQLITE", connection);
+    auto database = addSqliteDatabase(connection);
     try {
         database.setDatabaseName(QDir(store.directory()).filePath(name));
         database.setConnectOptions("QSQLITE_BUSY_TIMEOUT=1000");

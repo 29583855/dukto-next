@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(DuktoNext VERSION 0.1.0 LANGUAGES CXX)
+project(DuktoNext VERSION 0.1.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -21,6 +21,68 @@ if(MSVC)
 else()
     add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
+
+# 日期：2026-11-07；固定上游原件并离线解压，外部C/Qt源保持原编码和格式。
+set(DUKTO_SQLITE_VENDOR "${CMAKE_CURRENT_SOURCE_DIR}/third-party/sqlite-runtime")
+file(SHA256 "${DUKTO_SQLITE_VENDOR}/sqlite-amalgamation-3530400.zip" DUKTO_SQLITE_SHA256)
+if(NOT DUKTO_SQLITE_SHA256 STREQUAL "1e71ddf93849c6a6ecf58b827c0692073d2dd7ee40196158068f7b29f422e87d")
+    message(FATAL_ERROR "SQLite upstream archive digest mismatch")
+endif()
+file(SHA256 "${DUKTO_SQLITE_VENDOR}/qt-5.15.2/qsql_sqlite.cpp" DUKTO_QSQL_SOURCE_SHA256)
+file(SHA256 "${DUKTO_SQLITE_VENDOR}/qt-5.15.2/qsql_sqlite_p.h" DUKTO_QSQL_HEADER_SHA256)
+if(NOT DUKTO_QSQL_SOURCE_SHA256 STREQUAL "fb7073dd4a5d715aff57cb8bc5efb946b5ebec2667fd780c42b2d986c013c562"
+   OR NOT DUKTO_QSQL_HEADER_SHA256 STREQUAL "8c2925c9691cc2022501e2bf5abf290697f073f2a2e29af8dea5bede0f2f0215")
+    message(FATAL_ERROR "Qt SQLite driver upstream source digest mismatch")
+endif()
+if(NOT TARGET Qt5::SqlPrivate)
+    message(FATAL_ERROR "Qt5 Sql private development headers are required; install qtbase5-private-dev on Debian/Ubuntu")
+endif()
+set(DUKTO_SQLITE_EXTRACTED "${CMAKE_BINARY_DIR}/sqlite-runtime-source")
+if(NOT EXISTS "${DUKTO_SQLITE_EXTRACTED}/sqlite-amalgamation-3530400/sqlite3.c")
+    file(ARCHIVE_EXTRACT INPUT "${DUKTO_SQLITE_VENDOR}/sqlite-amalgamation-3530400.zip"
+        DESTINATION "${DUKTO_SQLITE_EXTRACTED}")
+endif()
+# 日期：2026-11-07；提取内容同样逐件固定，构建目录残留或篡改不能绕过原归档摘要。
+file(SHA256 "${DUKTO_SQLITE_EXTRACTED}/sqlite-amalgamation-3530400/sqlite3.c" DUKTO_SQLITE_MEMBER_SHA256)
+if(NOT DUKTO_SQLITE_MEMBER_SHA256 STREQUAL "b1dd5d74ec7f29055a6684fa06fb3c2f6821c87dd38f9a458dfd2e8a1db28189")
+    message(FATAL_ERROR "SQLite extracted source digest mismatch: sqlite3.c")
+endif()
+file(SHA256 "${DUKTO_SQLITE_EXTRACTED}/sqlite-amalgamation-3530400/sqlite3.h" DUKTO_SQLITE_MEMBER_SHA256)
+if(NOT DUKTO_SQLITE_MEMBER_SHA256 STREQUAL "919e7f2e8ed1d8f56ac17b412b8971c76aa5d1a879752cc6058f75e7d5910e1d")
+    message(FATAL_ERROR "SQLite extracted source digest mismatch: sqlite3.h")
+endif()
+file(SHA256 "${DUKTO_SQLITE_EXTRACTED}/sqlite-amalgamation-3530400/sqlite3ext.h" DUKTO_SQLITE_MEMBER_SHA256)
+if(NOT DUKTO_SQLITE_MEMBER_SHA256 STREQUAL "ac9645e5c9ff0cf176efdd6e75cb5e98f46295d38e02db5c4d208826a39ab4be")
+    message(FATAL_ERROR "SQLite extracted source digest mismatch: sqlite3ext.h")
+endif()
+add_library(dukto-sqlite STATIC "${DUKTO_SQLITE_EXTRACTED}/sqlite-amalgamation-3530400/sqlite3.c")
+set_target_properties(dukto-sqlite PROPERTIES AUTOMOC OFF C_STANDARD 99 C_STANDARD_REQUIRED ON
+    POSITION_INDEPENDENT_CODE ON C_VISIBILITY_PRESET hidden)
+target_include_directories(dukto-sqlite PUBLIC "${DUKTO_SQLITE_EXTRACTED}/sqlite-amalgamation-3530400")
+find_package(Threads REQUIRED)
+target_link_libraries(dukto-sqlite PUBLIC Threads::Threads)
+if(UNIX)
+    target_link_libraries(dukto-sqlite PUBLIC m)
+endif()
+target_compile_definitions(dukto-sqlite PRIVATE SQLITE_THREADSAFE=1 SQLITE_ENABLE_COLUMN_METADATA
+    SQLITE_ENABLE_FTS3 SQLITE_ENABLE_FTS3_PARENTHESIS SQLITE_ENABLE_FTS4 SQLITE_ENABLE_FTS5
+    SQLITE_ENABLE_RTREE SQLITE_ENABLE_UNLOCK_NOTIFY SQLITE_SECURE_DELETE SQLITE_OMIT_LOAD_EXTENSION)
+if(MSVC)
+    target_compile_options(dukto-sqlite PRIVATE /w)
+else()
+    target_compile_options(dukto-sqlite PRIVATE -w)
+    target_link_libraries(dukto-sqlite PUBLIC ${CMAKE_DL_LIBS})
+endif()
+# 日期：2026-11-07；原Qt完整驱动仅更换内部类名，与平台QSQLITE插件互不覆盖。
+add_library(dukto-sql-driver STATIC src/core/sqliteruntime.cpp src/core/sqlitevfs.cpp
+    "${DUKTO_SQLITE_VENDOR}/qt-5.15.2/qsql_sqlite.cpp"
+    "${DUKTO_SQLITE_VENDOR}/qt-5.15.2/qsql_sqlite_p.h")
+set_target_properties(dukto-sql-driver PROPERTIES POSITION_INDEPENDENT_CODE ON CXX_VISIBILITY_PRESET hidden)
+target_include_directories(dukto-sql-driver PRIVATE src "${DUKTO_SQLITE_VENDOR}/qt-5.15.2")
+target_compile_definitions(dukto-sql-driver PRIVATE QT_PLUGIN QSQLiteDriver=DuktoSQLiteDriver
+    QSQLiteDriverPrivate=DuktoSQLiteDriverPrivate QSQLiteResult=DuktoSQLiteResult
+    QSQLiteResultPrivate=DuktoSQLiteResultPrivate)
+target_link_libraries(dukto-sql-driver PUBLIC Qt5::Sql dukto-sqlite PRIVATE Qt5::SqlPrivate)
 
 add_library(dukto-core
     src/core/error.cpp
@@ -72,7 +134,7 @@ add_library(dukto-core
 )
 target_include_directories(dukto-core PUBLIC src)
 target_link_libraries(dukto-core PUBLIC Qt5::Core Qt5::Network Qt5::Sql)
-target_link_libraries(dukto-core PRIVATE OpenSSL::Crypto)
+target_link_libraries(dukto-core PUBLIC dukto-sql-driver PRIVATE OpenSSL::Crypto)
 if(WIN32)
     target_link_libraries(dukto-core PRIVATE advapi32 ws2_32 iphlpapi)
 endif()
@@ -125,6 +187,9 @@ if(DUKTO_BUILD_TESTS)
     add_executable(sqlite-cache-tests tests/sqlite_cache_tests.cpp)
     target_link_libraries(sqlite-cache-tests PRIVATE dukto-core Qt5::Test)
     dukto_add_qt_test(sqlite-cache-tests)
+    add_executable(sqlite-vfs-tests tests/sqlite_vfs_tests.cpp)
+    target_link_libraries(sqlite-vfs-tests PRIVATE dukto-core Qt5::Test)
+    dukto_add_qt_test(sqlite-vfs-tests)
     add_executable(identity-tests tests/identity_tests.cpp)
     target_link_libraries(identity-tests PRIVATE dukto-core Qt5::Test)
     dukto_add_qt_test(identity-tests)

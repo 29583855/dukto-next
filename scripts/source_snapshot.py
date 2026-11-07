@@ -12,7 +12,7 @@ import tempfile
 import time
 
 ROOT_FILES = {"CMakeLists.txt", ".clang-format", ".gitignore", "LICENSE", "README.md", "开发计划与进度.md", "AGENTS.md"}
-ROOT_DIRS = {"src", "ui", "resources", "scripts", "tests", "docs", ".github"}
+ROOT_DIRS = {"src", "ui", "resources", "scripts", "tests", "docs", ".github", "third-party/sqlite-runtime"}
 RECEIPT = ".dukto-source-snapshot.json"
 MAX_FILE = 4 * 1024 * 1024
 MAX_TOTAL = 64 * 1024 * 1024
@@ -24,7 +24,7 @@ def allowed(name):
     return (bool(path.parts) and path.as_posix() == name and not path.is_absolute()
             and all(part not in ("", ".", "..", "validation", "__pycache__") and ":" not in part and "\\" not in part
                     for part in path.parts)
-            and (name in ROOT_FILES or (len(path.parts) > 1 and path.parts[0] in ROOT_DIRS))
+            and (name in ROOT_FILES or (len(path.parts) > 1 and (path.parts[0] in ROOT_DIRS or path.parts[:2] == ("third-party", "sqlite-runtime"))))
             and path.suffix not in (".pyc", ".exe", ".dll", ".sqlite", ".key"))
 
 
