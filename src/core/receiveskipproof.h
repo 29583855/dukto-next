@@ -27,6 +27,8 @@ class ReceiveSkipProof final {
     QJsonObject decision(quint64 file) const;
     // 日期：2026-11-06；最终跳过必须绑定原接收准备和临时项意图，不能凭目标存在推断。
     QJsonObject finalDecision(quint64 file) const;
+    // 日期：2026-11-07；重用最终决定校验并读取严格整数清理状态，维护代码不猜测临时项归属。
+    bool finalCleanupComplete(quint64 file) const;
     // 日期：2026-11-06；只允许合法最终决定覆盖原receive，历史skip不能再次被改写。
     QJsonObject applyFinal(const StrongEntry &entry, const QJsonObject &decision) const;
 

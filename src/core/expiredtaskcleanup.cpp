@@ -292,9 +292,9 @@ QJsonObject cleanupExpiredUpload(PrivateStore &store, const QUuid &owner, const 
                 heldRoot.verify();
 #endif
             };
-            const auto action =
-                cleanupReceiveDirectory(database, value, root, heldRoot.identity(), apply, false,
-                                        task.conflict == ConflictPolicy::Skip, directoryCheck);
+            const auto action = cleanupReceiveDirectory(
+                database, value, root, heldRoot.identity(), apply, false,
+                task.conflict == ConflictPolicy::Skip, manifest, directoryCheck);
             if (action == "cleaned" || action == "already-cleaned")
                 ++cleanedDirectories;
             else

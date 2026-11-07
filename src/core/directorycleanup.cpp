@@ -3,6 +3,7 @@
 #include "files.h"
 #include "nativecommit.h"
 #include "protocol.h"
+#include "receiveskipproof.h"
 #include "strongmanifest.h"
 
 #include <QCryptographicHash>
@@ -151,6 +152,36 @@ void confirm(QSqlDatabase database, const DirectoryCleanupEntry &entry, const QB
         throw;
     }
 }
+
+// 日期：2026-11-07；skip临时目录与最终决定在同一FULL事务内确认，任一记录不匹配则一并回滚。
+void confirmSkip(QSqlDatabase database, const DirectoryCleanupEntry &entry,
+                 const QByteArray &directoryProof, const QByteArray &skipProof,
+                 const std::function<void()> &check) {
+    sql(database, "BEGIN IMMEDIATE");
+    try {
+        QSqlQuery query(database);
+        query.prepare("UPDATE skip_final SET cleaned=1 WHERE id=? AND spec=? AND cleaned=0 "
+                      "AND typeof(cleaned)='integer'");
+        query.addBindValue(static_cast<qlonglong>(entry.id));
+        query.addBindValue(skipProof);
+        execute(query);
+        if (query.numRowsAffected() != 1)
+            throw Error(ExitCode::Integrity, QStringLiteral("最终跳过清理确认丢失"), "cleanup");
+        query.prepare("UPDATE directory_cleanup SET cleaned=1 WHERE id=? AND spec=? AND cleaned=0 "
+                      "AND typeof(cleaned)='integer'");
+        query.addBindValue(static_cast<qlonglong>(entry.id));
+        query.addBindValue(directoryProof);
+        execute(query);
+        if (query.numRowsAffected() != 1)
+            throw Error(ExitCode::Integrity, QStringLiteral("目录清理确认丢失"), "cleanup");
+        if (check)
+            check();
+        sql(database, "COMMIT");
+    } catch (...) {
+        database.rollback();
+        throw;
+    }
+}
 } // namespace
 
 // 日期：2026-11-07；两个主键索引按序合并，每个字段有字节界限，文件/目录共用after参数。
@@ -210,12 +241,10 @@ DirectoryCleanupEntry readCleanupDirectory(const QSqlQuery &query, StrongManifes
 // 日期：2026-11-07；不递归、不按名字推断归属；已发布与复用目录保留，未知提交结果拒绝。
 QString cleanupReceiveDirectory(QSqlDatabase database, const DirectoryCleanupEntry &entry,
                                 const QString &root, const QByteArray &rootIdentity, bool apply,
-                                bool resetForResume, bool skipPolicy,
+                                bool resetForResume, bool skipPolicy, StrongManifest &manifest,
                                 const std::function<void()> &check) {
     if (entry.state != "committing")
         return "preserved-" + entry.state;
-    if (skipPolicy)
-        return "preserved-skip-policy";
     const auto checkpoint = [&]() {
         // 日期：2026-11-07；每个持久化与删除边界都重新检查取消、接收根及原父目录映射。
         if (check)
@@ -234,6 +263,43 @@ QString cleanupReceiveDirectory(QSqlDatabase database, const DirectoryCleanupEnt
               QCryptographicHash::hash(entry.spec, QCryptographicHash::Sha256).toHex())},
          {"mode", resetForResume ? "reset" : "expired"}});
     const auto saved = intention(database, entry.id, proof);
+    QJsonObject finalSkip;
+    if (skipPolicy) {
+        QSqlQuery table(database);
+        table.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='skip_final'");
+        execute(table);
+        const bool hasFinalSkips = table.next();
+        if (table.lastError().isValid())
+            throw Error(ExitCode::Disk, QStringLiteral("无法核对最终跳过架构"), "cleanup");
+        if (!hasFinalSkips) {
+            if (saved.exists)
+                throw Error(ExitCode::Integrity, QStringLiteral("目录删除意图缺少最终跳过证据"),
+                            "cleanup");
+            return "preserved-skip-policy";
+        }
+        ReceiveSkipProof skipProof(database, manifest, true);
+        finalSkip = skipProof.finalDecision(entry.id);
+        if (finalSkip.isEmpty()) {
+            if (saved.exists)
+                throw Error(ExitCode::Integrity, QStringLiteral("目录删除意图缺少最终跳过记录"),
+                            "cleanup");
+            return "preserved-skip-policy";
+        }
+        if (finalSkip["temporary"].toString() != entry.temporary ||
+            finalSkip["temporaryNative"].toString() != QString::fromLatin1(entry.native.toHex()) ||
+            finalSkip["path"].toString() != manifest.entry(entry.id).relative)
+            throw Error(ExitCode::Integrity, QStringLiteral("最终跳过与目录临时项不匹配"),
+                        "cleanup");
+        const bool skipCleaned = skipProof.finalCleanupComplete(entry.id);
+        if (skipCleaned) {
+            if (saved.exists && !saved.cleaned)
+                throw Error(ExitCode::Integrity, QStringLiteral("跳过与目录清理状态不一致"),
+                            "cleanup");
+            return "already-cleaned";
+        }
+        if (saved.cleaned)
+            throw Error(ExitCode::Integrity, QStringLiteral("跳过与目录清理状态不一致"), "cleanup");
+    }
     if (saved.cleaned) {
         if (resetForResume)
             throw Error(ExitCode::Integrity, QStringLiteral("下载目录清理状态未原子复位"),
@@ -242,14 +308,20 @@ QString cleanupReceiveDirectory(QSqlDatabase database, const DirectoryCleanupEnt
     }
     const auto temporary = resolveInside(root, entry.temporary);
     const auto observed = receivedDirectoryIdentity(temporary, checkpoint());
+    bool skipTargetOwnsMissingTemporary = false;
     if (!observed.isEmpty() && observed != entry.native)
         throw Error(ExitCode::Integrity, QStringLiteral("待清理目录已被替换"), "cleanup");
     if (observed.isEmpty()) {
         const auto destination = resolveInside(root, entry.target);
-        if (QFileInfo(destination).isDir() &&
-            receivedDirectoryIdentity(destination, checkpoint()) == entry.native)
+        if (skipPolicy && !finalSkip.isEmpty()) {
+            const auto expected = QByteArray::fromHex(finalSkip["native"].toString().toLatin1());
+            skipTargetOwnsMissingTemporary =
+                !expected.isEmpty() &&
+                receivedDirectoryIdentity(destination, checkpoint()) == expected;
+        } else if (QFileInfo(destination).isDir() &&
+                   receivedDirectoryIdentity(destination, checkpoint()) == entry.native)
             return "preserved-published";
-        if (!saved.exists)
+        if (!saved.exists && !skipTargetOwnsMissingTemporary)
             throw Error(ExitCode::Config, QStringLiteral("目录提交结果未知，必须保留并先恢复核验"),
                         "cleanup");
     }
@@ -260,7 +332,10 @@ QString cleanupReceiveDirectory(QSqlDatabase database, const DirectoryCleanupEnt
     // 日期：2026-11-07；操作系统只允许删除空目录，未知子文件、链接和外部新增内容均不会递归移除。
     removeReceivedTemporary(temporary, entry.native, true, checkpoint());
     checkpoint();
-    confirm(database, entry, proof, resetForResume, checkpoint);
+    if (skipPolicy)
+        confirmSkip(database, entry, proof, next::encodeControl(finalSkip), checkpoint);
+    else
+        confirm(database, entry, proof, resetForResume, checkpoint);
     return "cleaned";
 }
 } // namespace dukto

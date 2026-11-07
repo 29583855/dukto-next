@@ -28,6 +28,6 @@ DirectoryCleanupEntry readCleanupDirectory(const QSqlQuery &query, StrongManifes
 // 日期：2026-11-07；只移除身份匹配的空临时目录；FULL意图支持删除后崩溃重入。
 QString cleanupReceiveDirectory(QSqlDatabase database, const DirectoryCleanupEntry &entry,
                                 const QString &root, const QByteArray &rootIdentity, bool apply,
-                                bool resetForResume, bool skipPolicy,
+                                bool resetForResume, bool skipPolicy, StrongManifest &manifest,
                                 const std::function<void()> &check = {});
 } // namespace dukto

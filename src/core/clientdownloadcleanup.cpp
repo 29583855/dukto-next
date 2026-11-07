@@ -317,8 +317,8 @@ QJsonObject cleanupClientDownload(PrivateStore &store, const QUuid &task, bool a
             };
             const auto action = cleanupReceiveDirectory(
                 database, value, binding.root, binding.rootIdentity, apply, true,
-                binding.conflict == ConflictPolicy::Skip, directoryCheck);
-            if (action == "cleaned")
+                binding.conflict == ConflictPolicy::Skip, manifest, directoryCheck);
+            if (action == "cleaned" || action == "already-cleaned")
                 ++cleanedDirectories;
             else
                 ++preservedDirectories;

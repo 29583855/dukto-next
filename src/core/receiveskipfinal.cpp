@@ -23,7 +23,7 @@ QJsonObject ReceiveSkipProof::finalDecision(quint64 file) const {
     if (!finalSkipsEnabled_)
         return {};
     QSqlQuery query(database_);
-    query.prepare("SELECT substr(spec,1,65537),cleaned FROM skip_final WHERE id=?");
+    query.prepare("SELECT substr(spec,1,65537),cleaned,typeof(cleaned) FROM skip_final WHERE id=?");
     query.addBindValue(static_cast<qlonglong>(file));
     execute(query);
     if (!query.next()) {
@@ -32,7 +32,8 @@ QJsonObject ReceiveSkipProof::finalDecision(quint64 file) const {
         return {};
     }
     const auto bytes = query.value(0).toByteArray();
-    const auto cleaned = query.value(1).toString();
+    bool cleanedValid = false;
+    const auto cleaned = query.value(1).toLongLong(&cleanedValid);
     const auto entry = entry_(file);
     const auto value = next::parseControl(bytes);
     const auto temporary = value["temporary"].toString();
@@ -47,8 +48,9 @@ QJsonObject ReceiveSkipProof::finalDecision(quint64 file) const {
                                {"temporary", temporary},
                                {"temporaryNative", native}};
     if (value != expected || bytes != next::encodeControl(expected) ||
-        (cleaned != "0" && cleaned != "1") || !validNative(targetNative, false) ||
-        !validNative(native, temporary.isEmpty()) || temporary.isEmpty() != native.isEmpty())
+        query.value(2) != "integer" || !cleanedValid || (cleaned != 0 && cleaned != 1) ||
+        !validNative(targetNative, false) || !validNative(native, temporary.isEmpty()) ||
+        temporary.isEmpty() != native.isEmpty())
         throw Error(ExitCode::Integrity, QStringLiteral("最终跳过记录字段损坏"), "receive");
     query.finish();
     query.prepare("SELECT substr(spec,1,65537) FROM skip_decisions WHERE id=?");
@@ -91,6 +93,22 @@ QJsonObject ReceiveSkipProof::finalDecision(quint64 file) const {
                         "receive");
     }
     return value;
+}
+
+// 日期：2026-11-07；最终跳过的清理位只能在完整证明有效后读取，类型异常按损坏证据拒绝。
+bool ReceiveSkipProof::finalCleanupComplete(quint64 file) const {
+    if (finalDecision(file).isEmpty())
+        throw Error(ExitCode::Integrity, QStringLiteral("最终跳过清理缺少持久决定"), "receive");
+    QSqlQuery query(database_);
+    query.prepare("SELECT cleaned,typeof(cleaned) FROM skip_final WHERE id=?");
+    query.addBindValue(static_cast<qlonglong>(file));
+    execute(query);
+    bool valid = false;
+    const auto cleaned = query.next() ? query.value(0).toLongLong(&valid) : -1;
+    if (!valid || query.value(1) != "integer" || (cleaned != 0 && cleaned != 1) || query.next() ||
+        query.lastError().isValid())
+        throw Error(ExitCode::Integrity, QStringLiteral("最终跳过清理状态损坏"), "receive");
+    return cleaned == 1;
 }
 
 // 日期：2026-11-06；原接收执行者与只读核验使用同样的最终决定证明。

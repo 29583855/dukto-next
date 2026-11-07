@@ -79,6 +79,19 @@ bool hasDirectoryIntent(const QString &journal) {
     return found;
 }
 
+// 日期：2026-11-07；只读取测试拥有的最终跳过证据，分辨缺记录、待清理和已确认状态。
+qint64 finalSkipCleaned(const QString &journal) {
+    qint64 cleaned = -1;
+    database(journal, [&](QSqlDatabase db) {
+        QSqlQuery query(db);
+        if (!query.exec("SELECT cleaned FROM skip_final WHERE id=3"))
+            throw dukto::Error(dukto::ExitCode::Disk, "fixture final skip", "test");
+        if (query.next())
+            cleaned = query.value(0).toLongLong();
+    });
+    return cleaned;
+}
+
 struct Fixture {
     QTemporaryDir root;
     bool server;
@@ -147,6 +160,7 @@ struct Fixture {
             for (int i = 0; i < extra; ++i)
                 receiver.prepareDisposition(static_cast<quint64>(4 + i));
             bool interrupted = false;
+            bool injectedSkipTarget = false;
             try {
                 receiver.prepareDisposition(3, [&]() {
                     // 日期：2026-11-07；按真实随机临时目录或真实发布名触发，不能依赖内部回调次数。
@@ -157,6 +171,24 @@ struct Fixture {
                                         QDir::Dirs | QDir::Hidden | QDir::NoDotAndDotDot)
                              .isEmpty();
                     const bool published = QFileInfo::exists(parent + "/b-pending");
+                    if ((phase == "skip" || phase == "skip-after-delete") && temporaryExists &&
+                        !injectedSkipTarget) {
+                        const auto conflict = parent + "/b-pending";
+                        if (!QDir().mkdir(conflict))
+                            throw dukto::Error(dukto::ExitCode::Disk, "fixture skip mkdir", "test");
+                        QFile keep(conflict + "/keep.bin");
+                        if (!keep.open(QIODevice::WriteOnly) || keep.write("outside") != 7)
+                            throw dukto::Error(dukto::ExitCode::Disk, "fixture skip target",
+                                               "test");
+                        injectedSkipTarget = true;
+                    }
+                    if (phase == "skip" && finalSkipCleaned(journal) == 0)
+                        throw dukto::Error(dukto::ExitCode::Cancelled, "fixture skip interruption",
+                                           "test");
+                    if (phase == "skip-after-delete" && !temporaryExists &&
+                        finalSkipCleaned(journal) == 0)
+                        throw dukto::Error(dukto::ExitCode::Cancelled,
+                                           "fixture skip confirmation interruption", "test");
                     if ((phase == "before" && temporaryExists) || (phase == "after" && published))
                         throw dukto::Error(dukto::ExitCode::Cancelled, "fixture interruption",
                                            "test");
@@ -226,6 +258,70 @@ QJsonObject pendingEntry(const QJsonObject &result) {
 class DirectoryCleanupTests final : public QObject {
     Q_OBJECT
   private slots:
+    // 日期：2026-11-07；最终skip目录清理、删除后取消重入和幂等确认同时覆盖客户端与服务器。
+    void finalSkipCleanup_data() {
+        QTest::addColumn<bool>("server");
+        QTest::newRow("client") << false;
+        QTest::newRow("server") << true;
+    }
+
+    // 日期：2026-11-07；只有skip_final完整证明原临时身份时才清理，两个完成位在同一事务确认。
+    void finalSkipCleanup() {
+        QFETCH(bool, server);
+        Fixture fixture(server, "skip", 0, dukto::ConflictPolicy::Skip);
+        const auto temporary = fixture.temporary();
+        const auto keep = QDir(fixture.output).filePath(fixture.mapped + "/b-pending/keep.bin");
+        QVERIFY(QFileInfo::exists(temporary));
+        QCOMPARE(finalSkipCleaned(fixture.journal), qint64(0));
+        QCOMPARE(pendingEntry(fixture.cleanup(false))["action"].toString(), QString("temporary"));
+        QVERIFY_EXCEPTION_THROWN(fixture.cleanup(true, 0,
+                                                 [&]() {
+                                                     if (!QFileInfo::exists(temporary) &&
+                                                         hasDirectoryIntent(fixture.journal))
+                                                         throw dukto::Error(
+                                                             dukto::ExitCode::Cancelled,
+                                                             "fixture cleanup pause", "test");
+                                                 }),
+                                 dukto::Error);
+        QVERIFY(!QFileInfo::exists(temporary));
+        QCOMPARE(finalSkipCleaned(fixture.journal), qint64(0));
+        QVERIFY(hasDirectoryIntent(fixture.journal));
+        fixture.change("CREATE TRIGGER reject_directory_confirmation "
+                       "BEFORE UPDATE OF cleaned ON directory_cleanup WHEN NEW.cleaned=1 "
+                       "BEGIN SELECT RAISE(ABORT,'fixture confirmation failure'); END");
+        QVERIFY_EXCEPTION_THROWN(fixture.cleanup(true), dukto::Error);
+        QCOMPARE(finalSkipCleaned(fixture.journal), qint64(0));
+        QVERIFY(hasDirectoryIntent(fixture.journal));
+        fixture.change("DROP TRIGGER reject_directory_confirmation");
+        QCOMPARE(fixture.cleanup(true)["cleanedDirectories"].toString(), QString("1"));
+        QCOMPARE(finalSkipCleaned(fixture.journal), qint64(1));
+        QCOMPARE(directoryRow(fixture.journal)["state"].toString(), QString("committing"));
+        QCOMPARE(fixture.cleanup(true)["cleanedDirectories"].toString(), QString("1"));
+        QVERIFY(QFileInfo::exists(keep));
+        QCOMPARE(fixture.completedDataPreserved(), true);
+    }
+
+    // 日期：2026-11-07；接收器删除临时目录后退出时，目标原生身份与skip证明允许维护安全补确认。
+    void finalSkipReceiverCrashAfterRemoval_data() {
+        QTest::addColumn<bool>("server");
+        QTest::newRow("client") << false;
+        QTest::newRow("server") << true;
+    }
+
+    // 日期：2026-11-07；原skip清理的删除后崩溃窗口可恢复，外部冲突目录及其中数据保持不变。
+    void finalSkipReceiverCrashAfterRemoval() {
+        QFETCH(bool, server);
+        Fixture fixture(server, "skip-after-delete", 0, dukto::ConflictPolicy::Skip);
+        QVERIFY(!QFileInfo::exists(fixture.temporary()));
+        QCOMPARE(finalSkipCleaned(fixture.journal), qint64(0));
+        QCOMPARE(pendingEntry(fixture.cleanup(false))["action"].toString(),
+                 QString("pending-confirmation"));
+        QCOMPARE(fixture.cleanup(true)["cleanedDirectories"].toString(), QString("1"));
+        QCOMPARE(finalSkipCleaned(fixture.journal), qint64(1));
+        QVERIFY(QFileInfo::exists(
+            QDir(fixture.output).filePath(fixture.mapped + "/b-pending/keep.bin")));
+    }
+
     // 日期：2026-11-07；客户端下载清理后同一任务重新创建原目录，服务器保留清理确认及幂等历史。
     void cleanupAndResume_data() {
         QTest::addColumn<bool>("server");
