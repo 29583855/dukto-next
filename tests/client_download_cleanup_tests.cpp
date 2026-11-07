@@ -89,14 +89,14 @@ struct Fixture {
         {
             dukto::StrongManifest manifest(store, manifestName, false);
             dukto::DurableReceive receiver(store, receiveName, task, manifest, output);
-            receiver.openFile(1, "a.bin");
+            receiver.open(1, "a.bin");
             for (qint64 offset = 0; offset < dukto::StrongBlockBytes; offset += dukto::BufferSize) {
                 const auto count =
                     qMin<qint64>(dukto::BufferSize, dukto::StrongBlockBytes - offset);
                 receiver.write(0, static_cast<quint32>(offset), QByteArray(count, 'd'));
             }
             receiver.finish();
-            receiver.openFile(2, "b.bin");
+            receiver.open(2, "b.bin");
             for (qint64 offset = 0; offset < dukto::StrongBlockBytes; offset += dukto::BufferSize) {
                 const auto count =
                     qMin<qint64>(dukto::BufferSize, dukto::StrongBlockBytes - offset);
@@ -176,7 +176,7 @@ class ClientDownloadCleanupTests final : public QObject {
             dukto::StrongManifest manifest(store, fixture.manifestName, false);
             dukto::DurableReceive receiver(store, fixture.receiveName, fixture.task, manifest,
                                            fixture.output);
-            QCOMPARE(receiver.openFile(2, "b.bin"), quint64(0));
+            QCOMPARE(receiver.open(2, "b.bin"), quint64(0));
             QCOMPARE(receiver.confirmed(), qint64(0));
             QCOMPARE(receiver.state(), QString("receiving"));
         }
