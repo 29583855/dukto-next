@@ -1,0 +1,895 @@
+﻿2026-11-07T18:04:56.6102305Z Current runner version: '2.338.2'
+2026-11-07T18:04:56.6126567Z ##[group]Runner Image Provisioner
+2026-11-07T18:04:56.6127335Z Hosted Compute Agent
+2026-11-07T18:04:56.6127874Z Version: 20261028.624
+2026-11-07T18:04:56.6128461Z Commit: 54898b74c23fde5556c9b3c3a2290865feef0dfe
+2026-11-07T18:04:56.6129092Z Build Date: 2026-10-28T21:51:42Z
+2026-11-07T18:04:56.6129712Z Worker ID: {74c6298c-b252-4c4c-b4e9-77f2578f0304}
+2026-11-07T18:04:56.6130801Z Region: westus
+2026-11-07T18:04:56.6131671Z Cloud: Azure
+2026-11-07T18:04:56.6132317Z ##[endgroup]
+2026-11-07T18:04:56.6133776Z ##[group]Operating System
+2026-11-07T18:04:56.6134404Z Microsoft Windows Server 2022
+2026-11-07T18:04:56.6134952Z 10.0.20348
+2026-11-07T18:04:56.6135430Z Datacenter
+2026-11-07T18:04:56.6135884Z ##[endgroup]
+2026-11-07T18:04:56.6136355Z ##[group]Runner Image
+2026-11-07T18:04:56.6137161Z Image: windows-2022
+2026-11-07T18:04:56.6137751Z Version: 20261101.353.1
+2026-11-07T18:04:56.6139051Z Included Software: https://github.com/actions/runner-images/blob/win22/20261101.353/images/windows/Windows2022-Readme.md
+2026-11-07T18:04:56.6140517Z Image Release: https://github.com/actions/runner-images/releases/tag/win22%2F20261101.353
+2026-11-07T18:04:56.6141448Z ##[endgroup]
+2026-11-07T18:04:56.6142529Z ##[group]GITHUB_TOKEN Permissions
+2026-11-07T18:04:56.6144309Z Contents: read
+2026-11-07T18:04:56.6144846Z Metadata: read
+2026-11-07T18:04:56.6145319Z Packages: read
+2026-11-07T18:04:56.6145825Z ##[endgroup]
+2026-11-07T18:04:56.6148363Z Secret source: Actions
+2026-11-07T18:04:56.6149250Z Cache mode: write
+2026-11-07T18:04:56.6149920Z Prepare workflow directory
+2026-11-07T18:04:56.6468721Z Prepare all required actions
+2026-11-07T18:04:56.6517536Z Getting action download info
+2026-11-07T18:04:57.0537579Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-11-07T18:04:57.1677209Z Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+2026-11-07T18:04:57.3094673Z Download action repository 'jurplel/install-qt-action@v4' (SHA:b344308e4483fc892e0d27b3cd1b173ebdd95f06)
+2026-11-07T18:05:00.6383081Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-11-07T18:05:00.9737981Z Getting action download info
+2026-11-07T18:05:01.1206376Z Download action repository 'actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1' (SHA:ece7cb06caefa5fff74198d8649806c4678c61a1)
+2026-11-07T18:05:01.2704694Z Complete job name: inventory (windows-2022)
+2026-11-07T18:05:01.4364237Z ##[group]Run actions/checkout@v4
+2026-11-07T18:05:01.4365073Z with:
+2026-11-07T18:05:01.4365374Z   repository: 29583855/dukto-next
+2026-11-07T18:05:01.4368350Z   token: ***
+2026-11-07T18:05:01.4368703Z   ssh-strict: true
+2026-11-07T18:05:01.4369058Z   ssh-user: git
+2026-11-07T18:05:01.4369410Z   persist-credentials: true
+2026-11-07T18:05:01.4369800Z   clean: true
+2026-11-07T18:05:01.4370165Z   sparse-checkout-cone-mode: true
+2026-11-07T18:05:01.4370597Z   fetch-depth: 1
+2026-11-07T18:05:01.4370950Z   fetch-tags: false
+2026-11-07T18:05:01.4371306Z   show-progress: true
+2026-11-07T18:05:01.4371662Z   lfs: false
+2026-11-07T18:05:01.4371986Z   submodules: false
+2026-11-07T18:05:01.4372340Z   set-safe-directory: true
+2026-11-07T18:05:01.4372744Z   allow-unsafe-pr-checkout: false
+2026-11-07T18:05:01.4373383Z ##[endgroup]
+2026-11-07T18:05:01.5755042Z Syncing repository: 29583855/dukto-next
+2026-11-07T18:05:01.5756504Z ##[group]Getting Git version info
+2026-11-07T18:05:01.5757050Z Working directory is 'D:\a\dukto-next\dukto-next'
+2026-11-07T18:05:01.7208168Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-11-07T18:05:02.0612087Z git version 2.56.0.windows.4
+2026-11-07T18:05:02.0658212Z ##[endgroup]
+2026-11-07T18:05:02.0681096Z Temporarily overriding HOME='D:\a\_temp\b25866e5-d6f3-4b9d-91fd-3ce22342e904' before making global git config changes
+2026-11-07T18:05:02.0683560Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-07T18:05:02.0694249Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\dukto-next\dukto-next
+2026-11-07T18:05:02.1253941Z Deleting the contents of 'D:\a\dukto-next\dukto-next'
+2026-11-07T18:05:02.1259534Z ##[group]Initializing the repository
+2026-11-07T18:05:02.1269007Z [command]"C:\Program Files\Git\bin\git.exe" init D:\a\dukto-next\dukto-next
+2026-11-07T18:05:02.2106176Z Initialized empty Git repository in D:/a/dukto-next/dukto-next/.git/
+2026-11-07T18:05:02.2147143Z [command]"C:\Program Files\Git\bin\git.exe" remote add origin https://github.com/29583855/dukto-next
+2026-11-07T18:05:02.2833162Z ##[endgroup]
+2026-11-07T18:05:02.2833798Z ##[group]Disabling automatic garbage collection
+2026-11-07T18:05:02.2842598Z [command]"C:\Program Files\Git\bin\git.exe" config --local gc.auto 0
+2026-11-07T18:05:02.3138431Z ##[endgroup]
+2026-11-07T18:05:02.3139067Z ##[group]Setting up auth
+2026-11-07T18:05:02.3151441Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-11-07T18:05:02.3450362Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-11-07T18:05:03.7393362Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-07T18:05:03.7688636Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-11-07T18:05:04.2485631Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-07T18:05:04.2819973Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-11-07T18:05:04.7627688Z [command]"C:\Program Files\Git\bin\git.exe" config --local http.https://github.com/.extraheader "AUTHORIZATION: basic ***"
+2026-11-07T18:05:04.7933806Z ##[endgroup]
+2026-11-07T18:05:04.7934687Z ##[group]Fetching the repository
+2026-11-07T18:05:04.7947027Z [command]"C:\Program Files\Git\bin\git.exe" -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +301697546ef1002ab35fe39decdd8446dd389aee:refs/remotes/origin/main
+2026-11-07T18:05:11.7573122Z From https://github.com/29583855/dukto-next
+2026-11-07T18:05:11.7574118Z  * [new ref]         301697546ef1002ab35fe39decdd8446dd389aee -> origin/main
+2026-11-07T18:05:11.7603082Z ##[endgroup]
+2026-11-07T18:05:11.7603560Z ##[group]Determining the checkout info
+2026-11-07T18:05:11.7606292Z ##[endgroup]
+2026-11-07T18:05:11.7616036Z [command]"C:\Program Files\Git\bin\git.exe" sparse-checkout disable
+2026-11-07T18:05:11.8149307Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all extensions.worktreeConfig
+2026-11-07T18:05:11.8450713Z ##[group]Checking out the ref
+2026-11-07T18:05:11.8460090Z [command]"C:\Program Files\Git\bin\git.exe" checkout --progress --force -B main refs/remotes/origin/main
+2026-11-07T18:05:12.9656195Z Updating files:  11% (3658/31522)
+2026-11-07T18:05:13.0483071Z Updating files:  12% (3783/31522)
+2026-11-07T18:05:13.1257090Z Updating files:  13% (4098/31522)
+2026-11-07T18:05:13.1882313Z Updating files:  14% (4414/31522)
+2026-11-07T18:05:13.2734829Z Updating files:  15% (4729/31522)
+2026-11-07T18:05:13.3668109Z Updating files:  16% (5044/31522)
+2026-11-07T18:05:13.4469161Z Updating files:  17% (5359/31522)
+2026-11-07T18:05:13.5227046Z Updating files:  18% (5674/31522)
+2026-11-07T18:05:13.5940360Z Updating files:  19% (5990/31522)
+2026-11-07T18:05:13.6826393Z Updating files:  20% (6305/31522)
+2026-11-07T18:05:13.7640593Z Updating files:  21% (6620/31522)
+2026-11-07T18:05:13.8496099Z Updating files:  22% (6935/31522)
+2026-11-07T18:05:13.9140727Z Updating files:  23% (7251/31522)
+2026-11-07T18:05:13.9314778Z Updating files:  24% (7566/31522)
+2026-11-07T18:05:14.0160319Z Updating files:  24% (7650/31522)
+2026-11-07T18:05:14.0769040Z Updating files:  25% (7881/31522)
+2026-11-07T18:05:14.1730386Z Updating files:  26% (8196/31522)
+2026-11-07T18:05:14.2255769Z Updating files:  27% (8511/31522)
+2026-11-07T18:05:14.2831381Z Updating files:  28% (8827/31522)
+2026-11-07T18:05:14.3385005Z Updating files:  29% (9142/31522)
+2026-11-07T18:05:14.4079993Z Updating files:  30% (9457/31522)
+2026-11-07T18:05:14.4623812Z Updating files:  31% (9772/31522)
+2026-11-07T18:05:14.5307235Z Updating files:  32% (10088/31522)
+2026-11-07T18:05:14.6202108Z Updating files:  33% (10403/31522)
+2026-11-07T18:05:14.7174706Z Updating files:  34% (10718/31522)
+2026-11-07T18:05:14.7928893Z Updating files:  35% (11033/31522)
+2026-11-07T18:05:14.8475577Z Updating files:  36% (11348/31522)
+2026-11-07T18:05:14.9040768Z Updating files:  37% (11664/31522)
+2026-11-07T18:05:14.9319092Z Updating files:  38% (11979/31522)
+2026-11-07T18:05:14.9955756Z Updating files:  38% (12077/31522)
+2026-11-07T18:05:15.0843710Z Updating files:  39% (12294/31522)
+2026-11-07T18:05:15.1572793Z Updating files:  40% (12609/31522)
+2026-11-07T18:05:15.2082604Z Updating files:  41% (12925/31522)
+2026-11-07T18:05:15.2635494Z Updating files:  42% (13240/31522)
+2026-11-07T18:05:15.3204224Z Updating files:  43% (13555/31522)
+2026-11-07T18:05:15.4227799Z Updating files:  44% (13870/31522)
+2026-11-07T18:05:15.5211524Z Updating files:  45% (14185/31522)
+2026-11-07T18:05:15.5863658Z Updating files:  46% (14501/31522)
+2026-11-07T18:05:15.6526158Z Updating files:  47% (14816/31522)
+2026-11-07T18:05:15.7257337Z Updating files:  48% (15131/31522)
+2026-11-07T18:05:15.8352940Z Updating files:  49% (15446/31522)
+2026-11-07T18:05:15.9274129Z Updating files:  50% (15761/31522)
+2026-11-07T18:05:15.9323186Z Updating files:  51% (16077/31522)
+2026-11-07T18:05:15.9927163Z Updating files:  51% (16100/31522)
+2026-11-07T18:05:16.0866035Z Updating files:  52% (16392/31522)
+2026-11-07T18:05:16.1587446Z Updating files:  53% (16707/31522)
+2026-11-07T18:05:16.2352356Z Updating files:  54% (17022/31522)
+2026-11-07T18:05:16.3181953Z Updating files:  55% (17338/31522)
+2026-11-07T18:05:16.4085022Z Updating files:  56% (17653/31522)
+2026-11-07T18:05:16.4825461Z Updating files:  57% (17968/31522)
+2026-11-07T18:05:16.5748689Z Updating files:  58% (18283/31522)
+2026-11-07T18:05:16.6397846Z Updating files:  59% (18598/31522)
+2026-11-07T18:05:16.8339000Z Updating files:  60% (18914/31522)
+2026-11-07T18:05:16.9304424Z Updating files:  61% (19229/31522)
+2026-11-07T18:05:16.9338731Z Updating files:  62% (19544/31522)
+2026-11-07T18:05:17.0038764Z Updating files:  62% (19562/31522)
+2026-11-07T18:05:17.0670072Z Updating files:  63% (19859/31522)
+2026-11-07T18:05:17.1466671Z Updating files:  64% (20175/31522)
+2026-11-07T18:05:17.2028472Z Updating files:  65% (20490/31522)
+2026-11-07T18:05:17.2674959Z Updating files:  66% (20805/31522)
+2026-11-07T18:05:17.3444866Z Updating files:  67% (21120/31522)
+2026-11-07T18:05:17.4117032Z Updating files:  68% (21435/31522)
+2026-11-07T18:05:17.4757358Z Updating files:  69% (21751/31522)
+2026-11-07T18:05:17.5377666Z Updating files:  70% (22066/31522)
+2026-11-07T18:05:17.6060484Z Updating files:  71% (22381/31522)
+2026-11-07T18:05:17.6588183Z Updating files:  72% (22696/31522)
+2026-11-07T18:05:17.7405807Z Updating files:  73% (23012/31522)
+2026-11-07T18:05:17.8009820Z Updating files:  74% (23327/31522)
+2026-11-07T18:05:17.8617996Z Updating files:  75% (23642/31522)
+2026-11-07T18:05:17.9351428Z Updating files:  76% (23957/31522)
+2026-11-07T18:05:18.0168323Z Updating files:  77% (24272/31522)
+2026-11-07T18:05:18.0746630Z Updating files:  78% (24588/31522)
+2026-11-07T18:05:18.2185897Z Updating files:  79% (24903/31522)
+2026-11-07T18:05:18.3141510Z Updating files:  80% (25218/31522)
+2026-11-07T18:05:18.3925987Z Updating files:  81% (25533/31522)
+2026-11-07T18:05:18.4804611Z Updating files:  82% (25849/31522)
+2026-11-07T18:05:18.5678688Z Updating files:  83% (26164/31522)
+2026-11-07T18:05:18.6520801Z Updating files:  84% (26479/31522)
+2026-11-07T18:05:18.7300242Z Updating files:  85% (26794/31522)
+2026-11-07T18:05:18.8027454Z Updating files:  86% (27109/31522)
+2026-11-07T18:05:18.8917234Z Updating files:  87% (27425/31522)
+2026-11-07T18:05:18.9365073Z Updating files:  88% (27740/31522)
+2026-11-07T18:05:18.9715475Z Updating files:  88% (27914/31522)
+2026-11-07T18:05:19.0494077Z Updating files:  89% (28055/31522)
+2026-11-07T18:05:19.1303568Z Updating files:  90% (28370/31522)
+2026-11-07T18:05:19.1826264Z Updating files:  91% (28686/31522)
+2026-11-07T18:05:19.2454706Z Updating files:  92% (29001/31522)
+2026-11-07T18:05:19.3082804Z Updating files:  93% (29316/31522)
+2026-11-07T18:05:19.3610170Z Updating files:  94% (29631/31522)
+2026-11-07T18:05:19.4795485Z Updating files:  95% (29946/31522)
+2026-11-07T18:05:19.5613416Z Updating files:  96% (30262/31522)
+2026-11-07T18:05:19.7634296Z Updating files:  97% (30577/31522)
+2026-11-07T18:05:19.8235533Z Updating files:  98% (30892/31522)
+2026-11-07T18:05:19.9021691Z Updating files:  99% (31207/31522)
+2026-11-07T18:05:19.9022422Z Updating files: 100% (31522/31522)
+2026-11-07T18:05:19.9022984Z Updating files: 100% (31522/31522), done.
+2026-11-07T18:05:19.9613459Z Switched to a new branch 'main'
+2026-11-07T18:05:19.9635076Z branch 'main' set up to track 'origin/main'.
+2026-11-07T18:05:19.9791886Z ##[endgroup]
+2026-11-07T18:05:20.0185603Z [command]"C:\Program Files\Git\bin\git.exe" log -1 --format=%H
+2026-11-07T18:05:20.0462541Z 301697546ef1002ab35fe39decdd8446dd389aee
+2026-11-07T18:05:20.0889907Z ##[group]Run actions/setup-python@v5
+2026-11-07T18:05:20.0890254Z with:
+2026-11-07T18:05:20.0890451Z   python-version: 3.12
+2026-11-07T18:05:20.0890684Z   check-latest: false
+2026-11-07T18:05:20.0893026Z   token: ***
+2026-11-07T18:05:20.0893229Z   update-environment: true
+2026-11-07T18:05:20.0893478Z   allow-prereleases: false
+2026-11-07T18:05:20.0893711Z   freethreaded: false
+2026-11-07T18:05:20.0893905Z ##[endgroup]
+2026-11-07T18:05:20.2472825Z ##[group]Installed versions
+2026-11-07T18:05:20.2640256Z (node:6200) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-07T18:05:20.2640999Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-07T18:05:20.2642408Z Successfully set up CPython (3.12.10)
+2026-11-07T18:05:20.2643258Z ##[endgroup]
+2026-11-07T18:05:20.3084131Z ##[group]Run jurplel/install-qt-action@v4
+2026-11-07T18:05:20.3084481Z with:
+2026-11-07T18:05:20.3084659Z   version: 5.15.2
+2026-11-07T18:05:20.3084849Z   arch: win64_msvc2019_64
+2026-11-07T18:05:20.3085052Z   cache: true
+2026-11-07T18:05:20.3085232Z   target: desktop
+2026-11-07T18:05:20.3085414Z   install-deps: true
+2026-11-07T18:05:20.3085636Z   cache-key-prefix: install-qt-action
+2026-11-07T18:05:20.3085882Z   setup-python: true
+2026-11-07T18:05:20.3086101Z   add-tools-to-path: true
+2026-11-07T18:05:20.3086307Z   set-env: true
+2026-11-07T18:05:20.3086484Z   no-qt-binaries: false
+2026-11-07T18:05:20.3086685Z   tools-only: false
+2026-11-07T18:05:20.3086869Z   aqtversion: ==3.3.*
+2026-11-07T18:05:20.3087061Z   py7zrversion: ==1.1.0
+2026-11-07T18:05:20.3087250Z   source: false
+2026-11-07T18:05:20.3087423Z   documentation: false
+2026-11-07T18:05:20.3087619Z   examples: false
+2026-11-07T18:05:20.3087801Z   use-official: false
+2026-11-07T18:05:20.3087985Z env:
+2026-11-07T18:05:20.3088277Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-11-07T18:05:20.3088778Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.12.10\x64/lib/pkgconfig
+2026-11-07T18:05:20.3089229Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-11-07T18:05:20.3089638Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-11-07T18:05:20.3090035Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-11-07T18:05:20.3090542Z ##[endgroup]
+2026-11-07T18:05:20.3150699Z ##[start-action display=Check the existence of built JavaScript action;id=__jurplel_install-qt-action.__run]
+2026-11-07T18:05:20.3285866Z ##[group]Run if [[ -f './action/lib/main.js' ]]; then
+2026-11-07T18:05:20.3286302Z [36;1mif [[ -f './action/lib/main.js' ]]; then[0m
+2026-11-07T18:05:20.3286586Z [36;1m  exit 0[0m
+2026-11-07T18:05:20.3286767Z [36;1mfi[0m
+2026-11-07T18:05:20.3286928Z [36;1m[0m
+2026-11-07T18:05:20.3287143Z [36;1m# Workflow commands must be in one line.[0m
+2026-11-07T18:05:20.3287481Z [36;1mprintf '%s' \[0m
+2026-11-07T18:05:20.3287749Z [36;1m  '::error title=Action not built::' \[0m
+2026-11-07T18:05:20.3288206Z [36;1m  'This TypeScript action cannot be used before building within Node.js environment. ' \[0m
+2026-11-07T18:05:20.3288831Z [36;1m  'Maybe you are currently using non-tagging branches, for example, the "master" branch. ' \[0m
+2026-11-07T18:05:20.3289362Z [36;1m  'Only v* branches have built JavaScript action file. ' \[0m
+2026-11-07T18:05:20.3289833Z [36;1m  'If you would like to test unreleased changes, please refer to the CI workflows ' \[0m
+2026-11-07T18:05:20.3290400Z [36;1m  'in our repository: https://github.com/jurplel/install-qt-action . ' \[0m
+2026-11-07T18:05:20.3290782Z [36;1m  'Exiting... '[0m
+2026-11-07T18:05:20.3290972Z [36;1m[0m
+2026-11-07T18:05:20.3291130Z [36;1mexit 1[0m
+2026-11-07T18:05:20.3312017Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-11-07T18:05:20.3312435Z env:
+2026-11-07T18:05:20.3312716Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-11-07T18:05:20.3313189Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.12.10\x64/lib/pkgconfig
+2026-11-07T18:05:20.3313647Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-11-07T18:05:20.3314058Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-11-07T18:05:20.3314462Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-11-07T18:05:20.3314773Z ##[endgroup]
+2026-11-07T18:05:20.5105184Z ##[end-action id=__jurplel_install-qt-action.__run;outcome=success;conclusion=success;duration_ms=195]
+2026-11-07T18:05:20.5108534Z ##[start-action display=Check Python version for potential bugs and notify users;id=__jurplel_install-qt-action.__run_2]
+2026-11-07T18:05:20.5118375Z ##[end-action id=__jurplel_install-qt-action.__run_2;outcome=skipped;conclusion=skipped;duration_ms=0]
+2026-11-07T18:05:20.5122625Z ##[start-action display=Setup Python;id=__jurplel_install-qt-action.__actions_setup-python]
+2026-11-07T18:05:20.5278381Z ##[group]Run actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+2026-11-07T18:05:20.5278783Z with:
+2026-11-07T18:05:20.5278968Z   python-version: >=3.14.0
+2026-11-07T18:05:20.5279198Z   check-latest: false
+2026-11-07T18:05:20.5281419Z   token: ***
+2026-11-07T18:05:20.5281615Z   update-environment: true
+2026-11-07T18:05:20.5281856Z   allow-prereleases: false
+2026-11-07T18:05:20.5282062Z   freethreaded: false
+2026-11-07T18:05:20.5282244Z env:
+2026-11-07T18:05:20.5282496Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-11-07T18:05:20.5282946Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.12.10\x64/lib/pkgconfig
+2026-11-07T18:05:20.5283389Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-11-07T18:05:20.5283779Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-11-07T18:05:20.5284181Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-11-07T18:05:20.5284486Z ##[endgroup]
+2026-11-07T18:05:20.6911634Z ##[group]Installed versions
+2026-11-07T18:05:20.7001701Z Successfully set up CPython (3.15.2)
+2026-11-07T18:05:20.7002571Z ##[endgroup]
+2026-11-07T18:05:20.7106993Z ##[end-action id=__jurplel_install-qt-action.__actions_setup-python;outcome=success;conclusion=success;duration_ms=198]
+2026-11-07T18:05:20.7109552Z ##[start-action display=Setup and run aqtinstall;id=__jurplel_install-qt-action.aqtinstall]
+2026-11-07T18:05:20.7270957Z ##[group]Run jurplel/install-qt-action/action@v4
+2026-11-07T18:05:20.7271242Z with:
+2026-11-07T18:05:20.7271417Z   version: 5.15.2
+2026-11-07T18:05:20.7271595Z   target: desktop
+2026-11-07T18:05:20.7271782Z   arch: win64_msvc2019_64
+2026-11-07T18:05:20.7271997Z   install-deps: true
+2026-11-07T18:05:20.7272183Z   cache: true
+2026-11-07T18:05:20.7272378Z   cache-key-prefix: install-qt-action
+2026-11-07T18:05:20.7272630Z   add-tools-to-path: true
+2026-11-07T18:05:20.7272871Z   set-env: true
+2026-11-07T18:05:20.7273060Z   no-qt-binaries: false
+2026-11-07T18:05:20.7273269Z   tools-only: false
+2026-11-07T18:05:20.7273463Z   aqtversion: ==3.3.*
+2026-11-07T18:05:20.7273664Z   py7zrversion: ==1.1.0
+2026-11-07T18:05:20.7273865Z   source: false
+2026-11-07T18:05:20.7274054Z   documentation: false
+2026-11-07T18:05:20.7274255Z   examples: false
+2026-11-07T18:05:20.7274442Z   use-official: false
+2026-11-07T18:05:20.7274654Z env:
+2026-11-07T18:05:20.7274925Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T18:05:20.7275375Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.15.2\x64/lib/pkgconfig
+2026-11-07T18:05:20.7275822Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T18:05:20.7276218Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T18:05:20.7276626Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T18:05:20.7276941Z ##[endgroup]
+2026-11-07T18:05:21.3035225Z ##[group]Install Python dependencies
+2026-11-07T18:05:21.4553703Z [command]C:\hostedtoolcache\windows\Python\3.15.2\x64\python.exe -m pip install setuptools>=70.1.0 py7zr==1.1.0
+2026-11-07T18:05:26.3670347Z Collecting setuptools>=70.1.0
+2026-11-07T18:05:26.3928374Z   Downloading setuptools-84.2.1-py3-none-any.whl.metadata (6.6 kB)
+2026-11-07T18:05:26.5002111Z Collecting py7zr==1.1.0
+2026-11-07T18:05:26.5059878Z   Downloading py7zr-1.1.0-py3-none-any.whl.metadata (17 kB)
+2026-11-07T18:05:26.5546415Z Collecting texttable (from py7zr==1.1.0)
+2026-11-07T18:05:26.5619299Z   Downloading texttable-1.7.2-py2.py3-none-any.whl.metadata (10 kB)
+2026-11-07T18:05:26.6742233Z Collecting pycryptodomex>=3.20.0 (from py7zr==1.1.0)
+2026-11-07T18:05:26.6787136Z   Downloading pycryptodomex-3.24.2-cp37-abi3-win_amd64.whl.metadata (3.5 kB)
+2026-11-07T18:05:26.7574824Z Collecting brotli>=1.2.0 (from py7zr==1.1.0)
+2026-11-07T18:05:26.7641899Z   Downloading brotli-1.2.1-cp315-cp315-win_amd64.whl.metadata (6.3 kB)
+2026-11-07T18:05:26.8731220Z Collecting psutil (from py7zr==1.1.0)
+2026-11-07T18:05:26.8776379Z   Downloading psutil-7.2.2-cp37-abi3-win_amd64.whl.metadata (22 kB)
+2026-11-07T18:05:26.9808119Z Collecting pyppmd>=1.3.1 (from py7zr==1.1.0)
+2026-11-07T18:05:26.9896774Z   Downloading pyppmd-1.3.1.tar.gz (1.4 MB)
+2026-11-07T18:05:27.0364126Z      ---------------------------------------- 1.4/1.4 MB 26.1 MB/s  0:00:00
+2026-11-07T18:05:27.1983594Z   Installing build dependencies: started
+2026-11-07T18:05:30.3585422Z   Installing build dependencies: finished with status 'done'
+2026-11-07T18:05:30.3601112Z   Getting requirements to build wheel: started
+2026-11-07T18:05:31.6201475Z   Getting requirements to build wheel: finished with status 'done'
+2026-11-07T18:05:31.6230940Z   Preparing metadata (pyproject.toml): started
+2026-11-07T18:05:32.0544417Z   Preparing metadata (pyproject.toml): finished with status 'done'
+2026-11-07T18:05:32.1501481Z Collecting pybcj>=1.0.6 (from py7zr==1.1.0)
+2026-11-07T18:05:32.1560214Z   Downloading pybcj-1.0.8.tar.gz (31 kB)
+2026-11-07T18:05:32.2931130Z   Installing build dependencies: started
+2026-11-07T18:05:34.9881208Z   Installing build dependencies: finished with status 'done'
+2026-11-07T18:05:34.9896912Z   Getting requirements to build wheel: started
+2026-11-07T18:05:35.9736996Z   Getting requirements to build wheel: finished with status 'done'
+2026-11-07T18:05:35.9764492Z   Preparing metadata (pyproject.toml): started
+2026-11-07T18:05:36.3720508Z   Preparing metadata (pyproject.toml): finished with status 'done'
+2026-11-07T18:05:36.4108917Z Collecting multivolumefile>=0.2.3 (from py7zr==1.1.0)
+2026-11-07T18:05:36.4162268Z   Downloading multivolumefile-0.2.3-py3-none-any.whl.metadata (6.3 kB)
+2026-11-07T18:05:36.4901133Z Collecting inflate64>=1.0.4 (from py7zr==1.1.0)
+2026-11-07T18:05:36.4987836Z   Downloading inflate64-1.0.4.tar.gz (902 kB)
+2026-11-07T18:05:36.5395816Z      ---------------------------------------- 902.5/902.5 kB 16.8 MB/s  0:00:00
+2026-11-07T18:05:36.6393282Z   Installing build dependencies: started
+2026-11-07T18:05:38.3669797Z   Installing build dependencies: finished with status 'done'
+2026-11-07T18:05:38.3684218Z   Getting requirements to build wheel: started
+2026-11-07T18:05:39.5079540Z   Getting requirements to build wheel: finished with status 'done'
+2026-11-07T18:05:39.5109219Z   Preparing metadata (pyproject.toml): started
+2026-11-07T18:05:39.9296870Z   Preparing metadata (pyproject.toml): finished with status 'done'
+2026-11-07T18:05:39.9515730Z Downloading py7zr-1.1.0-py3-none-any.whl (71 kB)
+2026-11-07T18:05:39.9729630Z Using cached setuptools-84.2.1-py3-none-any.whl (876 kB)
+2026-11-07T18:05:39.9864764Z Downloading brotli-1.2.1-cp315-cp315-win_amd64.whl (376 kB)
+2026-11-07T18:05:40.0318442Z Downloading multivolumefile-0.2.3-py3-none-any.whl (17 kB)
+2026-11-07T18:05:40.0817336Z Downloading pycryptodomex-3.24.2-cp37-abi3-win_amd64.whl (1.8 MB)
+2026-11-07T18:05:40.1569256Z    ---------------------------------------- 1.8/1.8 MB 21.6 MB/s  0:00:00
+2026-11-07T18:05:40.1616329Z Downloading psutil-7.2.2-cp37-abi3-win_amd64.whl (137 kB)
+2026-11-07T18:05:40.1977044Z Downloading texttable-1.7.2-py2.py3-none-any.whl (10 kB)
+2026-11-07T18:05:40.2939125Z Building wheels for collected packages: inflate64, pybcj, pyppmd
+2026-11-07T18:05:40.3097646Z   Building wheel for inflate64 (pyproject.toml): started
+2026-11-07T18:05:53.4284099Z   Building wheel for inflate64 (pyproject.toml): finished with status 'done'
+2026-11-07T18:05:53.4323527Z   Created wheel for inflate64: filename=inflate64-1.0.4-cp315-cp315-win_amd64.whl size=36120 sha256=ba56f1b1bf8e35b694ffc192d4c6af33efe4eae345456f9ca23cbf38e4fdb162
+2026-11-07T18:05:53.4326157Z   Stored in directory: c:\users\runneradmin\appdata\local\pip\cache\wheels\9e\0d\de\c0d754afa658d5bd6ceb1a6451eb296d37c3a54f32d929d0de
+2026-11-07T18:05:53.4381531Z   Building wheel for pybcj (pyproject.toml): started
+2026-11-07T18:05:56.3365976Z   Building wheel for pybcj (pyproject.toml): finished with status 'done'
+2026-11-07T18:05:56.3385867Z   Created wheel for pybcj: filename=pybcj-1.0.8-cp315-cp315-win_amd64.whl size=25065 sha256=f3deb1038cfd525f1fb9a80026f5839aaab49f8285f138e45a821ae7551cf7cc
+2026-11-07T18:05:56.3387736Z   Stored in directory: c:\users\runneradmin\appdata\local\pip\cache\wheels\8d\56\56\0cd36d19ac061b6d27292b519a634f83e580bc72806cde286a
+2026-11-07T18:05:56.3456259Z   Building wheel for pyppmd (pyproject.toml): started
+2026-11-07T18:06:01.3902424Z   Building wheel for pyppmd (pyproject.toml): finished with status 'done'
+2026-11-07T18:06:01.3922309Z   Created wheel for pyppmd: filename=pyppmd-1.3.1-cp315-cp315-win_amd64.whl size=47776 sha256=5fb1106bc41f707957eb2476eb657d60307ffc9605d251bb9cf93086756d65c7
+2026-11-07T18:06:01.3924243Z   Stored in directory: c:\users\runneradmin\appdata\local\pip\cache\wheels\ce\18\16\b310919b0e82efe606958659e2c189178f7bc6e361dd299d79
+2026-11-07T18:06:01.3974676Z Successfully built inflate64 pybcj pyppmd
+2026-11-07T18:06:01.4353181Z Installing collected packages: texttable, brotli, setuptools, pyppmd, pycryptodomex, pybcj, psutil, multivolumefile, inflate64, py7zr
+2026-11-07T18:06:04.4569519Z 
+2026-11-07T18:06:04.4584821Z Successfully installed brotli-1.2.1 inflate64-1.0.4 multivolumefile-0.2.3 psutil-7.2.2 py7zr-1.1.0 pybcj-1.0.8 pycryptodomex-3.24.2 pyppmd-1.3.1 setuptools-84.2.1 texttable-1.7.2
+2026-11-07T18:06:04.4602082Z 
+2026-11-07T18:06:04.4603847Z [notice] A new release of pip is available: 26.2.2 -> 26.3
+2026-11-07T18:06:04.4604980Z [notice] To update, run: python.exe -m pip install --upgrade pip
+2026-11-07T18:06:05.0515089Z [command]C:\hostedtoolcache\windows\Python\3.15.2\x64\python.exe -m pip install aqtinstall==3.3.*
+2026-11-07T18:06:06.1128830Z Collecting aqtinstall==3.3.*
+2026-11-07T18:06:06.1474747Z   Downloading aqtinstall-3.3.0-py3-none-any.whl.metadata (11 kB)
+2026-11-07T18:06:06.1994495Z Collecting bs4 (from aqtinstall==3.3.*)
+2026-11-07T18:06:06.2025858Z   Downloading bs4-0.0.2-py2.py3-none-any.whl.metadata (411 bytes)
+2026-11-07T18:06:06.2413190Z Collecting defusedxml (from aqtinstall==3.3.*)
+2026-11-07T18:06:06.2445169Z   Downloading defusedxml-0.7.1-py2.py3-none-any.whl.metadata (32 kB)
+2026-11-07T18:06:06.2971186Z Collecting humanize (from aqtinstall==3.3.*)
+2026-11-07T18:06:06.3002414Z   Downloading humanize-4.16.0-py3-none-any.whl.metadata (8.0 kB)
+2026-11-07T18:06:06.3460955Z Collecting patch-ng (from aqtinstall==3.3.*)
+2026-11-07T18:06:06.3492326Z   Downloading patch_ng-1.19.1-py3-none-any.whl.metadata (3.2 kB)
+2026-11-07T18:06:06.3667527Z Requirement already satisfied: py7zr>=0.22.0 in C:\hostedtoolcache\windows\Python\3.15.2\x64\Lib\site-packages (from aqtinstall==3.3.*) (1.1.0)
+2026-11-07T18:06:06.4016911Z Collecting requests>=2.31.0 (from aqtinstall==3.3.*)
+2026-11-07T18:06:06.4053068Z   Downloading requests-2.34.2-py3-none-any.whl.metadata (4.8 kB)
+2026-11-07T18:06:06.4537429Z Collecting semantic-version (from aqtinstall==3.3.*)
+2026-11-07T18:06:06.4574722Z   Downloading semantic_version-2.10.0-py2.py3-none-any.whl.metadata (9.7 kB)
+2026-11-07T18:06:06.4819772Z Requirement already satisfied: texttable in C:\hostedtoolcache\windows\Python\3.15.2\x64\Lib\site-packages (from aqtinstall==3.3.*) (1.7.2)
+2026-11-07T18:06:06.4840003Z Requirement already satisfied: pycryptodomex>=3.20.0 in C:\hostedtoolcache\windows\Python\3.15.2\x64\Lib\site-packages (from py7zr>=0.22.0->aqtinstall==3.3.*) (3.24.2)
+2026-11-07T18:06:06.4846960Z Requirement already satisfied: brotli>=1.2.0 in C:\hostedtoolcache\windows\Python\3.15.2\x64\Lib\site-packages (from py7zr>=0.22.0->aqtinstall==3.3.*) (1.2.1)
+2026-11-07T18:06:06.4854071Z Requirement already satisfied: psutil in C:\hostedtoolcache\windows\Python\3.15.2\x64\Lib\site-packages (from py7zr>=0.22.0->aqtinstall==3.3.*) (7.2.2)
+2026-11-07T18:06:06.4862391Z Requirement already satisfied: pyppmd>=1.3.1 in C:\hostedtoolcache\windows\Python\3.15.2\x64\Lib\site-packages (from py7zr>=0.22.0->aqtinstall==3.3.*) (1.3.1)
+2026-11-07T18:06:06.4867849Z Requirement already satisfied: pybcj>=1.0.6 in C:\hostedtoolcache\windows\Python\3.15.2\x64\Lib\site-packages (from py7zr>=0.22.0->aqtinstall==3.3.*) (1.0.8)
+2026-11-07T18:06:06.4872695Z Requirement already satisfied: multivolumefile>=0.2.3 in C:\hostedtoolcache\windows\Python\3.15.2\x64\Lib\site-packages (from py7zr>=0.22.0->aqtinstall==3.3.*) (0.2.3)
+2026-11-07T18:06:06.4879025Z Requirement already satisfied: inflate64>=1.0.4 in C:\hostedtoolcache\windows\Python\3.15.2\x64\Lib\site-packages (from py7zr>=0.22.0->aqtinstall==3.3.*) (1.0.4)
+2026-11-07T18:06:06.6603040Z Collecting charset_normalizer<4,>=2 (from requests>=2.31.0->aqtinstall==3.3.*)
+2026-11-07T18:06:06.6643472Z   Downloading charset_normalizer-3.5.2-cp315-cp315-win_amd64.whl.metadata (47 kB)
+2026-11-07T18:06:07.5593426Z Collecting idna<4,>=2.5 (from requests>=2.31.0->aqtinstall==3.3.*)
+2026-11-07T18:06:07.5625560Z   Downloading idna-3.20-py3-none-any.whl.metadata (7.2 kB)
+2026-11-07T18:06:07.6149706Z Collecting urllib3<3,>=1.26 (from requests>=2.31.0->aqtinstall==3.3.*)
+2026-11-07T18:06:07.6181785Z   Downloading urllib3-2.8.0-py3-none-any.whl.metadata (7.4 kB)
+2026-11-07T18:06:07.6750550Z Collecting certifi>=2023.5.7 (from requests>=2.31.0->aqtinstall==3.3.*)
+2026-11-07T18:06:07.6783419Z   Downloading certifi-2026.10.23-py3-none-any.whl.metadata (2.5 kB)
+2026-11-07T18:06:07.7256808Z Collecting beautifulsoup4 (from bs4->aqtinstall==3.3.*)
+2026-11-07T18:06:07.7288706Z   Downloading beautifulsoup4-4.15.0-py3-none-any.whl.metadata (3.8 kB)
+2026-11-07T18:06:07.7755821Z Collecting soupsieve>=1.6.1 (from beautifulsoup4->bs4->aqtinstall==3.3.*)
+2026-11-07T18:06:07.7802285Z   Downloading soupsieve-4.0.1-py3-none-any.whl.metadata (4.4 kB)
+2026-11-07T18:06:07.8268321Z Collecting typing-extensions>=4.0.0 (from beautifulsoup4->bs4->aqtinstall==3.3.*)
+2026-11-07T18:06:07.8302711Z   Downloading typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+2026-11-07T18:06:07.8588028Z Downloading aqtinstall-3.3.0-py3-none-any.whl (71 kB)
+2026-11-07T18:06:07.9296752Z Downloading requests-2.34.2-py3-none-any.whl (73 kB)
+2026-11-07T18:06:07.9728497Z Downloading charset_normalizer-3.5.2-cp315-cp315-win_amd64.whl (210 kB)
+2026-11-07T18:06:07.9942870Z Downloading idna-3.20-py3-none-any.whl (69 kB)
+2026-11-07T18:06:08.0134179Z Downloading urllib3-2.8.0-py3-none-any.whl (135 kB)
+2026-11-07T18:06:08.0323666Z Downloading certifi-2026.10.23-py3-none-any.whl (135 kB)
+2026-11-07T18:06:08.0512026Z Downloading bs4-0.0.2-py2.py3-none-any.whl (1.2 kB)
+2026-11-07T18:06:08.0689996Z Downloading beautifulsoup4-4.15.0-py3-none-any.whl (109 kB)
+2026-11-07T18:06:08.0908202Z Downloading soupsieve-4.0.1-py3-none-any.whl (50 kB)
+2026-11-07T18:06:08.1107728Z Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+2026-11-07T18:06:08.1307312Z Downloading defusedxml-0.7.1-py2.py3-none-any.whl (25 kB)
+2026-11-07T18:06:08.1507520Z Downloading humanize-4.16.0-py3-none-any.whl (137 kB)
+2026-11-07T18:06:08.1731481Z Downloading patch_ng-1.19.1-py3-none-any.whl (17 kB)
+2026-11-07T18:06:08.1916934Z Downloading semantic_version-2.10.0-py2.py3-none-any.whl (15 kB)
+2026-11-07T18:06:08.3187670Z Installing collected packages: urllib3, typing-extensions, soupsieve, semantic-version, patch-ng, idna, humanize, defusedxml, charset_normalizer, certifi, requests, beautifulsoup4, bs4, aqtinstall
+2026-11-07T18:06:09.4952251Z 
+2026-11-07T18:06:09.4973359Z Successfully installed aqtinstall-3.3.0 beautifulsoup4-4.15.0 bs4-0.0.2 certifi-2026.10.23 charset_normalizer-3.5.2 defusedxml-0.7.1 humanize-4.16.0 idna-3.20 patch-ng-1.19.1 requests-2.34.2 semantic-version-2.10.0 soupsieve-4.0.1 typing-extensions-4.16.0 urllib3-2.8.0
+2026-11-07T18:06:09.4988154Z 
+2026-11-07T18:06:09.4989748Z [notice] A new release of pip is available: 26.2.2 -> 26.3
+2026-11-07T18:06:09.4990466Z [notice] To update, run: python.exe -m pip install --upgrade pip
+2026-11-07T18:06:09.5869772Z ##[endgroup]
+2026-11-07T18:06:09.6768475Z [command]C:\hostedtoolcache\windows\Python\3.15.2\x64\python.exe -m aqt version
+2026-11-07T18:06:10.1604484Z INFO    : aqtinstall(aqt) v3.3.0 on Python 3.15.2 [CPython MSC v.1951 64 bit (AMD64)]
+2026-11-07T18:06:10.1972718Z ##[group]Resolve available Qt version "5.15.2" with host "windows" and target "desktop"
+2026-11-07T18:06:10.2830010Z [command]C:\hostedtoolcache\windows\Python\3.15.2\x64\python.exe -m aqt list-qt windows desktop --spec 5.15.2 --latest-version
+2026-11-07T18:06:11.4927285Z 5.15.2
+2026-11-07T18:06:11.5341260Z ##[endgroup]
+2026-11-07T18:06:11.5352303Z ##[group]Check and restore cache
+2026-11-07T18:06:11.9312210Z Cache hit for: install-qt-action-windows-10.0.20348-desktop-win64_msvc2019_64-5.15.2-D:\a\dukto-next\Qt-==1.1.0-==3.3.*
+2026-11-07T18:06:13.2420748Z Received 29360128 of 142751395 (20.6%), 27.7 MBs/sec
+2026-11-07T18:06:14.2484437Z Received 130023424 of 142751395 (91.1%), 61.6 MBs/sec
+2026-11-07T18:06:14.8872032Z Received 142751395 of 142751395 (100.0%), 51.4 MBs/sec
+2026-11-07T18:06:14.8875224Z Cache Size: ~136 MB (142751395 B)
+2026-11-07T18:06:14.9659185Z [command]"C:\Program Files\Git\usr\bin\tar.exe" -xf D:/a/_temp/335acae9-5f53-4a1b-95b0-4d1f599ea721/cache.tzst -P -C D:/a/dukto-next/dukto-next --force-local --use-compress-program "zstd -d"
+2026-11-07T18:06:18.1710862Z Cache restored successfully
+2026-11-07T18:06:18.1792563Z Automatic cache hit with key "install-qt-action-windows-10.0.20348-desktop-win64_msvc2019_64-5.15.2-D:\a\dukto-next\Qt-==1.1.0-==3.3.*"
+2026-11-07T18:06:18.1794446Z ##[endgroup]
+2026-11-07T18:06:18.1868625Z ##[group]Post-process installed Qt
+2026-11-07T18:06:18.1870683Z Setting output "host" = "windows"
+2026-11-07T18:06:18.1874717Z Setting output "target" = "desktop"
+2026-11-07T18:06:18.1876193Z Setting output "version" = "5.15.2"
+2026-11-07T18:06:18.1877530Z Setting output "arch" = "win64_msvc2019_64"
+2026-11-07T18:06:18.1879035Z Setting output "qt-root-dir" = "D:\a\dukto-next\Qt\5.15.2\msvc2019_64"
+2026-11-07T18:06:18.1880390Z Setting output "qt-plugin-path" = "D:\a\dukto-next\Qt\5.15.2\msvc2019_64\plugins"
+2026-11-07T18:06:18.1885539Z Setting output "qml2-import-path" = "D:\a\dukto-next\Qt\5.15.2\msvc2019_64\qml"
+2026-11-07T18:06:18.1887166Z Prepending "D:\a\dukto-next\Qt\5.15.2\msvc2019_64\bin" to env "PATH"
+2026-11-07T18:06:18.1890200Z Setting env "Qt5_DIR" = "D:\a\dukto-next\Qt\5.15.2\msvc2019_64\lib\cmake"
+2026-11-07T18:06:18.1892678Z Setting env "QT_ROOT_DIR" = "D:\a\dukto-next\Qt\5.15.2\msvc2019_64"
+2026-11-07T18:06:18.1895371Z Setting env "QT_PLUGIN_PATH" = "D:\a\dukto-next\Qt\5.15.2\msvc2019_64\plugins"
+2026-11-07T18:06:18.1897089Z Setting env "QML2_IMPORT_PATH" = "D:\a\dukto-next\Qt\5.15.2\msvc2019_64\qml"
+2026-11-07T18:06:18.1898875Z ##[endgroup]
+2026-11-07T18:06:18.2027532Z ##[end-action id=__jurplel_install-qt-action.aqtinstall;outcome=success;conclusion=success;duration_ms=57491]
+2026-11-07T18:06:18.2229759Z ##[group]Run python scripts/ci_tls_runtime.py
+2026-11-07T18:06:18.2230212Z [36;1mpython scripts/ci_tls_runtime.py[0m
+2026-11-07T18:06:18.2230611Z [36;1m"$PWD/.tools/openssl/Library/bin" >> $env:GITHUB_PATH[0m
+2026-11-07T18:06:18.2546215Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-11-07T18:06:18.2546729Z env:
+2026-11-07T18:06:18.2547108Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T18:06:18.2547795Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.15.2\x64/lib/pkgconfig
+2026-11-07T18:06:18.2548631Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T18:06:18.2549231Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T18:06:18.2549847Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T18:06:18.2550612Z   Qt5_DIR: D:\a\dukto-next\Qt\5.15.2\msvc2019_64\lib\cmake
+2026-11-07T18:06:18.2551165Z   QT_ROOT_DIR: D:\a\dukto-next\Qt\5.15.2\msvc2019_64
+2026-11-07T18:06:18.2551669Z   QT_PLUGIN_PATH: D:\a\dukto-next\Qt\5.15.2\msvc2019_64\plugins
+2026-11-07T18:06:18.2552222Z   QML2_IMPORT_PATH: D:\a\dukto-next\Qt\5.15.2\msvc2019_64\qml
+2026-11-07T18:06:18.2552672Z ##[endgroup]
+2026-11-07T18:06:19.9856890Z ##[group]Run cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DDUKTO_BUILD_GUI=OFF
+2026-11-07T18:06:19.9857541Z [36;1mcmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DDUKTO_BUILD_GUI=OFF[0m
+2026-11-07T18:06:19.9901269Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-11-07T18:06:19.9901621Z env:
+2026-11-07T18:06:19.9901893Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T18:06:19.9902361Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.15.2\x64/lib/pkgconfig
+2026-11-07T18:06:19.9902845Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T18:06:19.9903271Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T18:06:19.9903671Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T18:06:19.9904046Z   Qt5_DIR: D:\a\dukto-next\Qt\5.15.2\msvc2019_64\lib\cmake
+2026-11-07T18:06:19.9904382Z   QT_ROOT_DIR: D:\a\dukto-next\Qt\5.15.2\msvc2019_64
+2026-11-07T18:06:19.9904762Z   QT_PLUGIN_PATH: D:\a\dukto-next\Qt\5.15.2\msvc2019_64\plugins
+2026-11-07T18:06:19.9905137Z   QML2_IMPORT_PATH: D:\a\dukto-next\Qt\5.15.2\msvc2019_64\qml
+2026-11-07T18:06:19.9905434Z ##[endgroup]
+2026-11-07T18:06:20.8571690Z -- Building for: Visual Studio 17 2022
+2026-11-07T18:06:20.9773472Z -- Selecting Windows SDK version 10.0.26100.0 to target Windows 10.0.20348.
+2026-11-07T18:06:29.5893323Z -- The C compiler identification is MSVC 19.44.35229.0
+2026-11-07T18:06:30.9769028Z -- The CXX compiler identification is MSVC 19.44.35229.0
+2026-11-07T18:06:31.1023524Z -- Detecting C compiler ABI info
+2026-11-07T18:06:32.1781110Z -- Detecting C compiler ABI info - done
+2026-11-07T18:06:32.1930627Z -- Check for working C compiler: C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/cl.exe - skipped
+2026-11-07T18:06:32.1988157Z -- Detecting C compile features
+2026-11-07T18:06:32.2072909Z -- Detecting C compile features - done
+2026-11-07T18:06:32.2277191Z -- Detecting CXX compiler ABI info
+2026-11-07T18:06:32.9538942Z -- Detecting CXX compiler ABI info - done
+2026-11-07T18:06:32.9682415Z -- Check for working CXX compiler: C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/cl.exe - skipped
+2026-11-07T18:06:32.9686859Z -- Detecting CXX compile features
+2026-11-07T18:06:32.9695883Z -- Detecting CXX compile features - done
+2026-11-07T18:06:33.0230689Z -- Found OpenSSL: D:/a/dukto-next/dukto-next/.tools/openssl/Library/lib/libcrypto.lib (found suitable version "1.1.1w", minimum required is "1.1.1") found components: Crypto
+2026-11-07T18:06:33.2299376Z -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+2026-11-07T18:06:34.6416509Z -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed
+2026-11-07T18:06:34.6417226Z -- Looking for pthread_create in pthreads
+2026-11-07T18:06:35.2450914Z -- Looking for pthread_create in pthreads - not found
+2026-11-07T18:06:35.2451616Z -- Looking for pthread_create in pthread
+2026-11-07T18:06:35.8193385Z -- Looking for pthread_create in pthread - not found
+2026-11-07T18:06:35.8205860Z -- Found Threads: TRUE
+2026-11-07T18:06:35.8298844Z -- Configuring done (15.0s)
+2026-11-07T18:06:36.5617109Z -- Generating done (0.7s)
+2026-11-07T18:06:36.5625410Z -- Build files have been written to: D:/a/dukto-next/dukto-next/build
+2026-11-07T18:06:36.6866019Z ##[group]Run cmake --build build --config Release --target dukto-cli state-storage-tests --parallel 4
+2026-11-07T18:06:36.6867360Z [36;1mcmake --build build --config Release --target dukto-cli state-storage-tests --parallel 4[0m
+2026-11-07T18:06:36.6911357Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-11-07T18:06:36.6911711Z env:
+2026-11-07T18:06:36.6911987Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T18:06:36.6912458Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.15.2\x64/lib/pkgconfig
+2026-11-07T18:06:36.6912935Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T18:06:36.6913367Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T18:06:36.6913805Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T18:06:36.6914186Z   Qt5_DIR: D:\a\dukto-next\Qt\5.15.2\msvc2019_64\lib\cmake
+2026-11-07T18:06:36.6914560Z   QT_ROOT_DIR: D:\a\dukto-next\Qt\5.15.2\msvc2019_64
+2026-11-07T18:06:36.6914911Z   QT_PLUGIN_PATH: D:\a\dukto-next\Qt\5.15.2\msvc2019_64\plugins
+2026-11-07T18:06:36.6915301Z   QML2_IMPORT_PATH: D:\a\dukto-next\Qt\5.15.2\msvc2019_64\qml
+2026-11-07T18:06:36.6915617Z ##[endgroup]
+2026-11-07T18:06:37.0405984Z MSBuild version 17.14.60+43b635718 for .NET Framework
+2026-11-07T18:06:37.0749453Z 
+2026-11-07T18:06:37.4726220Z   1>Checking Build System
+2026-11-07T18:06:38.0379210Z   Building Custom Rule D:/a/dukto-next/dukto-next/CMakeLists.txt
+2026-11-07T18:06:38.1932811Z cl : command line  warning D9025: overriding '/W4' with '/w' [D:\a\dukto-next\dukto-next\build\dukto-sqlite.vcxproj]
+2026-11-07T18:06:38.1933529Z   sqliteplatform.c
+2026-11-07T18:06:57.2982148Z   dukto-sqlite.vcxproj -> D:\a\dukto-next\dukto-next\build\Release\dukto-sqlite.lib
+2026-11-07T18:06:57.3570411Z   Automatic MOC for target dukto-sql-driver
+2026-11-07T18:06:57.5594730Z   Building Custom Rule D:/a/dukto-next/dukto-next/CMakeLists.txt
+2026-11-07T18:06:57.6982460Z   sqliteruntime.cpp
+2026-11-07T18:06:59.9022676Z   sqlitevfs.cpp
+2026-11-07T18:07:01.0918228Z   qsql_sqlite.cpp
+2026-11-07T18:07:02.6951295Z D:\a\dukto-next\dukto-next\third-party\sqlite-runtime\qt-5.15.2\qsql_sqlite.cpp(249,68): warning C4458: declaration of 'values' hides class member [D:\a\dukto-next\dukto-next\build\dukto-sql-driver.vcxproj]
+2026-11-07T18:07:02.6953632Z       D:\a\dukto-next\Qt\5.15.2\msvc2019_64\include\QtSql\5.15.2\QtSql\private\qsqlresult_p.h(129,23):
+2026-11-07T18:07:02.6954402Z       see declaration of 'QSqlResultPrivate::values'
+2026-11-07T18:07:02.6954796Z   
+2026-11-07T18:07:02.6955794Z D:\a\dukto-next\dukto-next\third-party\sqlite-runtime\qt-5.15.2\qsql_sqlite.cpp(249,80): warning C4458: declaration of 'idx' hides class member [D:\a\dukto-next\dukto-next\build\dukto-sql-driver.vcxproj]
+2026-11-07T18:07:02.6957121Z       D:\a\dukto-next\Qt\5.15.2\msvc2019_64\include\QtSql\5.15.2\QtSql\private\qsqlresult_p.h(121,9):
+2026-11-07T18:07:02.6957790Z       see declaration of 'QSqlResultPrivate::idx'
+2026-11-07T18:07:02.6958153Z   
+2026-11-07T18:07:02.6959189Z D:\a\dukto-next\dukto-next\third-party\sqlite-runtime\qt-5.15.2\qsql_sqlite.cpp(259,17): warning C4456: declaration of 'i' hides previous local declaration [D:\a\dukto-next\dukto-next\build\dukto-sql-driver.vcxproj]
+2026-11-07T18:07:02.6960569Z       D:\a\dukto-next\dukto-next\third-party\sqlite-runtime\qt-5.15.2\qsql_sqlite.cpp(253,9):
+2026-11-07T18:07:02.6961146Z       see declaration of 'i'
+2026-11-07T18:07:02.6961422Z   
+2026-11-07T18:07:02.9302012Z   mocs_compilation_Release.cpp
+2026-11-07T18:07:03.9278273Z   Generating Code...
+2026-11-07T18:07:04.5932714Z   dukto-sql-driver.vcxproj -> D:\a\dukto-next\dukto-next\build\Release\dukto-sql-driver.lib
+2026-11-07T18:07:04.6736173Z   Automatic MOC for target dukto-core
+2026-11-07T18:07:05.0258141Z   Building Custom Rule D:/a/dukto-next/dukto-next/CMakeLists.txt
+2026-11-07T18:07:05.1834386Z   error.cpp
+2026-11-07T18:07:06.3548744Z   diagnostics.cpp
+2026-11-07T18:07:08.5395180Z   files.cpp
+2026-11-07T18:07:09.8154964Z   nativecommit.cpp
+2026-11-07T18:07:11.8255128Z   sourcefile.cpp
+2026-11-07T18:07:13.6804533Z   protocol.cpp
+2026-11-07T18:07:14.8469280Z   securechannel.cpp
+2026-11-07T18:07:16.3708220Z   buffercredit.cpp
+2026-11-07T18:07:17.5120859Z   filecredit.cpp
+2026-11-07T18:07:18.6561863Z   sqlitecache.cpp
+2026-11-07T18:07:19.7763083Z   privatestore.cpp
+2026-11-07T18:07:21.6905306Z   stateinventory.cpp
+2026-11-07T18:07:23.2762501Z   identity.cpp
+2026-11-07T18:07:24.6268233Z   auth.cpp
+2026-11-07T18:07:25.9014083Z   sessionpolicy.cpp
+2026-11-07T18:07:27.0402813Z   transferscheduler.cpp
+2026-11-07T18:07:28.2156381Z   transferoperation.cpp
+2026-11-07T18:07:29.7876964Z   service.cpp
+2026-11-07T18:07:31.4635557Z   shares.cpp
+2026-11-07T18:07:32.6719463Z   browse.cpp
+2026-11-07T18:07:33.9278401Z   Generating Code...
+2026-11-07T18:07:36.3082097Z D:\a\dukto-next\dukto-next\src\core\nativecommit.cpp(701,1): warning C4701: potentially uninitialized local variable 'info' used [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:36.6057732Z   Compiling...
+2026-11-07T18:07:36.6058191Z   strongmanifest.cpp
+2026-11-07T18:07:37.8788149Z   uploadmanifest.cpp
+2026-11-07T18:07:39.4715623Z   dispositionjournal.cpp
+2026-11-07T18:07:40.6883013Z   taskstore.cpp
+2026-11-07T18:07:42.2951441Z   expiredtaskcleanup.cpp
+2026-11-07T18:07:43.5184424Z   clientdownloadcleanup.cpp
+2026-11-07T18:07:44.7566857Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\xutility(1341,31): warning C4996: 'stdext::checked_array_iterator<const T *>': warning STL4043: stdext::checked_array_iterator, stdext::unchecked_array_iterator, and related factory functions are non-Standard extensions and will be removed in the future. std::span (since C++20) and gsl::span can be used instead. You can define _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING or _SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS to suppress this warning. [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7571334Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\xutility(1341,31): warning C4996:         with [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7573739Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\xutility(1341,31): warning C4996:         [ [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7577366Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\xutility(1341,31): warning C4996:             T=QString [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7579557Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\xutility(1341,31): warning C4996:         ] [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7580986Z   (compiling source file '../src/core/clientdownloadcleanup.cpp')
+2026-11-07T18:07:44.7582192Z       C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\iterator(1483,35):
+2026-11-07T18:07:44.7583168Z       see declaration of 'stdext::checked_array_iterator'
+2026-11-07T18:07:44.7584060Z       C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\xutility(1341,31):
+2026-11-07T18:07:44.7585064Z       the template instantiation context (the oldest one first) is
+2026-11-07T18:07:44.7585799Z           D:\a\dukto-next\Qt\5.15.2\msvc2019_64\include\QtCore\qvariant.h(775,135):
+2026-11-07T18:07:44.7587167Z           see reference to function template instantiation 'QtMetaTypePrivate::QSequentialIterableImpl::QSequentialIterableImpl<QStringList>(const T *)' being compiled
+2026-11-07T18:07:44.7588399Z           with
+2026-11-07T18:07:44.7588691Z           [
+2026-11-07T18:07:44.7588971Z               T=QStringList
+2026-11-07T18:07:44.7589302Z           ]
+2026-11-07T18:07:44.7591192Z           D:\a\dukto-next\Qt\5.15.2\msvc2019_64\include\QtCore\qmetatype.h(1162,12):
+2026-11-07T18:07:44.7592748Z           see reference to function template instantiation 'const void *QtMetaTypePrivate::QSequentialIterableImpl::atImpl<QStringList>(const void *,int)' being compiled
+2026-11-07T18:07:44.7594159Z           D:\a\dukto-next\Qt\5.15.2\msvc2019_64\include\QtCore\qlist.h(911,1):
+2026-11-07T18:07:44.7595371Z           while compiling class template member function 'bool QList<QString>::op_eq_impl(const QList<QString> &,QListData::ArrayCompatibleLayout) const'
+2026-11-07T18:07:44.7596575Z               D:\a\dukto-next\Qt\5.15.2\msvc2019_64\include\QtCore\qlist.h(893,5):
+2026-11-07T18:07:44.7597439Z               see the first reference to 'QList<QString>::op_eq_impl' in 'QList<QString>::operator =='
+2026-11-07T18:07:44.7598315Z               D:\a\dukto-next\Qt\5.15.2\msvc2019_64\include\QtCore\qlist.h(174,55):
+2026-11-07T18:07:44.7599213Z               see the first reference to 'QList<QString>::operator ==' in 'QList<QString>::operator !='
+2026-11-07T18:07:44.7600127Z               D:\a\dukto-next\dukto-next\src\core\clientdownloadcleanup.cpp(277,5):
+2026-11-07T18:07:44.7601063Z               see the first reference to 'QList<QString>::operator !=' in 'dukto::cleanupClientDownload'
+2026-11-07T18:07:44.7601944Z           D:\a\dukto-next\Qt\5.15.2\msvc2019_64\include\QtCore\qlist.h(915,17):
+2026-11-07T18:07:44.7603301Z           see reference to function template instantiation 'bool std::equal<const T*,stdext::checked_array_iterator<const T *>>(const _InIt1,const _InIt1,const _InIt2)' being compiled
+2026-11-07T18:07:44.7604487Z           with
+2026-11-07T18:07:44.7604748Z           [
+2026-11-07T18:07:44.7605002Z               T=QString,
+2026-11-07T18:07:44.7605323Z               _InIt1=const QString *,
+2026-11-07T18:07:44.7605818Z               _InIt2=stdext::checked_array_iterator<const QString *>
+2026-11-07T18:07:44.7606293Z           ]
+2026-11-07T18:07:44.7606970Z           C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\xutility(5541,17):
+2026-11-07T18:07:44.7608490Z           see reference to function template instantiation 'bool std::equal<_InIt1,_InIt2,std::equal_to<void>>(const _InIt1,const _InIt1,const _InIt2,_Pr)' being compiled
+2026-11-07T18:07:44.7609814Z           with
+2026-11-07T18:07:44.7610077Z           [
+2026-11-07T18:07:44.7610353Z               _InIt1=const QString *,
+2026-11-07T18:07:44.7610854Z               _InIt2=stdext::checked_array_iterator<const QString *>,
+2026-11-07T18:07:44.7611405Z               _Pr=std::equal_to<void>
+2026-11-07T18:07:44.7611763Z           ]
+2026-11-07T18:07:44.7612450Z           C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\xutility(5509,31):
+2026-11-07T18:07:44.7613913Z           see reference to function template instantiation 'decltype(auto) std::_Get_unwrapped_n<const _InIt2&,__int64>(_Iter,const _Diff)' being compiled
+2026-11-07T18:07:44.7614950Z           with
+2026-11-07T18:07:44.7615216Z           [
+2026-11-07T18:07:44.7615603Z               _InIt2=stdext::checked_array_iterator<const QString *>,
+2026-11-07T18:07:44.7616307Z               _Iter=const stdext::checked_array_iterator<const QString *> &,
+2026-11-07T18:07:44.7616859Z               _Diff=__int64
+2026-11-07T18:07:44.7617178Z           ]
+2026-11-07T18:07:44.7617915Z           C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\xutility(1446,26):
+2026-11-07T18:07:44.7619395Z           see reference to variable template 'const bool _Unwrappable_for_offset_v<stdext::checked_array_iterator<QString const *> const &>' being compiled
+2026-11-07T18:07:44.7620826Z           C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\xutility(1440,44):
+2026-11-07T18:07:44.7622247Z           see reference to variable template 'const bool _Unwrappable_v<stdext::checked_array_iterator<QString const *> const &,void>' being compiled
+2026-11-07T18:07:44.7623839Z           C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\xutility(1369,5):
+2026-11-07T18:07:44.7625315Z           see reference to variable template 'const bool _Allow_inheriting_unwrap_v<stdext::checked_array_iterator<QString const *>,void>' being compiled
+2026-11-07T18:07:44.7626337Z   
+2026-11-07T18:07:44.7629750Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(476,40): warning C4996: 'stdext::checked_array_iterator<const T *>': warning STL4043: stdext::checked_array_iterator, stdext::unchecked_array_iterator, and related factory functions are non-Standard extensions and will be removed in the future. std::span (since C++20) and gsl::span can be used instead. You can define _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING or _SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS to suppress this warning. [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7634274Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(476,40): warning C4996:         with [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7636378Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(476,40): warning C4996:         [ [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7638535Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(476,40): warning C4996:             T=QString [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7640725Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(476,40): warning C4996:         ] [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7642173Z   (compiling source file '../src/core/clientdownloadcleanup.cpp')
+2026-11-07T18:07:44.7643131Z       C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\iterator(1483,35):
+2026-11-07T18:07:44.7644035Z       see declaration of 'stdext::checked_array_iterator'
+2026-11-07T18:07:44.7645325Z       C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(476,40):
+2026-11-07T18:07:44.7646406Z       the template instantiation context (the oldest one first) is
+2026-11-07T18:07:44.7647402Z           C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\xutility(1436,93):
+2026-11-07T18:07:44.7648772Z           see reference to alias template instantiation 'std::_Iter_diff_t<stdext::checked_array_iterator<const T *>>' being compiled
+2026-11-07T18:07:44.7649711Z           with
+2026-11-07T18:07:44.7649987Z           [
+2026-11-07T18:07:44.7650257Z               T=QString
+2026-11-07T18:07:44.7650568Z           ]
+2026-11-07T18:07:44.7651297Z           C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\xutility(1245,55):
+2026-11-07T18:07:44.7652723Z           see reference to class template instantiation 'std::iterator_traits<stdext::checked_array_iterator<const T *>>' being compiled
+2026-11-07T18:07:44.7653700Z           with
+2026-11-07T18:07:44.7653984Z           [
+2026-11-07T18:07:44.7654254Z               T=QString
+2026-11-07T18:07:44.7654554Z           ]
+2026-11-07T18:07:44.7655310Z           C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(496,26):
+2026-11-07T18:07:44.7656672Z           see reference to class template instantiation 'std::_Iterator_traits_base<_Iter,void>' being compiled
+2026-11-07T18:07:44.7657493Z           with
+2026-11-07T18:07:44.7657763Z           [
+2026-11-07T18:07:44.7658169Z               _Iter=stdext::checked_array_iterator<const QString *>
+2026-11-07T18:07:44.7658695Z           ]
+2026-11-07T18:07:44.7658950Z   
+2026-11-07T18:07:44.7662996Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(476,31): warning C4996: 'stdext::checked_array_iterator<const T *>::iterator_category': warning STL4043: stdext::checked_array_iterator, stdext::unchecked_array_iterator, and related factory functions are non-Standard extensions and will be removed in the future. std::span (since C++20) and gsl::span can be used instead. You can define _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING or _SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS to suppress this warning. [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7667746Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(476,31): warning C4996:         with [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7669863Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(476,31): warning C4996:         [ [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7671940Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(476,31): warning C4996:             T=QString [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7674347Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(476,31): warning C4996:         ] [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7675845Z   (compiling source file '../src/core/clientdownloadcleanup.cpp')
+2026-11-07T18:07:44.7676413Z   
+2026-11-07T18:07:44.7680024Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(477,40): warning C4996: 'stdext::checked_array_iterator<const T *>': warning STL4043: stdext::checked_array_iterator, stdext::unchecked_array_iterator, and related factory functions are non-Standard extensions and will be removed in the future. std::span (since C++20) and gsl::span can be used instead. You can define _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING or _SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS to suppress this warning. [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7684743Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(477,40): warning C4996:         with [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7686871Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(477,40): warning C4996:         [ [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7689042Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(477,40): warning C4996:             T=QString [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7691249Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(477,40): warning C4996:         ] [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7692747Z   (compiling source file '../src/core/clientdownloadcleanup.cpp')
+2026-11-07T18:07:44.7693865Z       C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\iterator(1483,35):
+2026-11-07T18:07:44.7695189Z       see declaration of 'stdext::checked_array_iterator'
+2026-11-07T18:07:44.7695661Z   
+2026-11-07T18:07:44.7700496Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(477,31): warning C4996: 'stdext::checked_array_iterator<const T *>::value_type': warning STL4043: stdext::checked_array_iterator, stdext::unchecked_array_iterator, and related factory functions are non-Standard extensions and will be removed in the future. std::span (since C++20) and gsl::span can be used instead. You can define _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING or _SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS to suppress this warning. [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7704910Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(477,31): warning C4996:         with [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7706942Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(477,31): warning C4996:         [ [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7708946Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(477,31): warning C4996:             T=QString [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7710983Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(477,31): warning C4996:         ] [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7712266Z   (compiling source file '../src/core/clientdownloadcleanup.cpp')
+2026-11-07T18:07:44.7712734Z   
+2026-11-07T18:07:44.7715989Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(478,40): warning C4996: 'stdext::checked_array_iterator<const T *>': warning STL4043: stdext::checked_array_iterator, stdext::unchecked_array_iterator, and related factory functions are non-Standard extensions and will be removed in the future. std::span (since C++20) and gsl::span can be used instead. You can define _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING or _SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS to suppress this warning. [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7720082Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(478,40): warning C4996:         with [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7722028Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(478,40): warning C4996:         [ [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7724180Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(478,40): warning C4996:             T=QString [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7726166Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(478,40): warning C4996:         ] [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7727460Z   (compiling source file '../src/core/clientdownloadcleanup.cpp')
+2026-11-07T18:07:44.7728354Z       C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\iterator(1483,35):
+2026-11-07T18:07:44.7729239Z       see declaration of 'stdext::checked_array_iterator'
+2026-11-07T18:07:44.7729683Z   
+2026-11-07T18:07:44.7733023Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(478,31): warning C4996: 'stdext::checked_array_iterator<const T *>::difference_type': warning STL4043: stdext::checked_array_iterator, stdext::unchecked_array_iterator, and related factory functions are non-Standard extensions and will be removed in the future. std::span (since C++20) and gsl::span can be used instead. You can define _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING or _SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS to suppress this warning. [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7737349Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(478,31): warning C4996:         with [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7739417Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(478,31): warning C4996:         [ [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7741435Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(478,31): warning C4996:             T=QString [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7743540Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(478,31): warning C4996:         ] [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7744926Z   (compiling source file '../src/core/clientdownloadcleanup.cpp')
+2026-11-07T18:07:44.7745443Z   
+2026-11-07T18:07:44.7748781Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(479,40): warning C4996: 'stdext::checked_array_iterator<const T *>': warning STL4043: stdext::checked_array_iterator, stdext::unchecked_array_iterator, and related factory functions are non-Standard extensions and will be removed in the future. std::span (since C++20) and gsl::span can be used instead. You can define _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING or _SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS to suppress this warning. [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7753169Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(479,40): warning C4996:         with [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7755238Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(479,40): warning C4996:         [ [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7757323Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(479,40): warning C4996:             T=QString [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7759497Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(479,40): warning C4996:         ] [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7761849Z   (compiling source file '../src/core/clientdownloadcleanup.cpp')
+2026-11-07T18:07:44.7762841Z       C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\iterator(1483,35):
+2026-11-07T18:07:44.7763739Z       see declaration of 'stdext::checked_array_iterator'
+2026-11-07T18:07:44.7764154Z   
+2026-11-07T18:07:44.7767588Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(479,31): warning C4996: 'stdext::checked_array_iterator<const T *>::pointer': warning STL4043: stdext::checked_array_iterator, stdext::unchecked_array_iterator, and related factory functions are non-Standard extensions and will be removed in the future. std::span (since C++20) and gsl::span can be used instead. You can define _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING or _SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS to suppress this warning. [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7771952Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(479,31): warning C4996:         with [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7773991Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(479,31): warning C4996:         [ [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7776842Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(479,31): warning C4996:             T=QString [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7779205Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(479,31): warning C4996:         ] [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7780683Z   (compiling source file '../src/core/clientdownloadcleanup.cpp')
+2026-11-07T18:07:44.7791683Z   
+2026-11-07T18:07:44.7795882Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(480,40): warning C4996: 'stdext::checked_array_iterator<const T *>': warning STL4043: stdext::checked_array_iterator, stdext::unchecked_array_iterator, and related factory functions are non-Standard extensions and will be removed in the future. std::span (since C++20) and gsl::span can be used instead. You can define _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING or _SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS to suppress this warning. [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7798873Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(480,40): warning C4996:         with [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7800265Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(480,40): warning C4996:         [ [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7801662Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(480,40): warning C4996:             T=QString [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7802962Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(480,40): warning C4996:         ] [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7803813Z   (compiling source file '../src/core/clientdownloadcleanup.cpp')
+2026-11-07T18:07:44.7804405Z       C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\iterator(1483,35):
+2026-11-07T18:07:44.7804972Z       see declaration of 'stdext::checked_array_iterator'
+2026-11-07T18:07:44.7805459Z   
+2026-11-07T18:07:44.7807558Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(480,31): warning C4996: 'stdext::checked_array_iterator<const T *>::reference': warning STL4043: stdext::checked_array_iterator, stdext::unchecked_array_iterator, and related factory functions are non-Standard extensions and will be removed in the future. std::span (since C++20) and gsl::span can be used instead. You can define _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING or _SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS to suppress this warning. [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7810206Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(480,31): warning C4996:         with [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7811450Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(480,31): warning C4996:         [ [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7812716Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(480,31): warning C4996:             T=QString [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7813996Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp(480,31): warning C4996:         ] [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7814837Z   (compiling source file '../src/core/clientdownloadcleanup.cpp')
+2026-11-07T18:07:44.7815166Z   
+2026-11-07T18:07:44.7817300Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\xutility(1457,13): warning C4996: 'stdext::checked_array_iterator<const T *>::_Verify_offset': warning STL4043: stdext::checked_array_iterator, stdext::unchecked_array_iterator, and related factory functions are non-Standard extensions and will be removed in the future. std::span (since C++20) and gsl::span can be used instead. You can define _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING or _SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS to suppress this warning. [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7819890Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\xutility(1457,13): warning C4996:         with [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7821069Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\xutility(1457,13): warning C4996:         [ [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7822260Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\xutility(1457,13): warning C4996:             T=QString [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7823445Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\xutility(1457,13): warning C4996:         ] [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7824241Z   (compiling source file '../src/core/clientdownloadcleanup.cpp')
+2026-11-07T18:07:44.7824565Z   
+2026-11-07T18:07:44.7826588Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\xutility(1458,42): warning C4996: 'stdext::checked_array_iterator<const T *>::_Unwrapped': warning STL4043: stdext::checked_array_iterator, stdext::unchecked_array_iterator, and related factory functions are non-Standard extensions and will be removed in the future. std::span (since C++20) and gsl::span can be used instead. You can define _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING or _SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS to suppress this warning. [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7829151Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\xutility(1458,42): warning C4996:         with [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7831877Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\xutility(1458,42): warning C4996:         [ [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7834107Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\xutility(1458,42): warning C4996:             T=QString [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7836305Z C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\xutility(1458,42): warning C4996:         ] [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:07:44.7837753Z   (compiling source file '../src/core/clientdownloadcleanup.cpp')
+2026-11-07T18:07:44.7838342Z   
+2026-11-07T18:07:44.7838642Z   directorycleanup.cpp
+2026-11-07T18:07:46.0044000Z   transferitems.cpp
+2026-11-07T18:07:47.2765288Z   durablereceive.cpp
+2026-11-07T18:07:49.0752432Z   receivetree.cpp
+2026-11-07T18:07:50.2884463Z   receiveskip.cpp
+2026-11-07T18:07:51.5265889Z   receiveskipfinal.cpp
+2026-11-07T18:07:52.7688227Z   transferdisposition.cpp
+2026-11-07T18:07:53.9849849Z   fileexchange.cpp
+2026-11-07T18:07:55.3331010Z   paralleltransfer.cpp
+2026-11-07T18:07:57.2251896Z   transferservice.cpp
+2026-11-07T18:07:58.9612361Z   transferclient.cpp
+2026-11-07T18:08:00.7688140Z   transferprogress.cpp
+2026-11-07T18:08:02.0090620Z   transferaccounting.cpp
+2026-11-07T18:08:03.1743800Z   manifest.cpp
+2026-11-07T18:08:04.3714200Z   Generating Code...
+2026-11-07T18:08:10.8572607Z   Compiling...
+2026-11-07T18:08:10.8573049Z   legacy.cpp
+2026-11-07T18:08:12.4203957Z   tcplistener.cpp
+2026-11-07T18:08:13.9642031Z D:\a\dukto-next\dukto-next\src\core\tcplistener.cpp(89,55): warning C4389: '==': signed/unsigned mismatch [D:\a\dukto-next\dukto-next\build\dukto-core.vcxproj]
+2026-11-07T18:08:14.1634595Z   discovery.cpp
+2026-11-07T18:08:15.4022482Z   endpoint.cpp
+2026-11-07T18:08:16.5286510Z   updates.cpp
+2026-11-07T18:08:17.7567082Z   catalog.cpp
+2026-11-07T18:08:18.8991109Z   mocs_compilation_Release.cpp
+2026-11-07T18:08:20.4612289Z   Generating Code...
+2026-11-07T18:08:21.6653964Z   dukto-core.vcxproj -> D:\a\dukto-next\dukto-next\build\Release\dukto-core.lib
+2026-11-07T18:08:21.6918176Z   Automatic MOC for target dukto-cli
+2026-11-07T18:08:21.7709835Z   Building Custom Rule D:/a/dukto-next/dukto-next/CMakeLists.txt
+2026-11-07T18:08:21.8474223Z   main.cpp
+2026-11-07T18:08:23.1005975Z D:\a\dukto-next\dukto-next\src\cli\main.cpp(159,30): warning C4456: declaration of 'value' hides previous local declaration [D:\a\dukto-next\dukto-next\build\dukto-cli.vcxproj]
+2026-11-07T18:08:23.1007145Z       D:\a\dukto-next\dukto-next\src\cli\main.cpp(153,26):
+2026-11-07T18:08:23.1007600Z       see declaration of 'value'
+2026-11-07T18:08:23.1007908Z   
+2026-11-07T18:08:23.6707596Z   input.cpp
+2026-11-07T18:08:25.5011655Z   servicecommands.cpp
+2026-11-07T18:08:27.2749040Z   mocs_compilation_Release.cpp
+2026-11-07T18:08:27.2788986Z   Generating Code...
+2026-11-07T18:08:31.4432392Z   dukto-cli.vcxproj -> D:\a\dukto-next\dukto-next\build\Release\dukto-cli.exe
+2026-11-07T18:08:31.5615426Z MSBuild version 17.14.60+43b635718 for .NET Framework
+2026-11-07T18:08:31.5912002Z 
+2026-11-07T18:08:31.9779682Z   dukto-sqlite.vcxproj -> D:\a\dukto-next\dukto-next\build\Release\dukto-sqlite.lib
+2026-11-07T18:08:32.0041011Z   Automatic MOC for target dukto-sql-driver
+2026-11-07T18:08:32.0842308Z   dukto-sql-driver.vcxproj -> D:\a\dukto-next\dukto-next\build\Release\dukto-sql-driver.lib
+2026-11-07T18:08:32.1082564Z   Automatic MOC for target dukto-core
+2026-11-07T18:08:32.2923896Z   dukto-core.vcxproj -> D:\a\dukto-next\dukto-next\build\Release\dukto-core.lib
+2026-11-07T18:08:32.3192613Z   Automatic MOC for target state-storage-tests
+2026-11-07T18:08:32.5834681Z   Building Custom Rule D:/a/dukto-next/dukto-next/CMakeLists.txt
+2026-11-07T18:08:32.6570994Z   state_storage_tests.cpp
+2026-11-07T18:08:35.3950441Z   mocs_compilation_Release.cpp
+2026-11-07T18:08:35.3993996Z   Generating Code...
+2026-11-07T18:08:35.9855954Z   state-storage-tests.vcxproj -> D:\a\dukto-next\dukto-next\build\Release\state-storage-tests.exe
+2026-11-07T18:08:36.1248664Z ##[group]Run python -X utf8 scripts/ci_state_inventory.py --build build --configuration Release
+2026-11-07T18:08:36.1249446Z [36;1mpython -X utf8 scripts/ci_state_inventory.py --build build --configuration Release[0m
+2026-11-07T18:08:36.1292876Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-11-07T18:08:36.1293237Z env:
+2026-11-07T18:08:36.1293508Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T18:08:36.1293974Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.15.2\x64/lib/pkgconfig
+2026-11-07T18:08:36.1294424Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T18:08:36.1294841Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T18:08:36.1295256Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T18:08:36.1295652Z   Qt5_DIR: D:\a\dukto-next\Qt\5.15.2\msvc2019_64\lib\cmake
+2026-11-07T18:08:36.1296039Z   QT_ROOT_DIR: D:\a\dukto-next\Qt\5.15.2\msvc2019_64
+2026-11-07T18:08:36.1296397Z   QT_PLUGIN_PATH: D:\a\dukto-next\Qt\5.15.2\msvc2019_64\plugins
+2026-11-07T18:08:36.1296790Z   QML2_IMPORT_PATH: D:\a\dukto-next\Qt\5.15.2\msvc2019_64\qml
+2026-11-07T18:08:36.1297110Z ##[endgroup]
+2026-11-07T18:08:41.7946651Z {"sourceCommit": "301697546ef1002ab35fe39decdd8446dd389aee", "architecture": "AMD64", "ctestExitCode": 0, "rowsPassed": 14, "permissionRowsSkipped": 0, "passed": true}
+2026-11-07T18:08:41.9331617Z ##[group]Run actions/upload-artifact@v4
+2026-11-07T18:08:41.9331983Z with:
+2026-11-07T18:08:41.9332204Z   name: state-inventory-windows-2022
+2026-11-07T18:08:41.9332662Z   path: build/state-inventory-regression/**
+build/Testing/**
+build/CMakeCache.txt
+
+2026-11-07T18:08:41.9333119Z   if-no-files-found: warn
+2026-11-07T18:08:41.9333346Z   compression-level: 6
+2026-11-07T18:08:41.9333562Z   overwrite: false
+2026-11-07T18:08:41.9333764Z   include-hidden-files: false
+2026-11-07T18:08:41.9333983Z env:
+2026-11-07T18:08:41.9334250Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T18:08:41.9334731Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.15.2\x64/lib/pkgconfig
+2026-11-07T18:08:41.9335205Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T18:08:41.9335632Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T18:08:41.9336047Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T18:08:41.9336507Z   Qt5_DIR: D:\a\dukto-next\Qt\5.15.2\msvc2019_64\lib\cmake
+2026-11-07T18:08:41.9336851Z   QT_ROOT_DIR: D:\a\dukto-next\Qt\5.15.2\msvc2019_64
+2026-11-07T18:08:41.9337194Z   QT_PLUGIN_PATH: D:\a\dukto-next\Qt\5.15.2\msvc2019_64\plugins
+2026-11-07T18:08:41.9337580Z   QML2_IMPORT_PATH: D:\a\dukto-next\Qt\5.15.2\msvc2019_64\qml
+2026-11-07T18:08:41.9337887Z ##[endgroup]
+2026-11-07T18:08:42.1206235Z (node:5140) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-07T18:08:42.1206980Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-07T18:08:42.1324324Z Multiple search paths detected. Calculating the least common ancestor of all paths
+2026-11-07T18:08:42.1328432Z The least common ancestor is D:\a\dukto-next\dukto-next\build. This will be the root directory of the artifact
+2026-11-07T18:08:42.1329349Z With the provided path, there will be 8 files uploaded
+2026-11-07T18:08:42.1334659Z Artifact name is valid!
+2026-11-07T18:08:42.1337304Z Root directory input is valid!
+2026-11-07T18:08:42.5113740Z Beginning upload of artifact content to blob storage
+2026-11-07T18:08:42.5480293Z (node:5140) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-11-07T18:08:42.8658989Z Uploaded bytes 18476
+2026-11-07T18:08:42.9377280Z Finished uploading artifact content to blob storage!
+2026-11-07T18:08:42.9378675Z SHA256 digest of uploaded artifact zip is d149241a353f469093224f78a55580ddc08d7feeb2504ba10a250b6b03a0518d
+2026-11-07T18:08:42.9381962Z Finalizing artifact upload
+2026-11-07T18:08:43.3566365Z Artifact state-inventory-windows-2022.zip successfully finalized. Artifact ID 13584099267
+2026-11-07T18:08:43.3567492Z Artifact state-inventory-windows-2022 has been successfully uploaded! Final size is 18476 bytes. Artifact ID is 13584099267
+2026-11-07T18:08:43.3575973Z Artifact download URL: https://github.com/29583855/dukto-next/actions/runs/42399457917/artifacts/13584099267
+2026-11-07T18:08:43.4004113Z Post job cleanup.
+2026-11-07T18:08:43.4008570Z ##[start-action display=Setup Python;id=__5acceb3f-7aa4-4c2f-b9bf-d5899335c980.__actions_setup-python]
+2026-11-07T18:08:43.4161317Z Post job cleanup.
+2026-11-07T18:08:43.5791804Z ##[end-action id=__5acceb3f-7aa4-4c2f-b9bf-d5899335c980.__actions_setup-python;outcome=success;conclusion=success;duration_ms=178]
+2026-11-07T18:08:43.5948215Z Post job cleanup.
+2026-11-07T18:08:43.7447652Z (node:7032) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-07T18:08:43.7448971Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-07T18:08:43.7723881Z Post job cleanup.
+2026-11-07T18:08:44.0012375Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-11-07T18:08:44.0291299Z git version 2.56.0.windows.4
+2026-11-07T18:08:44.0355877Z Temporarily overriding HOME='D:\a\_temp\3b51fda0-68cb-4135-bb95-d8450d3b462b' before making global git config changes
+2026-11-07T18:08:44.0357706Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-07T18:08:44.0367564Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\dukto-next\dukto-next
+2026-11-07T18:08:44.0684619Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-11-07T18:08:44.0994675Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-11-07T18:08:44.5965289Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-07T18:08:44.6292324Z http.https://github.com/.extraheader
+2026-11-07T18:08:44.6330603Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all http.https://github.com/.extraheader
+2026-11-07T18:08:44.6650828Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-11-07T18:08:45.1603057Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-07T18:08:45.1925820Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-11-07T18:08:45.7576513Z Cleaning up orphan processes
+2026-11-07T18:08:45.7762135Z Terminate orphan process: pid (2720) (vctip)
+2026-11-07T18:08:45.7820535Z Terminate orphan process: pid (7260) (MSBuild)
+2026-11-07T18:08:45.7908415Z Terminate orphan process: pid (2888) (MSBuild)
+2026-11-07T18:08:45.8347142Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-python@v5, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

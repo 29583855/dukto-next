@@ -1,0 +1,216 @@
+{
+  "observedUtc": "2026-11-07T18:21:31.097605+00:00",
+  "sourceCommit": "301697546ef1002ab35fe39decdd8446dd389aee",
+  "run": {
+    "id": 42399486035,
+    "head_sha": "301697546ef1002ab35fe39decdd8446dd389aee",
+    "status": "in_progress",
+    "conclusion": null,
+    "html_url": "https://github.com/29583855/dukto-next/actions/runs/42399486035"
+  },
+  "records": [
+    {
+      "sourceCommit": "301697546ef1002ab35fe39decdd8446dd389aee",
+      "architecture": "arm64",
+      "jobId": 128483956860,
+      "status": "completed",
+      "conclusion": "success",
+      "qualified": true,
+      "jobLogSha256": "cb48d99d0797cff20dc7003a93637587e7905bc3ecbdef618bfb83141e21c31d",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-07T18:06:47Z",
+          "completed_at": "2026-11-07T18:06:48Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-07T18:06:48Z",
+          "completed_at": "2026-11-07T18:07:06Z"
+        },
+        {
+          "name": "Run actions/setup-python@v5",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-11-07T18:07:06Z",
+          "completed_at": "2026-11-07T18:07:06Z"
+        },
+        {
+          "name": "Install native build dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-11-07T18:07:06Z",
+          "completed_at": "2026-11-07T18:07:30Z"
+        },
+        {
+          "name": "Configure C++14 application",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-11-07T18:07:30Z",
+          "completed_at": "2026-11-07T18:07:38Z"
+        },
+        {
+          "name": "Compile GUI and CLI",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-11-07T18:07:38Z",
+          "completed_at": "2026-11-07T18:09:25Z"
+        },
+        {
+          "name": "Validate Cocoa main window server navigation",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-11-07T18:09:25Z",
+          "completed_at": "2026-11-07T18:09:37Z"
+        },
+        {
+          "name": "Deploy native preview",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-11-07T18:09:37Z",
+          "completed_at": "2026-11-07T18:12:52Z"
+        },
+        {
+          "name": "Validate relocated native preview",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-11-07T18:12:52Z",
+          "completed_at": "2026-11-07T18:16:24Z"
+        },
+        {
+          "name": "Preserve package and deployment evidence",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-11-07T18:16:24Z",
+          "completed_at": "2026-11-07T18:16:28Z"
+        },
+        {
+          "name": "Post Run actions/setup-python@v5",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19,
+          "started_at": "2026-11-07T18:16:28Z",
+          "completed_at": "2026-11-07T18:16:28Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20,
+          "started_at": "2026-11-07T18:16:28Z",
+          "completed_at": "2026-11-07T18:16:29Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21,
+          "started_at": "2026-11-07T18:16:29Z",
+          "completed_at": "2026-11-07T18:16:33Z"
+        }
+      ],
+      "releaseQualified": false,
+      "deliveryComplete": false,
+      "artifactId": 13584948386,
+      "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42399486035/artifacts/13584948386",
+      "artifactSha256": "01dcc6f234e208f1e1e5b4b43c477f573b50bc03411ed8f4c458fc1d7a99c70e",
+      "packageSha256": "c716f4673815a79d13e8152245cd9ee19244d78fd91d808bb3f942ff432e8f37",
+      "archive": "DuktoNext-macos-arm64-preview.tar.gz",
+      "package": {
+        "applicationSourceFiles": 415,
+        "allSourceBlobsMatchExactGitCommit": true,
+        "verifiedPayloadFiles": 1547,
+        "verifiedLinks": 71,
+        "guiCli": [
+          {
+            "path": "Dukto Next.app/Contents/MacOS/dukto-cli",
+            "sha256": "03f621d42831755876616c9ad4e6b0c38274f47aee48c1553e519c5f2dee404a",
+            "executable": true
+          },
+          {
+            "path": "Dukto Next.app/Contents/MacOS/dukto-gui",
+            "sha256": "c4c045d82b8c077be0c470bddf0c56426355ae2a6e88b61124b55895cc022608",
+            "executable": true
+          }
+        ],
+        "signature": "adhoc",
+        "developerIdSigned": false,
+        "notarized": false
+      },
+      "runtime": {
+        "runtimeReports": [
+          {
+            "path": "build/package-runtime-cli.json",
+            "sha256": "1a8493c8defc1b4ad607a3aaf08c62fc7b25b1421d3a8aefe16d33fd4976f349",
+            "passed": true
+          },
+          {
+            "path": "build/package-runtime-transfer16.json",
+            "sha256": "837192e5f005cf3c89055986ef227abdf192996214618603edabdfbcf89b23a8",
+            "passed": true
+          },
+          {
+            "path": "build/package-runtime-overwrite.json",
+            "sha256": "367ca9ee24887ceb4263a7b3a1052aac5b563fbcad1f17b8ceb09e65619717c7",
+            "passed": true
+          },
+          {
+            "path": "build/package-runtime-overwrite-recovery.json",
+            "sha256": "c1fb9b00949c4e5388515ccb7382d21dcf15e19e032efbc3266ecbf2d713ac7d",
+            "passed": true
+          },
+          {
+            "path": "build/package-runtime-recovery4to8.json",
+            "sha256": "97d1a1d8acfb80f51e205587eea017feb7f301464a05f80eac1377cf5e37d88d",
+            "passed": true
+          }
+        ],
+        "runtimeMigrationQualified": true,
+        "mainWindowNavigationPassed": true,
+        "systemPathOnly": true,
+        "screenshot": "docs/validation/2026-11-08/state-inventory-r121-macos-package/arm64/build/package-runtime.png",
+        "navigationScreenshot": "docs/validation/2026-11-08/state-inventory-r121-macos-package/arm64/build/main-window-navigation/native/Testing/QtTest/main-server-430x700.png"
+      },
+      "cocoaNavigationAndDpiCasesPassed": true,
+      "screenshotsViewed": true,
+      "screenshotsViewedUtc": "2026-11-07T18:21:27.782826+00:00",
+      "screenshotReview": {
+        "files": [
+          {
+            "path": "docs/validation/2026-11-08/state-inventory-r121-macos-package/arm64/build/package-runtime.png",
+            "sha256": "da95e4ffa77dcaab851ab0e788824ef081c29bd9f8e05a298b974fd9683dd57a"
+          },
+          {
+            "path": "docs/validation/2026-11-08/state-inventory-r121-macos-package/arm64/build/main-window-navigation/native/Testing/QtTest/main-server-430x700.png",
+            "sha256": "18f56fd634d1f8adc39cf893400a0d003fcb17d9222aa6424e64baa664356560"
+          }
+        ],
+        "chineseTextReadable": true,
+        "primaryControlsVisible": true
+      }
+    },
+    {
+      "architecture": "x86_64",
+      "status": "in_progress",
+      "qualified": false
+    }
+  ],
+  "bothArchitecturesVerified": false,
+  "screenshotsViewed": false,
+  "releaseQualified": false,
+  "deliveryComplete": false
+}
