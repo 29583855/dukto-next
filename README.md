@@ -233,7 +233,7 @@ R87 macOS下载已更新到409a73b：Intel/Apple Silicon的GUI和独立CLI、各
 
 2026-11-07 R100：传输进度刷新不再反复读取剪贴板正文，双Windows实际QML及相关GUI回归通过；R98独立Ubuntu干净编译与23核心/退出专项通过。新GUI原生回归及整体交付继续，当前下载包身份不变。
 
-2026-11-07 R108：过期服务器上传临时正文清理预览/执行CLI已通过双Windows与独立Ubuntu专项。源码已上传[公开仓库](https://github.com/29583855/dukto-next)，Apple Silicon和Intel的GUI/独立CLI原生编译归档已核验；R108含依赖预览部署与完整四平台回归继续运行。编译归档不等于可运行安装包，当前可运行macOS预览仍为R105。完整进度和范围见[计划](开发计划与进度.md)及[macOS下载说明](docs/macOS独立预览包.md)。
+2026-11-07 R108：过期服务器上传临时正文清理预览/执行CLI已通过双Windows与独立Ubuntu专项。[公开仓库](https://github.com/29583855/dukto-next)已发布双架构Mac GUI/CLI与含依赖预览；五项运行报告、Cocoa与高DPI导航及四张截图已核验。R108 Ubuntu/Apple Silicon完整原生CI通过，Intel/Windows及故障断言修正后的四平台复验仍在运行。当前包、摘要和剩余资格见[计划](开发计划与进度.md)及[macOS下载说明](docs/macOS独立预览包.md)。
 
 ## R100公开上传、双Mac编译与Linux长测启动（2026-11-07）
 

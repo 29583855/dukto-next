@@ -1,6 +1,6 @@
 {
   "planVersion": "v0.108",
-  "observedUtc": "2026-11-07T03:27:59.395506+00:00",
+  "observedUtc": "2026-11-07T04:02:01.404344+00:00",
   "basedOnPublishedCommit": "8f5d6050f85415e2eed5ffb651dbe1f97a3af247",
   "buildInputs": [
     {
@@ -801,7 +801,7 @@
     },
     {
       "path": "tests/transfer_faults_integration.py",
-      "sha256": "eae6d2fc846dc4c109cb6a9f7522b7ab37991fbf59551bdc831dd9414b839e83"
+      "sha256": "0e409c3bd3107c76144d7dc2c5d76f6f9ff2a1638ac8352e3faf09abeecaa273"
     },
     {
       "path": "tests/transfer_integration.py",
@@ -877,7 +877,8 @@
     "src/core/taskstore.h",
     "tests/expired_task_cleanup_tests.cpp",
     "tests/task_store_integration.py",
-    "tests/task_store_tests.cpp"
+    "tests/task_store_tests.cpp",
+    "tests/transfer_faults_integration.py"
   ],
   "windowsEvidence": {
     "path": "docs/validation/2026-11-07/expiry-r108-qualified/receipt.json",
@@ -900,7 +901,7 @@
   "originalUbuntuTimeoutCauseEstablished": false,
   "releaseQualified": false,
   "deliveryComplete": false,
-  "sourceCommit": "73cd10ac95be6c97fd67134ba14b6edee4b2c189",
+  "sourceCommit": "cef3759b642d783b78a3262ce1072b4da5643d9d",
   "independentUbuntuEvidence": {
     "path": "docs/validation/2026-11-07/expiry-r108-glibc/receipt.json",
     "sha256": "3a26fead2947b397a3e7de527ca6d9c3c79b434ded31e4c0f7467377455c4414"
@@ -921,10 +922,33 @@
     "sha256": "8d6a53ff786cf27a5d7e54a87f43bc183e21bbaf0910acb8905e768175148bfc"
   },
   "macosPackageRunId": 42333318212,
-  "macosPackagePending": true,
+  "macosPackagePending": false,
   "nativeRunEvidence": {
-    "path": "docs/validation/2026-11-07/expiry-r108-macos-compiled/native-ci-observation.json",
-    "sha256": "659757e7ecdc5d2254e19453d7b0563c349b2cc8b0b98e7d0ac9cd60d3daf343"
+    "path": "docs/validation/2026-11-07/expiry-r108-macos-compiled/native-fault-assertion-followup.json",
+    "sha256": "40a0960a6f54e8e5b03d69bd97d8cc71063a6969ebce60631c973be984fbdc75"
   },
-  "nativeRunId": 42332515396
+  "nativeRunId": 42332515396,
+  "macosPackageEvidence": {
+    "path": "docs/validation/2026-11-07/expiry-r108-macos-package-terminal/receipt.json",
+    "sha256": "03b4cea2b9751399bbdf6d87c593faabef0a5a126fb71f589f606e1dce6ae438"
+  },
+  "macosPackageConclusion": "success",
+  "r108UbuntuTerminal": {
+    "path": "docs/validation/2026-11-07/expiry-r108-native-job-terminals/ubuntu-22.04/receipt.json",
+    "sha256": "7e468c8637a46d59d056717be5a83fc9ccd306df8240bca93a6c76cab8169aa6"
+  },
+  "r108AppleSiliconTerminal": {
+    "path": "docs/validation/2026-11-07/expiry-r108-native-job-terminals/macos-15/receipt.json",
+    "sha256": "97fca0093ee8f8a2d1488c4fd67c1794b834a53f792b497a0306a0009fd40c7c"
+  },
+  "source73NativeObservation": {
+    "path": "docs/validation/2026-11-07/expiry-r108-macos-compiled/native-r108-terminal-observation.json",
+    "sha256": "cf5e82bcc78275de3b9587ffd0bc062e36f7e0f2fdb76dabb2916e70daea8ed5"
+  },
+  "faultAssertionWindowsEvidence": {
+    "path": "docs/validation/2026-11-07/expiry-r108-fault-assertion-windows/receipt.json",
+    "sha256": "dfceb25b7a8ec21372a7c651d4ade1620148efed8d08d8cda07f3822e529b09d"
+  },
+  "faultAssertionCommit": "cef3759b642d783b78a3262ce1072b4da5643d9d",
+  "faultAssertionNativeRunId": 42336003722
 }

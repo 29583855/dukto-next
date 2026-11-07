@@ -1,7 +1,7 @@
 {
-  "observedUtc": "2026-11-07T03:27:59.395506+00:00",
-  "productionCommit": "73cd10ac95be6c97fd67134ba14b6edee4b2c189",
-  "testCommit": "73cd10ac95be6c97fd67134ba14b6edee4b2c189",
+  "observedUtc": "2026-11-07T04:02:01.404344+00:00",
+  "productionCommit": "641920f75b76149d49ee01f134bf70097857dc3d",
+  "testCommit": "cef3759b642d783b78a3262ce1072b4da5643d9d",
   "packages": [
     {
       "architecture": "x86_64",
@@ -142,6 +142,40 @@
       "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42321257970/artifacts/13553163728",
       "zipSha256": "e7b625f7628be07c4e14b40b432c428a267e36b55f65018ad10313e6763c7c8a",
       "localArchive": "dist/macos-preview-20261107-r105-task-items/macos-preview-X64/package-output/DuktoNext-macos-x86_64-preview.tar.gz"
+    },
+    {
+      "architecture": "arm64",
+      "archive": "DuktoNext-macos-arm64-preview.tar.gz",
+      "sha256": "c1498796487c4300cde52c3a39fbafbfc0f120471e9a1388c1a9b2392beb484d",
+      "sourceCommit": "641920f75b76149d49ee01f134bf70097857dc3d",
+      "artifactId": 13559720206,
+      "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42333318212/artifacts/13559720206",
+      "zipSha256": "1dc1c2bf48228cef5bfbeacb004df8177d52e87762fbdcda3e4b743faddbe1a3",
+      "applicationSourceFiles": 356,
+      "verifiedPayloadFiles": 1547,
+      "verifiedLinks": 71,
+      "runtimeReportsEach": 5,
+      "runtimeMigrationQualified": true,
+      "adhocSigned": true,
+      "developerIdSigned": false,
+      "notarized": false
+    },
+    {
+      "architecture": "x86_64",
+      "archive": "DuktoNext-macos-x86_64-preview.tar.gz",
+      "sha256": "0fef11835e4abfa6c967fb45aa63c377e876624c39ba48c213c643e91686d2c4",
+      "sourceCommit": "641920f75b76149d49ee01f134bf70097857dc3d",
+      "artifactId": 13558991748,
+      "artifactUrl": "https://github.com/29583855/dukto-next/actions/runs/42333318212/artifacts/13558991748",
+      "zipSha256": "ff50e8c020b5d264f3078cb3f85579a378ded297f075e761e3acd69793f71707",
+      "applicationSourceFiles": 356,
+      "verifiedPayloadFiles": 1705,
+      "verifiedLinks": 71,
+      "runtimeReportsEach": 5,
+      "runtimeMigrationQualified": true,
+      "adhocSigned": true,
+      "developerIdSigned": false,
+      "notarized": false
     }
   ],
   "packageRuntime": {
@@ -181,17 +215,17 @@
   "focusedRunUrl": "https://github.com/29583855/dukto-next/actions/runs/42036473915",
   "focusedWorkflowConclusion": "success",
   "nativeFull": {
-    "sourceCommit": "73cd10ac95be6c97fd67134ba14b6edee4b2c189",
-    "runId": 42332515396,
-    "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42332515396",
+    "sourceCommit": "cef3759b642d783b78a3262ce1072b4da5643d9d",
+    "runId": 42336003722,
+    "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42336003722",
     "status": "in_progress",
     "workflowConclusion": null,
     "fullProtocolPending": true,
     "allOriginalReportsVerified": false,
     "expectedCoreTargetsEach": 24,
     "evidence": {
-      "path": "docs/validation/2026-11-07/expiry-r108-macos-compiled/native-ci-observation.json",
-      "sha256": "659757e7ecdc5d2254e19453d7b0563c349b2cc8b0b98e7d0ac9cd60d3daf343"
+      "path": "docs/validation/2026-11-07/expiry-r108-macos-compiled/native-fault-assertion-followup.json",
+      "sha256": "40a0960a6f54e8e5b03d69bd97d8cc71063a6969ebce60631c973be984fbdc75"
     }
   },
   "nativeMuslRunUrl": "https://github.com/29583855/dukto-next/actions/runs/42135996839",
@@ -210,7 +244,7 @@
   "releaseQualified": false,
   "deliveryComplete": false,
   "planVersion": "v0.108",
-  "currentSourceStage": "R108 expired-upload cleanup independently qualified; dual macOS GUI/CLI compilation verified; full native and deployed preview pending",
+  "currentSourceStage": "R108 Mac package and Ubuntu/Apple Silicon terminal verified; precise POSIX fault fixture commit rerunning on four platforms",
   "nativeMusl": {
     "sourceCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
     "productionCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
@@ -415,20 +449,24 @@
     }
   ],
   "macOSPreview": {
-    "sourceCommit": "4652f4dce23b014e18f2db56c6a75e81e76deafa",
-    "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42321257970",
+    "sourceCommit": "641920f75b76149d49ee01f134bf70097857dc3d",
+    "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42333318212",
     "workflowConclusion": "success",
     "runtimeReportsEach": 5,
+    "applicationSourceFilesEach": 356,
+    "frameworkLinksEach": 71,
+    "allReportHashesVerified": true,
+    "sourceArchiveMatchesExactGitTree": true,
+    "screenshotsViewed": 4,
     "bothArchitecturesVerified": true,
-    "screenshotsViewed": true,
-    "evidence": {
-      "path": "docs/validation/2026-11-07/task-items-r105-macos-package-terminal/qualified-receipt.json",
-      "sha256": "c9f53692c852d0800da392b99bb4493cf29dbfc6b7b552f146903fb42b81125a"
-    },
     "adhocSigned": true,
     "developerIdSigned": false,
     "notarized": false,
-    "releaseQualified": false
+    "cleanSystemQualified": false,
+    "evidence": {
+      "path": "docs/validation/2026-11-07/expiry-r108-macos-package-terminal/receipt.json",
+      "sha256": "03b4cea2b9751399bbdf6d87c593faabef0a5a126fb71f589f606e1dce6ae438"
+    }
   },
   "previousNativeFull": {
     "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42036392240",
@@ -572,10 +610,9 @@
   "macOSPreviewPending": {
     "sourceCommit": "641920f75b76149d49ee01f134bf70097857dc3d",
     "runId": 42333318212,
-    "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42333318212",
-    "status": "queued",
-    "workflowConclusion": null,
-    "originalEvidenceVerified": false
+    "status": "completed",
+    "workflowConclusion": "success",
+    "originalEvidenceVerified": true
   },
   "copiedDispositionIntegration": {
     "sourceCommit": "74dd5cec71fde472b940e869661d6e8533042a65",
@@ -17577,7 +17614,7 @@
       "sha256": "872c369563c6beb92b4421968bdf88a82f6621aae9bcad048f3a3fe316c7c56a"
     }
   },
-  "currentSourceCommit": "73cd10ac95be6c97fd67134ba14b6edee4b2c189",
+  "currentSourceCommit": "cef3759b642d783b78a3262ce1072b4da5643d9d",
   "productionImplementationUnchangedFrom": "88f33b2c83f2950307c362fb64c693f7e9e5929d",
   "nativeRegressionGuardR98": {
     "date": "2026-11-07",
@@ -20588,7 +20625,7 @@
     "path": "docs/validation/2026-11-07/cancel-r102-native-terminal/receipt.json",
     "sha256": "93384dac8e1ae928a2cb54494b861638b6bc418f66dc24d2de5a514c0185f238"
   },
-  "currentGuiSourceCommit": "73cd10ac95be6c97fd67134ba14b6edee4b2c189",
+  "currentGuiSourceCommit": "641920f75b76149d49ee01f134bf70097857dc3d",
   "r103CompleteTerminal": {
     "path": "docs/validation/2026-11-07/diagnostics-r103-native-terminal/receipt.json",
     "sha256": "e4fbf6ba33cf3e04747c1f06619ba3465b4ec412d9eda295d9310221e204194d"
@@ -20819,7 +20856,9 @@
       "path": "docs/validation/2026-11-07/secure-ready-r107-arm-failure/receipt.json",
       "sha256": "d9604ebae380cb230e7b469eea983ce86fa21ddad1e6b9f8c7bfd28896f88e92"
     },
-    "fullNativeRegressionPassed": false
+    "fullNativeRegressionPassed": false,
+    "precisePathReplacementFailurePreserved": true,
+    "testFixtureAdjustmentCommittedInR108": true
   },
   "r105IntelNativeTerminal": {
     "path": "docs/validation/2026-11-07/task-items-r105-native-job-terminals/macos-15-intel/receipt.json",
@@ -20836,7 +20875,7 @@
   "expiredUploadCleanupR108": {
     "manifest": {
       "path": "docs/ci-verification-20261107-r108.json",
-      "sha256": "696437744a5b25de4bfa5d9331500526ee86924fb1eefd1f14da66e6dff4e687"
+      "sha256": "9636e8c2a67a10c4f255bc4e9a3ea6dabd23b9728eb34c02435eced0456b2c97"
     },
     "windowsEvidence": {
       "path": "docs/validation/2026-11-07/expiry-r108-qualified/receipt.json",
@@ -20854,12 +20893,34 @@
   "macOSCompileR108": {
     "sourceCommit": "73cd10ac95be6c97fd67134ba14b6edee4b2c189",
     "runId": 42332515396,
-    "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42332515396",
     "bothArchitecturesCompiledAndVerified": true,
     "evidence": {
       "path": "docs/validation/2026-11-07/expiry-r108-macos-compiled/receipt.json",
       "sha256": "ddda3e1ec92d36d161958a91538cbb5fd161b2fb81760d0c86c3fe7bad7f66d8"
+    }
+  },
+  "nativeR108Source73": {
+    "sourceCommit": "73cd10ac95be6c97fd67134ba14b6edee4b2c189",
+    "runId": 42332515396,
+    "ubuntuTerminal": {
+      "path": "docs/validation/2026-11-07/expiry-r108-native-job-terminals/ubuntu-22.04/receipt.json",
+      "sha256": "7e468c8637a46d59d056717be5a83fc9ccd306df8240bca93a6c76cab8169aa6"
     },
-    "dependenciesDeployed": false
+    "appleSiliconTerminal": {
+      "path": "docs/validation/2026-11-07/expiry-r108-native-job-terminals/macos-15/receipt.json",
+      "sha256": "97fca0093ee8f8a2d1488c4fd67c1794b834a53f792b497a0306a0009fd40c7c"
+    },
+    "intelAndWindowsPending": true,
+    "wholeRunQualified": false
+  },
+  "faultAssertionR108": {
+    "testSourceCommit": "cef3759b642d783b78a3262ce1072b4da5643d9d",
+    "windowsCasesPerToolchain": 6,
+    "bothWindowsToolchainsPassed": true,
+    "macosPosixRerunPending": true,
+    "evidence": {
+      "path": "docs/validation/2026-11-07/expiry-r108-fault-assertion-windows/receipt.json",
+      "sha256": "dfceb25b7a8ec21372a7c651d4ade1620148efed8d08d8cda07f3822e529b09d"
+    }
   }
 }
