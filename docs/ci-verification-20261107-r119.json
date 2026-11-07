@@ -1,5 +1,5 @@
 {
-  "observedUtc": "2026-11-07T15:58:36.785779+00:00",
+  "observedUtc": "2026-11-07T16:13:29.755352+00:00",
   "planVersion": "v0.119",
   "baselineSourceCommit": "e84f34f5dfec9c1edd465a443b37c3bc2696c633",
   "qualificationInputs": [
@@ -1120,8 +1120,8 @@
     },
     {
       "path": "tests/state_storage_tests.cpp",
-      "bytes": 16751,
-      "sha256": "2a7d3c9f45c2760ec3d5feda40f0d912d2e2e855c575275b685ae3aa7bcba775"
+      "bytes": 17483,
+      "sha256": "b11fb18e5f4249dc7eec55029d709c5968af9c687ddc38d0e8ce5c63da2e1cb2"
     },
     {
       "path": "tests/strong_manifest_tests.cpp",
@@ -1361,6 +1361,14 @@
     {
       "path": "docs/validation/2026-11-07/sqlite-vfs-r119-checkout/r119-checkout-source-snapshot.json",
       "sha256": "77c73d55220e197002430db3a8a34ea6106face6630e096f87476f553d2573f9"
+    },
+    {
+      "path": "docs/validation/2026-11-07/sqlite-vfs-r119-observable-directory/r119-directory-fixture-source-audit.json",
+      "sha256": "a477fc9dc272b3e8f13c4744fc5f32f12b59a5b40d52613507664574bf2a8f17"
+    },
+    {
+      "path": "docs/validation/2026-11-07/sqlite-vfs-r119-observable-directory/r119-directory-fixture-msvc.xml",
+      "sha256": "51ef17558f24c4fb8a906bc2e38dff42a093d62621bc37b0b30267e658e762c3"
     }
   ],
   "localWindowsAllCoreQualified": true,
@@ -1378,5 +1386,13 @@
     "scripts/source_snapshot.py",
     "tests/source_snapshot_integration.py"
   ],
-  "completeCoreCxxAndCmakeInputsUnchangedByCheckoutFix": true
+  "completeCoreCxxAndCmakeInputsUnchangedByCheckoutFix": true,
+  "gitCheckoutFixedSourceCommit": "9af29ca6d60ae23d392d39cd8e5f4b5758ebd8c8",
+  "observableDirectoryFixtureChangedInputs": [
+    "tests/state_storage_tests.cpp"
+  ],
+  "previousUbuntuCoreFailureRetained": true,
+  "applicationInputsUnchangedByFixtureFix": true,
+  "localFullCoreAtPreviousInputs": true,
+  "currentWindowsStorageTargetedPassed": true
 }

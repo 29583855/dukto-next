@@ -22,6 +22,7 @@
 #include <windows.h>
 #include <winioctl.h>
 #else
+#include <fcntl.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #endif
@@ -253,8 +254,19 @@ class StateStorageTests final : public QObject {
         try {
             store.storageUsage([&]() {
                 // 日期：2026-11-07；真实创建新目录项使枚举时间戳变化，不能输出混合快照成功。
-                if (++calls == 2)
+                if (++calls == 2) {
                     store.write("added.json", "new");
+#ifndef Q_OS_WIN
+                    // 日期：2026-11-08；同一时钟刻度内目录时间可能不变，显式设置可观测mtime后再验证拒绝。
+                    const auto path = QFile::encodeName(store.directory());
+                    struct stat info{};
+                    if (::stat(path.constData(), &info) != 0)
+                        qFatal("Cannot inspect mutation fixture directory");
+                    const timespec times[2]{{0, UTIME_OMIT}, {info.st_mtime + 2, 0}};
+                    if (::utimensat(AT_FDCWD, path.constData(), times, AT_SYMLINK_NOFOLLOW) != 0)
+                        qFatal("Cannot set an observable directory mutation timestamp");
+#endif
+                }
             });
             QFAIL("Directory mutation was accepted");
         } catch (const dukto::Error &error) {
