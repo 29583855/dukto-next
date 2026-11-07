@@ -1,10 +1,12 @@
 #include "app/serverpanel.h"
 #include "core/auth.h"
+#include "core/error.h"
 #include "core/files.h"
 #include "core/transferscheduler.h"
 #include <QDir>
 #include <QFile>
 #include <QJsonDocument>
+#include <QProcess>
 #include <QQmlComponent>
 #include <QQmlEngine>
 #include <QQuickItem>
@@ -81,6 +83,82 @@ class SlowTestProxy final : public QTcpServer {
 class ServerPanelTests final : public QObject {
     Q_OBJECT
   private slots:
+    // 日期：2026-11-08；真实GUI监听与CLI配置共享同一原生域，旧身份原件保持；停止及启动失败后归还资格。
+    void stateSessionSharedWithCli() {
+        QTemporaryDir temporary;
+        const auto directory = temporary.filePath(QStringLiteral("旧 remote 中文 空格"));
+        QVERIFY(QDir().mkpath(directory));
+        const auto service = QDir(directory).filePath("service");
+        QJsonObject original;
+        QByteArray originalBytes;
+        {
+            dukto::PrivateStore legacy(service, true);
+            original = dukto::initializeIdentity(legacy, {"localhost"}, 365).publicInfo();
+            originalBytes = legacy.read("identity.json");
+        }
+        ServerPanel panel(directory);
+        panel.execute("info", {});
+        QTRY_VERIFY_WITH_TIMEOUT(!panel.busy(), 30000);
+        QCOMPARE(panel.identity()["fingerprint"].toString(), original["fingerprint"].toString());
+        QVERIFY(QFileInfo::exists(QDir(directory).filePath("budget/state-budget.bin")));
+        const auto invoke = [&](const QStringList &arguments, int expected = 0) {
+            // 日期：2026-11-08；只执行本构建产出的独立CLI，原始退出码及JSON必须吻合。
+            auto executable = QCoreApplication::applicationDirPath() + "/dukto-cli";
+#ifdef Q_OS_WIN
+            executable += ".exe";
+#endif
+            QProcess process;
+            process.start(executable,
+                          arguments + QStringList{"--state-directory", directory, "--json"});
+            if (!process.waitForStarted(10000) || !process.waitForFinished(30000)) {
+                process.kill();
+                process.waitForFinished(30000);
+                throw dukto::Error(dukto::ExitCode::Runtime, "CLI did not finish", "test");
+            }
+            const auto error = process.readAllStandardError();
+            const auto result = QJsonDocument::fromJson(process.readAllStandardOutput()).object();
+            if (process.exitStatus() != QProcess::NormalExit || process.exitCode() != expected ||
+                !error.isEmpty() || result.isEmpty())
+                throw dukto::Error(dukto::ExitCode::Runtime, "CLI result mismatch", "test");
+            return result;
+        };
+        const auto before = invoke({"state", "budget", "show"});
+        auto set = QStringList{"state",
+                               "budget",
+                               "set",
+                               "--budget-revision",
+                               before["revision"].toString(),
+                               "--budget-total",
+                               "21474836480",
+                               "--budget-history",
+                               "268435456",
+                               "--budget-metadata",
+                               "1073741824",
+                               "--budget-body",
+                               "17179869184",
+                               "--budget-unknown",
+                               "268435456"};
+        QTcpServer reservation;
+        QVERIFY(reservation.listen(QHostAddress::LocalHost, 0));
+        const auto port = reservation.serverPort();
+        reservation.close();
+        panel.setServing(true, "127.0.0.1", port);
+        QVERIFY(panel.serving());
+        QCOMPARE(invoke(set, 4)["stage"].toString(), QString("state-use"));
+        panel.setServing(false, "127.0.0.1", port);
+        QVERIFY(!panel.serving());
+        QCOMPARE(invoke(set)["domain"].toString(), before["domain"].toString());
+        QVERIFY(reservation.listen(QHostAddress::LocalHost, port));
+        panel.setServing(true, "127.0.0.1", port);
+        QVERIFY(!panel.serving());
+        QCOMPARE(invoke(set)["domain"].toString(), before["domain"].toString());
+        const auto after = invoke({"serve", "info"});
+        QCOMPARE(after["fingerprint"].toString(), original["fingerprint"].toString());
+        QCOMPARE(after["serverId"].toString(), original["serverId"].toString());
+        dukto::PrivateStore retained(service);
+        QCOMPARE(retained.read("identity.json"), originalBytes);
+    }
+
     // 日期：2026-11-06；真实QML选择skip并激活下载，验证全跳过计量、逐项文案及源删除后的面板重建恢复。
     void publicSkipQml() {
         QTemporaryDir temporary;

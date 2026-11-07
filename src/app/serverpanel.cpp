@@ -4,6 +4,7 @@
 #include "core/paralleltransfer.h"
 #include "core/sessionpolicy.h"
 #include "core/shares.h"
+#include "core/statesession.h"
 #include "core/strongmanifest.h"
 #include "core/transferoperation.h"
 #include "core/uploadmanifest.h"
@@ -83,16 +84,28 @@ int ServerAction::code() const {
     return code_;
 }
 
-// 日期：2026-11-05；身份/会话策略和网络共用生产核心，私有状态不进入界面事件。
+// 日期：2026-11-08；GUI工作线程保留同目录协调资格，取消在预算锁外观察，私有状态不进入界面事件。
 void ServerAction::run() {
     try {
         if (!QDir().mkpath(directory_))
             throw dukto::Error(dukto::ExitCode::Disk, QStringLiteral("无法准备服务器状态目录"));
+        const auto stateCheck = [this]() {
+            // 日期：2026-11-08；与网络共用同一取消来源，不在预算原生锁内等待GUI或其他线程。
+            if (cancelled_.load())
+                throw dukto::Error(dukto::ExitCode::Cancelled, QStringLiteral("状态准备已取消"),
+                                   "state-session");
+        };
+        const auto stateRoot = [&](const QString &name, bool create = false) {
+            // 日期：2026-11-08；directory_是界面公开的实际服务父目录，CLI指向同目录即核对同一中央登记。
+            return dukto::StateSession::root(directory_, name, create,
+                                             dukto::PrivateStore::Use::Shared, stateCheck);
+        };
         const auto service = QDir(directory_).filePath("service");
         if (QStringList{"init", "info", "renew", "shares", "share-add", "share-remove", "pairing",
                         "grant", "revoke", "clients", "session-show", "session-set"}
                 .contains(operation_)) {
-            dukto::PrivateStore store(service, operation_ == "init");
+            auto bound = stateRoot("service", operation_ == "init");
+            auto &store = *bound;
             if (operation_ == "init" || operation_ == "info" || operation_ == "renew") {
                 if (operation_ == "init" || operation_ == "renew") {
                     const auto names = options_["names"].toString().split(
@@ -172,7 +185,8 @@ void ServerAction::run() {
             result_["message"] = QStringLiteral("客户端授权已更新，列表已刷新到第一页");
             return;
         }
-        dukto::PrivateStore clients(QDir(directory_).filePath("clients"), true);
+        auto boundClients = stateRoot("clients", true);
+        auto &clients = *boundClients;
         const auto alias = options_.value("profile", "default").toString();
         if (operation_ == "profile-info") {
             result_ = dukto::profileInfo(clients, alias);
@@ -260,14 +274,14 @@ void ServerAction::run() {
                            ? dukto::checkedConflictPolicy(task["conflict"].toString())
                            : dukto::ConflictPolicy::Rename;
         }
-        std::unique_ptr<dukto::PrivateStore> transfers;
+        std::shared_ptr<dukto::PrivateStore> transfers;
         std::unique_ptr<dukto::UploadManifest> manifest;
         if (operation == "upload" || operation == "download") {
             dukto::checkedChannels(options_.value("channels", "1").toString());
             if (operation == "download" && options_["output"].toString().isEmpty())
                 throw dukto::Error(dukto::ExitCode::Config, QStringLiteral("请选择本地保存目录"),
                                    "arguments");
-            transfers.reset(new dukto::PrivateStore(QDir(directory_).filePath("transfers"), true));
+            transfers = stateRoot("transfers", true);
             transfer->bindRequest(request);
             transfer->report({{"requestId", request.toString(QUuid::WithoutBraces)},
                               {"state", "scanning"},
@@ -334,7 +348,8 @@ void ServerAction::run() {
                                     : operation == "cancel" ? dukto::next::Type::Cancel
                                                             : dukto::next::Type::TaskQuery);
         } else if (operation == "task-items") {
-            dukto::PrivateStore local(QDir(directory_).filePath("transfers"), true);
+            auto bound = stateRoot("transfers", true);
+            auto &local = *bound;
             result_ = remote.items(id(options_["taskId"]), local,
                                    dukto::next::decimal(options_.value("after", "0").toString(),
                                                         std::numeric_limits<qint64>::max()));
@@ -569,23 +584,26 @@ void ServerPanel::execute(const QString &operation, const QVariantMap &options) 
     emit changed();
 }
 
-// 日期：2026-11-05；公开身份读取成功后才发布监听器，失败由局部RAII关闭端口并显示实际错误。
+// 日期：2026-11-08；空闲及活动监听全过程保留协调资格；失败由局部RAII归还，停止先清理所有工作线程。
 void ServerPanel::setServing(bool enabled, const QString &address, int port) {
     try {
         if (!enabled) {
             delete listener_;
             listener_ = nullptr;
+            listenerState_.reset();
             status_ = QStringLiteral("本机 TLS 服务已停止");
         } else if (!listener_) {
             const QHostAddress bind(address);
             if (bind.isNull() || port < 1 || port > 65535)
                 throw dukto::Error(dukto::ExitCode::Config, QStringLiteral("监听地址或端口无效"));
+            auto bound = dukto::StateSession::root(directory_, "service");
             std::unique_ptr<dukto::ServiceListener> listener(
-                new dukto::ServiceListener(QDir(directory_).filePath("service"), 30000));
+                new dukto::ServiceListener(bound->directory(), 30000));
             if (!listener->listen(bind, static_cast<quint16>(port)))
                 throw dukto::Error(dukto::ExitCode::Network,
                                    QStringLiteral("本机服务端口无法监听"));
             const auto info = listener->publicInfo();
+            listenerState_ = std::move(bound);
             listener_ = listener.release();
             identity_ = info;
             connect(listener_, &dukto::ServiceListener::event, this,

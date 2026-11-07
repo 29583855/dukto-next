@@ -8,6 +8,7 @@
 #include "core/legacy.h"
 #include "core/service.h"
 #include "core/sourcefile.h"
+#include "core/statesession.h"
 #include "input.h"
 #include "servicecommands.h"
 #include "statecommands.h"
@@ -307,7 +308,9 @@ int doctor(const QCommandLineParser &parser, const QStringList &arguments, bool 
     auto report = dukto::collectDiagnostics(*settings, options);
     if (parser.isSet("profile")) {
         try {
-            dukto::PrivateStore clients(QDir(options.stateDirectory).filePath("clients"));
+            // 日期：2026-11-08；诊断不认领未登记旧根，已有域则在认证全过程持有共享协调资格。
+            auto bound = dukto::StateSession::observe(options.stateDirectory, "clients");
+            auto &clients = *bound;
             const auto profile = dukto::loadProfile(clients, parser.value("profile"));
             if (!profile.paired || !profile.pendingCredential.isEmpty())
                 throw dukto::Error(dukto::ExitCode::Permission,
