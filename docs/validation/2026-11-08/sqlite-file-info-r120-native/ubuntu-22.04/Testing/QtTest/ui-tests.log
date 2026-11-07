@@ -1,0 +1,21 @@
+********* Start testing of UiTests *********
+Config: Using QtTest library 5.15.3, Qt 5.15.3 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.3.0), ubuntu 22.04
+PASS   : UiTests::initTestCase()
+PASS   : UiTests::localDiagnosticExport()
+PASS   : UiTests::cancelThenTransferAgainThroughQml(send)
+PASS   : UiTests::cancelThenTransferAgainThroughQml(receive-header)
+PASS   : UiTests::cancelThenTransferAgainThroughQml(receive-partial)
+PASS   : UiTests::clipboardAvailabilityDoesNotReadOnProgress()
+PASS   : UiTests::rejectedTextKeepsDraftThroughQml()
+FAIL!  : UiTests::serverEntryThroughMainQml(compact) 'fontCoverage["passed"].toBool()' returned FALSE. ({"fontFamilies":["DejaVu Sans"],"glyphCount":28,"missingGlyphs":28,"passed":false,"sample":"服务器连接与文件任务本机共享返回下载上传设备最近关于设置"})
+   Loc: [/home/runner/work/dukto-next/dukto-next/tests/ui_tests.cpp(462)]
+FAIL!  : UiTests::serverEntryThroughMainQml(default) 'fontCoverage["passed"].toBool()' returned FALSE. ({"fontFamilies":["DejaVu Sans"],"glyphCount":28,"missingGlyphs":28,"passed":false,"sample":"服务器连接与文件任务本机共享返回下载上传设备最近关于设置"})
+   Loc: [/home/runner/work/dukto-next/dukto-next/tests/ui_tests.cpp(462)]
+PASS   : UiTests::receivedLargeTextThroughQml(paragraph-boundary)
+PASS   : UiTests::receivedLargeTextThroughQml(maximum-paragraphs)
+PASS   : UiTests::receivedLargeTextThroughQml(maximum-single-line)
+PASS   : UiTests::receivedLargeTextThroughQml(unicode-boundaries)
+PASS   : UiTests::dragClipboardAndTextThroughQml()
+PASS   : UiTests::cleanupTestCase()
+Totals: 13 passed, 2 failed, 0 skipped, 0 blacklisted, 2855ms
+********* Finished testing of UiTests *********

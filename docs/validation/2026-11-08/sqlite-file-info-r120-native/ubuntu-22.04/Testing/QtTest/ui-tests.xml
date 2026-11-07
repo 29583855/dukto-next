@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="0" failures="2" tests="9" name="UiTests">
+  <properties>
+    <property value="5.15.3" name="QTestVersion"/>
+    <property value="5.15.3" name="QtVersion"/>
+    <property value="Qt 5.15.3 (x86_64&#x002D;little_endian&#x002D;lp64 shared (dynamic) release build; by GCC 11.3.0)" name="QtBuild"/>
+  </properties>
+  <testcase result="pass" name="initTestCase"/>
+  <testcase result="pass" name="localDiagnosticExport"/>
+  <testcase result="pass" name="cancelThenTransferAgainThroughQml"/>
+  <testcase result="pass" name="clipboardAvailabilityDoesNotReadOnProgress"/>
+  <testcase result="pass" name="rejectedTextKeepsDraftThroughQml"/>
+  <testcase result="fail" name="serverEntryThroughMainQml">
+    <failure tag="compact" message="&apos;fontCoverage[&quot;passed&quot;].toBool()&apos; returned FALSE. ({&quot;fontFamilies&quot;:[&quot;DejaVu Sans&quot;],&quot;glyphCount&quot;:28,&quot;missingGlyphs&quot;:28,&quot;passed&quot;:false,&quot;sample&quot;:&quot;服务器连接与文件任务本机共享返回下载上传设备最近关于设置&quot;})" result="fail"/>
+    <failure tag="default" message="&apos;fontCoverage[&quot;passed&quot;].toBool()&apos; returned FALSE. ({&quot;fontFamilies&quot;:[&quot;DejaVu Sans&quot;],&quot;glyphCount&quot;:28,&quot;missingGlyphs&quot;:28,&quot;passed&quot;:false,&quot;sample&quot;:&quot;服务器连接与文件任务本机共享返回下载上传设备最近关于设置&quot;})" result="fail"/>
+  </testcase>
+  <testcase result="pass" name="receivedLargeTextThroughQml"/>
+  <testcase result="pass" name="dragClipboardAndTextThroughQml"/>
+  <testcase result="pass" name="cleanupTestCase"/>
+  <system-err/>
+</testsuite>

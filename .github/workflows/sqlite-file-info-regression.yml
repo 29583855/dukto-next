@@ -22,7 +22,7 @@ jobs:
           cache: true
       - name: Install Linux Qt
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y libssl-dev qtbase5-dev qtbase5-private-dev qtdeclarative5-dev qtquickcontrols2-5-dev libqt5sql5-sqlite qml-module-qtquick-controls2 qml-module-qtquick-layouts qml-module-qtquick-window2 qml-module-qtquick2 qml-module-qtqml qml-module-qtqml-models2 qml-module-qtqml-workerscript2 qml-module-qtgraphicaleffects
+        run: sudo apt-get update && sudo apt-get install -y libssl-dev qtbase5-dev qtbase5-private-dev qtdeclarative5-dev qtquickcontrols2-5-dev libqt5sql5-sqlite qml-module-qtquick-controls2 qml-module-qtquick-layouts qml-module-qtquick-window2 qml-module-qtquick2 qml-module-qtqml qml-module-qtqml-models2 qml-module-qtqml-workerscript2 qml-module-qtgraphicaleffects fonts-wqy-zenhei
       - name: Install macOS Qt and TLS
         if: runner.os == 'macOS'
         run: |
@@ -31,6 +31,8 @@ jobs:
           echo "OPENSSL_ROOT_DIR=$(brew --prefix openssl@3)" >> "$GITHUB_ENV"
           echo "$(brew --prefix qt@5)/bin" >> "$GITHUB_PATH"
           echo "$(brew --prefix openssl@3)/bin" >> "$GITHUB_PATH"
+          # 日期：2026-11-08；完整核心实际绑定第二个回环地址，必须与既有完整CI采用相同原生准备。
+          sudo ifconfig lo0 alias 127.0.0.2
       - name: Install Windows TLS
         if: runner.os == 'Windows'
         shell: pwsh
