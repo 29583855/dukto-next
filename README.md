@@ -4,7 +4,7 @@
 
 项目以 `Dukto/` 内的 Dukto R6 为功能参考，开发 Windows、macOS、Linux 共用内核的桌面应用和独立命令行程序，增加服务器上传/下载、多线程提速及可靠恢复能力。
 
-R118新增客户端/服务器状态占用查询，双Windows各28完整CTest及27份Qt XML通过；保留热SQLite日志、链接及特殊项边界。新原生构建继续，总配额/自动GC和整体交付仍按计划推进。[用法](docs/状态占用查询.md)、[证据](docs/ci-verification-20261107-r118.json)。
+R118精确e84f34f已公开，状态占用查询及双Windows各28完整CTest/27份XML通过。双Mac GUI/独立CLI、含Qt5/OpenSSL预览、迁移运行及四截图已验；ubuntu-22.04、macos-15、macos-15-intel、windows-2022各28核心已验，完整协议继续。总配额/自动GC和完整项目继续按计划实施。[Mac下载](docs/macOS独立预览包.md)、[用法](docs/状态占用查询.md)、[证据](docs/ci-verification-20261107-r118.json)。
 
 R117精确`a46454d0ece59d178f1763c56f60cc61298e3154`已公开；Windows原生日志恢复通过双工具链各27核心及云端两轮各29条，双Mac含依赖GUI/CLI预览、迁移运行及截图已验。[Mac下载](docs/macOS独立预览包.md)、[本轮证据](docs/ci-verification-20261107-r117.json)。完整项目继续按计划验收。
 
