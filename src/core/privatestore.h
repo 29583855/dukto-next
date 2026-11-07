@@ -30,6 +30,8 @@ class PrivateStore final {
     void remove(const QString &name) const;
     // 日期：2026-11-04；返回受保护状态根，调用方仍须通过本类访问秘密文件。
     QString directory() const;
+    // 日期：2026-11-08；重验固定根后返回不含路径/修改时间的原生身份，仅供持久域关联。
+    QByteArray identity() const;
     // 日期：2026-11-07；维护调用方显式核对独占模式，普通状态实例不能冒充维护所有者。
     bool maintenance() const;
     // 日期：2026-11-08；独占维护按后缀汇总直接普通文件的逻辑/分配量，不读取正文或授予删除资格。

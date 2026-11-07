@@ -7,8 +7,9 @@ namespace dukto {
 class PrivateStore;
 class BudgetFile final {
   public:
+    enum class Kind { Ledger, Domain };
     // 日期：2026-11-08；只打开永久账本单项；创建要求独占维护，绝不截断或替换已有账本。
-    BudgetFile(const PrivateStore &store, bool create);
+    BudgetFile(const PrivateStore &store, bool create, Kind kind = Kind::Ledger);
     // 日期：2026-11-08；关闭本实例描述符，账本名称永久保留，退出不隐式退款。
     ~BudgetFile();
     BudgetFile(const BudgetFile &) = delete;

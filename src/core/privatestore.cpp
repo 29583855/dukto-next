@@ -355,12 +355,13 @@ void PrivateStore::verify() const {
         use_->verify();
 }
 
-// 日期：2026-11-08；保留占用锁、永久预算账本及大小写变体，普通状态接口不能读取、替换或删除。
+// 日期：2026-11-08；保留占用锁、预算账本、域绑定及大小写变体，普通接口不能替换控制对象。
 QString PrivateStore::path(const QString &name) const {
     static const QRegularExpression allowed("\\A[a-zA-Z0-9][a-zA-Z0-9_.-]{0,95}\\z");
     if (!allowed.match(name).hasMatch() ||
         name.compare("state-use.lock", Qt::CaseInsensitive) == 0 ||
-        name.compare("state-budget.bin", Qt::CaseInsensitive) == 0)
+        name.compare("state-budget.bin", Qt::CaseInsensitive) == 0 ||
+        name.compare("state-domain.bin", Qt::CaseInsensitive) == 0)
         throw Error(ExitCode::Permission, QStringLiteral("私有状态键无效"), "identity");
     validateRelativePath(name);
     return QDir(directory_).filePath(name);
@@ -557,26 +558,36 @@ QString PrivateStore::directory() const {
     return directory_;
 }
 
+// 日期：2026-11-08；返回已固定目录身份，路径别名不能生成第二个根，换代或权限变化立即拒绝。
+QByteArray PrivateStore::identity() const {
+    verify();
+    return root_->identity();
+}
+
 struct BudgetFile::Implementation {
     const PrivateStore &store;
+    QString name;
     QFile file;
     QMutex mutex;
     bool locked = false;
     bool created = false;
     // 日期：2026-11-08；账本描述符受外层状态资格约束，调用方保证PrivateStore先构造后析构。
-    explicit Implementation(const PrivateStore &value) : store(value) {
+    explicit Implementation(const PrivateStore &value, Kind kind) : store(value) {
+        if (kind != Kind::Ledger && kind != Kind::Domain)
+            throw Error(ExitCode::Config, QStringLiteral("预算控制对象种类无效"), "budget");
+        name = kind == Kind::Ledger ? "state-budget.bin" : "state-domain.bin";
     }
 };
 
 // 日期：2026-11-08；复用现有私有安全规则，Windows显式所有者，POSIX相对固定根且不跟随链接。
-BudgetFile::BudgetFile(const PrivateStore &store, bool create)
-    : implementation_(new Implementation(store)) {
+BudgetFile::BudgetFile(const PrivateStore &store, bool create, Kind kind)
+    : implementation_(new Implementation(store, kind)) {
     store.verify();
     if (create && !store.maintenance())
         throw Error(ExitCode::Permission, QStringLiteral("账本初始化需要独占维护"), "budget");
     int descriptor = -1;
 #ifdef Q_OS_WIN
-    const auto name = longPath(QDir(store.directory_).filePath("state-budget.bin"));
+    const auto name = longPath(QDir(store.directory_).filePath(implementation_->name));
     auto security = privateSecurity();
     SECURITY_ATTRIBUTES attributes{sizeof(SECURITY_ATTRIBUTES), security, FALSE};
     const auto handle = CreateFileW(
@@ -592,7 +603,7 @@ BudgetFile::BudgetFile(const PrivateStore &store, bool create)
         throw Error(ExitCode::Disk, QStringLiteral("无法接管预算账本句柄"), "budget");
     }
 #else
-    descriptor = store.root_->openUpdate("state-budget.bin", create);
+    descriptor = store.root_->openUpdate(implementation_->name, create);
 #endif
     if (!implementation_->file.open(descriptor, QIODevice::ReadWrite | QIODevice::Unbuffered,
                                     QFileDevice::AutoCloseHandle)) {
@@ -625,7 +636,7 @@ void BudgetFile::verify() const {
         throw Error(ExitCode::Permission, QStringLiteral("预算账本不是独立普通文件"), "budget");
 #else
     struct stat opened{};
-    const auto current = state.store.root_->fileInformation("state-budget.bin");
+    const auto current = state.store.root_->fileInformation(state.name);
     if (::fstat(state.file.handle(), &opened) != 0 || current.st_dev != opened.st_dev ||
         current.st_ino != opened.st_ino || !S_ISREG(current.st_mode) || current.st_nlink != 1)
         throw Error(ExitCode::Integrity, QStringLiteral("预算账本路径或原生对象已变化"), "budget");
