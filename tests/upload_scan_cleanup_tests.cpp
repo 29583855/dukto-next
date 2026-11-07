@@ -19,6 +19,7 @@
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
+#include <aclapi.h>
 #include <windows.h>
 #endif
 
@@ -54,7 +55,11 @@ struct Fixture {
                       {"--abandon-scan", root.path(), request.toString(QUuid::WithoutBraces),
                        profile.server.toString(QUuid::WithoutBraces),
                        profile.client.toString(QUuid::WithoutBraces), phase});
-        if (!process.waitForFinished(30000) || process.exitCode() != 47)
+        const bool finished = process.waitForFinished(30000);
+        const auto diagnostic = process.readAllStandardError();
+        if (!diagnostic.isEmpty())
+            std::fprintf(stderr, "%s", diagnostic.constData());
+        if (!finished || process.exitCode() != 47)
             throw dukto::Error(dukto::ExitCode::Runtime,
                                "fixture abandoned scan: " + QString::number(process.exitCode()) +
                                    " " + QString::fromUtf8(process.readAllStandardError()),
@@ -69,6 +74,64 @@ struct Fixture {
         store.write(stem() + ".scan.json", dukto::next::encodeControl(value));
     }
 };
+
+// 日期：2026-11-07；记录真实journal的所有者与令牌默认所有者/用户比较，不打印SID或数据库内容。
+void reportJournalOwner(const QString &path) {
+#ifdef Q_OS_WIN
+    const auto native = QDir::toNativeSeparators(path);
+    HANDLE file = CreateFileW(reinterpret_cast<LPCWSTR>(native.utf16()), READ_CONTROL,
+                              FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
+                              OPEN_EXISTING, FILE_FLAG_OPEN_REPARSE_POINT, nullptr);
+    HANDLE token = nullptr;
+    PSID owner = nullptr;
+    PACL dacl = nullptr;
+    PSECURITY_DESCRIPTOR security = nullptr;
+    if (file == INVALID_HANDLE_VALUE ||
+        !OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token) ||
+        GetSecurityInfo(file, SE_FILE_OBJECT,
+                        OWNER_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION, &owner, nullptr,
+                        &dacl, nullptr, &security) != ERROR_SUCCESS)
+        std::_Exit(96);
+    DWORD length = 0;
+    GetTokenInformation(token, TokenUser, nullptr, 0, &length);
+    QByteArray user(int(length), '\0');
+    if (!GetTokenInformation(token, TokenUser, user.data(), DWORD(user.size()), &length))
+        std::_Exit(97);
+    GetTokenInformation(token, TokenOwner, nullptr, 0, &length);
+    QByteArray defaultOwner(int(length), '\0');
+    if (!GetTokenInformation(token, TokenOwner, defaultOwner.data(), DWORD(defaultOwner.size()),
+                             &length))
+        std::_Exit(98);
+    TOKEN_ELEVATION elevation{};
+    if (!GetTokenInformation(token, TokenElevation, &elevation, sizeof(elevation), &length))
+        std::_Exit(99);
+    const auto currentUser = reinterpret_cast<TOKEN_USER *>(user.data())->User.Sid;
+    const auto tokenOwner = reinterpret_cast<TOKEN_OWNER *>(defaultOwner.data())->Owner;
+    bool otherAllowed = false;
+    if (!dacl)
+        std::_Exit(100);
+    for (DWORD index = 0; index < dacl->AceCount; ++index) {
+        void *entry = nullptr;
+        if (!GetAce(dacl, index, &entry))
+            std::_Exit(101);
+        const auto ace = static_cast<ACCESS_ALLOWED_ACE *>(entry);
+        if (ace->Header.AceType != ACCESS_ALLOWED_ACE_TYPE ||
+            !EqualSid(const_cast<DWORD *>(&ace->SidStart), currentUser))
+            otherAllowed = true;
+    }
+    std::fprintf(
+        stderr,
+        "journal-owner user=%d token-default=%d builtin-admins=%d elevated=%d other-allowed=%d\n",
+        !!EqualSid(owner, currentUser), !!EqualSid(owner, tokenOwner),
+        !!IsWellKnownSid(owner, WinBuiltinAdministratorsSid), !!elevation.TokenIsElevated,
+        int(otherAllowed));
+    LocalFree(security);
+    CloseHandle(token);
+    CloseHandle(file);
+#else
+    Q_UNUSED(path)
+#endif
+}
 
 // 日期：2026-11-07；在真实库创建小缓存未提交事务，物理溢写产生可由SQLite自身恢复的热日志。
 void leaveHotJournal(const QString &path) {
@@ -91,6 +154,7 @@ void leaveHotJournal(const QString &path) {
     QFile journal(path + "-journal");
     if (!journal.open(QIODevice::ReadOnly) || journal.read(8).toHex() != "d9d505f920a163d7")
         std::_Exit(94);
+    reportJournalOwner(path + "-journal");
     std::_Exit(47);
 }
 } // namespace
