@@ -1,5 +1,5 @@
 {
-  "observedUtc": "2026-11-07T18:35:13.140484+00:00",
+  "observedUtc": "2026-11-07T18:49:01.112815+00:00",
   "sourceCommit": "301697546ef1002ab35fe39decdd8446dd389aee",
   "run": {
     "id": 42399470349,
@@ -533,9 +533,527 @@
       ]
     },
     {
+      "observedUtc": "2026-11-07T18:49:01.047561+00:00",
+      "sourceCommit": "301697546ef1002ab35fe39decdd8446dd389aee",
       "runner": "macos-15",
-      "status": "in_progress",
-      "qualified": false
+      "jobId": 128483914147,
+      "status": "completed",
+      "conclusion": "success",
+      "artifactId": 13585568348,
+      "artifactSha256": "c14927f8b6a352d1c9d943789d1d005d3abc55d763e8070e1d9afa2c2b65bffd",
+      "jobLogSha256": "5843a990e9deec7f4e9a7e377bd96b3237f91f61c0098f3d3860f1e67a8babbe",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-07T18:05:04Z",
+          "completed_at": "2026-11-07T18:05:10Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-07T18:05:10Z",
+          "completed_at": "2026-11-07T18:05:27Z"
+        },
+        {
+          "name": "Run actions/setup-python@v5",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-11-07T18:05:27Z",
+          "completed_at": "2026-11-07T18:05:27Z"
+        },
+        {
+          "name": "Install Windows Qt",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 4,
+          "started_at": "2026-11-07T18:05:27Z",
+          "completed_at": "2026-11-07T18:05:27Z"
+        },
+        {
+          "name": "Install Linux Qt",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 5,
+          "started_at": "2026-11-07T18:05:27Z",
+          "completed_at": "2026-11-07T18:05:27Z"
+        },
+        {
+          "name": "Install macOS Qt5",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-11-07T18:05:27Z",
+          "completed_at": "2026-11-07T18:05:47Z"
+        },
+        {
+          "name": "Record native macOS toolchain",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-11-07T18:05:47Z",
+          "completed_at": "2026-11-07T18:05:50Z"
+        },
+        {
+          "name": "Windows early development TLS runtime",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 8,
+          "started_at": "2026-11-07T18:05:50Z",
+          "completed_at": "2026-11-07T18:05:50Z"
+        },
+        {
+          "name": "Install validation sampler",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-11-07T18:05:50Z",
+          "completed_at": "2026-11-07T18:05:52Z"
+        },
+        {
+          "name": "Validate source snapshot timestamps and contents",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-11-07T18:05:52Z",
+          "completed_at": "2026-11-07T18:05:55Z"
+        },
+        {
+          "name": "Validate bounded process sampling",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-11-07T18:05:55Z",
+          "completed_at": "2026-11-07T18:05:57Z"
+        },
+        {
+          "name": "Validate bounded proxy pacing",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-11-07T18:05:57Z",
+          "completed_at": "2026-11-07T18:06:01Z"
+        },
+        {
+          "name": "Configure",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-11-07T18:06:01Z",
+          "completed_at": "2026-11-07T18:06:08Z"
+        },
+        {
+          "name": "Compile",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-11-07T18:06:08Z",
+          "completed_at": "2026-11-07T18:07:58Z"
+        },
+        {
+          "name": "Archive macOS compilation outputs",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15,
+          "started_at": "2026-11-07T18:07:58Z",
+          "completed_at": "2026-11-07T18:07:58Z"
+        },
+        {
+          "name": "Preserve macOS compiled GUI and CLI",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16,
+          "started_at": "2026-11-07T18:07:58Z",
+          "completed_at": "2026-11-07T18:08:00Z"
+        },
+        {
+          "name": "Independent TLS certificate and protocol boundaries",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17,
+          "started_at": "2026-11-07T18:08:00Z",
+          "completed_at": "2026-11-07T18:08:11Z"
+        },
+        {
+          "name": "Core and GUI controller tests",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18,
+          "started_at": "2026-11-07T18:08:11Z",
+          "completed_at": "2026-11-07T18:14:01Z"
+        },
+        {
+          "name": "Windows main window server navigation",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 19,
+          "started_at": "2026-11-07T18:14:01Z",
+          "completed_at": "2026-11-07T18:14:01Z"
+        },
+        {
+          "name": "Cocoa main window server navigation",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20,
+          "started_at": "2026-11-07T18:14:01Z",
+          "completed_at": "2026-11-07T18:14:11Z"
+        },
+        {
+          "name": "X11 main window server navigation",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 21,
+          "started_at": "2026-11-07T18:14:11Z",
+          "completed_at": "2026-11-07T18:14:11Z"
+        },
+        {
+          "name": "Preserve core diagnostics before protocol suite",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 22,
+          "started_at": "2026-11-07T18:14:11Z",
+          "completed_at": "2026-11-07T18:14:12Z"
+        },
+        {
+          "name": "Native Cocoa GUI render and process recovery",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 23,
+          "started_at": "2026-11-07T18:14:12Z",
+          "completed_at": "2026-11-07T18:14:27Z"
+        },
+        {
+          "name": "Protocol integration all independent cases",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 24,
+          "started_at": "2026-11-07T18:14:27Z",
+          "completed_at": "2026-11-07T18:45:21Z"
+        },
+        {
+          "name": "Real disk exhaustion on isolated Linux tmpfs",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 25,
+          "started_at": "2026-11-07T18:45:21Z",
+          "completed_at": "2026-11-07T18:45:21Z"
+        },
+        {
+          "name": "Real TLS transfer disk exhaustion and recovery",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 26,
+          "started_at": "2026-11-07T18:45:21Z",
+          "completed_at": "2026-11-07T18:45:21Z"
+        },
+        {
+          "name": "Preserve validation logs",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 27,
+          "started_at": "2026-11-07T18:45:21Z",
+          "completed_at": "2026-11-07T18:45:23Z"
+        },
+        {
+          "name": "Post Run actions/setup-python@v5",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 53,
+          "started_at": "2026-11-07T18:45:23Z",
+          "completed_at": "2026-11-07T18:45:23Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 54,
+          "started_at": "2026-11-07T18:45:23Z",
+          "completed_at": "2026-11-07T18:45:23Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 55,
+          "started_at": "2026-11-07T18:45:23Z",
+          "completed_at": "2026-11-07T18:45:25Z"
+        }
+      ],
+      "qualified": true,
+      "deliveryComplete": false,
+      "releaseQualified": false,
+      "verifiedProtocol": {
+        "suite": {
+          "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/protocol-suite.json",
+          "sha256": "4e22337ea02cfe2e8a1733c797d12c1ab77218c66db2e28431f192502142e696"
+        },
+        "cases": 47,
+        "reports": [
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/parallel-failure.json",
+            "sha256": "33846324028e582ee11c3c4098eb5afe8a79d0ebfdfbd2b634050afef2ca7640",
+            "name": "parallel-failure"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/legacy.json",
+            "sha256": "74aaf90649c068de57411e226d107e1a856a07b1279156f5df3fa5c19b2240b9",
+            "name": "legacy"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/legacy-text-credit.json",
+            "sha256": "ab93102de0c4f3b6a1f4fddb13e0f37b48f1ea4d5eba5cbb928c79fc6af6eb6b",
+            "name": "legacy-text-credit"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/text-preview.json",
+            "sha256": "475b2a515a4a819c032f7c607c79012dcac2fb571a51602ed9d26510bb34e595",
+            "name": "text-preview"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/legacy-timeout.json",
+            "sha256": "dd7d894f6ee8f9f15c05ddd265af464cef186496e227881f5725eef1c483a675",
+            "name": "legacy-timeout"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/parallel-attach.json",
+            "sha256": "6210b87e2cfa83366401f653ee7f56cb8a979356bcbc102b0373961debe849df",
+            "name": "parallel-attach"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/cli.json",
+            "sha256": "78e939afb5395f5d8bfd267c69dc29fa8daa621e61da3cd5ed44cf9d30d55a93",
+            "name": "cli"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/doctor.json",
+            "sha256": "d5140ea6e7b463df2a1a2dd828125a7b11234919dbd0d7881b35cc205ed8ea77",
+            "name": "doctor"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/crash.json",
+            "sha256": "c8e9c3b46118c4d73caad648ec35e4a2bb79312d05abdc03d89c2991fa4e8827",
+            "name": "crash"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/posix-path.json",
+            "sha256": "98ab6e892322ac5b250f54c5802a5e64b864f0123b29540657e37026f1098c2e",
+            "name": "posix-path"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/service.json",
+            "sha256": "097323f5683f9f265683f5cc7ca8437b7b7bb55e4ee7a03b3149fd44c931f730",
+            "name": "service"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/service-accounting.json",
+            "sha256": "0841f086cbca9ef7d03e1684a6992c7dfcaf4a03bbf8ae289ed48075308d7e16",
+            "name": "service-accounting"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/client-accounting.json",
+            "sha256": "a0f4df929ea183cfe501b2ab0d2411a7695398ea8d992756f313e09abe494630",
+            "name": "client-accounting"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/client-list.json",
+            "sha256": "aefbb9ac983ee6c0f2e1d5f03393dfd3f2b4ff98dce9480c31d0578cb18cf6a9",
+            "name": "client-list"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/credential-rotation.json",
+            "sha256": "9113e03b967d998ecbcbab5fb927a4f03c5b42e2dd469f2a259c9114e31a1fea",
+            "name": "credential-rotation"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/certificate-lifecycle.json",
+            "sha256": "7d3f97fa477b81af75132ebf93ee049d8eb291dc7701d96ec38089a5e56ae27e",
+            "name": "certificate-lifecycle"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/session-expiry.json",
+            "sha256": "2b74d4055fa4f2d6dd0e8b7cbafa638af93bf889ee678e6d1d6bf55416070ab9",
+            "name": "session-expiry"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/task-admission-upload.json",
+            "sha256": "c74387533f87628e6e3006992a04d859ad3c95b4af81fb86e3ee0f9f642ead08",
+            "name": "task-admission-upload"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/task-admission-download.json",
+            "sha256": "5b0cfa403b8539d0ffd4c04b2ea0cd7faffca7081fabdde979127c124377ea4d",
+            "name": "task-admission-download"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/task-admission-mixed.json",
+            "sha256": "8c1cc54fa63357fbab0db37dde765f024a7d8a0cc26eaf0c5718acee411a0909",
+            "name": "task-admission-mixed"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/transfer-retry.json",
+            "sha256": "8945dc4d84efc61a7941c99413b01d34b145545dd6916ca3447c42a72c3197ff",
+            "name": "transfer-retry"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/conflict-fail.json",
+            "sha256": "c62db607532ffb78d992d4f1de2aa151c7ba9c17167a563ab9dc704a9f57a0ab",
+            "name": "conflict-fail"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/conflict-overwrite.json",
+            "sha256": "352be21dda2aacbd5f959b375f54b1d16d3b806081d0bab4ee5f38d9b25b5264",
+            "name": "conflict-overwrite"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/conflict-skip.json",
+            "sha256": "066ede7e9cf80ce7bb593ca0d93c6a1329a23f535aa60f409052541556264699",
+            "name": "conflict-skip"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/task-items.json",
+            "sha256": "9f092979c182a6b71e533679305c115464f726c0f57d62d5e9c38067ed885a9d",
+            "name": "task-items"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/disposition-transfer.json",
+            "sha256": "eaf0943c6ab563c7a7880f5234fb2fe16d51c652aeafb8f379d6b228883c0958",
+            "name": "disposition-transfer"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/disposition-summary.json",
+            "sha256": "83263a925a71425c51a3ce7a7f41c1545b3d214b34e3276ab651a295b7e13c20",
+            "name": "disposition-summary"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/upload-receipt.json",
+            "sha256": "696b3aff15ac1d3e22351f3093d6530d13fac82d5528fa4c008e5dadb8d9a344",
+            "name": "upload-receipt"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/completed-history.json",
+            "sha256": "3ee26a46f4b3bb91e64c4f2eb8333db619c76cffa9d6ccdc860f18ab48e691f8",
+            "name": "completed-history"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/item-failures.json",
+            "sha256": "bdabd3268f1d6f4541cab63a1c16722c2dd5077b05ff34e3a499fa3c8d499d72",
+            "name": "item-failures"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/conflict-fail-recovery.json",
+            "sha256": "a44f24638ad578d619a2100e1acae59e6a41f6ef9e58a4206a5464347338bada",
+            "name": "conflict-fail-recovery"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/conflict-overwrite-recovery.json",
+            "sha256": "43ac624f3e73f6a7596d4e15c17ffe8afd21ce9c7776d22fff4cc2471d9b41d6",
+            "name": "conflict-overwrite-recovery"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/conflict-skip-recovery.json",
+            "sha256": "8aebe69a371e0fb32b4dd44f01d0e2ab0f6c05b7b97b292d43b9c1f4b0d32f35",
+            "name": "conflict-skip-recovery"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/transfer.json",
+            "sha256": "b1c6566c0c27a36d012a4b61bd6e972762894f98f2e3c831308f506a7e67f39b",
+            "name": "transfer"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/transfer-recovery.json",
+            "sha256": "9590ff4fa9156d64d3f36029330790a24bdce008afe7d262ff7b781c7001349d",
+            "name": "transfer-recovery"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/parallel-transfer.json",
+            "sha256": "9216a3b46b5b1d6b516652233d8f3faf48957d87f678d9d6588f5f4a3abc5d24",
+            "name": "parallel-transfer"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/parallel-recovery.json",
+            "sha256": "8c035d500126e1cb2981adef2f94cd288ca1e8251b2c4cd394d589d60f392074",
+            "name": "parallel-recovery"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/parallel-isolation.json",
+            "sha256": "de45889430cec9f3aa46f42bb88ea7519b0d95416ad9fcb139dd1dc0310ecb06",
+            "name": "parallel-isolation"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/byte-progress.json",
+            "sha256": "9b69d6a3f2f4f3d7993478b1fcdb48d1e53c722cd894d06d5be3e511f1506dee",
+            "name": "byte-progress"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/transfer-faults.json",
+            "sha256": "2a10de9bce160c84e23cead36c58bbadcdc54537d499d9347d8a7e00743c89f9",
+            "name": "transfer-faults"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/final-ack.json",
+            "sha256": "aa150a69000f8eca27cfb878fa7dea789f74e877612d6507912aa4b87597a124",
+            "name": "final-ack"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/final-ack-auto-retry.json",
+            "sha256": "c58683ecce9d17a6cd8b51b99feb523141a32a0d956d3267b0f5f8cd8c7a7c82",
+            "name": "final-ack-auto-retry"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/overwrite-faults.json",
+            "sha256": "849b9baff18385952ac69d816f2c738ff9482f5f82c7f0298afd0a33a3623610",
+            "name": "overwrite-faults"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/overwrite-final-ack.json",
+            "sha256": "fbba576fa0b9aff61694ce1064e8679a13cd76facee12c5b022bb62bd0a81216",
+            "name": "overwrite-final-ack"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/overwrite-final-ack-auto-retry.json",
+            "sha256": "a6316115c1b01e1a8bc1b74a549bf0730160455007c90711ad06f2ebe84c59af",
+            "name": "overwrite-final-ack-auto-retry"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/gui-process-recovery.json",
+            "sha256": "78260d3ae3b13d0dd5010e74fc2adde1312ca5183c9ca2834ece584684039238",
+            "name": "gui-process-recovery"
+          },
+          {
+            "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/task-store.json",
+            "sha256": "c4cbf979a1279e3c19dbacf7eafe05c86d9b35cfb955f0cfab76fc8248b23ebd",
+            "name": "task-store"
+          }
+        ],
+        "passed": true
+      },
+      "secureChannelCases": 31,
+      "taskStoreCompetingProcesses": 8,
+      "sharedStateProcesses": 8,
+      "doctorChecks": 12,
+      "additionalReports": [
+        {
+          "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/proxy-pacing.json",
+          "sha256": "8edc415c7948ebbed4fd93005e485d41cf18673498f0e7dabf9c62976b924766"
+        },
+        {
+          "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/main-window-navigation.json",
+          "sha256": "78e21eef4069ccefec719d1bb14f98b829fa33817a6ea886f32cc44aa7c38ab6"
+        },
+        {
+          "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/macos-native-render.json",
+          "sha256": "f247fcb9ff444ca00bcb6efb63d0cccf2adff32cc4837eb2fc1bd76d944ac74a"
+        },
+        {
+          "path": "E:/project/dukto/.cache/github-29583855-dukto-next-r28/docs/validation/2026-11-08/state-inventory-r121-native-terminal/macos-15/build/macos-native-process-recovery.json",
+          "sha256": "73d027f6cc79009a820dd1dbaa5c852a3b47cad601ab70ad08b73b48fb58bb9c"
+        }
+      ]
     },
     {
       "runner": "macos-15-intel",
