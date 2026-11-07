@@ -8,7 +8,7 @@ import re
 import subprocess
 
 
-# 日期：2026-11-05；只扫描维护源码并保留交付缺项，零标记不能替代跨平台/资源与故障验收。
+# 日期：2026-11-08；扫描维护的C/C++及脚本，保留交付缺项，零标记不能替代实际验收。
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--report", required=True)
@@ -20,7 +20,7 @@ def main():
     files = []
     for folder in ("src", "ui", "scripts", "tests"):
         for path in sorted((root / folder).rglob("*")):
-            if path.suffix not in (".h", ".cpp", ".qml", ".py", ".ps1") or path == Path(__file__):
+            if path.suffix not in (".c", ".h", ".cpp", ".qml", ".py", ".ps1") or path == Path(__file__):
                 continue
             raw = path.read_bytes()
             relative = path.relative_to(root).as_posix()
@@ -37,7 +37,7 @@ def main():
     formatter = root / ".tools/python/Scripts/clang-format.exe"
     formatting = None
     if formatter.exists():
-        sources = [str(root / item["path"]) for item in files if Path(item["path"]).suffix in (".cpp", ".h")]
+        sources = [str(root / item["path"]) for item in files if Path(item["path"]).suffix in (".c", ".cpp", ".h")]
         result = subprocess.run([str(formatter), "--dry-run", "--Werror", *sources], capture_output=True, timeout=30)
         formatting = {"passed": result.returncode == 0, "diagnostics": result.stderr.decode("utf-8", "replace")}
     report = {"date": date.today().isoformat(), "sourceMarkersPassed": not findings, "cxx14Configuration": standard,

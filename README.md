@@ -4,6 +4,8 @@
 
 项目以 `Dukto/` 内的 Dukto R6 为功能参考，开发 Windows、macOS、Linux 共用内核的桌面应用和独立命令行程序，增加服务器上传/下载、多线程提速及可靠恢复能力。
 
+R120新增固定SQLite原生文件身份/占用观察；双Windows各30核心及专项11条全通过，真实硬链接、匿名临时、超过4GiB稀疏文件、失败后占用和journal/WAL/排序已验。四原生和新Mac包继续，已验Mac下载仍R119；总预算与自动GC未完成。[接口](docs/SQLite原生占用观察.md)、[证据](docs/ci-verification-20261108-r120.json)。
+
 R119最终夹具d2c8c4ff已公开：三个POSIX各29核心/28份Qt XML及VFS10条通过，Windows原28/29失败保留，新计量11条及20轮专项通过；双Mac GUI/CLI编译与含Qt5/OpenSSL预览、迁移/传输和四截图全部核验。[Mac下载](docs/macOS独立预览包.md)、[本轮回执](docs/ci-verification-20261107-r119.json)。完整协议、总配额/自动GC与整体交付继续。
 
 R119固定SQLite 3.53.4与Qt完整驱动，每连接VFS支持写入前策略；双Windows各29完整CTest/28份XML通过，新专项各10条全通过。原件依赖与许可进入源码包；首次259份输入已公开，Windows自动换行导致摘要拒绝的原失败保留；检出修正后260份输入重新原生验证。实际总预算/自动GC仍待接入。[设计](docs/SQLite运行时与写入拦截.md)、[证据](docs/ci-verification-20261107-r119.json)。

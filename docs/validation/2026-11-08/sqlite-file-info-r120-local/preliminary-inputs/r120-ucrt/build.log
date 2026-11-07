@@ -1,0 +1,96 @@
+[0/1] Re-running CMake...
+-- Configuring done (0.3s)
+-- Generating done (0.5s)
+-- Build files have been written to: E:/project/dukto/build/windows-ucrt
+[1/125] Automatic MOC for target discovery-signature-probe
+[2/123] Building C object CMakeFiles/dukto-sqlite.dir/src/core/sqliteplatform.c.obj
+[3/123] Linking C static library libdukto-sqlite.a
+[4/123] Automatic MOC for target dukto-sql-driver
+[5/122] Building CXX object CMakeFiles/dukto-sql-driver.dir/src/core/sqliteruntime.cpp.obj
+[6/122] Building CXX object CMakeFiles/dukto-sql-driver.dir/src/core/sqlitevfs.cpp.obj
+E:/project/dukto/src/core/sqlitevfs.cpp: In static member function 'static dukto::SqliteFileEvent dukto::SqliteVfs::Implementation::event(File*, dukto::SqliteFileEvent::Action, qint64, qint64, bool)':
+E:/project/dukto/src/core/sqlitevfs.cpp:50:99: warning: missing initializer for member 'dukto::SqliteFileEvent::observation' [-Wmissing-field-initializers]
+   50 |         SqliteFileEvent result{action, value->id, value->name, value->flags, offset, bytes, extend};
+      |                                                                                                   ^
+E:/project/dukto/src/core/sqlitevfs.cpp: In static member function 'static int dukto::SqliteVfs::Implementation::remove(sqlite3_vfs*, const char*, int)':
+E:/project/dukto/src/core/sqlitevfs.cpp:309:94: warning: missing initializer for member 'dukto::SqliteFileEvent::observation' [-Wmissing-field-initializers]
+  309 |             const SqliteFileEvent notice{SqliteFileEvent::Action::Delete, 0, QByteArray(name)};
+      |                                                                                              ^
+[7/122] Linking CXX static library libdukto-sql-driver.a
+[8/122] Automatic MOC for target dukto-core
+[9/120] Automatic MOC for target dukto-gui
+[10/119] Automatic MOC for target server-panel-tests
+[11/118] Automatic MOC for target ui-tests
+[12/117] Automatic MOC for target dukto-cli
+[13/116] Automatic MOC for target server-panel-process-probe
+[14/115] Automatic MOC for target core-tests
+[15/114] Automatic MOC for target discovery-identity-tests
+[16/113] Automatic MOC for target upload-scan-cleanup-tests
+[17/112] Automatic MOC for target state-storage-tests
+[18/111] Automatic MOC for target protocol-tests
+[19/110] Automatic MOC for target buffer-credit-tests
+[20/109] Automatic MOC for target sqlite-cache-tests
+[21/108] Automatic MOC for target identity-tests
+[22/107] Automatic MOC for target browse-tests
+[23/106] Automatic MOC for target sqlite-vfs-tests
+[24/105] Automatic MOC for target strong-manifest-tests
+[25/104] Automatic MOC for target disposition-journal-tests
+[26/103] Automatic MOC for target sqlite-file-info-tests
+[27/103] Automatic MOC for target transfer-accounting-tests
+[28/102] Automatic MOC for target task-store-tests
+[29/101] Automatic MOC for target expired-task-cleanup-tests
+[30/100] Automatic MOC for target client-download-cleanup-tests
+[31/99] Automatic MOC for target directory-cleanup-tests
+[32/98] Automatic MOC for target transfer-items-tests
+[33/97] Automatic MOC for target transfer-operation-tests
+[34/96] Automatic MOC for target transfer-scheduler-tests
+[35/95] Automatic MOC for target durable-receive-tests
+[36/94] Automatic MOC for target receive-skip-tests
+[37/93] Automatic MOC for target file-exchange-tests
+[38/92] Automatic MOC for target task-store-probe
+[39/91] Automatic MOC for target runtime-probe
+[40/90] Automatic MOC for target tls-probe
+[41/89] Automatic MOC for target secure-channel-probe
+[42/88] Automatic MOC for target updates-tests
+[43/87] Automatic MOC for target controller-tests
+[44/86] Automatic MOC for target avatars-tests
+[45/85] Building CXX object CMakeFiles/sqlite-file-info-tests.dir/sqlite-file-info-tests_autogen/mocs_compilation.cpp.obj
+[46/85] Building CXX object CMakeFiles/sqlite-vfs-tests.dir/tests/sqlite_vfs_tests.cpp.obj
+[47/85] Linking CXX executable dukto-cli.exe
+[48/85] Building CXX object CMakeFiles/state-storage-tests.dir/tests/state_storage_tests.cpp.obj
+[49/85] Building CXX object CMakeFiles/sqlite-file-info-tests.dir/tests/sqlite_file_info_tests.cpp.obj
+[50/85] Linking CXX executable dukto-gui.exe
+[51/85] Linking CXX executable core-tests.exe
+[52/85] Linking CXX executable upload-scan-cleanup-tests.exe
+[53/85] Linking CXX executable state-storage-tests.exe
+[54/85] Linking CXX executable protocol-tests.exe
+[55/85] Linking CXX executable discovery-identity-tests.exe
+[56/85] Linking CXX executable buffer-credit-tests.exe
+[57/85] Linking CXX executable sqlite-cache-tests.exe
+[58/85] Linking CXX executable sqlite-vfs-tests.exe
+[59/85] Linking CXX executable sqlite-file-info-tests.exe
+[60/85] Linking CXX executable identity-tests.exe
+[61/85] Linking CXX executable browse-tests.exe
+[62/85] Linking CXX executable strong-manifest-tests.exe
+[63/85] Linking CXX executable transfer-accounting-tests.exe
+[64/85] Linking CXX executable disposition-journal-tests.exe
+[65/85] Linking CXX executable task-store-tests.exe
+[66/85] Linking CXX executable expired-task-cleanup-tests.exe
+[67/85] Linking CXX executable client-download-cleanup-tests.exe
+[68/85] Linking CXX executable directory-cleanup-tests.exe
+[69/85] Linking CXX executable transfer-items-tests.exe
+[70/85] Linking CXX executable transfer-scheduler-tests.exe
+[71/85] Linking CXX executable transfer-operation-tests.exe
+[72/85] Linking CXX executable durable-receive-tests.exe
+[73/85] Linking CXX executable receive-skip-tests.exe
+[74/85] Linking CXX executable file-exchange-tests.exe
+[75/85] Linking CXX executable runtime-probe.exe
+[76/85] Linking CXX executable task-store-probe.exe
+[77/85] Linking CXX executable tls-probe.exe
+[78/85] Linking CXX executable secure-channel-probe.exe
+[79/85] Linking CXX executable updates-tests.exe
+[80/85] Linking CXX executable controller-tests.exe
+[81/85] Linking CXX executable avatars-tests.exe
+[82/85] Linking CXX executable ui-tests.exe
+[83/85] Linking CXX executable server-panel-tests.exe
+[84/85] Linking CXX executable server-panel-process-probe.exe

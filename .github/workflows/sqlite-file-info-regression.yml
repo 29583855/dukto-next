@@ -1,0 +1,57 @@
+name: Native SQLite file identity and allocation regression
+on:
+  workflow_dispatch:
+jobs:
+  native:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022, ubuntu-22.04, macos-15, macos-15-intel]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Windows Qt
+        if: runner.os == 'Windows'
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '5.15.2'
+          arch: win64_msvc2019_64
+          cache: true
+      - name: Install Linux Qt
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libssl-dev qtbase5-dev qtbase5-private-dev qtdeclarative5-dev qtquickcontrols2-5-dev libqt5sql5-sqlite qml-module-qtquick-controls2 qml-module-qtquick-layouts qml-module-qtquick-window2 qml-module-qtquick2 qml-module-qtqml qml-module-qtqml-models2 qml-module-qtqml-workerscript2 qml-module-qtgraphicaleffects
+      - name: Install macOS Qt and TLS
+        if: runner.os == 'macOS'
+        run: |
+          brew install qt@5 openssl@3
+          echo "CMAKE_PREFIX_PATH=$(brew --prefix qt@5)" >> "$GITHUB_ENV"
+          echo "OPENSSL_ROOT_DIR=$(brew --prefix openssl@3)" >> "$GITHUB_ENV"
+          echo "$(brew --prefix qt@5)/bin" >> "$GITHUB_PATH"
+          echo "$(brew --prefix openssl@3)/bin" >> "$GITHUB_PATH"
+      - name: Install Windows TLS
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          python scripts/ci_tls_runtime.py
+          "$PWD/.tools/openssl/Library/bin" >> $env:GITHUB_PATH
+      # 日期：2026-11-08；按实际平台构建GUI与独立CLI，完整核心及真实原生身份专项各自保存原件。
+      - name: Configure C++14 GUI and CLI
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+      - name: Compile native applications and tests
+        run: cmake --build build --config Release --parallel 4
+      - name: Validate exact native file observations and full core
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: python -X utf8 scripts/ci_sqlite_file_info.py --build build --configuration Release
+      - name: Preserve original native evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sqlite-file-info-${{ matrix.os }}
+          path: |
+            build/sqlite-file-info-regression/**
+            build/Testing/**
+            build/CMakeCache.txt

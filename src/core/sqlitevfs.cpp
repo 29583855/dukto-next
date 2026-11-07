@@ -33,10 +33,25 @@ struct SqliteVfs::Implementation {
         return reinterpret_cast<File *>(value);
     }
 
+    // 日期：2026-11-08；查询同一原生句柄及其共享节点，不重新打开路径，错误与无句柄分别保留。
+    static SqliteFileObservation observe(File *value) noexcept {
+        SqliteFileObservation result;
+        if (value->native && value->native->pMethods) {
+            result.fileResult = duktoSqliteNativeFileInfo(value->native, 0, &result.file);
+            result.sharedMemoryResult =
+                duktoSqliteNativeFileInfo(value->native, 1, &result.sharedMemory);
+        }
+        return result;
+    }
+
     // 日期：2026-11-07；回调事件只临时共享有界名称，不读正文，偏移和长度保持64位。
     static SqliteFileEvent event(File *value, SqliteFileEvent::Action action, qint64 offset = 0,
                                  qint64 bytes = 0, bool extend = false) {
-        return {action, value->id, value->name, value->flags, offset, bytes, extend};
+        SqliteFileEvent result{action, value->id, value->name, value->flags, offset,
+                               bytes,  extend,    {},          false};
+        if (value->owner->policy && action != SqliteFileEvent::Action::Open)
+            result.observation = observe(value);
+        return result;
     }
 
     // 日期：2026-11-07；空策略仅转发；接入策略时任何授权错误先返回，原生写入尚未发生。
@@ -50,12 +65,23 @@ struct SqliteVfs::Implementation {
             policy->after(value, result);
     }
 
+    // 日期：2026-11-08；实际操作返回后重新查询，包括失败后的可能部分增长；关闭不能再访问原生句柄。
+    static void completed(File *value, SqliteFileEvent notice, int result) noexcept {
+        if (!value->owner->policy)
+            return;
+        if (notice.action != SqliteFileEvent::Action::Close) {
+            notice.observation = observe(value);
+            notice.observedAfterCall = true;
+        }
+        value->owner->after(notice, result);
+    }
+
     // 日期：2026-11-07；关闭不可因额度拒绝；正常/失败均释放包装内名称，原生关闭结果照实传递。
     static int close(sqlite3_file *handle) noexcept {
         auto value = file(handle);
         const auto notice = event(value, SqliteFileEvent::Action::Close);
         const int result = value->native->pMethods->xClose(value->native);
-        value->owner->after(notice, result);
+        completed(value, notice, result);
         value->~File();
         return result;
     }
@@ -77,7 +103,7 @@ struct SqliteVfs::Implementation {
         if (granted != SQLITE_OK)
             return granted;
         const int result = value->native->pMethods->xWrite(value->native, data, count, offset);
-        value->owner->after(notice, result);
+        completed(value, notice, result);
         return result;
     }
 
@@ -91,7 +117,7 @@ struct SqliteVfs::Implementation {
         if (granted != SQLITE_OK)
             return granted;
         const int result = value->native->pMethods->xTruncate(value->native, length);
-        value->owner->after(notice, result);
+        completed(value, notice, result);
         return result;
     }
 
@@ -128,6 +154,10 @@ struct SqliteVfs::Implementation {
     // 日期：2026-11-07；拦截可扩展磁盘的大小提示/块预分配，VFS身份及文件指针指向当前包装。
     static int control(sqlite3_file *handle, int operation, void *argument) noexcept {
         auto value = file(handle);
+        if (operation == SqliteFileInfoControl || operation == SqliteSharedMemoryInfoControl)
+            return duktoSqliteNativeFileInfo(value->native,
+                                             operation == SqliteSharedMemoryInfoControl,
+                                             static_cast<DuktoSqliteFileInfo *>(argument));
         if (operation == SQLITE_FCNTL_FILE_POINTER) {
             *static_cast<sqlite3_file **>(argument) = handle;
             return SQLITE_OK;
@@ -148,7 +178,7 @@ struct SqliteVfs::Implementation {
                 return granted;
             const int result =
                 value->native->pMethods->xFileControl(value->native, operation, argument);
-            value->owner->after(notice, result);
+            completed(value, notice, result);
             return result;
         }
         return value->native->pMethods->xFileControl(value->native, operation, argument);
@@ -170,17 +200,21 @@ struct SqliteVfs::Implementation {
     static int map(sqlite3_file *handle, int page, int pageSize, int extend,
                    void volatile **result) noexcept {
         auto value = file(handle);
-        if (page < 0 || pageSize <= 0 ||
-            qint64(page) + 1 > std::numeric_limits<qint64>::max() / pageSize)
-            return SQLITE_IOERR_SHMMAP;
-        const auto notice = event(value, SqliteFileEvent::Action::MapSharedMemory, 0,
-                                  (qint64(page) + 1) * pageSize, extend != 0);
+        if (!result)
+            return SQLITE_MISUSE;
+        *result = nullptr;
+        sqlite3_int64 extent = 0;
+        const int checked = duktoSqliteSharedMemoryExtent(page, pageSize, &extent);
+        if (checked != SQLITE_OK)
+            return checked;
+        const auto notice =
+            event(value, SqliteFileEvent::Action::MapSharedMemory, 0, extent, extend != 0);
         const int granted = value->owner->before(notice);
         if (granted != SQLITE_OK)
             return granted;
         const int code =
             value->native->pMethods->xShmMap(value->native, page, pageSize, extend, result);
-        value->owner->after(notice, code);
+        completed(value, notice, code);
         return code;
     }
 
@@ -202,7 +236,7 @@ struct SqliteVfs::Implementation {
         const auto notice =
             event(value, SqliteFileEvent::Action::UnmapSharedMemory, 0, 0, remove != 0);
         const int result = value->native->pMethods->xShmUnmap(value->native, remove);
-        value->owner->after(notice, result);
+        completed(value, notice, result);
         return result;
     }
 
@@ -259,7 +293,7 @@ struct SqliteVfs::Implementation {
             }
             const int result =
                 owner->native->xOpen(owner->native, name, value->native, flags, outFlags);
-            owner->after(notice, result);
+            completed(value, notice, result);
             if (value->native->pMethods)
                 value->api.pMethods = methods(value->native->pMethods->iVersion);
             else
@@ -276,7 +310,9 @@ struct SqliteVfs::Implementation {
     static int remove(sqlite3_vfs *vfs, const char *name, int syncDirectory) noexcept {
         auto owner = static_cast<Implementation *>(vfs->pAppData);
         try {
-            const SqliteFileEvent notice{SqliteFileEvent::Action::Delete, 0, QByteArray(name)};
+            SqliteFileEvent notice;
+            notice.action = SqliteFileEvent::Action::Delete;
+            notice.name = QByteArray(name);
             const int granted = owner->before(notice);
             if (granted != SQLITE_OK)
                 return granted;

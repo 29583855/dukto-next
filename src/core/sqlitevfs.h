@@ -1,9 +1,20 @@
 #pragma once
+#include "sqlitefileinfo.h"
 #include <QByteArray>
 #include <memory>
 #include <sqlite3.h>
 
 namespace dukto {
+constexpr int SqliteFileInfoControl = 0x44554b01;
+constexpr int SqliteSharedMemoryInfoControl = 0x44554b02;
+
+struct SqliteFileObservation {
+    int fileResult = SQLITE_NOTFOUND;
+    DuktoSqliteFileInfo file{};
+    int sharedMemoryResult = SQLITE_NOTFOUND;
+    DuktoSqliteFileInfo sharedMemory{};
+};
+
 struct SqliteFileEvent {
     enum class Action {
         Open,
@@ -22,6 +33,9 @@ struct SqliteFileEvent {
     qint64 offset = 0;
     qint64 bytes = 0;
     bool extend = false;
+    SqliteFileObservation observation;
+    // 日期：2026-11-08；关闭后的通知保留关闭前观察，不能据此宣称实际文件已消失或额度已归还。
+    bool observedAfterCall = false;
 };
 
 class SqliteFilePolicy {
