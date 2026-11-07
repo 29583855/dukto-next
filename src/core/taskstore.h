@@ -3,6 +3,7 @@
 #include "files.h"
 #include "privatestore.h"
 #include "sqlitecache.h"
+#include <QDateTime>
 #include <QJsonObject>
 #include <QLockFile>
 #include <QSqlDatabase>
@@ -83,6 +84,10 @@ class TaskStore final {
                                   const QJsonObject &snapshot);
     // 日期：2026-11-04；外部控制只持久请求暂停/取消；工作者到安全点后才能确认实际状态。
     TransferTask requestStop(const QUuid &owner, const QUuid &id, bool pause);
+    // 日期：2026-11-07；独占维护下核对保留期与不可恢复的过期凭据，不删除任务及幂等键。
+    QJsonObject expiryInfo(const TaskLease &lease, const QDateTime &now) const;
+    // 日期：2026-11-07；过期标记与终止状态在同一FULL事务提交，随后才允许清理临时正文。
+    void expire(const TaskLease &lease, const QDateTime &now);
 
   private:
     // 日期：2026-11-04；执行方必须持有本任务/主体的跨进程所有权，不以连接序号代替任务锁。

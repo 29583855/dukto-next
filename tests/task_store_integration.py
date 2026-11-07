@@ -163,9 +163,10 @@ def main():
             processes.append(initial)
             legacy = finish(initial)
             with closing(sqlite3.connect(root / "migration/tasks.sqlite")) as database:
-                assert database.execute("PRAGMA user_version").fetchone() == (2,)
+                assert database.execute("PRAGMA user_version").fetchone() == (3,)
                 assert database.execute("SELECT accounting FROM tasks").fetchone() == (b"",)
                 database.execute("ALTER TABLE tasks DROP COLUMN accounting")
+                database.execute("DROP TABLE task_expiry")
                 database.execute("PRAGMA user_version=1")
                 database.commit()
                 before_migration = database.execute("SELECT * FROM tasks").fetchone()
@@ -180,9 +181,27 @@ def main():
             migration_seconds = time.monotonic() - migration_started
             assert all(value == legacy for value in migrated), migrated
             with closing(sqlite3.connect(root / "migration/tasks.sqlite")) as database:
-                assert database.execute("PRAGMA user_version").fetchone() == (2,)
+                assert database.execute("PRAGMA user_version").fetchone() == (3,)
+                assert database.execute("SELECT COUNT(*) FROM task_expiry").fetchone() == (0,)
                 rows = database.execute("SELECT * FROM tasks").fetchall()
                 assert len(rows) == 1 and rows[0][:-1] == before_migration and rows[0][-1] == b""
+                assert database.execute("PRAGMA integrity_check").fetchone() == ("ok",)
+            # 日期：2026-11-07；版本二也由八进程竞争升级，原16列、幂等键与修订全部保持。
+            with closing(sqlite3.connect(root / "migration/tasks.sqlite")) as database:
+                before_v2 = database.execute("SELECT * FROM tasks").fetchall()
+                database.execute("DROP TABLE task_expiry")
+                database.execute("PRAGMA user_version=2")
+                database.commit()
+            v2_processes = []
+            for _ in range(8):
+                process = subprocess.Popen(migration, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
+                processes.append(process)
+                v2_processes.append(process)
+            assert all(finish(process) == legacy for process in v2_processes)
+            with closing(sqlite3.connect(root / "migration/tasks.sqlite")) as database:
+                assert database.execute("PRAGMA user_version").fetchone() == (3,)
+                assert database.execute("SELECT * FROM tasks").fetchall() == before_v2
+                assert database.execute("SELECT COUNT(*) FROM task_expiry").fetchone() == (0,)
                 assert database.execute("PRAGMA integrity_check").fetchone() == ("ok",)
             # 日期：2026-11-05；活进程持续持锁仍须在原5秒预算拒绝，不能删除活锁或无限延长初始化等待。
             blocked_command = [executable, "init-lock", str(root / "held-timeout"), owner, request, str(root)]
@@ -207,7 +226,9 @@ def main():
     report = {"date": "2026-11-07", "passed": True, "stateDirectoryUse": state_use, "competingProcesses": 8,
               "persistedTasks": 1, "activeLeaseRefused": True, "leaseRecoveredAfterKill": True,
               "schemaMigrationProcesses": 8, "schemaMigrationSeconds": round(migration_seconds, 3),
-              "oldFifteenColumnsUnchanged": True, "migratedSchemaVersion": 2,
+              "oldFifteenColumnsUnchanged": True, "migratedSchemaVersion": 3,
+              "schemaTwoMigrationProcesses": 8, "oldSixteenColumnsUnchanged": True,
+              "scriptSha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
               "contendedInitializationProcesses": 8, "contendedInitializationSeconds": round(contested_seconds, 3),
               "activeInitializationOwnerPreserved": True,
               "initializationTimeoutSeconds": round(initialization_timeout_seconds, 3),

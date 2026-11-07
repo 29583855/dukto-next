@@ -250,7 +250,7 @@ TaskLease::TaskLease(QUuid task, QUuid owner, const QString &path)
 // 日期：2026-11-04；QLockFile 归还所有权；进程崩溃后的锁依原生进程身份判定，不按任务年龄删除。
 TaskLease::~TaskLease() = default;
 
-// 日期：2026-11-06；原子迁移固定计量列；已有版本避免重写文件头，旧记录及修订保持。
+// 日期：2026-11-07；事务迁移计量与过期凭据表；已有版本不重写文件头，旧记录及修订保持。
 TaskStore::TaskStore(PrivateStore &store, bool control)
     : store_(store), connection_(QUuid::createUuid().toString()), cacheCredit_(1024, control) {
     // 日期：2026-11-04；同进程线程先串行初始化，避免 Windows 锁文件探测句柄与解锁删除竞争。
@@ -278,7 +278,7 @@ TaskStore::TaskStore(PrivateStore &store, bool control)
         execute(database_, "PRAGMA synchronous=FULL");
         QSqlQuery version(database_);
         if (!version.exec("PRAGMA user_version") || !version.next() ||
-            version.value(0).toInt() < 0 || version.value(0).toInt() > 2)
+            version.value(0).toInt() < 0 || version.value(0).toInt() > 3)
             throw Error(ExitCode::Config, QStringLiteral("任务库版本不受支持"), "task");
         const auto schema = version.value(0).toInt();
         version.finish();
@@ -294,7 +294,11 @@ TaskStore::TaskStore(PrivateStore &store, bool control)
         if (schema < 2) {
             execute(database_, "ALTER TABLE tasks ADD COLUMN accounting BLOB NOT NULL DEFAULT X''");
             // 日期：2026-11-06；只在实际迁移时设置版本，已有版本查询不能改写SQLite文件头。
-            execute(database_, "PRAGMA user_version=2");
+        }
+        if (schema < 3) {
+            execute(database_, "CREATE TABLE task_expiry(id TEXT PRIMARY KEY,owner TEXT NOT NULL,"
+                               "revision INTEGER NOT NULL,started TEXT NOT NULL)");
+            execute(database_, "PRAGMA user_version=3");
         }
         transaction.commit();
     } catch (...) {
@@ -615,5 +619,77 @@ TransferTask TaskStore::requestStop(const QUuid &owner, const QUuid &id, bool pa
     }
     transaction.commit();
     return current;
+}
+
+// 日期：2026-11-07；暂停/中断保留7天，失败/取消保留30天，完成或提交不确定任务不参与。
+QJsonObject TaskStore::expiryInfo(const TaskLease &lease, const QDateTime &now) const {
+    if (!store_.maintenance() || !now.isValid() || now.timeSpec() != Qt::UTC)
+        throw Error(ExitCode::Config, QStringLiteral("过期维护需要独占状态根及UTC时钟"), "cleanup");
+    verifyLease(lease);
+    const auto current = task(lease.owner_, lease.task_);
+    if (current.direction != "upload" || current.manifest.size() != 32)
+        throw Error(ExitCode::Config, QStringLiteral("当前入口只清理已绑定清单的服务器上传任务"),
+                    "cleanup");
+    QSqlQuery expiry(database_);
+    expiry.prepare("SELECT owner,revision,started FROM task_expiry WHERE id=?");
+    expiry.addBindValue(uuid(current.id));
+    checked(expiry);
+    if (expiry.next()) {
+        const auto started = QDateTime::fromString(expiry.value(2).toString(), Qt::ISODate);
+        if (expiry.value(0).toString() != uuid(current.owner) ||
+            expiry.value(1).toULongLong() != current.revision || !started.isValid() ||
+            started.timeSpec() != Qt::UTC ||
+            (current.state != "failed" && current.state != "cancelled"))
+            throw Error(ExitCode::Integrity, QStringLiteral("过期凭据与原任务不同"), "cleanup");
+        return {{"eligible", true}, {"expired", true}, {"startedUtc", expiry.value(2).toString()}};
+    }
+    QSqlQuery updated(database_);
+    updated.prepare("SELECT updated FROM tasks WHERE id=? AND owner=?");
+    updated.addBindValue(uuid(current.id));
+    updated.addBindValue(uuid(current.owner));
+    checked(updated);
+    if (!updated.next())
+        throw Error(ExitCode::Integrity, QStringLiteral("过期维护任务记录丢失"), "cleanup");
+    const auto text = updated.value(0).toString();
+    const auto date = QDateTime::fromString(text, Qt::ISODate);
+    if (!date.isValid() || date.timeSpec() != Qt::UTC || date.toString(Qt::ISODate) != text)
+        throw Error(ExitCode::Integrity, QStringLiteral("任务更新时间无效"), "cleanup");
+    const int days = current.state == "paused" || current.state == "interrupted" ? 7
+                     : current.state == "failed" || current.state == "cancelled" ? 30
+                                                                                 : 0;
+    return {{"eligible", days > 0 && date <= now.addDays(-days)},
+            {"expired", false},
+            {"updatedUtc", text},
+            {"retentionDays", days}};
+}
+
+// 日期：2026-11-07；修订绑定的永久凭据保留原请求幂等性；重启续清理不会重新激活任务。
+void TaskStore::expire(const TaskLease &lease, const QDateTime &now) {
+    Transaction transaction(database_);
+    const auto info = expiryInfo(lease, now);
+    if (!info["eligible"].toBool())
+        throw Error(ExitCode::Config, QStringLiteral("任务尚未过保留期或状态不允许清理"),
+                    "cleanup");
+    if (info["expired"].toBool()) {
+        transaction.commit();
+        return;
+    }
+    auto current = task(lease.owner_, lease.task_);
+    if (current.state == "paused" || current.state == "interrupted") {
+        current.state = "failed";
+        current.desired.clear();
+        current.error = static_cast<int>(ExitCode::Cancelled);
+        current.message = QStringLiteral("恢复保留期已过，临时正文进入过期清理");
+        ++current.revision;
+        save(current);
+    }
+    QSqlQuery insert(database_);
+    insert.prepare("INSERT INTO task_expiry VALUES(?,?,?,?)");
+    insert.addBindValue(uuid(current.id));
+    insert.addBindValue(uuid(current.owner));
+    insert.addBindValue(static_cast<qlonglong>(current.revision));
+    insert.addBindValue(now.toString(Qt::ISODate));
+    checked(insert);
+    transaction.commit();
 }
 } // namespace dukto

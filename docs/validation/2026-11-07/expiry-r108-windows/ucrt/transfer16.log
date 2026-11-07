@@ -1,0 +1,22 @@
+{
+  "date": "2026-11-04",
+  "passed": true,
+  "payloadSha256": "c7fd926e5662e22d94004a95c01fb3cca72733824145d2bca8df1573d58895e7",
+  "checks": [
+    "real authenticated upload and download",
+    "8MiB+37 bytes",
+    "Unicode and empty files/directories",
+    "35 additional files cross three bounded receive windows with per-file hashes",
+    "directory keep-both mapping",
+    "same request does not duplicate",
+    "changed upload content refused",
+    "completed retry without local manifest/log refused without new files",
+    "download destination rebinding refused",
+    "read/upload grants enforced",
+    "owned task list and revoked filtering",
+    "normal upload scan libraries reclaimed"
+  ],
+  "channelsRequested": 16,
+  "scope": "authenticated CLI with selected channels; GUI, restart/fault and full platform matrix require separate validation"
+}
+

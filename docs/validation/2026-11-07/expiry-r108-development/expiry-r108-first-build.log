@@ -1,0 +1,25 @@
+[0/1] Re-running CMake...
+-- Configuring done (0.2s)
+-- Generating done (0.4s)
+-- Build files have been written to: E:/project/dukto/build/windows-ucrt
+[1/112] Automatic MOC for target discovery-signature-probe
+[2/110] Automatic MOC for target dukto-core
+[3/109] Building CXX object CMakeFiles/dukto-core.dir/src/core/taskstore.cpp.obj
+[4/109] Building CXX object CMakeFiles/dukto-core.dir/src/core/service.cpp.obj
+[5/109] Building CXX object CMakeFiles/dukto-core.dir/src/core/expiredtaskcleanup.cpp.obj
+FAILED: [code=1] CMakeFiles/dukto-core.dir/src/core/expiredtaskcleanup.cpp.obj 
+E:\project\dukto\.tools\msys64\ucrt64\bin\g++.exe -DDUKTO_VERSION=\"0.1.0\" -DQT_CORE_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_SQL_LIB -IE:/project/dukto/build/windows-ucrt -IE:/project/dukto -IE:/project/dukto/build/windows-ucrt/dukto-core_autogen/include -IE:/project/dukto/src -isystem E:/project/dukto/.tools/msys64/ucrt64/include/QtCore -isystem E:/project/dukto/.tools/msys64/ucrt64/share/qt5/mkspecs/win32-g++ -isystem E:/project/dukto/.tools/msys64/ucrt64/include/QtNetwork -isystem E:/project/dukto/.tools/msys64/ucrt64/include/QtSql -O3 -DNDEBUG -std=c++14 -Wall -Wextra -Wpedantic -MD -MT CMakeFiles/dukto-core.dir/src/core/expiredtaskcleanup.cpp.obj -MF CMakeFiles\dukto-core.dir\src\core\expiredtaskcleanup.cpp.obj.d -o CMakeFiles/dukto-core.dir/src/core/expiredtaskcleanup.cpp.obj -c E:/project/dukto/src/core/expiredtaskcleanup.cpp
+E:/project/dukto/src/core/expiredtaskcleanup.cpp: In function 'QJsonObject dukto::cleanupExpiredUpload(PrivateStore&, const QUuid&, const QUuid&, const QDateTime&, bool, quint64, const std::function<void()>&)':
+E:/project/dukto/src/core/expiredtaskcleanup.cpp:315:38: error: passing 'const QSqlDatabase' as 'this' argument discards qualifiers [-fpermissive]
+  315 |                     database.rollback();
+      |                     ~~~~~~~~~~~~~~~~~^~
+In file included from E:/project/dukto/.tools/msys64/ucrt64/include/QtSql/QSqlDatabase:1,
+                 from E:/project/dukto/src/core/sqlitecache.h:4,
+                 from E:/project/dukto/src/core/taskstore.h:5,
+                 from E:/project/dukto/src/core/expiredtaskcleanup.h:3,
+                 from E:/project/dukto/src/core/expiredtaskcleanup.cpp:1:
+E:/project/dukto/.tools/msys64/ucrt64/include/QtSql/qsqldatabase.h:93:10: note:   in call to 'bool QSqlDatabase::rollback()'
+   93 |     bool rollback();
+      |          ^~~~~~~~
+[6/109] Building CXX object CMakeFiles/dukto-core.dir/src/core/transferitems.cpp.obj
+ninja: build stopped: subcommand failed.

@@ -1,5 +1,5 @@
 {
-  "observedUtc": "2026-11-07T02:21:41.207196+00:00",
+  "observedUtc": "2026-11-07T02:59:16.986719+00:00",
   "productionCommit": "ed4f5cf08c96f04671e49e5138eda8ce1790ead3",
   "testCommit": "ed4f5cf08c96f04671e49e5138eda8ce1790ead3",
   "packages": [
@@ -213,8 +213,8 @@
   ],
   "releaseQualified": false,
   "deliveryComplete": false,
-  "planVersion": "v0.107",
-  "currentSourceStage": "R107 dualMac compiled and Windows verified; independent Ubuntu task-items timed out; full new native pending",
+  "planVersion": "v0.108",
+  "currentSourceStage": "R108 targeted expired upload temporary body cleanup and CLI; original metadata retained",
   "nativeMusl": {
     "sourceCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
     "productionCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
@@ -638,7 +638,7 @@
       "sourceCommit": "31f3db3bfb5a8bf70b6217afd50df3284e27934c"
     }
   ],
-  "publicVerificationReceipt": "docs/ci-verification-20261107-r107.json",
+  "publicVerificationReceipt": "docs/ci-verification-20261107-r108.json",
   "lastVerifiedCopiedFull": {
     "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42065923177",
     "sourceCommit": "74dd5cec71fde472b940e869661d6e8533042a65",
@@ -19613,7 +19613,7 @@
       "sha256": "4e925961855239abe68898110d7e27d2d842a6676373cc2ab724a1f18d5af3a0"
     }
   },
-  "currentGuiSourceCommitPending": false,
+  "currentGuiSourceCommitPending": true,
   "coreProductionCommit": "88f33b2c83f2950307c362fb64c693f7e9e5929d",
   "linuxPreviewR98": {
     "sourceCommit": "b2e4659b347c65eef24c8e568e07e96a2d6ff2d7",
@@ -20809,6 +20809,14 @@
     "macosCompiledEvidence": {
       "path": "docs/validation/2026-11-07/secure-ready-r107-macos-compiled/receipt.json",
       "sha256": "ca9dac58d32a4f55c49ce562919ef8c7eb1e7ae8d86fc027800fd05587de7131"
+    },
+    "nativeCoreEvidence": {
+      "path": "docs/validation/2026-11-07/secure-ready-r107-native-core/receipt.json",
+      "sha256": "4503eaa58d66335db4282c46506446cf7a84ca1ffc4806e3913dee89d7cd7ecb"
+    },
+    "ubuntuCompleteTerminal": {
+      "path": "docs/validation/2026-11-07/secure-ready-r107-native-job-terminals/ubuntu-22.04/receipt.json",
+      "sha256": "ca4e8d18c4b064dc1953986aabe1a21b5707ae9dc59cf2602d3389bdc2fb8343"
     }
   },
   "r105IntelNativeTerminal": {
@@ -20822,5 +20830,18 @@
   "macOSCompilationR107": {
     "path": "docs/validation/2026-11-07/secure-ready-r107-macos-compiled/receipt.json",
     "sha256": "ca9dac58d32a4f55c49ce562919ef8c7eb1e7ae8d86fc027800fd05587de7131"
+  },
+  "expiredUploadCleanupR108": {
+    "manifest": {
+      "path": "docs/ci-verification-20261107-r108.json",
+      "sha256": "adb2b0b9cbef54b18f5c9ad2056da6ff024224b1da870848dc3ebbcbcf401058"
+    },
+    "windowsEvidence": {
+      "path": "docs/validation/2026-11-07/expiry-r108-qualified/receipt.json",
+      "sha256": "46741a76867005ccf77a3a4c32e41b56c5959fabbfc26fa40ece91b14ae5f7e7"
+    },
+    "nativeCIPending": true,
+    "independentUbuntuPending": true,
+    "globalDiskBudgetImplemented": false
   }
 }

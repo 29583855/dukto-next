@@ -1,0 +1,15 @@
+********* Start testing of ExpiredTaskCleanupTests *********
+Config: Using QtTest library 5.15.19, Qt 5.15.19 (x86_64-little_endian-llp64 shared (dynamic) release build; by GCC 16.1.0), windows 11
+PASS   : ExpiredTaskCleanupTests::initTestCase()
+PASS   : ExpiredTaskCleanupTests::retentionAndIdempotency()
+PASS   : ExpiredTaskCleanupTests::crashAfterRemoval()
+PASS   : ExpiredTaskCleanupTests::replacedTemporary()
+PASS   : ExpiredTaskCleanupTests::guards(task-committing)
+PASS   : ExpiredTaskCleanupTests::guards(task-active)
+PASS   : ExpiredTaskCleanupTests::guards(task-completed)
+PASS   : ExpiredTaskCleanupTests::guards(invalid-time)
+PASS   : ExpiredTaskCleanupTests::unresolvedCommit()
+FAIL!  : ExpiredTaskCleanupTests::boundedPages() Caught unhandled exception
+D:/W/B/src/qtbase/src/testlib/qtestcase.cpp(1966) : failure location
+Totals: 9 passed, 1 failed, 0 skipped, 0 blacklisted, 1178ms
+********* Finished testing of ExpiredTaskCleanupTests *********

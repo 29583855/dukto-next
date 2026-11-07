@@ -1,6 +1,7 @@
 #include "servicecommands.h"
 #include "core/endpoint.h"
 #include "core/error.h"
+#include "core/expiredtaskcleanup.h"
 #include "core/paralleltransfer.h"
 #include "core/protocol.h"
 #include "core/service.h"
@@ -65,7 +66,7 @@ int certificateDays(const QCommandLineParser &parser) {
 }
 } // namespace
 
-// 日期：2026-11-05；GUI/CLI 共用核心；新版冲突策略绑定原请求，恢复从任务读取而不允许覆盖。
+// 日期：2026-11-07；GUI/CLI复用核心；过期维护先独占状态根，恢复控制仍绑定原请求。
 int runServiceCommand(const QCommandLineParser &parser, const QStringList &arguments,
                       const QString &stateDirectory,
                       const std::function<void(const QJsonObject &)> &output,
@@ -89,6 +90,41 @@ int runServiceCommand(const QCommandLineParser &parser, const QStringList &argum
     if (command == "serve") {
         const auto action = arguments.value(1);
         const auto servicePath = QDir(stateDirectory).filePath("service");
+        if (action == "cleanup") {
+            const auto operation = arguments.value(2);
+            const QUuid owner(parser.value("client"));
+            const QUuid id(parser.value("task"));
+            bool valid = false;
+            const auto after = parser.value("after").toULongLong(&valid);
+            const QStringList allowed{"client", "task", "state-directory", "after",
+                                      "j",      "json", "non-interactive"};
+            for (const auto &option : parser.optionNames()) {
+                if (!allowed.contains(option) || parser.values(option).size() > 1 ||
+                    parser.optionNames().count(option) > 1)
+                    throw dukto::Error(dukto::ExitCode::Config,
+                                       QStringLiteral("清理选项无效或重复"), "arguments");
+            }
+            if (arguments.size() != 3 || (operation != "preview" && operation != "run") ||
+                owner.isNull() || id.isNull() || !valid ||
+                parser.value("client") != owner.toString(QUuid::WithoutBraces) ||
+                parser.value("task") != id.toString(QUuid::WithoutBraces) ||
+                parser.value("after") != QString::number(after) ||
+                (operation == "run" && parser.isSet("after")))
+                throw dukto::Error(
+                    dukto::ExitCode::Config,
+                    QStringLiteral("用法：serve cleanup preview|run --client UUID --task UUID"),
+                    "arguments");
+            dukto::PrivateStore store(servicePath, false, dukto::PrivateStore::Use::Maintenance);
+            output(dukto::cleanupExpiredUpload(
+                store, owner, id, QDateTime::currentDateTimeUtc(), operation == "run", after,
+                [&]() {
+                    // 日期：2026-11-07；本地信号在每个有界清理安全点观察，中断保留已提交的恢复凭据。
+                    if (interrupted())
+                        throw dukto::Error(dukto::ExitCode::Cancelled,
+                                           QStringLiteral("清理已中断，可再次执行续做"), "cleanup");
+                }));
+            return 0;
+        }
         if (action == "init" || action == "info" || action == "renew") {
             if (arguments.size() != 2)
                 throw dukto::Error(dukto::ExitCode::Config,

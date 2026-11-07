@@ -296,7 +296,7 @@ class TaskStoreTests final : public QObject {
         QVERIFY_EXCEPTION_THROWN(reopened.page(owner), dukto::Error);
     }
 
-    // 日期：2026-11-06；真实旧架构升级后任务身份、摘要、修订和完成结果逐字段保持，新增任务仍可分页。
+    // 日期：2026-11-07；真实旧架构升级至版本三，任务身份、摘要、修订及完成结果保持。
     void versionOneMigration() {
         QTemporaryDir root;
         dukto::PrivateStore store(root.filePath("private"), true);
@@ -331,7 +331,7 @@ class TaskStoreTests final : public QObject {
             QSqlQuery query(database);
             QVERIFY(query.exec("PRAGMA user_version"));
             QVERIFY(query.next());
-            QCOMPARE(query.value(0).toInt(), 2);
+            QCOMPARE(query.value(0).toInt(), 3);
             query.finish();
             query.prepare("SELECT spec,requesthash,accounting,updated FROM tasks WHERE id=?");
             query.addBindValue(id.toString(QUuid::WithoutBraces));
@@ -350,7 +350,7 @@ class TaskStoreTests final : public QObject {
     // 日期：2026-11-06；未来版本及负版本均拒绝，不能重建旧表或悄悄降低持久架构版本。
     void unsupportedSchema_data() {
         QTest::addColumn<int>("version");
-        QTest::newRow("future") << 3;
+        QTest::newRow("future") << 4;
         QTest::newRow("negative") << -1;
     }
 
