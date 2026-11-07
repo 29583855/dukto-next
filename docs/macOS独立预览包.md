@@ -38,7 +38,7 @@ R108应用源码`73cd10ac95be6c97fd67134ba14b6edee4b2c189`已在 [公开仓库](
 
 ## `6eea9d2`原生复验（进行中）
 
-[GitHub Actions运行42340140189](https://github.com/29583855/dukto-next/actions/runs/42340140189)对应精确源码提交`6eea9d23a254ac0095e588b03d76c19faf7bf5cf`。截至2026-11-07 05:15 UTC，Apple Silicon与Intel均完成GUI/CLI编译并分别上传[`macos-compiled-ARM64`](https://github.com/29583855/dukto-next/actions/runs/42340140189/artifacts/13561031943)和[`macos-compiled-X64`](https://github.com/29583855/dukto-next/actions/runs/42340140189/artifacts/13560769150)归档；两种架构、Ubuntu和Windows均在协议集成阶段。归档只包含编译产物，不含Qt/OpenSSL运行依赖。当前编译成功不代表四平台整轮通过，待运行终态后核验归档、报告和失败项。
+[GitHub Actions运行42340140189](https://github.com/29583855/dukto-next/actions/runs/42340140189)对应精确源码提交`6eea9d23a254ac0095e588b03d76c19faf7bf5cf`。截至2026-11-07 05:35 UTC，Apple Silicon与Intel均完成GUI/CLI编译并分别上传[`macos-compiled-ARM64`](https://github.com/29583855/dukto-next/actions/runs/42340140189/artifacts/13561031943)和[`macos-compiled-X64`](https://github.com/29583855/dukto-next/actions/runs/42340140189/artifacts/13560769150)归档；Ubuntu完整job已成功，Windows及两种Mac架构仍在协议集成阶段。归档只包含编译产物，不含Qt/OpenSSL运行依赖。当前编译成功不代表四平台整轮通过，待运行终态后核验归档、报告和失败项。
 
 ## R105含依赖部署包（历史）
 
