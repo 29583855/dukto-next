@@ -191,28 +191,36 @@ void SecureChannel::check(QElapsedTimer &elapsed, const QString &stage) const {
         throw Error(ExitCode::Network, QStringLiteral("安全连接操作超时"), stage);
 }
 
-// 日期：2026-11-05；回调只记录异常；写等待先观察同请求失败，读等待不触碰正在解码的半帧。
+// 日期：2026-11-07；先按原顺序检查失败/就绪，确需等待时才建立事件循环；信号回调不抛异常。
 void SecureChannel::waitUntil(const std::function<bool()> &ready, QElapsedTimer &elapsed,
                               const QString &stage) {
+    // 日期：2026-11-07；已缓冲正文也不能跳过取消/绝对期限；允许读完断开前到达的最后一帧。
+    const auto available = [&]() {
+        check(elapsed, stage);
+        if (writing_)
+            checkPeerFailure();
+        if (ready())
+            return true;
+        if (socket_.state() == QAbstractSocket::UnconnectedState)
+            throw Error(sslErrors_ ? ExitCode::Permission : ExitCode::Network,
+                        sslErrors_ ? QStringLiteral("TLS 证书或主机名校验失败")
+                                   : QStringLiteral("安全连接已断开或无法连接"),
+                        stage);
+        return false;
+    };
+    if (available())
+        return;
     std::exception_ptr failure;
     bool done = false;
     QEventLoop loop;
     const auto evaluate = [&]() {
         if (done || failure)
             return;
-        // 日期：2026-11-04；完成谓词先于断开检查，允许读取对端发送完毕后留下的最后一帧。
+        // 日期：2026-11-07；与首次检查共用语义；事件回调内只保存异常，由所属调用栈重新抛出。
         try {
-            check(elapsed, stage);
-            if (writing_)
-                checkPeerFailure();
-            if (ready()) {
+            if (available()) {
                 done = true;
                 loop.quit();
-            } else if (socket_.state() == QAbstractSocket::UnconnectedState) {
-                throw Error(sslErrors_ ? ExitCode::Permission : ExitCode::Network,
-                            sslErrors_ ? QStringLiteral("TLS 证书或主机名校验失败")
-                                       : QStringLiteral("安全连接已断开或无法连接"),
-                            stage);
             }
         } catch (...) {
             failure = std::current_exception();

@@ -1,0 +1,227 @@
+# To display the perf.data header info, please use --header/--header-only options.
+#
+#
+# Total Lost Samples: 0
+#
+# Samples: 732  of event 'cpu-clock:u'
+# Event count (approx.): 14938775316
+#
+# Overhead  Command          Shared Object             Symbol                                                                                                                                                                                                                                              IPC   [IPC Coverage]
+# ........  ...............  ........................  ..................................................................................................................................................................................................................................................  ....................
+#
+     2.19%  dukto::ServiceW  libc.so.6                 [.] __poll                                                                                                                                                                                                                                          -      -            
+            |
+            ---__poll
+               0x7cc6b3773b4d
+               g_main_context_iteration
+               QEventDispatcherGlib::processEvents(QFlags<QEventLoop::ProcessEventsFlag>)
+               |          
+                --1.91%--QEventLoop::exec(QFlags<QEventLoop::ProcessEventsFlag>)
+                          dukto::next::SecureChannel::waitUntil(std::function<bool ()> const&, QElapsedTimer&, QString const&)
+                          dukto::next::SecureChannel::read()
+                          dukto::(anonymous namespace)::read(dukto::next::SecureChannel&, unsigned long long, std::function<void ()> const&)
+                          |          
+                           --1.64%--dukto::(anonymous namespace)::senderLane(dukto::next::SecureChannel&, dukto::ParallelState&, QPair<QString, QString> const&, unsigned long long, std::function<void ()> const&)
+                                     dukto::serveParallelLane(dukto::next::SecureChannel&, dukto::PrivateStore&, dukto::Principal const&, std::function<dukto::Principal ()> const&, QJsonObject const&, unsigned long long)
+                                     dukto::ServiceWorker::run()
+                                     0x7cc6b3edb673
+                                     0xffffffffffffffff
+
+     1.78%  QThread          libc.so.6                 [.] 0x0000000000098e51                                                                                                                                                                                                                              -      -            
+            |
+            ---0x7308a2098e51
+               pthread_cond_clockwait
+               dukto::(anonymous namespace)::receiverLane(dukto::next::SecureChannel&, dukto::ParallelState&, int, unsigned long long, std::function<void ()> const&)
+               dukto::ParallelTransfer::clientLane(dukto::next::SecureChannel&, QJsonObject const&, int, std::shared_ptr<dukto::ParallelState> const&, QPair<QString, QString> const&, unsigned long long)
+               dukto::RemoteClient::runDataLane(QJsonObject const&, int, std::shared_ptr<dukto::ParallelState> const&, QPair<QString, QString> const&)
+               dukto::ParallelTransfer::startClients(dukto::ClientProfile const&, int, dukto::StrongManifest*)::{lambda()#2}::operator()() const
+               std::_Function_handler<std::unique_ptr<std::__future_base::_Result_base, std::__future_base::_Result_base::_Deleter> (), std::__future_base::_Task_setter<std::unique_ptr<std::__future_base::_Result<void>, std::__future_base::_Result_base::_Deleter>, std::thread::_Invoker<std::tuple<QThread::create<dukto::ParallelTransfer::startClients(dukto::ClientProfile const&, int, dukto::StrongManifest*)::{lambda()#2}>(dukto::ParallelTransfer::startClients(dukto::ClientProfile const&, int, dukto::StrongManifest*)::{lambda()#2}&&)::{lambda()#1}> >, void> >::_M_invoke(std::_Any_data const&)
+               std::__future_base::_State_baseV2::_M_do_set(std::function<std::unique_ptr<std::__future_base::_Result_base, std::__future_base::_Result_base::_Deleter> ()>*, bool*)
+               0x7308a20a1fb2
+               std::__future_base::_Deferred_state<std::thread::_Invoker<std::tuple<QThread::create<dukto::ParallelTransfer::startClients(dukto::ClientProfile const&, int, dukto::StrongManifest*)::{lambda()#2}>(dukto::ParallelTransfer::startClients(dukto::ClientProfile const&, int, dukto::StrongManifest*)::{lambda()#2}&&)::{lambda()#1}> >, void>::_M_complete_async()
+               0x7308a2eda819
+               0x7308a2edb673
+               0x7308a209cb83
+               0x7308a2129ecb
+
+     1.78%  dukto::ServiceW  libQt5Core.so.5.15.13     [.] qCalculateGrowingBlockSize(unsigned long, unsigned long, unsigned long)                                                                                                                                                                         -      -            
+            |
+            ---qCalculateGrowingBlockSize(unsigned long, unsigned long, unsigned long)
+               |          
+               |--1.23%--QArrayData::allocate(unsigned long, unsigned long, unsigned long, QFlags<QArrayData::AllocationOption>)
+               |          |          
+               |           --0.68%--QByteArray::reallocData(unsigned int, QFlags<QArrayData::AllocationOption>)
+               |          
+                --0.55%--QArrayData::reallocateUnaligned(QArrayData*, unsigned long, unsigned long, QFlags<QArrayData::AllocationOption>)
+                          QByteArray::reallocData(unsigned int, QFlags<QArrayData::AllocationOption>)
+
+     1.09%  dukto::ServiceW  libQt5Core.so.5.15.13     [.] QArrayData::allocate(unsigned long, unsigned long, unsigned long, QFlags<QArrayData::AllocationOption>)                                                                                                                                         -      -            
+            |
+            ---QArrayData::allocate(unsigned long, unsigned long, unsigned long, QFlags<QArrayData::AllocationOption>)
+
+     0.96%  dukto::ServiceW  libglib-2.0.so.0.8000.0   [.] g_mutex_lock                                                                                                                                                                                                                                    -      -            
+            |
+            ---g_mutex_lock
+               |          
+                --0.68%--0x7cc6b3773b58
+                          g_main_context_iteration
+                          QEventDispatcherGlib::processEvents(QFlags<QEventLoop::ProcessEventsFlag>)
+                          QEventLoop::exec(QFlags<QEventLoop::ProcessEventsFlag>)
+                          dukto::next::SecureChannel::waitUntil(std::function<bool ()> const&, QElapsedTimer&, QString const&)
+                          dukto::next::SecureChannel::read()
+                          dukto::(anonymous namespace)::read(dukto::next::SecureChannel&, unsigned long long, std::function<void ()> const&)
+                          dukto::(anonymous namespace)::senderLane(dukto::next::SecureChannel&, dukto::ParallelState&, QPair<QString, QString> const&, unsigned long long, std::function<void ()> const&)
+                          dukto::serveParallelLane(dukto::next::SecureChannel&, dukto::PrivateStore&, dukto::Principal const&, std::function<dukto::Principal ()> const&, QJsonObject const&, unsigned long long)
+                          dukto::ServiceWorker::run()
+                          0x7cc6b3edb673
+                          0x7cc6b309cb83
+                          0xffffffffffffffff
+
+     0.82%  QThread          libc.so.6                 [.] 0x00000000000986b0                                                                                                                                                                                                                              -      -            
+            |
+            ---0x7308a20986b0
+               0x7308a2098e5b
+               pthread_cond_clockwait
+               dukto::(anonymous namespace)::receiverLane(dukto::next::SecureChannel&, dukto::ParallelState&, int, unsigned long long, std::function<void ()> const&)
+               dukto::ParallelTransfer::clientLane(dukto::next::SecureChannel&, QJsonObject const&, int, std::shared_ptr<dukto::ParallelState> const&, QPair<QString, QString> const&, unsigned long long)
+               dukto::RemoteClient::runDataLane(QJsonObject const&, int, std::shared_ptr<dukto::ParallelState> const&, QPair<QString, QString> const&)
+               dukto::ParallelTransfer::startClients(dukto::ClientProfile const&, int, dukto::StrongManifest*)::{lambda()#2}::operator()() const
+               std::_Function_handler<std::unique_ptr<std::__future_base::_Result_base, std::__future_base::_Result_base::_Deleter> (), std::__future_base::_Task_setter<std::unique_ptr<std::__future_base::_Result<void>, std::__future_base::_Result_base::_Deleter>, std::thread::_Invoker<std::tuple<QThread::create<dukto::ParallelTransfer::startClients(dukto::ClientProfile const&, int, dukto::StrongManifest*)::{lambda()#2}>(dukto::ParallelTransfer::startClients(dukto::ClientProfile const&, int, dukto::StrongManifest*)::{lambda()#2}&&)::{lambda()#1}> >, void> >::_M_invoke(std::_Any_data const&)
+               std::__future_base::_State_baseV2::_M_do_set(std::function<std::unique_ptr<std::__future_base::_Result_base, std::__future_base::_Result_base::_Deleter> ()>*, bool*)
+               0x7308a20a1fb2
+               std::__future_base::_Deferred_state<std::thread::_Invoker<std::tuple<QThread::create<dukto::ParallelTransfer::startClients(dukto::ClientProfile const&, int, dukto::StrongManifest*)::{lambda()#2}>(dukto::ParallelTransfer::startClients(dukto::ClientProfile const&, int, dukto::StrongManifest*)::{lambda()#2}&&)::{lambda()#1}> >, void>::_M_complete_async()
+               0x7308a2eda819
+               0x7308a2edb673
+               0x7308a209cb83
+               0x7308a2129ecb
+
+     0.82%  QThread          libc.so.6                 [.] 0x00000000000986e3                                                                                                                                                                                                                              -      -            
+            |
+            ---0x7308a20986e3
+               |          
+                --0.55%--0x7308a2098e5b
+                          pthread_cond_clockwait
+                          dukto::(anonymous namespace)::receiverLane(dukto::next::SecureChannel&, dukto::ParallelState&, int, unsigned long long, std::function<void ()> const&)
+                          dukto::ParallelTransfer::clientLane(dukto::next::SecureChannel&, QJsonObject const&, int, std::shared_ptr<dukto::ParallelState> const&, QPair<QString, QString> const&, unsigned long long)
+                          dukto::RemoteClient::runDataLane(QJsonObject const&, int, std::shared_ptr<dukto::ParallelState> const&, QPair<QString, QString> const&)
+                          dukto::ParallelTransfer::startClients(dukto::ClientProfile const&, int, dukto::StrongManifest*)::{lambda()#2}::operator()() const
+                          std::_Function_handler<std::unique_ptr<std::__future_base::_Result_base, std::__future_base::_Result_base::_Deleter> (), std::__future_base::_Task_setter<std::unique_ptr<std::__future_base::_Result<void>, std::__future_base::_Result_base::_Deleter>, std::thread::_Invoker<std::tuple<QThread::create<dukto::ParallelTransfer::startClients(dukto::ClientProfile const&, int, dukto::StrongManifest*)::{lambda()#2}>(dukto::ParallelTransfer::startClients(dukto::ClientProfile const&, int, dukto::StrongManifest*)::{lambda()#2}&&)::{lambda()#1}> >, void> >::_M_invoke(std::_Any_data const&)
+                          std::__future_base::_State_baseV2::_M_do_set(std::function<std::unique_ptr<std::__future_base::_Result_base, std::__future_base::_Result_base::_Deleter> ()>*, bool*)
+                          0x7308a20a1fb2
+                          std::__future_base::_Deferred_state<std::thread::_Invoker<std::tuple<QThread::create<dukto::ParallelTransfer::startClients(dukto::ClientProfile const&, int, dukto::StrongManifest*)::{lambda()#2}>(dukto::ParallelTransfer::startClients(dukto::ClientProfile const&, int, dukto::StrongManifest*)::{lambda()#2}&&)::{lambda()#1}> >, void>::_M_complete_async()
+                          0x7308a2eda819
+                          0x7308a2edb673
+                          0x7308a209cb83
+                          0x7308a2129ecb
+
+     0.82%  dukto::ServiceW  dukto-cli                 [.] dukto::next::(anonymous namespace)::JsonGuard::string()                                                                                                                                                                                         -      -            
+            |
+            ---dukto::next::(anonymous namespace)::JsonGuard::string()
+               |          
+                --0.68%--dukto::next::parseControl(QByteArray const&)
+
+     0.82%  dukto::ServiceW  libQt5Core.so.5.15.13     [.] QArrayData::deallocate(QArrayData*, unsigned long, unsigned long)                                                                                                                                                                               -      -            
+            |
+            ---QArrayData::deallocate(QArrayData*, unsigned long, unsigned long)
+
+     0.68%  QThread          libc.so.6                 [.] pthread_cond_clockwait                                                                                                                                                                                                                          -      -            
+            |
+            ---pthread_cond_clockwait
+               dukto::(anonymous namespace)::receiverLane(dukto::next::SecureChannel&, dukto::ParallelState&, int, unsigned long long, std::function<void ()> const&)
+               dukto::ParallelTransfer::clientLane(dukto::next::SecureChannel&, QJsonObject const&, int, std::shared_ptr<dukto::ParallelState> const&, QPair<QString, QString> const&, unsigned long long)
+               dukto::RemoteClient::runDataLane(QJsonObject const&, int, std::shared_ptr<dukto::ParallelState> const&, QPair<QString, QString> const&)
+               dukto::ParallelTransfer::startClients(dukto::ClientProfile const&, int, dukto::StrongManifest*)::{lambda()#2}::operator()() const
+               std::_Function_handler<std::unique_ptr<std::__future_base::_Result_base, std::__future_base::_Result_base::_Deleter> (), std::__future_base::_Task_setter<std::unique_ptr<std::__future_base::_Result<void>, std::__future_base::_Result_base::_Deleter>, std::thread::_Invoker<std::tuple<QThread::create<dukto::ParallelTransfer::startClients(dukto::ClientProfile const&, int, dukto::StrongManifest*)::{lambda()#2}>(dukto::ParallelTransfer::startClients(dukto::ClientProfile const&, int, dukto::StrongManifest*)::{lambda()#2}&&)::{lambda()#1}> >, void> >::_M_invoke(std::_Any_data const&)
+               std::__future_base::_State_baseV2::_M_do_set(std::function<std::unique_ptr<std::__future_base::_Result_base, std::__future_base::_Result_base::_Deleter> ()>*, bool*)
+               0x7308a20a1fb2
+               std::__future_base::_Deferred_state<std::thread::_Invoker<std::tuple<QThread::create<dukto::ParallelTransfer::startClients(dukto::ClientProfile const&, int, dukto::StrongManifest*)::{lambda()#2}>(dukto::ParallelTransfer::startClients(dukto::ClientProfile const&, int, dukto::StrongManifest*)::{lambda()#2}&&)::{lambda()#1}> >, void>::_M_complete_async()
+               0x7308a2eda819
+               0x7308a2edb673
+               0x7308a209cb83
+               0x7308a2129ecb
+
+     0.68%  dukto::ServiceW  libQt5Core.so.5.15.13     [.] QByteArray::resize(int)                                                                                                                                                                                                                         -      -            
+            |
+            ---QByteArray::resize(int)
+
+     0.68%  dukto::ServiceW  libQt5Core.so.5.15.13     [.] QCoreApplication::notifyInternal2(QObject*, QEvent*)                                                                                                                                                                                            -      -            
+            |
+            ---QCoreApplication::notifyInternal2(QObject*, QEvent*)
+               QTimerInfoList::activateTimers()
+               |          
+                --0.55%--0x7cc6b4134f10
+                          0x7cc6b3714634
+                          0x7cc6b3773bf6
+                          g_main_context_iteration
+                          QEventDispatcherGlib::processEvents(QFlags<QEventLoop::ProcessEventsFlag>)
+                          QEventLoop::exec(QFlags<QEventLoop::ProcessEventsFlag>)
+                          dukto::next::SecureChannel::waitUntil(std::function<bool ()> const&, QElapsedTimer&, QString const&)
+                          dukto::next::SecureChannel::read()
+                          dukto::(anonymous namespace)::read(dukto::next::SecureChannel&, unsigned long long, std::function<void ()> const&)
+                          dukto::(anonymous namespace)::senderLane(dukto::next::SecureChannel&, dukto::ParallelState&, QPair<QString, QString> const&, unsigned long long, std::function<void ()> const&)
+                          dukto::serveParallelLane(dukto::next::SecureChannel&, dukto::PrivateStore&, dukto::Principal const&, std::function<dukto::Principal ()> const&, QJsonObject const&, unsigned long long)
+                          dukto::ServiceWorker::run()
+                          0xffffffffffffffff
+
+     0.68%  dukto::ServiceW  libc.so.6                 [.] 0x00000000000986b0                                                                                                                                                                                                                              -      -            
+            |
+            ---0x7cc6b30986b0
+               __poll
+               0x7cc6b3773b4d
+               g_main_context_iteration
+               QEventDispatcherGlib::processEvents(QFlags<QEventLoop::ProcessEventsFlag>)
+               QEventLoop::exec(QFlags<QEventLoop::ProcessEventsFlag>)
+               dukto::next::SecureChannel::waitUntil(std::function<bool ()> const&, QElapsedTimer&, QString const&)
+               dukto::next::SecureChannel::read()
+               dukto::(anonymous namespace)::read(dukto::next::SecureChannel&, unsigned long long, std::function<void ()> const&)
+               dukto::(anonymous namespace)::senderLane(dukto::next::SecureChannel&, dukto::ParallelState&, QPair<QString, QString> const&, unsigned long long, std::function<void ()> const&)
+               dukto::serveParallelLane(dukto::next::SecureChannel&, dukto::PrivateStore&, dukto::Principal const&, std::function<dukto::Principal ()> const&, QJsonObject const&, unsigned long long)
+               dukto::ServiceWorker::run()
+               0x7cc6b3edb673
+               0xffffffffffffffff
+
+     0.68%  dukto::ServiceW  libsqlite3.so.0.8.6       [.] sqlite3Parser                                                                                                                                                                                                                                   -      -            
+            |
+            ---sqlite3Parser
+               sqlite3RunParser
+               0x7cc6afd550d4
+               0x7cc6afd5550e
+               0x7cc6afd557ce
+               0x7cc6b3d3a992
+
+     0.68%  dukto::ServiceW  libsqlite3.so.0.8.6       [.] sqlite3VdbeExec                                                                                                                                                                                                                                 -      -            
+            |
+            ---sqlite3VdbeExec
+               sqlite3_step
+               0x7cc6b3d3bf17
+               |          
+                --0.55%--0x7cc6b3d3e258
+
+     0.68%  dukto::ServiceW  libsqlite3.so.0.8.6       [.] sqlite3VdbeMemTranslate                                                                                                                                                                                                                         -      -            
+            |
+            ---sqlite3VdbeMemTranslate
+               0x7cc6afd9b53a
+
+     0.55%  dukto::ServiceW  libQt5Core.so.5.15.13     [.] QMutex::lock()                                                                                                                                                                                                                                  -      -            
+            |
+            ---QMutex::lock()
+               0x7cc6b4135691
+               0x7cc6b37152b6
+               0x7cc6b3773b06
+               g_main_context_iteration
+               QEventDispatcherGlib::processEvents(QFlags<QEventLoop::ProcessEventsFlag>)
+
+     0.55%  dukto::ServiceW  libQt5Core.so.5.15.13     [.] QVariant::~QVariant()                                                                                                                                                                                                                           -      -            
+            |
+            ---QVariant::~QVariant()
+
+     0.55%  dukto::ServiceW  libc.so.6                 [.] 0x00000000000ab250                                                                                                                                                                                                                              -      -            
+            |
+            ---0x7cc6b30ab250
+               cfree
+
+
+
+#
+# (Cannot load tips.txt file, please install perf!)
+#

@@ -56,7 +56,7 @@ class Server final : public QTcpServer {
 };
 } // namespace
 
-// 日期：2026-11-05；独立TLS对端验证生产通道、发送中拒绝及分片；统一错误码保留原始根因。
+// 日期：2026-11-07；独立TLS对端验证缓冲多帧、取消、断连尾帧及原发送期错误，保留统一错误码。
 int main(int argc, char **argv) {
     QCoreApplication app(argc, argv);
     const auto args = app.arguments();
@@ -103,6 +103,22 @@ int main(int argc, char **argv) {
             channel.observePeerFailure(7);
         channel.write(dukto::next::Type::Hello, 7,
                       {{"test", "independent-client"}, {"size", "9007199254740993"}});
+        if (args[6].startsWith("burst-")) {
+            // 日期：2026-11-07；逐帧比对独立对端的连续序号，不将整批正文驻留测试客户端内存。
+            for (int index = 0; index < 512; ++index) {
+                const auto response = channel.read();
+                if (response.header.type != dukto::next::Type::HelloAck ||
+                    response.header.correlation != 7 ||
+                    dukto::next::parseControl(response.payload) !=
+                        QJsonObject{{"sequence", QString::number(index)}})
+                    throw dukto::Error(dukto::ExitCode::Integrity,
+                                       QStringLiteral("连续缓冲帧内容或序号不同"), "test");
+                if (index == 0 && args[6] == "burst-cancel")
+                    cancelled.store(true);
+            }
+            output({{"passed", true}, {"frames", 512}, {"elapsedMs", elapsed.elapsed()}});
+            return 0;
+        }
         if (args[6].startsWith("write-")) {
             // 日期：2026-11-05；真实发送32MiB上限；独立对端在第一片段后拒绝，不等待整个8MiB块结束。
             channel.observePeerFailure(7);

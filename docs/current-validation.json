@@ -1,5 +1,5 @@
 {
-  "observedUtc": "2026-11-07T01:36:50.700334+00:00",
+  "observedUtc": "2026-11-07T02:06:59.200629+00:00",
   "productionCommit": "ed4f5cf08c96f04671e49e5138eda8ce1790ead3",
   "testCommit": "ed4f5cf08c96f04671e49e5138eda8ce1790ead3",
   "packages": [
@@ -213,8 +213,8 @@
   ],
   "releaseQualified": false,
   "deliveryComplete": false,
-  "planVersion": "v0.106",
-  "currentSourceStage": "R105 dual Mac deployed previews verified; R104 independent Ubuntu core and POSIX checks passed; original protocol failures and Ubuntu timeout retained; full qualification pending",
+  "planVersion": "v0.107",
+  "currentSourceStage": "R107 secure-channel ready path; Windows verified; new native and independent Ubuntu pending",
   "nativeMusl": {
     "sourceCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
     "productionCommit": "dec40621cce2d223e46b343e0d3d345a67b80523",
@@ -638,7 +638,7 @@
       "sourceCommit": "31f3db3bfb5a8bf70b6217afd50df3284e27934c"
     }
   ],
-  "publicVerificationReceipt": "docs/ci-verification-20261107-r105.json",
+  "publicVerificationReceipt": "docs/ci-verification-20261107-r107.json",
   "lastVerifiedCopiedFull": {
     "runUrl": "https://github.com/29583855/dukto-next/actions/runs/42065923177",
     "sourceCommit": "74dd5cec71fde472b940e869661d6e8533042a65",
@@ -19613,7 +19613,7 @@
       "sha256": "4e925961855239abe68898110d7e27d2d842a6676373cc2ab724a1f18d5af3a0"
     }
   },
-  "currentGuiSourceCommitPending": false,
+  "currentGuiSourceCommitPending": true,
   "coreProductionCommit": "88f33b2c83f2950307c362fb64c693f7e9e5929d",
   "linuxPreviewR98": {
     "sourceCommit": "b2e4659b347c65eef24c8e568e07e96a2d6ff2d7",
@@ -20783,5 +20783,18 @@
   "evidenceCheckpointR106": {
     "path": "docs/ci-verification-20261107-r106.json",
     "sha256": "8e096860047589797118f32d5d99cf5d6f304029eca2851a71b4fd5367aee0f3"
+  },
+  "secureReadyR107": {
+    "windowsEvidence": {
+      "path": "docs/validation/2026-11-07/secure-ready-r107-qualified/receipt.json",
+      "sha256": "93514152715c1115afb7bd53d9bf2c9d4904c03b3d841611dd704602aebbfb08"
+    },
+    "nativeCIPending": true,
+    "independentUbuntuPending": true,
+    "throughputImprovementProven": false
+  },
+  "r105IntelNativeTerminal": {
+    "path": "docs/validation/2026-11-07/task-items-r105-native-job-terminals/macos-15-intel/receipt.json",
+    "sha256": "e775cea4321842306d5dc1b3b1ad812c1c466b159db2c46f97f5720204d181f9"
   }
 }

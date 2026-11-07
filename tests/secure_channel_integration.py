@@ -75,7 +75,7 @@ def certificates(root, openssl):
     return results, key
 
 
-# 日期：2026-11-05；每个边界独立TLS监听，实际首片段后注入失败，并分片普通/错误正文。
+# 日期：2026-11-07；独立TLS监听覆盖连续缓冲/断连尾帧/缓冲中取消及原分片/发送失败边界。
 def run_client(executable, certificate, key, hostname, ca, pin, mode, expected, payload=None):
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     context.minimum_version = ssl.TLSVersion.TLSv1_2
@@ -86,7 +86,7 @@ def run_client(executable, certificate, key, hostname, ca, pin, mode, expected, 
     listener.settimeout(5)
     errors = []
 
-    # 日期：2026-11-04；所有故意断连只影响本次测试；意外的服务线程异常必须使测试失败。
+    # 日期：2026-11-07；连续帧使用独立编码与单次TLS发送，故意断连仅影响本例，意外异常使测试失败。
     def serve():
         try:
             with listener.accept()[0] as raw:
@@ -96,7 +96,15 @@ def run_client(executable, certificate, key, hostname, ca, pin, mode, expected, 
                     assert header == (b"DKTNEXT1", 1, 0, 1, 0, 7, header[6], 0), header
                     request = json.loads(exact(secure, header[6]))
                     assert request == {"test": "independent-client", "size": "9007199254740993"}, request
-                    if mode.startswith("write-"):
+                    if mode.startswith("burst-"):
+                        data = b"".join(frame(2, json.dumps({"sequence": str(index)}).encode("ascii"))
+                                        for index in range(512))
+                        secure.sendall(data)
+                        if mode == "burst-close":
+                            secure.shutdown(socket.SHUT_WR)
+                        else:
+                            time.sleep(0.1)
+                    elif mode.startswith("write-"):
                         # 日期：2026-11-05；先核对真实首片段再发送原始失败，失败正文跨多次TLS写入时也不得误解码半帧。
                         data_header = struct.unpack(">8sHHHHQII", exact(secure, 32))
                         assert data_header[:6] == (b"DKTNEXT1", 1, 0, 40, 0, 7)
@@ -151,6 +159,8 @@ def run_client(executable, certificate, key, hostname, ca, pin, mode, expected, 
     assert not thread.is_alive() and not errors, (mode, expected, errors, result.stdout, result.stderr)
     assert result.returncode == expected and not result.stderr, (result.returncode, result.stdout, result.stderr)
     event = json.loads(result.stdout)
+    if mode in ("burst-open", "burst-close"):
+        assert event["passed"] and event["frames"] == 512, event
     if mode in ("write-failure", "write-fragmented-failure", "write-failure-close", "write-fragmented-failure-close"):
         assert event["code"] == 5 and event["stage"] == "receive", event
     if mode in ("timeout", "cancel"):
@@ -182,7 +192,7 @@ def server_case(executable, certificate, key):
             process.communicate(timeout=5)
 
 
-# 日期：2026-11-05；信任/取消/期限及发送期失败正反例实际执行，断言失败不产生通过报告。
+# 日期：2026-11-07；连续帧、缓冲取消与原信任/期限/发送失败实际执行，失败保留原报告。
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("executable")
@@ -214,6 +224,10 @@ def main():
                  ("scanCancellation", "valid", "localhost", certs["valid"], "none", "checkpoint-cancel", 7, None)]
         cases.append(("observerFragmentedNormalResponse", "valid", "localhost", certs["valid"], "none",
                       "observe-ok", 0, frame(2, b'{"test":"server-accepted","padding":"' + b"x" * 256 + b'"}')))
+        for name, mode, code in (("bufferedBurst", "burst-open", 0),
+                                  ("bufferedBurstAfterDisconnect", "burst-close", 0),
+                                  ("bufferedBurstCancellation", "burst-cancel", 7)):
+            cases.append((name, "valid", "localhost", certs["valid"], "none", mode, code, None))
         for mode, expected_code in (("write-failure", 5), ("write-fragmented-failure", 5),
                                     ("write-wrong-correlation", 6), ("write-invalid-failure", 2),
                                     ("write-abrupt", 3), ("write-failure-close", 5), ("write-fragmented-failure-close", 5)):
