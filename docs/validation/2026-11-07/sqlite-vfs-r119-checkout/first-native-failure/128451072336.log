@@ -1,0 +1,640 @@
+﻿2026-11-07T15:53:37.0911488Z Current runner version: '2.338.2'
+2026-11-07T15:53:37.0939845Z ##[group]Runner Image Provisioner
+2026-11-07T15:53:37.0940736Z Hosted Compute Agent
+2026-11-07T15:53:37.0941290Z Version: 20261028.624
+2026-11-07T15:53:37.0941857Z Commit: 54898b74c23fde5556c9b3c3a2290865feef0dfe
+2026-11-07T15:53:37.0942597Z Build Date: 2026-10-28T21:51:42Z
+2026-11-07T15:53:37.0943321Z Worker ID: {a7a16558-1d06-42da-8a04-afd90f93081f}
+2026-11-07T15:53:37.0943966Z Region: eastus
+2026-11-07T15:53:37.0944447Z Cloud: Azure
+2026-11-07T15:53:37.0944999Z ##[endgroup]
+2026-11-07T15:53:37.0946568Z ##[group]Operating System
+2026-11-07T15:53:37.0947222Z Microsoft Windows Server 2022
+2026-11-07T15:53:37.0947924Z 10.0.20348
+2026-11-07T15:53:37.0948396Z Datacenter
+2026-11-07T15:53:37.0948857Z ##[endgroup]
+2026-11-07T15:53:37.0949317Z ##[group]Runner Image
+2026-11-07T15:53:37.0949842Z Image: windows-2022
+2026-11-07T15:53:37.0950349Z Version: 20261101.353.1
+2026-11-07T15:53:37.0951825Z Included Software: https://github.com/actions/runner-images/blob/win22/20261101.353/images/windows/Windows2022-Readme.md
+2026-11-07T15:53:37.0953248Z Image Release: https://github.com/actions/runner-images/releases/tag/win22%2F20261101.353
+2026-11-07T15:53:37.0954142Z ##[endgroup]
+2026-11-07T15:53:37.0955264Z ##[group]GITHUB_TOKEN Permissions
+2026-11-07T15:53:37.0957323Z Contents: read
+2026-11-07T15:53:37.0957884Z Metadata: read
+2026-11-07T15:53:37.0958391Z Packages: read
+2026-11-07T15:53:37.0958915Z ##[endgroup]
+2026-11-07T15:53:37.0960992Z Secret source: Actions
+2026-11-07T15:53:37.0961966Z Cache mode: write
+2026-11-07T15:53:37.0962609Z Prepare workflow directory
+2026-11-07T15:53:37.1393775Z Prepare all required actions
+2026-11-07T15:53:37.1441449Z Getting action download info
+2026-11-07T15:53:37.3032534Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-11-07T15:53:37.4275772Z Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+2026-11-07T15:53:37.5601907Z Download action repository 'jurplel/install-qt-action@v4' (SHA:b344308e4483fc892e0d27b3cd1b173ebdd95f06)
+2026-11-07T15:53:40.6608767Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-11-07T15:53:41.0081327Z Getting action download info
+2026-11-07T15:53:41.0761960Z Download action repository 'actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1' (SHA:ece7cb06caefa5fff74198d8649806c4678c61a1)
+2026-11-07T15:53:41.3000238Z Complete job name: native (windows-2022, 5.15.2, win64_msvc2019_64)
+2026-11-07T15:53:41.4863651Z ##[group]Run actions/checkout@v4
+2026-11-07T15:53:41.4864962Z with:
+2026-11-07T15:53:41.4865643Z   repository: 29583855/dukto-next
+2026-11-07T15:53:41.4873142Z   token: ***
+2026-11-07T15:53:41.4873805Z   ssh-strict: true
+2026-11-07T15:53:41.4874487Z   ssh-user: git
+2026-11-07T15:53:41.4875175Z   persist-credentials: true
+2026-11-07T15:53:41.4875927Z   clean: true
+2026-11-07T15:53:41.4876631Z   sparse-checkout-cone-mode: true
+2026-11-07T15:53:41.4877469Z   fetch-depth: 1
+2026-11-07T15:53:41.4878136Z   fetch-tags: false
+2026-11-07T15:53:41.4878822Z   show-progress: true
+2026-11-07T15:53:41.4879498Z   lfs: false
+2026-11-07T15:53:41.4880130Z   submodules: false
+2026-11-07T15:53:41.4880826Z   set-safe-directory: true
+2026-11-07T15:53:41.4881615Z   allow-unsafe-pr-checkout: false
+2026-11-07T15:53:41.4882636Z ##[endgroup]
+2026-11-07T15:53:41.6313355Z Syncing repository: 29583855/dukto-next
+2026-11-07T15:53:41.6315815Z ##[group]Getting Git version info
+2026-11-07T15:53:41.6316954Z Working directory is 'D:\a\dukto-next\dukto-next'
+2026-11-07T15:53:41.7370357Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-11-07T15:53:42.0343937Z git version 2.56.0.windows.4
+2026-11-07T15:53:42.0383824Z ##[endgroup]
+2026-11-07T15:53:42.0402122Z Temporarily overriding HOME='D:\a\_temp\fa8dbbe0-ba1c-4a01-a1df-58ef5a38d728' before making global git config changes
+2026-11-07T15:53:42.0403539Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-07T15:53:42.0424033Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\dukto-next\dukto-next
+2026-11-07T15:53:42.0942912Z Deleting the contents of 'D:\a\dukto-next\dukto-next'
+2026-11-07T15:53:42.0949417Z ##[group]Initializing the repository
+2026-11-07T15:53:42.0959190Z [command]"C:\Program Files\Git\bin\git.exe" init D:\a\dukto-next\dukto-next
+2026-11-07T15:53:42.1840725Z Initialized empty Git repository in D:/a/dukto-next/dukto-next/.git/
+2026-11-07T15:53:42.1881396Z [command]"C:\Program Files\Git\bin\git.exe" remote add origin https://github.com/29583855/dukto-next
+2026-11-07T15:53:42.2509031Z ##[endgroup]
+2026-11-07T15:53:42.2509589Z ##[group]Disabling automatic garbage collection
+2026-11-07T15:53:42.2518607Z [command]"C:\Program Files\Git\bin\git.exe" config --local gc.auto 0
+2026-11-07T15:53:42.2824979Z ##[endgroup]
+2026-11-07T15:53:42.2825567Z ##[group]Setting up auth
+2026-11-07T15:53:42.2838664Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-11-07T15:53:42.3152332Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-11-07T15:53:43.6724981Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-07T15:53:43.7029660Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-11-07T15:53:44.2240412Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-07T15:53:44.2557248Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-11-07T15:53:44.7509931Z [command]"C:\Program Files\Git\bin\git.exe" config --local http.https://github.com/.extraheader "AUTHORIZATION: basic ***"
+2026-11-07T15:53:44.7837308Z ##[endgroup]
+2026-11-07T15:53:44.7840593Z ##[group]Fetching the repository
+2026-11-07T15:53:44.7852454Z [command]"C:\Program Files\Git\bin\git.exe" -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +de6f38c9381e84a19466f5ecf0e0996e087bae23:refs/remotes/origin/main
+2026-11-07T15:54:02.7360653Z From https://github.com/29583855/dukto-next
+2026-11-07T15:54:02.7361648Z  * [new ref]         de6f38c9381e84a19466f5ecf0e0996e087bae23 -> origin/main
+2026-11-07T15:54:02.7391832Z ##[endgroup]
+2026-11-07T15:54:02.7392521Z ##[group]Determining the checkout info
+2026-11-07T15:54:02.7395796Z ##[endgroup]
+2026-11-07T15:54:02.7406318Z [command]"C:\Program Files\Git\bin\git.exe" sparse-checkout disable
+2026-11-07T15:54:02.7913633Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all extensions.worktreeConfig
+2026-11-07T15:54:02.8231667Z ##[group]Checking out the ref
+2026-11-07T15:54:02.8232659Z [command]"C:\Program Files\Git\bin\git.exe" checkout --progress --force -B main refs/remotes/origin/main
+2026-11-07T15:54:03.9394341Z Updating files:  13% (3764/28303)
+2026-11-07T15:54:04.0064065Z Updating files:  14% (3963/28303)
+2026-11-07T15:54:04.0644648Z Updating files:  15% (4246/28303)
+2026-11-07T15:54:04.1410603Z Updating files:  16% (4529/28303)
+2026-11-07T15:54:04.2298592Z Updating files:  17% (4812/28303)
+2026-11-07T15:54:04.3105133Z Updating files:  18% (5095/28303)
+2026-11-07T15:54:04.3826560Z Updating files:  19% (5378/28303)
+2026-11-07T15:54:04.4535163Z Updating files:  20% (5661/28303)
+2026-11-07T15:54:04.5167678Z Updating files:  21% (5944/28303)
+2026-11-07T15:54:04.6254592Z Updating files:  22% (6227/28303)
+2026-11-07T15:54:04.6959051Z Updating files:  23% (6510/28303)
+2026-11-07T15:54:04.7580344Z Updating files:  24% (6793/28303)
+2026-11-07T15:54:04.8386290Z Updating files:  25% (7076/28303)
+2026-11-07T15:54:04.8860688Z Updating files:  26% (7359/28303)
+2026-11-07T15:54:04.8861227Z Updating files:  26% (7641/28303)
+2026-11-07T15:54:04.9709623Z Updating files:  27% (7642/28303)
+2026-11-07T15:54:05.0255408Z Updating files:  28% (7925/28303)
+2026-11-07T15:54:05.0682361Z Updating files:  29% (8208/28303)
+2026-11-07T15:54:05.1110833Z Updating files:  30% (8491/28303)
+2026-11-07T15:54:05.1639091Z Updating files:  31% (8774/28303)
+2026-11-07T15:54:05.2126665Z Updating files:  32% (9057/28303)
+2026-11-07T15:54:05.2697336Z Updating files:  33% (9340/28303)
+2026-11-07T15:54:05.3194920Z Updating files:  34% (9624/28303)
+2026-11-07T15:54:05.3747490Z Updating files:  35% (9907/28303)
+2026-11-07T15:54:05.4343805Z Updating files:  36% (10190/28303)
+2026-11-07T15:54:05.5180602Z Updating files:  37% (10473/28303)
+2026-11-07T15:54:05.6052952Z Updating files:  38% (10756/28303)
+2026-11-07T15:54:05.6655856Z Updating files:  39% (11039/28303)
+2026-11-07T15:54:05.7149601Z Updating files:  40% (11322/28303)
+2026-11-07T15:54:05.7636562Z Updating files:  41% (11605/28303)
+2026-11-07T15:54:05.8341269Z Updating files:  42% (11888/28303)
+2026-11-07T15:54:05.8863761Z Updating files:  43% (12171/28303)
+2026-11-07T15:54:05.9196686Z Updating files:  43% (12333/28303)
+2026-11-07T15:54:05.9900922Z Updating files:  44% (12454/28303)
+2026-11-07T15:54:06.0421469Z Updating files:  45% (12737/28303)
+2026-11-07T15:54:06.0900161Z Updating files:  46% (13020/28303)
+2026-11-07T15:54:06.1371649Z Updating files:  47% (13303/28303)
+2026-11-07T15:54:06.1858756Z Updating files:  48% (13586/28303)
+2026-11-07T15:54:06.2397369Z Updating files:  49% (13869/28303)
+2026-11-07T15:54:06.3694401Z Updating files:  50% (14152/28303)
+2026-11-07T15:54:06.4405152Z Updating files:  51% (14435/28303)
+2026-11-07T15:54:06.4954052Z Updating files:  52% (14718/28303)
+2026-11-07T15:54:06.5641272Z Updating files:  53% (15001/28303)
+2026-11-07T15:54:06.6415184Z Updating files:  54% (15284/28303)
+2026-11-07T15:54:06.7329795Z Updating files:  55% (15567/28303)
+2026-11-07T15:54:06.8150586Z Updating files:  56% (15850/28303)
+2026-11-07T15:54:06.8706418Z Updating files:  57% (16133/28303)
+2026-11-07T15:54:06.8874900Z Updating files:  58% (16416/28303)
+2026-11-07T15:54:06.9572657Z Updating files:  58% (16463/28303)
+2026-11-07T15:54:07.0219856Z Updating files:  59% (16699/28303)
+2026-11-07T15:54:07.1582147Z Updating files:  60% (16982/28303)
+2026-11-07T15:54:07.2330935Z Updating files:  61% (17265/28303)
+2026-11-07T15:54:07.3153781Z Updating files:  62% (17548/28303)
+2026-11-07T15:54:07.3760032Z Updating files:  63% (17831/28303)
+2026-11-07T15:54:07.4605899Z Updating files:  64% (18114/28303)
+2026-11-07T15:54:07.5313528Z Updating files:  65% (18397/28303)
+2026-11-07T15:54:07.5849752Z Updating files:  66% (18680/28303)
+2026-11-07T15:54:07.6958388Z Updating files:  67% (18964/28303)
+2026-11-07T15:54:07.7815413Z Updating files:  68% (19247/28303)
+2026-11-07T15:54:07.8489940Z Updating files:  69% (19530/28303)
+2026-11-07T15:54:07.8877311Z Updating files:  70% (19813/28303)
+2026-11-07T15:54:07.9073541Z Updating files:  70% (20012/28303)
+2026-11-07T15:54:07.9682045Z Updating files:  71% (20096/28303)
+2026-11-07T15:54:08.0288424Z Updating files:  72% (20379/28303)
+2026-11-07T15:54:08.0805538Z Updating files:  73% (20662/28303)
+2026-11-07T15:54:08.1399239Z Updating files:  74% (20945/28303)
+2026-11-07T15:54:08.2053427Z Updating files:  75% (21228/28303)
+2026-11-07T15:54:08.2806817Z Updating files:  76% (21511/28303)
+2026-11-07T15:54:08.3287946Z Updating files:  77% (21794/28303)
+2026-11-07T15:54:08.3823650Z Updating files:  78% (22077/28303)
+2026-11-07T15:54:08.4417546Z Updating files:  79% (22360/28303)
+2026-11-07T15:54:08.5176181Z Updating files:  80% (22643/28303)
+2026-11-07T15:54:08.5716811Z Updating files:  81% (22926/28303)
+2026-11-07T15:54:08.6216735Z Updating files:  82% (23209/28303)
+2026-11-07T15:54:08.6922730Z Updating files:  83% (23492/28303)
+2026-11-07T15:54:08.7813166Z Updating files:  84% (23775/28303)
+2026-11-07T15:54:08.8506623Z Updating files:  85% (24058/28303)
+2026-11-07T15:54:08.8884170Z Updating files:  86% (24341/28303)
+2026-11-07T15:54:08.9236730Z Updating files:  86% (24488/28303)
+2026-11-07T15:54:09.0030290Z Updating files:  87% (24624/28303)
+2026-11-07T15:54:09.1645035Z Updating files:  88% (24907/28303)
+2026-11-07T15:54:09.2374022Z Updating files:  89% (25190/28303)
+2026-11-07T15:54:09.2940908Z Updating files:  90% (25473/28303)
+2026-11-07T15:54:09.3752579Z Updating files:  91% (25756/28303)
+2026-11-07T15:54:09.4471919Z Updating files:  92% (26039/28303)
+2026-11-07T15:54:09.5204168Z Updating files:  93% (26322/28303)
+2026-11-07T15:54:09.5809766Z Updating files:  94% (26605/28303)
+2026-11-07T15:54:09.6484671Z Updating files:  95% (26888/28303)
+2026-11-07T15:54:09.6962599Z Updating files:  96% (27171/28303)
+2026-11-07T15:54:09.7939528Z Updating files:  97% (27454/28303)
+2026-11-07T15:54:09.8469139Z Updating files:  98% (27737/28303)
+2026-11-07T15:54:09.8896987Z Updating files:  99% (28020/28303)
+2026-11-07T15:54:09.9303687Z Updating files:  99% (28198/28303)
+2026-11-07T15:54:09.9304230Z Updating files: 100% (28303/28303)
+2026-11-07T15:54:09.9304624Z Updating files: 100% (28303/28303), done.
+2026-11-07T15:54:09.9856147Z Switched to a new branch 'main'
+2026-11-07T15:54:09.9871058Z branch 'main' set up to track 'origin/main'.
+2026-11-07T15:54:10.0036027Z ##[endgroup]
+2026-11-07T15:54:10.0367965Z [command]"C:\Program Files\Git\bin\git.exe" log -1 --format=%H
+2026-11-07T15:54:10.0698080Z de6f38c9381e84a19466f5ecf0e0996e087bae23
+2026-11-07T15:54:10.1108732Z ##[group]Run actions/setup-python@v5
+2026-11-07T15:54:10.1109039Z with:
+2026-11-07T15:54:10.1109218Z   python-version: 3.12
+2026-11-07T15:54:10.1109431Z   check-latest: false
+2026-11-07T15:54:10.1111932Z   token: ***
+2026-11-07T15:54:10.1112122Z   update-environment: true
+2026-11-07T15:54:10.1112339Z   allow-prereleases: false
+2026-11-07T15:54:10.1112567Z   freethreaded: false
+2026-11-07T15:54:10.1112752Z ##[endgroup]
+2026-11-07T15:54:10.2786144Z ##[group]Installed versions
+2026-11-07T15:54:10.2943633Z (node:2756) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-07T15:54:10.2944327Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-07T15:54:10.2945791Z Successfully set up CPython (3.12.10)
+2026-11-07T15:54:10.2946346Z ##[endgroup]
+2026-11-07T15:54:10.3401575Z ##[group]Run jurplel/install-qt-action@v4
+2026-11-07T15:54:10.3401930Z with:
+2026-11-07T15:54:10.3402104Z   version: 5.15.2
+2026-11-07T15:54:10.3402292Z   arch: win64_msvc2019_64
+2026-11-07T15:54:10.3402496Z   cache: true
+2026-11-07T15:54:10.3402675Z   target: desktop
+2026-11-07T15:54:10.3402862Z   install-deps: true
+2026-11-07T15:54:10.3403078Z   cache-key-prefix: install-qt-action
+2026-11-07T15:54:10.3403325Z   setup-python: true
+2026-11-07T15:54:10.3403539Z   add-tools-to-path: true
+2026-11-07T15:54:10.3403739Z   set-env: true
+2026-11-07T15:54:10.3403918Z   no-qt-binaries: false
+2026-11-07T15:54:10.3404105Z   tools-only: false
+2026-11-07T15:54:10.3404284Z   aqtversion: ==3.3.*
+2026-11-07T15:54:10.3404471Z   py7zrversion: ==1.1.0
+2026-11-07T15:54:10.3404652Z   source: false
+2026-11-07T15:54:10.3404825Z   documentation: false
+2026-11-07T15:54:10.3405009Z   examples: false
+2026-11-07T15:54:10.3405182Z   use-official: false
+2026-11-07T15:54:10.3405360Z env:
+2026-11-07T15:54:10.3405644Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-11-07T15:54:10.3406115Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.12.10\x64/lib/pkgconfig
+2026-11-07T15:54:10.3406559Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-11-07T15:54:10.3406947Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-11-07T15:54:10.3407532Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-11-07T15:54:10.3408122Z ##[endgroup]
+2026-11-07T15:54:10.3467682Z ##[start-action display=Check the existence of built JavaScript action;id=__jurplel_install-qt-action.__run]
+2026-11-07T15:54:10.3598583Z ##[group]Run if [[ -f './action/lib/main.js' ]]; then
+2026-11-07T15:54:10.3599263Z [36;1mif [[ -f './action/lib/main.js' ]]; then[0m
+2026-11-07T15:54:10.3599815Z [36;1m  exit 0[0m
+2026-11-07T15:54:10.3600036Z [36;1mfi[0m
+2026-11-07T15:54:10.3600211Z [36;1m[0m
+2026-11-07T15:54:10.3600440Z [36;1m# Workflow commands must be in one line.[0m
+2026-11-07T15:54:10.3600747Z [36;1mprintf '%s' \[0m
+2026-11-07T15:54:10.3601012Z [36;1m  '::error title=Action not built::' \[0m
+2026-11-07T15:54:10.3601477Z [36;1m  'This TypeScript action cannot be used before building within Node.js environment. ' \[0m
+2026-11-07T15:54:10.3602103Z [36;1m  'Maybe you are currently using non-tagging branches, for example, the "master" branch. ' \[0m
+2026-11-07T15:54:10.3602617Z [36;1m  'Only v* branches have built JavaScript action file. ' \[0m
+2026-11-07T15:54:10.3603110Z [36;1m  'If you would like to test unreleased changes, please refer to the CI workflows ' \[0m
+2026-11-07T15:54:10.3603673Z [36;1m  'in our repository: https://github.com/jurplel/install-qt-action . ' \[0m
+2026-11-07T15:54:10.3604063Z [36;1m  'Exiting... '[0m
+2026-11-07T15:54:10.3604266Z [36;1m[0m
+2026-11-07T15:54:10.3604424Z [36;1mexit 1[0m
+2026-11-07T15:54:10.3624112Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-11-07T15:54:10.3624531Z env:
+2026-11-07T15:54:10.3624807Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-11-07T15:54:10.3625275Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.12.10\x64/lib/pkgconfig
+2026-11-07T15:54:10.3625719Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-11-07T15:54:10.3626110Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-11-07T15:54:10.3626501Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-11-07T15:54:10.3626825Z ##[endgroup]
+2026-11-07T15:54:10.5581284Z ##[end-action id=__jurplel_install-qt-action.__run;outcome=success;conclusion=success;duration_ms=211]
+2026-11-07T15:54:10.5584143Z ##[start-action display=Check Python version for potential bugs and notify users;id=__jurplel_install-qt-action.__run_2]
+2026-11-07T15:54:10.5592837Z ##[end-action id=__jurplel_install-qt-action.__run_2;outcome=skipped;conclusion=skipped;duration_ms=0]
+2026-11-07T15:54:10.5597720Z ##[start-action display=Setup Python;id=__jurplel_install-qt-action.__actions_setup-python]
+2026-11-07T15:54:10.5739864Z ##[group]Run actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+2026-11-07T15:54:10.5740235Z with:
+2026-11-07T15:54:10.5740408Z   python-version: >=3.14.0
+2026-11-07T15:54:10.5740619Z   check-latest: false
+2026-11-07T15:54:10.5743075Z   token: ***
+2026-11-07T15:54:10.5743258Z   update-environment: true
+2026-11-07T15:54:10.5743474Z   allow-prereleases: false
+2026-11-07T15:54:10.5743688Z   freethreaded: false
+2026-11-07T15:54:10.5743866Z env:
+2026-11-07T15:54:10.5744107Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-11-07T15:54:10.5744556Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.12.10\x64/lib/pkgconfig
+2026-11-07T15:54:10.5744988Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-11-07T15:54:10.5745374Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-11-07T15:54:10.5745763Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+2026-11-07T15:54:10.5746062Z ##[endgroup]
+2026-11-07T15:54:10.7271065Z ##[group]Installed versions
+2026-11-07T15:54:10.7357120Z Successfully set up CPython (3.15.2)
+2026-11-07T15:54:10.7357714Z ##[endgroup]
+2026-11-07T15:54:10.7461638Z ##[end-action id=__jurplel_install-qt-action.__actions_setup-python;outcome=success;conclusion=success;duration_ms=186]
+2026-11-07T15:54:10.7464137Z ##[start-action display=Setup and run aqtinstall;id=__jurplel_install-qt-action.aqtinstall]
+2026-11-07T15:54:10.7617890Z ##[group]Run jurplel/install-qt-action/action@v4
+2026-11-07T15:54:10.7618165Z with:
+2026-11-07T15:54:10.7618329Z   version: 5.15.2
+2026-11-07T15:54:10.7618505Z   target: desktop
+2026-11-07T15:54:10.7618683Z   arch: win64_msvc2019_64
+2026-11-07T15:54:10.7618890Z   install-deps: true
+2026-11-07T15:54:10.7619076Z   cache: true
+2026-11-07T15:54:10.7619270Z   cache-key-prefix: install-qt-action
+2026-11-07T15:54:10.7619589Z   add-tools-to-path: true
+2026-11-07T15:54:10.7619802Z   set-env: true
+2026-11-07T15:54:10.7619978Z   no-qt-binaries: false
+2026-11-07T15:54:10.7620167Z   tools-only: false
+2026-11-07T15:54:10.7620344Z   aqtversion: ==3.3.*
+2026-11-07T15:54:10.7620526Z   py7zrversion: ==1.1.0
+2026-11-07T15:54:10.7620707Z   source: false
+2026-11-07T15:54:10.7620884Z   documentation: false
+2026-11-07T15:54:10.7621083Z   examples: false
+2026-11-07T15:54:10.7621262Z   use-official: false
+2026-11-07T15:54:10.7621445Z env:
+2026-11-07T15:54:10.7621701Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T15:54:10.7622133Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.15.2\x64/lib/pkgconfig
+2026-11-07T15:54:10.7622560Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T15:54:10.7622940Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T15:54:10.7623325Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T15:54:10.7623628Z ##[endgroup]
+2026-11-07T15:54:11.2772993Z ##[group]Install Python dependencies
+2026-11-07T15:54:11.3982187Z [command]C:\hostedtoolcache\windows\Python\3.15.2\x64\python.exe -m pip install setuptools>=70.1.0 py7zr==1.1.0
+2026-11-07T15:54:15.6878826Z Collecting setuptools>=70.1.0
+2026-11-07T15:54:15.7326192Z   Downloading setuptools-84.2.1-py3-none-any.whl.metadata (6.6 kB)
+2026-11-07T15:54:15.8369542Z Collecting py7zr==1.1.0
+2026-11-07T15:54:15.8424451Z   Downloading py7zr-1.1.0-py3-none-any.whl.metadata (17 kB)
+2026-11-07T15:54:15.9031767Z Collecting texttable (from py7zr==1.1.0)
+2026-11-07T15:54:15.9325015Z   Downloading texttable-1.7.2-py2.py3-none-any.whl.metadata (10 kB)
+2026-11-07T15:54:16.0745303Z Collecting pycryptodomex>=3.20.0 (from py7zr==1.1.0)
+2026-11-07T15:54:16.0814858Z   Downloading pycryptodomex-3.24.2-cp37-abi3-win_amd64.whl.metadata (3.5 kB)
+2026-11-07T15:54:16.1614035Z Collecting brotli>=1.2.0 (from py7zr==1.1.0)
+2026-11-07T15:54:16.1831788Z   Downloading brotli-1.2.1-cp315-cp315-win_amd64.whl.metadata (6.3 kB)
+2026-11-07T15:54:16.2915227Z Collecting psutil (from py7zr==1.1.0)
+2026-11-07T15:54:16.2965651Z   Downloading psutil-7.2.2-cp37-abi3-win_amd64.whl.metadata (22 kB)
+2026-11-07T15:54:16.4177837Z Collecting pyppmd>=1.3.1 (from py7zr==1.1.0)
+2026-11-07T15:54:16.4258632Z   Downloading pyppmd-1.3.1.tar.gz (1.4 MB)
+2026-11-07T15:54:16.4732020Z      ---------------------------------------- 1.4/1.4 MB 30.3 MB/s  0:00:00
+2026-11-07T15:54:16.6299633Z   Installing build dependencies: started
+2026-11-07T15:54:19.1946969Z   Installing build dependencies: finished with status 'done'
+2026-11-07T15:54:19.1963033Z   Getting requirements to build wheel: started
+2026-11-07T15:54:20.3364724Z   Getting requirements to build wheel: finished with status 'done'
+2026-11-07T15:54:20.3395050Z   Preparing metadata (pyproject.toml): started
+2026-11-07T15:54:20.7599355Z   Preparing metadata (pyproject.toml): finished with status 'done'
+2026-11-07T15:54:20.8383410Z Collecting pybcj>=1.0.6 (from py7zr==1.1.0)
+2026-11-07T15:54:20.8433552Z   Downloading pybcj-1.0.8.tar.gz (31 kB)
+2026-11-07T15:54:20.9147352Z   Installing build dependencies: started
+2026-11-07T15:54:22.9648983Z   Installing build dependencies: finished with status 'done'
+2026-11-07T15:54:22.9664056Z   Getting requirements to build wheel: started
+2026-11-07T15:54:24.0542048Z   Getting requirements to build wheel: finished with status 'done'
+2026-11-07T15:54:24.0571523Z   Preparing metadata (pyproject.toml): started
+2026-11-07T15:54:24.4758504Z   Preparing metadata (pyproject.toml): finished with status 'done'
+2026-11-07T15:54:24.5455065Z Collecting multivolumefile>=0.2.3 (from py7zr==1.1.0)
+2026-11-07T15:54:24.5502584Z   Downloading multivolumefile-0.2.3-py3-none-any.whl.metadata (6.3 kB)
+2026-11-07T15:54:24.6982429Z Collecting inflate64>=1.0.4 (from py7zr==1.1.0)
+2026-11-07T15:54:24.7114578Z   Downloading inflate64-1.0.4.tar.gz (902 kB)
+2026-11-07T15:54:24.7948440Z      ---------------------------------------- 902.5/902.5 kB 8.0 MB/s  0:00:00
+2026-11-07T15:54:24.9224626Z   Installing build dependencies: started
+2026-11-07T15:54:27.5577837Z   Installing build dependencies: finished with status 'done'
+2026-11-07T15:54:27.5595379Z   Getting requirements to build wheel: started
+2026-11-07T15:54:28.7397352Z   Getting requirements to build wheel: finished with status 'done'
+2026-11-07T15:54:28.7425190Z   Preparing metadata (pyproject.toml): started
+2026-11-07T15:54:29.1755094Z   Preparing metadata (pyproject.toml): finished with status 'done'
+2026-11-07T15:54:29.1871440Z Downloading py7zr-1.1.0-py3-none-any.whl (71 kB)
+2026-11-07T15:54:29.2248201Z Using cached setuptools-84.2.1-py3-none-any.whl (876 kB)
+2026-11-07T15:54:29.2386767Z Downloading brotli-1.2.1-cp315-cp315-win_amd64.whl (376 kB)
+2026-11-07T15:54:29.2737545Z Downloading multivolumefile-0.2.3-py3-none-any.whl (17 kB)
+2026-11-07T15:54:29.3116024Z Downloading pycryptodomex-3.24.2-cp37-abi3-win_amd64.whl (1.8 MB)
+2026-11-07T15:54:29.3652459Z    ---------------------------------------- 1.8/1.8 MB 30.9 MB/s  0:00:00
+2026-11-07T15:54:29.3703767Z Downloading psutil-7.2.2-cp37-abi3-win_amd64.whl (137 kB)
+2026-11-07T15:54:29.4024079Z Downloading texttable-1.7.2-py2.py3-none-any.whl (10 kB)
+2026-11-07T15:54:29.4717156Z Building wheels for collected packages: inflate64, pybcj, pyppmd
+2026-11-07T15:54:29.4754011Z   Building wheel for inflate64 (pyproject.toml): started
+2026-11-07T15:54:40.9001179Z   Building wheel for inflate64 (pyproject.toml): finished with status 'done'
+2026-11-07T15:54:40.9059035Z   Created wheel for inflate64: filename=inflate64-1.0.4-cp315-cp315-win_amd64.whl size=36119 sha256=d447c8b7f5f93db52702ce30a1186d835787a78ba76e44b32ae9a4c3155374e8
+2026-11-07T15:54:40.9061657Z   Stored in directory: c:\users\runneradmin\appdata\local\pip\cache\wheels\9e\0d\de\c0d754afa658d5bd6ceb1a6451eb296d37c3a54f32d929d0de
+2026-11-07T15:54:40.9109900Z   Building wheel for pybcj (pyproject.toml): started
+2026-11-07T15:54:43.6034111Z   Building wheel for pybcj (pyproject.toml): finished with status 'done'
+2026-11-07T15:54:43.6051653Z   Created wheel for pybcj: filename=pybcj-1.0.8-cp315-cp315-win_amd64.whl size=25066 sha256=f847983209edbbd98bd11120e78178bd1915729ff494442905aa9ad2fc3c2e64
+2026-11-07T15:54:43.6053764Z   Stored in directory: c:\users\runneradmin\appdata\local\pip\cache\wheels\8d\56\56\0cd36d19ac061b6d27292b519a634f83e580bc72806cde286a
+2026-11-07T15:54:43.6171511Z   Building wheel for pyppmd (pyproject.toml): started
+2026-11-07T15:54:48.1066654Z   Building wheel for pyppmd (pyproject.toml): finished with status 'done'
+2026-11-07T15:54:48.1084763Z   Created wheel for pyppmd: filename=pyppmd-1.3.1-cp315-cp315-win_amd64.whl size=47775 sha256=4948615b9b248f9f163117a1b527f84e318916d0855cf2269a02470268059611
+2026-11-07T15:54:48.1086507Z   Stored in directory: c:\users\runneradmin\appdata\local\pip\cache\wheels\ce\18\16\b310919b0e82efe606958659e2c189178f7bc6e361dd299d79
+2026-11-07T15:54:48.1133405Z Successfully built inflate64 pybcj pyppmd
+2026-11-07T15:54:48.1501377Z Installing collected packages: texttable, brotli, setuptools, pyppmd, pycryptodomex, pybcj, psutil, multivolumefile, inflate64, py7zr
+2026-11-07T15:54:51.5168729Z 
+2026-11-07T15:54:51.5183091Z Successfully installed brotli-1.2.1 inflate64-1.0.4 multivolumefile-0.2.3 psutil-7.2.2 py7zr-1.1.0 pybcj-1.0.8 pycryptodomex-3.24.2 pyppmd-1.3.1 setuptools-84.2.1 texttable-1.7.2
+2026-11-07T15:54:51.5199185Z 
+2026-11-07T15:54:51.5200526Z [notice] A new release of pip is available: 26.2.2 -> 26.3
+2026-11-07T15:54:51.5201570Z [notice] To update, run: python.exe -m pip install --upgrade pip
+2026-11-07T15:54:52.1048743Z [command]C:\hostedtoolcache\windows\Python\3.15.2\x64\python.exe -m pip install aqtinstall==3.3.*
+2026-11-07T15:54:53.1360262Z Collecting aqtinstall==3.3.*
+2026-11-07T15:54:53.1871164Z   Downloading aqtinstall-3.3.0-py3-none-any.whl.metadata (11 kB)
+2026-11-07T15:54:53.2363404Z Collecting bs4 (from aqtinstall==3.3.*)
+2026-11-07T15:54:53.2455526Z   Downloading bs4-0.0.2-py2.py3-none-any.whl.metadata (411 bytes)
+2026-11-07T15:54:53.2924566Z Collecting defusedxml (from aqtinstall==3.3.*)
+2026-11-07T15:54:53.3039057Z   Downloading defusedxml-0.7.1-py2.py3-none-any.whl.metadata (32 kB)
+2026-11-07T15:54:53.3691108Z Collecting humanize (from aqtinstall==3.3.*)
+2026-11-07T15:54:53.3802075Z   Downloading humanize-4.16.0-py3-none-any.whl.metadata (8.0 kB)
+2026-11-07T15:54:53.4649011Z Collecting patch-ng (from aqtinstall==3.3.*)
+2026-11-07T15:54:53.4760847Z   Downloading patch_ng-1.19.1-py3-none-any.whl.metadata (3.2 kB)
+2026-11-07T15:54:53.4960534Z Requirement already satisfied: py7zr>=0.22.0 in C:\hostedtoolcache\windows\Python\3.15.2\x64\Lib\site-packages (from aqtinstall==3.3.*) (1.1.0)
+2026-11-07T15:54:53.5264461Z Collecting requests>=2.31.0 (from aqtinstall==3.3.*)
+2026-11-07T15:54:53.5363195Z   Downloading requests-2.34.2-py3-none-any.whl.metadata (4.8 kB)
+2026-11-07T15:54:53.5803415Z Collecting semantic-version (from aqtinstall==3.3.*)
+2026-11-07T15:54:53.5896648Z   Downloading semantic_version-2.10.0-py2.py3-none-any.whl.metadata (9.7 kB)
+2026-11-07T15:54:53.6111464Z Requirement already satisfied: texttable in C:\hostedtoolcache\windows\Python\3.15.2\x64\Lib\site-packages (from aqtinstall==3.3.*) (1.7.2)
+2026-11-07T15:54:53.6127995Z Requirement already satisfied: pycryptodomex>=3.20.0 in C:\hostedtoolcache\windows\Python\3.15.2\x64\Lib\site-packages (from py7zr>=0.22.0->aqtinstall==3.3.*) (3.24.2)
+2026-11-07T15:54:53.6135009Z Requirement already satisfied: brotli>=1.2.0 in C:\hostedtoolcache\windows\Python\3.15.2\x64\Lib\site-packages (from py7zr>=0.22.0->aqtinstall==3.3.*) (1.2.1)
+2026-11-07T15:54:53.6141677Z Requirement already satisfied: psutil in C:\hostedtoolcache\windows\Python\3.15.2\x64\Lib\site-packages (from py7zr>=0.22.0->aqtinstall==3.3.*) (7.2.2)
+2026-11-07T15:54:53.6147865Z Requirement already satisfied: pyppmd>=1.3.1 in C:\hostedtoolcache\windows\Python\3.15.2\x64\Lib\site-packages (from py7zr>=0.22.0->aqtinstall==3.3.*) (1.3.1)
+2026-11-07T15:54:53.6153368Z Requirement already satisfied: pybcj>=1.0.6 in C:\hostedtoolcache\windows\Python\3.15.2\x64\Lib\site-packages (from py7zr>=0.22.0->aqtinstall==3.3.*) (1.0.8)
+2026-11-07T15:54:53.6158383Z Requirement already satisfied: multivolumefile>=0.2.3 in C:\hostedtoolcache\windows\Python\3.15.2\x64\Lib\site-packages (from py7zr>=0.22.0->aqtinstall==3.3.*) (0.2.3)
+2026-11-07T15:54:53.6163532Z Requirement already satisfied: inflate64>=1.0.4 in C:\hostedtoolcache\windows\Python\3.15.2\x64\Lib\site-packages (from py7zr>=0.22.0->aqtinstall==3.3.*) (1.0.4)
+2026-11-07T15:54:53.7542084Z Collecting charset_normalizer<4,>=2 (from requests>=2.31.0->aqtinstall==3.3.*)
+2026-11-07T15:54:53.7678428Z   Downloading charset_normalizer-3.5.2-cp315-cp315-win_amd64.whl.metadata (47 kB)
+2026-11-07T15:54:53.8125880Z Collecting idna<4,>=2.5 (from requests>=2.31.0->aqtinstall==3.3.*)
+2026-11-07T15:54:53.8218617Z   Downloading idna-3.20-py3-none-any.whl.metadata (7.2 kB)
+2026-11-07T15:54:53.8864840Z Collecting urllib3<3,>=1.26 (from requests>=2.31.0->aqtinstall==3.3.*)
+2026-11-07T15:54:53.9119206Z   Downloading urllib3-2.8.0-py3-none-any.whl.metadata (7.4 kB)
+2026-11-07T15:54:53.9608917Z Collecting certifi>=2023.5.7 (from requests>=2.31.0->aqtinstall==3.3.*)
+2026-11-07T15:54:53.9705590Z   Downloading certifi-2026.10.23-py3-none-any.whl.metadata (2.5 kB)
+2026-11-07T15:54:54.0233832Z Collecting beautifulsoup4 (from bs4->aqtinstall==3.3.*)
+2026-11-07T15:54:54.0329653Z   Downloading beautifulsoup4-4.15.0-py3-none-any.whl.metadata (3.8 kB)
+2026-11-07T15:54:54.0807691Z Collecting soupsieve>=1.6.1 (from beautifulsoup4->bs4->aqtinstall==3.3.*)
+2026-11-07T15:54:54.0900884Z   Downloading soupsieve-4.0.1-py3-none-any.whl.metadata (4.4 kB)
+2026-11-07T15:54:54.1366515Z Collecting typing-extensions>=4.0.0 (from beautifulsoup4->bs4->aqtinstall==3.3.*)
+2026-11-07T15:54:54.1467334Z   Downloading typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+2026-11-07T15:54:54.1844414Z Downloading aqtinstall-3.3.0-py3-none-any.whl (71 kB)
+2026-11-07T15:54:54.2189640Z Downloading requests-2.34.2-py3-none-any.whl (73 kB)
+2026-11-07T15:54:54.2494908Z Downloading charset_normalizer-3.5.2-cp315-cp315-win_amd64.whl (210 kB)
+2026-11-07T15:54:54.2797371Z Downloading idna-3.20-py3-none-any.whl (69 kB)
+2026-11-07T15:54:54.3048578Z Downloading urllib3-2.8.0-py3-none-any.whl (135 kB)
+2026-11-07T15:54:54.3367625Z Downloading certifi-2026.10.23-py3-none-any.whl (135 kB)
+2026-11-07T15:54:54.3640681Z Downloading bs4-0.0.2-py2.py3-none-any.whl (1.2 kB)
+2026-11-07T15:54:54.3921778Z Downloading beautifulsoup4-4.15.0-py3-none-any.whl (109 kB)
+2026-11-07T15:54:54.4179809Z Downloading soupsieve-4.0.1-py3-none-any.whl (50 kB)
+2026-11-07T15:54:54.4491498Z Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+2026-11-07T15:54:54.4734704Z Downloading defusedxml-0.7.1-py2.py3-none-any.whl (25 kB)
+2026-11-07T15:54:54.4978120Z Downloading humanize-4.16.0-py3-none-any.whl (137 kB)
+2026-11-07T15:54:54.5297747Z Downloading patch_ng-1.19.1-py3-none-any.whl (17 kB)
+2026-11-07T15:54:54.5551358Z Downloading semantic_version-2.10.0-py2.py3-none-any.whl (15 kB)
+2026-11-07T15:54:54.6755841Z Installing collected packages: urllib3, typing-extensions, soupsieve, semantic-version, patch-ng, idna, humanize, defusedxml, charset_normalizer, certifi, requests, beautifulsoup4, bs4, aqtinstall
+2026-11-07T15:54:56.3156704Z 
+2026-11-07T15:54:56.3179763Z Successfully installed aqtinstall-3.3.0 beautifulsoup4-4.15.0 bs4-0.0.2 certifi-2026.10.23 charset_normalizer-3.5.2 defusedxml-0.7.1 humanize-4.16.0 idna-3.20 patch-ng-1.19.1 requests-2.34.2 semantic-version-2.10.0 soupsieve-4.0.1 typing-extensions-4.16.0 urllib3-2.8.0
+2026-11-07T15:54:56.3195634Z 
+2026-11-07T15:54:56.3197019Z [notice] A new release of pip is available: 26.2.2 -> 26.3
+2026-11-07T15:54:56.3197694Z [notice] To update, run: python.exe -m pip install --upgrade pip
+2026-11-07T15:54:56.4047669Z ##[endgroup]
+2026-11-07T15:54:56.4914987Z [command]C:\hostedtoolcache\windows\Python\3.15.2\x64\python.exe -m aqt version
+2026-11-07T15:54:56.9575249Z INFO    : aqtinstall(aqt) v3.3.0 on Python 3.15.2 [CPython MSC v.1951 64 bit (AMD64)]
+2026-11-07T15:54:56.9938917Z ##[group]Resolve available Qt version "5.15.2" with host "windows" and target "desktop"
+2026-11-07T15:54:57.0790430Z [command]C:\hostedtoolcache\windows\Python\3.15.2\x64\python.exe -m aqt list-qt windows desktop --spec 5.15.2 --latest-version
+2026-11-07T15:54:58.0426671Z 5.15.2
+2026-11-07T15:54:58.0812276Z ##[endgroup]
+2026-11-07T15:54:58.0822902Z ##[group]Check and restore cache
+2026-11-07T15:54:58.3031596Z Cache hit for: install-qt-action-windows-10.0.20348-desktop-win64_msvc2019_64-5.15.2-D:\a\dukto-next\Qt-==1.1.0-==3.3.*
+2026-11-07T15:54:59.2444501Z Received 142751395 of 142751395 (100.0%), 150.8 MBs/sec
+2026-11-07T15:54:59.2444965Z Cache Size: ~136 MB (142751395 B)
+2026-11-07T15:54:59.2510313Z [command]"C:\Program Files\Git\usr\bin\tar.exe" -xf D:/a/_temp/b6157d47-6842-4fb4-907c-d4da5f396580/cache.tzst -P -C D:/a/dukto-next/dukto-next --force-local --use-compress-program "zstd -d"
+2026-11-07T15:55:02.2705793Z Cache restored successfully
+2026-11-07T15:55:02.2787203Z Automatic cache hit with key "install-qt-action-windows-10.0.20348-desktop-win64_msvc2019_64-5.15.2-D:\a\dukto-next\Qt-==1.1.0-==3.3.*"
+2026-11-07T15:55:02.2789117Z ##[endgroup]
+2026-11-07T15:55:02.2861692Z ##[group]Post-process installed Qt
+2026-11-07T15:55:02.2863642Z Setting output "host" = "windows"
+2026-11-07T15:55:02.2868267Z Setting output "target" = "desktop"
+2026-11-07T15:55:02.2870181Z Setting output "version" = "5.15.2"
+2026-11-07T15:55:02.2871953Z Setting output "arch" = "win64_msvc2019_64"
+2026-11-07T15:55:02.2874101Z Setting output "qt-root-dir" = "D:\a\dukto-next\Qt\5.15.2\msvc2019_64"
+2026-11-07T15:55:02.2875964Z Setting output "qt-plugin-path" = "D:\a\dukto-next\Qt\5.15.2\msvc2019_64\plugins"
+2026-11-07T15:55:02.2880910Z Setting output "qml2-import-path" = "D:\a\dukto-next\Qt\5.15.2\msvc2019_64\qml"
+2026-11-07T15:55:02.2882948Z Prepending "D:\a\dukto-next\Qt\5.15.2\msvc2019_64\bin" to env "PATH"
+2026-11-07T15:55:02.2886476Z Setting env "Qt5_DIR" = "D:\a\dukto-next\Qt\5.15.2\msvc2019_64\lib\cmake"
+2026-11-07T15:55:02.2889390Z Setting env "QT_ROOT_DIR" = "D:\a\dukto-next\Qt\5.15.2\msvc2019_64"
+2026-11-07T15:55:02.2891825Z Setting env "QT_PLUGIN_PATH" = "D:\a\dukto-next\Qt\5.15.2\msvc2019_64\plugins"
+2026-11-07T15:55:02.2893911Z Setting env "QML2_IMPORT_PATH" = "D:\a\dukto-next\Qt\5.15.2\msvc2019_64\qml"
+2026-11-07T15:55:02.2895948Z ##[endgroup]
+2026-11-07T15:55:02.3028290Z ##[end-action id=__jurplel_install-qt-action.aqtinstall;outcome=success;conclusion=success;duration_ms=51556]
+2026-11-07T15:55:02.3212228Z ##[group]Run python scripts/ci_tls_runtime.py
+2026-11-07T15:55:02.3212698Z [36;1mpython scripts/ci_tls_runtime.py[0m
+2026-11-07T15:55:02.3213108Z [36;1m"$PWD/.tools/openssl/Library/bin" >> $env:GITHUB_PATH[0m
+2026-11-07T15:55:02.3444532Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-11-07T15:55:02.3445009Z env:
+2026-11-07T15:55:02.3445369Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T15:55:02.3446019Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.15.2\x64/lib/pkgconfig
+2026-11-07T15:55:02.3446650Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T15:55:02.3447214Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T15:55:02.3447776Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T15:55:02.3448301Z   Qt5_DIR: D:\a\dukto-next\Qt\5.15.2\msvc2019_64\lib\cmake
+2026-11-07T15:55:02.3448838Z   QT_ROOT_DIR: D:\a\dukto-next\Qt\5.15.2\msvc2019_64
+2026-11-07T15:55:02.3449315Z   QT_PLUGIN_PATH: D:\a\dukto-next\Qt\5.15.2\msvc2019_64\plugins
+2026-11-07T15:55:02.3449835Z   QML2_IMPORT_PATH: D:\a\dukto-next\Qt\5.15.2\msvc2019_64\qml
+2026-11-07T15:55:02.3450261Z ##[endgroup]
+2026-11-07T15:55:04.0482481Z ##[group]Run python -m pip install psutil
+2026-11-07T15:55:04.0482910Z [36;1mpython -m pip install psutil[0m
+2026-11-07T15:55:04.0525411Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-11-07T15:55:04.0525754Z env:
+2026-11-07T15:55:04.0526019Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T15:55:04.0526469Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.15.2\x64/lib/pkgconfig
+2026-11-07T15:55:04.0526909Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T15:55:04.0527305Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T15:55:04.0527697Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T15:55:04.0528088Z   Qt5_DIR: D:\a\dukto-next\Qt\5.15.2\msvc2019_64\lib\cmake
+2026-11-07T15:55:04.0528412Z   QT_ROOT_DIR: D:\a\dukto-next\Qt\5.15.2\msvc2019_64
+2026-11-07T15:55:04.0528747Z   QT_PLUGIN_PATH: D:\a\dukto-next\Qt\5.15.2\msvc2019_64\plugins
+2026-11-07T15:55:04.0529161Z   QML2_IMPORT_PATH: D:\a\dukto-next\Qt\5.15.2\msvc2019_64\qml
+2026-11-07T15:55:04.0529463Z ##[endgroup]
+2026-11-07T15:55:05.2274616Z Requirement already satisfied: psutil in C:\hostedtoolcache\windows\Python\3.15.2\x64\Lib\site-packages (7.2.2)
+2026-11-07T15:55:05.2797504Z 
+2026-11-07T15:55:05.2798264Z [notice] A new release of pip is available: 26.2.2 -> 26.3
+2026-11-07T15:55:05.2798982Z [notice] To update, run: python.exe -m pip install --upgrade pip
+2026-11-07T15:55:05.4480550Z ##[group]Run python -X utf8 tests/source_snapshot_integration.py --report build/source-snapshot.json
+2026-11-07T15:55:05.4481837Z [36;1mpython -X utf8 tests/source_snapshot_integration.py --report build/source-snapshot.json[0m
+2026-11-07T15:55:05.4554703Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-11-07T15:55:05.4555346Z env:
+2026-11-07T15:55:05.4555771Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T15:55:05.4556538Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.15.2\x64/lib/pkgconfig
+2026-11-07T15:55:05.4557307Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T15:55:05.4558007Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T15:55:05.4558715Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T15:55:05.4559386Z   Qt5_DIR: D:\a\dukto-next\Qt\5.15.2\msvc2019_64\lib\cmake
+2026-11-07T15:55:05.4560024Z   QT_ROOT_DIR: D:\a\dukto-next\Qt\5.15.2\msvc2019_64
+2026-11-07T15:55:05.4560622Z   QT_PLUGIN_PATH: D:\a\dukto-next\Qt\5.15.2\msvc2019_64\plugins
+2026-11-07T15:55:05.4561329Z   QML2_IMPORT_PATH: D:\a\dukto-next\Qt\5.15.2\msvc2019_64\qml
+2026-11-07T15:55:05.4561935Z ##[endgroup]
+2026-11-07T15:55:08.1544058Z Source snapshot validation passed
+2026-11-07T15:55:08.2806315Z ##[group]Run python -X utf8 tests/process_sampling_integration.py --report build/process-sampling.json
+2026-11-07T15:55:08.2807151Z [36;1mpython -X utf8 tests/process_sampling_integration.py --report build/process-sampling.json[0m
+2026-11-07T15:55:08.2853526Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-11-07T15:55:08.2853867Z env:
+2026-11-07T15:55:08.2854123Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T15:55:08.2854581Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.15.2\x64/lib/pkgconfig
+2026-11-07T15:55:08.2855032Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T15:55:08.2855444Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T15:55:08.2855852Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T15:55:08.2856293Z   Qt5_DIR: D:\a\dukto-next\Qt\5.15.2\msvc2019_64\lib\cmake
+2026-11-07T15:55:08.2856821Z   QT_ROOT_DIR: D:\a\dukto-next\Qt\5.15.2\msvc2019_64
+2026-11-07T15:55:08.2857173Z   QT_PLUGIN_PATH: D:\a\dukto-next\Qt\5.15.2\msvc2019_64\plugins
+2026-11-07T15:55:08.2857540Z   QML2_IMPORT_PATH: D:\a\dukto-next\Qt\5.15.2\msvc2019_64\qml
+2026-11-07T15:55:08.2857830Z ##[endgroup]
+2026-11-07T15:55:10.7926305Z ##[group]Run python -X utf8 tests/proxy_pacing_integration.py --report proxy-pacing.json
+2026-11-07T15:55:10.7927015Z [36;1mpython -X utf8 tests/proxy_pacing_integration.py --report proxy-pacing.json[0m
+2026-11-07T15:55:10.7969564Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-11-07T15:55:10.7969910Z env:
+2026-11-07T15:55:10.7970175Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T15:55:10.7970631Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.15.2\x64/lib/pkgconfig
+2026-11-07T15:55:10.7971086Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T15:55:10.7971491Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T15:55:10.7971884Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T15:55:10.7972245Z   Qt5_DIR: D:\a\dukto-next\Qt\5.15.2\msvc2019_64\lib\cmake
+2026-11-07T15:55:10.7972572Z   QT_ROOT_DIR: D:\a\dukto-next\Qt\5.15.2\msvc2019_64
+2026-11-07T15:55:10.7972930Z   QT_PLUGIN_PATH: D:\a\dukto-next\Qt\5.15.2\msvc2019_64\plugins
+2026-11-07T15:55:10.7973292Z   QML2_IMPORT_PATH: D:\a\dukto-next\Qt\5.15.2\msvc2019_64\qml
+2026-11-07T15:55:10.7973586Z ##[endgroup]
+2026-11-07T15:55:15.1480012Z {"date": "2026-11-05", "passed": true, "injectedExtraWaitSeconds": 0.07, "rateBytesPerSecond": 524288, "maximumCatchupSeconds": 0.25, "received": {"bytes": 2097152, "sha256": "91d3beb88a9b2f778a6c44a1c53b63d3c79931845a9aef84b3fb414610bd1938", "seconds": 4.046947299999999}, "cancelled": true, "scope": "real TCP fixture pacing under injected timer oversleep; not application or physical LAN throughput"}
+2026-11-07T15:55:15.2560247Z ##[group]Run cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+2026-11-07T15:55:15.2560734Z [36;1mcmake -S . -B build -DCMAKE_BUILD_TYPE=Release[0m
+2026-11-07T15:55:15.2601932Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-11-07T15:55:15.2602280Z env:
+2026-11-07T15:55:15.2602544Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T15:55:15.2602989Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.15.2\x64/lib/pkgconfig
+2026-11-07T15:55:15.2603426Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T15:55:15.2603837Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T15:55:15.2604236Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T15:55:15.2604599Z   Qt5_DIR: D:\a\dukto-next\Qt\5.15.2\msvc2019_64\lib\cmake
+2026-11-07T15:55:15.2604930Z   QT_ROOT_DIR: D:\a\dukto-next\Qt\5.15.2\msvc2019_64
+2026-11-07T15:55:15.2605295Z   QT_PLUGIN_PATH: D:\a\dukto-next\Qt\5.15.2\msvc2019_64\plugins
+2026-11-07T15:55:15.2605671Z   QML2_IMPORT_PATH: D:\a\dukto-next\Qt\5.15.2\msvc2019_64\qml
+2026-11-07T15:55:15.2605969Z ##[endgroup]
+2026-11-07T15:55:16.0541071Z -- Building for: Visual Studio 17 2022
+2026-11-07T15:55:16.1654325Z -- Selecting Windows SDK version 10.0.26100.0 to target Windows 10.0.20348.
+2026-11-07T15:55:24.0448861Z -- The C compiler identification is MSVC 19.44.35229.0
+2026-11-07T15:55:25.3210036Z -- The CXX compiler identification is MSVC 19.44.35229.0
+2026-11-07T15:55:25.4459613Z -- Detecting C compiler ABI info
+2026-11-07T15:55:26.4696766Z -- Detecting C compiler ABI info - done
+2026-11-07T15:55:26.4845785Z -- Check for working C compiler: C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/cl.exe - skipped
+2026-11-07T15:55:26.4861993Z -- Detecting C compile features
+2026-11-07T15:55:26.4951676Z -- Detecting C compile features - done
+2026-11-07T15:55:26.5159270Z -- Detecting CXX compiler ABI info
+2026-11-07T15:55:27.2328349Z -- Detecting CXX compiler ABI info - done
+2026-11-07T15:55:27.2474135Z -- Check for working CXX compiler: C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/cl.exe - skipped
+2026-11-07T15:55:27.2478354Z -- Detecting CXX compile features
+2026-11-07T15:55:27.2487568Z -- Detecting CXX compile features - done
+2026-11-07T15:55:27.3079192Z -- Found OpenSSL: D:/a/dukto-next/dukto-next/.tools/openssl/Library/lib/libcrypto.lib (found suitable version "1.1.1w", minimum required is "1.1.1") found components: Crypto
+2026-11-07T15:55:27.3240656Z CMake Error at CMakeLists.txt:35 (message):
+2026-11-07T15:55:27.3241417Z   Qt SQLite driver upstream source digest mismatch
+2026-11-07T15:55:27.3242257Z 
+2026-11-07T15:55:27.3242269Z 
+2026-11-07T15:55:27.3242546Z -- Configuring incomplete, errors occurred!
+2026-11-07T15:55:27.4379318Z ##[error]Process completed with exit code 1.
+2026-11-07T15:55:27.4617802Z ##[group]Run actions/upload-artifact@v4
+2026-11-07T15:55:27.4618247Z with:
+2026-11-07T15:55:27.4618562Z   name: validation-windows-2022
+2026-11-07T15:55:27.4619401Z   path: proxy-pacing.json
+build/*.log
+build/*.json
+build/*.png
+build/text-preview-originals-*/**
+build/main-window-navigation/**
+build/Testing/Temporary/*
+build/Testing/QtTest/*
+
+2026-11-07T15:55:27.4620298Z   if-no-files-found: warn
+2026-11-07T15:55:27.4620598Z   compression-level: 6
+2026-11-07T15:55:27.4620858Z   overwrite: false
+2026-11-07T15:55:27.4638067Z   include-hidden-files: false
+2026-11-07T15:55:27.4638358Z env:
+2026-11-07T15:55:27.4638632Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T15:55:27.4639098Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.15.2\x64/lib/pkgconfig
+2026-11-07T15:55:27.4639559Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T15:55:27.4639954Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T15:55:27.4640385Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.15.2\x64
+2026-11-07T15:55:27.4640981Z   Qt5_DIR: D:\a\dukto-next\Qt\5.15.2\msvc2019_64\lib\cmake
+2026-11-07T15:55:27.4641308Z   QT_ROOT_DIR: D:\a\dukto-next\Qt\5.15.2\msvc2019_64
+2026-11-07T15:55:27.4641640Z   QT_PLUGIN_PATH: D:\a\dukto-next\Qt\5.15.2\msvc2019_64\plugins
+2026-11-07T15:55:27.4642008Z   QML2_IMPORT_PATH: D:\a\dukto-next\Qt\5.15.2\msvc2019_64\qml
+2026-11-07T15:55:27.4642306Z ##[endgroup]
+2026-11-07T15:55:27.6557187Z (node:6724) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-07T15:55:27.6557947Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-07T15:55:27.6666665Z Multiple search paths detected. Calculating the least common ancestor of all paths
+2026-11-07T15:55:27.6670828Z The least common ancestor is D:\a\dukto-next\dukto-next. This will be the root directory of the artifact
+2026-11-07T15:55:27.6671771Z With the provided path, there will be 3 files uploaded
+2026-11-07T15:55:27.6679968Z Artifact name is valid!
+2026-11-07T15:55:27.6682843Z Root directory input is valid!
+2026-11-07T15:55:27.8961346Z Beginning upload of artifact content to blob storage
+2026-11-07T15:55:27.9200279Z (node:6724) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-11-07T15:55:27.9453986Z Uploaded bytes 1268
+2026-11-07T15:55:27.9593744Z Finished uploading artifact content to blob storage!
+2026-11-07T15:55:27.9594901Z SHA256 digest of uploaded artifact zip is e109675df36552f8b397b66cad6474868ff3626524935a983901454921854172
+2026-11-07T15:55:27.9597667Z Finalizing artifact upload
+2026-11-07T15:55:28.3506094Z Artifact validation-windows-2022.zip successfully finalized. Artifact ID 13580946074
+2026-11-07T15:55:28.3507462Z Artifact validation-windows-2022 has been successfully uploaded! Final size is 1268 bytes. Artifact ID is 13580946074
+2026-11-07T15:55:28.3516745Z Artifact download URL: https://github.com/29583855/dukto-next/actions/runs/42388560627/artifacts/13580946074
+2026-11-07T15:55:28.3940170Z Post job cleanup.
+2026-11-07T15:55:28.3944135Z ##[start-action display=Setup Python;id=__fc7cd0b4-c4ce-481c-af37-958448db7ef2.__actions_setup-python]
+2026-11-07T15:55:28.3946454Z ##[end-action id=__fc7cd0b4-c4ce-481c-af37-958448db7ef2.__actions_setup-python;outcome=skipped;conclusion=skipped;duration_ms=0]
+2026-11-07T15:55:28.4138020Z Post job cleanup.
+2026-11-07T15:55:28.6255132Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-11-07T15:55:28.6538363Z git version 2.56.0.windows.4
+2026-11-07T15:55:28.6599427Z Temporarily overriding HOME='D:\a\_temp\837e1403-3bf0-4dbd-bde9-5c09c07ef0dc' before making global git config changes
+2026-11-07T15:55:28.6600306Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-07T15:55:28.6611905Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\dukto-next\dukto-next
+2026-11-07T15:55:28.6921175Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-11-07T15:55:28.7222181Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-11-07T15:55:29.1828660Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-07T15:55:29.2090879Z http.https://github.com/.extraheader
+2026-11-07T15:55:29.2126338Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all http.https://github.com/.extraheader
+2026-11-07T15:55:29.2424904Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-11-07T15:55:29.7432470Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-07T15:55:29.7735941Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-11-07T15:55:30.2746467Z Cleaning up orphan processes
+2026-11-07T15:55:30.2932112Z Terminate orphan process: pid (5232) (vctip)
+2026-11-07T15:55:30.3010453Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-python@v5, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

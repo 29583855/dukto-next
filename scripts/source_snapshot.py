@@ -11,7 +11,7 @@ import tarfile
 import tempfile
 import time
 
-ROOT_FILES = {"CMakeLists.txt", ".clang-format", ".gitignore", "LICENSE", "README.md", "开发计划与进度.md", "AGENTS.md"}
+ROOT_FILES = {"CMakeLists.txt", ".gitattributes", ".clang-format", ".gitignore", "LICENSE", "README.md", "开发计划与进度.md", "AGENTS.md"}
 ROOT_DIRS = {"src", "ui", "resources", "scripts", "tests", "docs", ".github", "third-party/sqlite-runtime"}
 RECEIPT = ".dukto-source-snapshot.json"
 MAX_FILE = 4 * 1024 * 1024

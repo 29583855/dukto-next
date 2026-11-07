@@ -1,5 +1,5 @@
 {
-  "observedUtc": "2026-11-07T15:52:51.030429+00:00",
+  "observedUtc": "2026-11-07T15:58:36.785779+00:00",
   "planVersion": "v0.119",
   "baselineSourceCommit": "e84f34f5dfec9c1edd465a443b37c3bc2696c633",
   "qualificationInputs": [
@@ -7,6 +7,11 @@
       "path": ".clang-format",
       "bytes": 135,
       "sha256": "6fae9c693a9c50d2bbb43267923289eea60b10328e71893d79bb155d4b5db6c3"
+    },
+    {
+      "path": ".gitattributes",
+      "bytes": 141,
+      "sha256": "88773f2f0f3776be3e2d9e0625c24726d81353e5b889f23677d32f17b880dd6c"
     },
     {
       "path": ".github/docker/musl/Dockerfile",
@@ -175,13 +180,13 @@
     },
     {
       "path": "scripts/package_windows.py",
-      "bytes": 11471,
-      "sha256": "3f0063294e61dbd464f96efbc30bdd8a873bd28862e79f7f9ad0afd070a096e9"
+      "bytes": 11489,
+      "sha256": "37791b5fcda966e93618f0a8869b306b0735c5801f272d6644defea642e71206"
     },
     {
       "path": "scripts/source_snapshot.py",
-      "bytes": 8101,
-      "sha256": "53fe23a9026d776a195d640d2bf7243b4a6b34cb5fd8f6ada67772906ad5eeea"
+      "bytes": 8119,
+      "sha256": "524738eb60a1702ef1845679fd38cfd32510ac9d8365c72abb2c64bca3e6cf8b"
     },
     {
       "path": "scripts/verify.ps1",
@@ -1095,8 +1100,8 @@
     },
     {
       "path": "tests/source_snapshot_integration.py",
-      "bytes": 7133,
-      "sha256": "26356b6a2ada8cd6406e24dba37e696f35dc352973c329d1aa6e0c0f72ae8295"
+      "bytes": 8229,
+      "sha256": "4a13baf1bec471e97285cbfa02ae4494a3f0142fff86cd3a07c235d8f29fadfb"
     },
     {
       "path": "tests/sqlite_cache_tests.cpp",
@@ -1299,7 +1304,7 @@
       "sha256": "3f3c0dcd4ce91b2597f43f6245fd9425ae91f60f4b3b763fa4083e04f1b0b552"
     }
   ],
-  "inputCount": 259,
+  "inputCount": 260,
   "changedInputs": [
     ".github/workflows/build.yml",
     ".github/workflows/linux-package.yml",
@@ -1348,6 +1353,14 @@
     {
       "path": "docs/validation/2026-11-07/sqlite-vfs-r119-local/r119-source-snapshot.json",
       "sha256": "8c200491434d8734a5258b6c3f90bc66985581f8675977588454603c90e07bda"
+    },
+    {
+      "path": "docs/validation/2026-11-07/sqlite-vfs-r119-checkout/r119-checkout-source-audit.json",
+      "sha256": "fe41160a8fe8019d8656fe0edc17cb77964c0b86f4e5ea5792b80111c7a3c0d4"
+    },
+    {
+      "path": "docs/validation/2026-11-07/sqlite-vfs-r119-checkout/r119-checkout-source-snapshot.json",
+      "sha256": "77c73d55220e197002430db3a8a34ea6106face6630e096f87476f553d2573f9"
     }
   ],
   "localWindowsAllCoreQualified": true,
@@ -1356,5 +1369,14 @@
   "globalQuotaEnforced": false,
   "automaticGcImplemented": false,
   "deliveryComplete": false,
-  "releaseQualified": false
+  "releaseQualified": false,
+  "firstSourceCommit": "de6f38c9381e84a19466f5ecf0e0996e087bae23",
+  "firstWindowsConfigureFailureRetained": true,
+  "checkoutFixChangedInputs": [
+    ".gitattributes",
+    "scripts/package_windows.py",
+    "scripts/source_snapshot.py",
+    "tests/source_snapshot_integration.py"
+  ],
+  "completeCoreCxxAndCmakeInputsUnchangedByCheckoutFix": true
 }

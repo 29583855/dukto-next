@@ -51,7 +51,7 @@ def installed_packages(msys):
 
 # 日期：2026-11-05；对应源码仅打包本工程维护文件，排除参考二进制、凭据、依赖安装和测试运行数据。
 def source_archive(root, destination):
-    paths = [root / value for value in ("CMakeLists.txt", ".clang-format", "LICENSE", "README.md", "开发计划与进度.md")]
+    paths = [root / value for value in ("CMakeLists.txt", ".gitattributes", ".clang-format", "LICENSE", "README.md", "开发计划与进度.md")]
     for folder in ("src", "ui", "resources", "scripts", "tests", ".github", "docs", "third-party/sqlite-runtime"):
         paths.extend(path for path in (root / folder).rglob("*") if path.is_file()
                      and "__pycache__" not in path.parts and "validation" not in path.relative_to(root).parts)
