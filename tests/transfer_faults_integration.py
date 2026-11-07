@@ -136,7 +136,25 @@ def main():
                     active = None
                     stopped = stopped_task(state, task)
                     seconds = round(time.monotonic() - started, 3)
-                    assert error["code"] in ((3, 6) if fault == "same-size-mtime-source-change" else (3, 4)), error
+                    # 日期：2026-11-07；POSIX根目录重配竞态可由固定源路径身份检查精确拒绝，仍须验证未提交数据。
+                    safe_path_replacement = (
+                        fault == "root-reconfigure"
+                        and direction == "upload"
+                        and error == {
+                            "code": 6,
+                            "stage": "read",
+                            "message": "源文件路径在读取期间已被替换",
+                        }
+                    )
+                    if safe_path_replacement:
+                        assert stopped["state"] in ("failed", "interrupted"), stopped
+                        assert stopped["confirmed"] < stopped["total"], stopped
+                    else:
+                        assert error["code"] in (
+                            (3, 6)
+                            if fault == "same-size-mtime-source-change"
+                            else (3, 4)
+                        ), error
                     # 日期：2026-11-05；尾部源变化须等该块实际发送和摘要核对；授权撤销仍保留独立 15 秒门槛。
                     deadline_seconds = 30 if fault == "same-size-mtime-source-change" else 15
                     assert seconds < deadline_seconds, {"fault": fault, "direction": direction,
