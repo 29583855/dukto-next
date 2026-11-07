@@ -45,6 +45,27 @@ def failure(operation):
     return events[-1]
 
 
+# 日期：2026-11-07；配置原子替换可触发精确路径/对象拒绝，仍要求任务未完成；其他完整性错误不能混入撤权预期。
+def validate_fault_refusal(error, fault, stopped, platform_name=os.name):
+    signature = tuple(error.get(key) for key in ("event", "eventVersion", "code", "stage", "message"))
+    path_refusal = (
+        platform_name == "posix"
+        and fault in ("revoke", "root-reconfigure")
+        and type(error.get("eventVersion")) is int
+        and type(error.get("code")) is int
+        and signature in (
+            ("error", 1, 6, "read", "源文件路径在读取期间已被替换"),
+            ("error", 1, 6, "read", "读取期间源文件已变化"),
+        )
+    )
+    if path_refusal:
+        assert stopped["state"] in ("failed", "interrupted"), stopped
+        assert 0 <= stopped["confirmed"] < stopped["total"], stopped
+    else:
+        assert error["code"] in ((3, 6) if fault == "same-size-mtime-source-change" else (3, 4)), error
+    return path_refusal
+
+
 # 日期：2026-11-05；持续排空测试服务的标准输出，仅保留最后 32 条事件用于故障诊断，避免管道背压阻塞服务。
 def drain_service(stream, recent):
     for line in stream:
@@ -136,33 +157,7 @@ def main():
                     active = None
                     stopped = stopped_task(state, task)
                     seconds = round(time.monotonic() - started, 3)
-                    # 日期：2026-11-07；POSIX根目录重配竞态可由固定源路径身份检查精确拒绝，仍须验证未提交数据。
-                    safe_path_replacement = (
-                        fault == "root-reconfigure"
-                        and direction == "upload"
-                        and error
-                        in (
-                            {
-                                "code": 6,
-                                "stage": "read",
-                                "message": "源文件路径在读取期间已被替换",
-                            },
-                            {
-                                "code": 6,
-                                "stage": "read",
-                                "message": "读取期间源文件已变化",
-                            },
-                        )
-                    )
-                    if safe_path_replacement:
-                        assert stopped["state"] in ("failed", "interrupted"), stopped
-                        assert stopped["confirmed"] < stopped["total"], stopped
-                    else:
-                        assert error["code"] in (
-                            (3, 6)
-                            if fault == "same-size-mtime-source-change"
-                            else (3, 4)
-                        ), error
+                    path_refusal = validate_fault_refusal(error, fault, stopped)
                     # 日期：2026-11-05；尾部源变化须等该块实际发送和摘要核对；授权撤销仍保留独立 15 秒门槛。
                     deadline_seconds = 30 if fault == "same-size-mtime-source-change" else 15
                     assert seconds < deadline_seconds, {"fault": fault, "direction": direction,
@@ -175,6 +170,7 @@ def main():
                                     "checkpoint": checkpoint, "secondsAfterFault": seconds,
                                     "deadlineSeconds": deadline_seconds,
                                     "clientError": error, "serverTask": stopped,
+                                    "pathIntegrityRefusalAccepted": path_refusal,
                                     "originalPreserved": True, "noPublishedCopy": True})
                     print(f"{direction}/{fault}: passed ({seconds}s)", flush=True)
         finally:

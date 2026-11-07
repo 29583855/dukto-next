@@ -1,0 +1,49 @@
+name: Native Mac fault refusal regression
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  fault-regression:
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-15
+            artifact: '13571515179'
+            architecture: arm64
+            sha256: ec45a9b4299c058c4252dfe6c39fd2fef8ed5dad58929953b291880434c7cec4
+          - os: macos-15-intel
+            artifact: '13571616789'
+            architecture: x86_64
+            sha256: 82d56192c22437071ee0d77f1369d1a465ee04e196182631237b80ca314002c4
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      # 日期：2026-11-07；复用已核验的不可变原生包，应用来源与本轮测试脚本来源分别记录。
+      - name: Download immutable R111 preview
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: '42363743119'
+          artifact-ids: ${{ matrix.artifact }}
+          path: original-preview
+          merge-multiple: true
+      - name: Verify archive and repeat real fault transfers
+        run: >-
+          python -X utf8 tests/macos_fault_regression_integration.py
+          original-preview/package-output/DuktoNext-macos-${{ matrix.architecture }}-preview.tar.gz
+          --sha256 ${{ matrix.sha256 }}
+          --application-source dfe245b502f586e7df7219e8fb0d5e4030a6b032
+          --report regression/report.json
+      - name: Preserve independent regression evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-fault-regression-${{ matrix.architecture }}
+          path: regression/
