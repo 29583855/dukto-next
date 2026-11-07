@@ -4,6 +4,8 @@
 
 项目以 `Dukto/` 内的 Dukto R6 为功能参考，开发 Windows、macOS、Linux 共用内核的桌面应用和独立命令行程序，增加服务器上传/下载、多线程提速及可靠恢复能力。
 
+R111精确`dfe245b`已公开，四平台C++14 GUI/CLI编译、各26个CTest及目录清理各49条通过；skip目录清理与最终处置日志原子协调，删除后中断可恢复。双Mac编译归档及含Qt5/OpenSSL预览、系统PATH迁移已验；完整协议Ubuntu通过，Apple Silicon 46/47、下载撤权错误断言原失败保留，Intel/Windows待终态。[本轮进度](开发计划与进度.md)、[Mac下载及依赖范围](docs/macOS独立预览包.md)。
+
 当前已建立 C++14 共用核心、Qt Quick 2 桌面端和独立 CLI。Windows 已验证与原版文件/目录/文本双向互传、超过 4 GiB、10 万文件、100 轮接收，以及首次说明/设置/截图/单实例和有界头像模块。完整原版交互、服务器、多线程、恢复和跨平台验收继续按计划推进。原版目录保留用于对照。
 
 公开仓库为[29583855/dukto-next](https://github.com/29583855/dukto-next)。R110精确`a29960a`已上传，Windows/Ubuntu/Apple Silicon/Intel以C++14编译GUI和独立CLI，各26个CTest与目录专项各45条数据行通过；双Mac编译归档、含Qt5/OpenSSL部署包及系统PATH迁移报告已验，[下载入口](docs/macOS独立预览包.md)。新增客户端/服务器未发布空目录临时项维护，见[清理范围](docs/过期任务临时文件清理.md)。四平台完整协议终态success，双Mac精确Darwin端口独占XFAIL与已有头像负例警告保留。R109精确bea5d81四平台完整job已终态success、各47协议项原件通过；完整项目/发布按[计划](开发计划与进度.md)继续验收。

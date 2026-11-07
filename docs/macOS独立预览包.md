@@ -1,5 +1,29 @@
 # macOS独立开发预览包
 
+R111精确`dfe245b502f586e7df7219e8fb0d5e4030a6b032`已在Apple Silicon和Intel原生环境以C++14/Qt5编译GUI及独立CLI；四平台各26个CTest和目录专项各49条已验，完整协议Ubuntu通过，Apple Silicon 46/47、overwrite-faults原失败保留，Intel/Windows待终态。R111含Qt5/OpenSSL预览[构建42363743119](https://github.com/29583855/dukto-next/actions/runs/42363743119)双架构终态success，系统PATH迁移与包内运行报告已验。
+
+## R111最新含依赖预览
+
+双架构Qt5/OpenSSL依赖、各364份应用源码、全部载荷与71个框架链接、Mach-O架构/执行权限及归档摘要均逐件核验。两包各五项真实CLI/传输报告、系统PATH迁移、Cocoa导航与150%/200%高DPI通过，四张界面截图已查看。[原件回执](validation/2026-11-07/skip-directory-r111-macos-package/receipt.json)。本机副本在`dist/macos-preview-20261107-r111-skip-directory/`。
+
+| 架构 | Actions下载 | 官方ZIP SHA-256 | 内部tar.gz SHA-256 |
+| --- | --- | --- | --- |
+| arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42363743119/artifacts/13571515179) | `550e797501be43dd9bb9a46eace199b378a0681b6beebd1d1aa041435ee25967` | `ec45a9b4299c058c4252dfe6c39fd2fef8ed5dad58929953b291880434c7cec4` |
+| x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42363743119/artifacts/13571616789) | `c078087c81c701ec19efd746e5809c62fa7af8df5cd5c1547be1ba5587479dfb` | `82d56192c22437071ee0d77f1369d1a465ee04e196182631237b80ca314002c4` |
+
+这是adhoc签名开发预览；Developer ID、公证、干净系统和完整项目仍待验。原协议失败不由打包成功覆盖。解压与CLI命令见本文下方使用说明。
+
+## R111原生编译归档
+
+对应[运行42362014363](https://github.com/29583855/dukto-next/actions/runs/42362014363)。官方ZIP/内部tar摘要、精确源码、LICENSE、Mach-O架构及GUI/CLI执行权限逐件通过；本机副本在`dist/macos-compiled-20261107-r111-skip-directory/`。[回执](validation/2026-11-07/skip-directory-r111-macos-compiled/receipt.json)。编译归档需要匹配Qt5/OpenSSL运行依赖，含依赖预览另验。
+
+| 架构 | Actions下载 | 官方ZIP SHA-256 | 内部tar.gz SHA-256 |
+| --- | --- | --- | --- |
+| arm64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42362014363/artifacts/13569553162) | `fd73acc36657dfcc798fffea93ec180ad9679b49289bf02639b13deae03f869c` | `655ea1f7111dc8bd894ae68cbad54db3e9fd87de2eadbc69d9a319d551168f92` |
+| x86_64 | [下载](https://github.com/29583855/dukto-next/actions/runs/42362014363/artifacts/13570575207) | `4cb34a919c1c68a9785ede0945fa1dceeda022ba5c61652e1b34300d4410dbb0` | `b194aae927c421b8cb86bd010c44b0551335276fa00089664666a5a6a37e1ec0` |
+
+## R110已验含依赖预览及历史编译
+
 更新日期：2026-11-07。R110精确`a29960a38fb46368dd8ac190caed2f4c515f8731`已在Apple Silicon和Intel原生环境以C++14/Qt5编译GUI及独立CLI；两架构各26个CTest、目录清理各45条已验，归档摘要/架构/执行位通过。双架构Qt5/OpenSSL含依赖预览、系统PATH搬迁、各五项真实CLI/传输报告和Cocoa导航均通过；四平台完整协议终态success。各一条精确Darwin端口独占XFAIL保留。
 
 ## R110最新含依赖预览

@@ -1,0 +1,34 @@
+{
+  "date": "2026-11-04",
+  "passed": true,
+  "checks": [
+    "isolated INI",
+    "persistent configuration used by send/receive",
+    "port and timeout bounds",
+    "bad endpoint rejection",
+    "discovery JSON",
+    "receipt query",
+    "UTF-8/empty stdin roundtrip",
+    "invalid/oversized stdin rejected",
+    "open stdin idle timeout"
+  ],
+  "stdinSignalCancellation": "SIGINT passed",
+  "receiveSignalCancellation": [
+    {
+      "activeReceive": false,
+      "signal": "SIGTERM",
+      "seconds": 0.086,
+      "exitCode": 7,
+      "jsonCancellation": true,
+      "temporaryCleaned": true
+    },
+    {
+      "activeReceive": true,
+      "signal": "SIGINT",
+      "seconds": 0.079,
+      "exitCode": 7,
+      "jsonCancellation": true,
+      "temporaryCleaned": true
+    }
+  ]
+}
