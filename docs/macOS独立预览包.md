@@ -2,6 +2,17 @@
 
 更新日期：2026-11-07。当前含依赖开发预览为R105，精确源码`4652f4dce23b014e18f2db56c6a75e81e76deafa`；使用C++14、Qt5及CMake，两种架构均含GUI、独立CLI和Qt5/OpenSSL运行依赖。
 
+## R108原生编译归档
+
+R108应用源码`73cd10ac95be6c97fd67134ba14b6edee4b2c189`已在 [公开仓库](https://github.com/29583855/dukto-next) 编译。Apple Silicon与Intel两个原生任务均成功生成GUI与CLI；官方附件摘要、内部tar摘要、来源提交、许可证、Mach-O架构和执行位已核验，详见[编译回执](validation/2026-11-07/expiry-r108-macos-compiled/receipt.json)。
+
+| 架构 | Actions编译归档 | 官方ZIP SHA-256 | 内部tar.gz SHA-256 |
+| --- | --- | --- | --- |
+| arm64 | [macos-compiled-ARM64](https://github.com/29583855/dukto-next/actions/runs/42332515396/artifacts/13557513668) | `8262cd8a5910e77b553198406137a5fd61bcd153477c67b71322f243721ce360` | `11300e5cdeafa83603849ac5b0f6c6609a13b6b27983f1b4032484daa3c4c25c` |
+| x86_64 | [macos-compiled-X64](https://github.com/29583855/dukto-next/actions/runs/42332515396/artifacts/13558426195) | `fb4b8c0396308396fff7d5b761a81d324e610043c9cb5495a3ec4f4c81e46a23` | `3d0322b09639c58c85d979468d10671034d00c9bf8f20a8aa8b62aa3210f2deb` |
+
+这两个是编译归档，未打包Qt5/OpenSSL运行依赖，不能替代可运行预览包。精确R108四平台完整CI仍在运行；含依赖部署/搬迁的双Mac工作流也在运行，完成并核验后才会替换下方可运行版本。
+
 ## 当前R105含依赖部署包
 
 [双架构原生部署及迁移工作流](https://github.com/29583855/dukto-next/actions/runs/42321257970)终态success。ZIP含tar.gz、SHA-256和运行原件，附件下载可能需要登录GitHub。
