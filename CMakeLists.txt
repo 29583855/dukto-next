@@ -102,6 +102,7 @@ add_library(dukto-core
     src/core/statedomain.cpp
     src/core/stateaccounting.cpp
     src/core/statesession.cpp
+    src/core/statecleanup.cpp
     src/core/identity.cpp
     src/core/auth.cpp
     src/core/sessionpolicy.cpp
@@ -282,16 +283,16 @@ if(DUKTO_BUILD_TESTS)
         target_include_directories(avatars-tests PRIVATE src)
         target_link_libraries(avatars-tests PRIVATE dukto-core Qt5::Gui Qt5::Network Qt5::Test)
         dukto_add_qt_test(avatars-tests)
-        add_executable(ui-tests tests/ui_tests.cpp src/app/controller.cpp src/app/avatars.cpp src/app/serverpanel.cpp resources/app.qrc)
+        add_executable(ui-tests tests/ui_tests.cpp src/app/controller.cpp src/app/avatars.cpp src/app/serverpanel.cpp src/app/boundedfiledialog.cpp resources/app.qrc)
         target_link_libraries(ui-tests PRIVATE dukto-core Qt5::QuickWidgets Qt5::Quick Qt5::Qml Qt5::Widgets Qt5::Test)
         dukto_add_qt_test(ui-tests)
         set_tests_properties(ui-tests PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
-        add_executable(server-panel-tests tests/server_panel_tests.cpp src/app/serverpanel.cpp resources/app.qrc)
+        add_executable(server-panel-tests tests/server_panel_tests.cpp src/app/serverpanel.cpp src/app/boundedfiledialog.cpp resources/app.qrc)
         target_link_libraries(server-panel-tests PRIVATE dukto-core Qt5::QuickWidgets Qt5::Quick Qt5::Qml Qt5::Widgets Qt5::Test)
         add_dependencies(server-panel-tests dukto-cli)
         dukto_add_qt_test(server-panel-tests)
         set_tests_properties(server-panel-tests PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
-        add_executable(server-panel-process-probe tests/server_panel_process_probe.cpp src/app/serverpanel.cpp resources/app.qrc)
+        add_executable(server-panel-process-probe tests/server_panel_process_probe.cpp src/app/serverpanel.cpp src/app/boundedfiledialog.cpp resources/app.qrc)
         target_link_libraries(server-panel-process-probe PRIVATE dukto-core Qt5::QuickWidgets Qt5::Quick Qt5::Qml Qt5::Widgets Qt5::Test)
     endif()
 endif()
