@@ -71,8 +71,9 @@ void Manifest::append(const QString &path, const QString &relative) {
 // 日期：2026-11-04；目录遍历不跟随链接，每 512 项提交一次以控制日志占用。
 void Manifest::scan(const QStringList &paths, const std::atomic_bool *cancel,
                     const std::function<void()> &checkpoint) {
-    if (count || paths.isEmpty())
+    if (count)
         throw Error(ExitCode::Config, QStringLiteral("文件列表为空或清单已使用"), "scan");
+    validateTransferRoots(paths);
     if (!database_.transaction())
         throw Error(ExitCode::Disk, database_.lastError().text(), "scan");
     for (const auto &path : paths) {

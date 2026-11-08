@@ -1,5 +1,6 @@
 #include "uploadmanifest.h"
 #include "error.h"
+#include "files.h"
 #include "protocol.h"
 #include "service.h"
 #include "sourcefile.h"
@@ -121,8 +122,9 @@ UploadManifest::UploadManifest(PrivateStore &store, const QUuid &request,
             throw Error(ExitCode::Cancelled, QStringLiteral("上传清单操作已取消"), "manifest");
     };
     checkpoint();
-    if (request.isNull() || profile.server.isNull() || profile.client.isNull() || paths.isEmpty())
+    if (request.isNull() || profile.server.isNull() || profile.client.isNull())
         throw Error(ExitCode::Config, QStringLiteral("上传清单请求、身份或源路径无效"), "manifest");
+    validateTransferRoots(paths);
     const auto stem = "upload-source-" + request.toString(QUuid::WithoutBraces);
     const auto database = stem + ".sqlite";
     const auto record = stem + ".json";

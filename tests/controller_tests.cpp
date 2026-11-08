@@ -1,9 +1,12 @@
+#include "app/boundedfiledialog.h"
 #include "app/controller.h"
 #include "core/buffercredit.h"
 #include "core/files.h"
 #include <QApplication>
 #include <QDir>
+#include <QItemSelectionModel>
 #include <QSignalSpy>
+#include <QStandardItemModel>
 #include <QStandardPaths>
 #include <QTcpSocket>
 #include <QTemporaryDir>
@@ -13,6 +16,42 @@
 class ControllerTests final : public QObject {
     Q_OBJECT
   private slots:
+    // 日期：2026-11-08；界面路径选择在文件数或累计路径字符超预算时撤销新增项。
+    void transferSelectionHasFixedBudget() {
+        QStandardItemModel countModel;
+        countModel.setColumnCount(1);
+        countModel.setRowCount(dukto::MaxTransferRoots + 1);
+        QItemSelectionModel countSelection(&countModel);
+        bool countAccepted = true;
+        connect(&countSelection, &QItemSelectionModel::selectionChanged, this,
+                [&](const QItemSelection &added, const QItemSelection &) {
+                    if (!added.isEmpty())
+                        countAccepted = constrainTransferSelection(&countSelection, added, ".");
+                });
+        const QItemSelection tooMany(countModel.index(0, 0),
+                                     countModel.index(dukto::MaxTransferRoots, 0));
+        countSelection.select(tooMany, QItemSelectionModel::Select | QItemSelectionModel::Rows);
+        QVERIFY(!countAccepted);
+        QVERIFY(countSelection.selectedRows(0).isEmpty());
+
+        QStandardItemModel pathModel;
+        pathModel.setColumnCount(1);
+        pathModel.setRowCount(1);
+        pathModel.setData(pathModel.index(0, 0),
+                          QString(dukto::MaxTransferRootCharacters + 1, QChar('x')));
+        QItemSelectionModel pathSelection(&pathModel);
+        bool pathAccepted = true;
+        connect(&pathSelection, &QItemSelectionModel::selectionChanged, this,
+                [&](const QItemSelection &added, const QItemSelection &) {
+                    if (!added.isEmpty())
+                        pathAccepted = constrainTransferSelection(&pathSelection, added, ".");
+                });
+        const QItemSelection tooLong(pathModel.index(0, 0), pathModel.index(0, 0));
+        pathSelection.select(tooLong, QItemSelectionModel::Select | QItemSelectionModel::Rows);
+        QVERIFY(!pathAccepted);
+        QVERIFY(pathSelection.selectedRows(0).isEmpty());
+    }
+
     // 日期：2026-11-07；保持原8MiB UTF-8能力，分别覆盖字符数/字节数超限、最大中文和代理对边界。
     void outgoingTextBounds_data() {
         QTest::addColumn<QString>("text");

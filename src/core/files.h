@@ -5,6 +5,7 @@
 #include <QElapsedTimer>
 #include <QFile>
 #include <QStorageInfo>
+#include <QStringList>
 #include <QTemporaryFile>
 #include <atomic>
 #include <list>
@@ -20,6 +21,11 @@ constexpr qint64 BufferSize = 256 * 1024;
 constexpr qint64 MaxMetadataBytes = 256LL * 1024 * 1024;
 constexpr qint64 MaxPathBytes = 4096;
 constexpr qint64 MaxTextBytes = 8 * 1024 * 1024;
+constexpr int MaxTransferRoots = 4096;
+constexpr qint64 MaxTransferRootCharacters = 1024 * 1024;
+
+// 日期：2026-11-08；统一限制 GUI、CLI 和核心收到的多文件根路径数量及累计长度。
+void validateTransferRoots(const QStringList &paths);
 
 // 日期：2026-11-04；统一识别 POSIX 符号链接与 Windows 全部重解析点，不跟随 junction 扫描。
 bool isLinkedPath(const QString &path);

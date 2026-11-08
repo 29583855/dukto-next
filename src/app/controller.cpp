@@ -1,4 +1,5 @@
 #include "controller.h"
+#include "boundedfiledialog.h"
 #include "core/buffercredit.h"
 #include "core/catalog.h"
 #include "core/diagnostics.h"
@@ -312,7 +313,7 @@ void Controller::sendFiles(const QString &host, int port) {
     dukto::LegacyRequest request;
     if (!prepareRequest(request, host, port))
         return;
-    const auto files = QFileDialog::getOpenFileNames(nullptr, QStringLiteral("选择发送文件"));
+    const auto files = chooseFilesBounded(nullptr, QStringLiteral("选择发送文件"));
     if (files.isEmpty())
         return;
     request.paths = files;

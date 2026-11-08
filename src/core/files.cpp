@@ -18,6 +18,24 @@
 #endif
 
 namespace dukto {
+// 日期：2026-11-08；路径列表有固定预算，避免多选数量或超长路径随用户输入无限增长。
+void validateTransferRoots(const QStringList &paths) {
+    if (paths.isEmpty())
+        throw Error(ExitCode::Config, QStringLiteral("传输路径列表不能为空"), "scan");
+    if (paths.size() > MaxTransferRoots)
+        throw Error(ExitCode::Config,
+                    QStringLiteral("单次最多传输 4096 个路径，请减少选择数量或选择目录"), "scan");
+    qint64 characters = 0;
+    for (const auto &path : paths) {
+        if (path.isEmpty())
+            throw Error(ExitCode::Config, QStringLiteral("传输路径不能为空"), "scan");
+        if (path.size() > MaxTransferRootCharacters - characters)
+            throw Error(ExitCode::Config, QStringLiteral("传输路径总长度不能超过 1048576 个字符"),
+                        "scan");
+        characters += path.size();
+    }
+}
+
 // 日期：2026-11-06；四种公开策略共用严格解码，skip的必需能力由创建和客户端入口检查。
 ConflictPolicy checkedConflictPolicy(const QString &value) {
     if (value == "rename")

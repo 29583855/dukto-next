@@ -192,6 +192,22 @@ class StrongManifestTests final : public QObject {
         QVERIFY_EXCEPTION_THROWN(revoked.summary(), dukto::Error);
     }
 
+    // 日期：2026-11-08；拒绝超量根路径及过长路径清单，且在扫描或打开源文件前失败。
+    void rejectsUnboundedRootLists() {
+        QTemporaryDir temporary;
+        dukto::PrivateStore store(temporary.filePath("private"), true);
+        QStringList roots;
+        for (int index = 0; index <= dukto::MaxTransferRoots; ++index)
+            roots.append(QStringLiteral("missing-%1").arg(index));
+        dukto::StrongManifest tooMany(store, "too-many.sqlite", true);
+        QVERIFY_EXCEPTION_THROWN(tooMany.scan(roots), dukto::Error);
+
+        dukto::StrongManifest tooLong(store, "too-long.sqlite", true);
+        QVERIFY_EXCEPTION_THROWN(
+            tooLong.scan({QString(dukto::MaxTransferRootCharacters + 1, QChar('x'))}),
+            dukto::Error);
+    }
+
     // 日期：2026-11-04；已冻结数据库中块或全摘要被改变时，重载重算必须拒绝，不能只信任元数据摘要。
     void persistentTamperingRejected() {
         QTemporaryDir temporary;

@@ -1,4 +1,5 @@
 #include "serverpanel.h"
+#include "boundedfiledialog.h"
 #include "core/endpoint.h"
 #include "core/error.h"
 #include "core/paralleltransfer.h"
@@ -650,7 +651,7 @@ void ServerPanel::chooseUpload(const QVariantMap &options, bool folder) {
         if (!path.isEmpty())
             paths.append(path);
     } else {
-        paths = QFileDialog::getOpenFileNames(nullptr, QStringLiteral("选择上传文件"));
+        paths = chooseFilesBounded(nullptr, QStringLiteral("选择上传文件"));
     }
     if (paths.isEmpty())
         return;
