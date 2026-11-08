@@ -1,0 +1,231 @@
+{
+  "date": "2026-11-04",
+  "passed": true,
+  "payloadBytes": 67108901,
+  "binarySha256": "68c88aefdce0ab1ea6a2a98aebb225186d64fe42b1f84a9e9cdeb188413fc917",
+  "scriptSha256": "150e3498d68084363f1c929e9f98109a355bfa46abc6d524f8d404b33d713cfb",
+  "outputHelperSha256": "38a438c82b20c4db7e9deb8a8714d5a0bc88c3120e6b5e3d83513b5d58ad0976",
+  "serverOutput": {
+    "bytes": 84,
+    "events": {
+      "paired": 1
+    }
+  },
+  "channelsTested": [
+    1,
+    2,
+    4,
+    8,
+    16
+  ],
+  "taskTimeoutSeconds": 120,
+  "payloadSha256": "2f3844cfd46db399847944d8c1b8e731d00b5b507ffa73f86175924f34306350",
+  "totalBytes": 68157503,
+  "cases": [
+    {
+      "direction": "upload",
+      "channels": 1,
+      "seconds": 20.491,
+      "peaks": {
+        "client": {
+          "rss": 22335488,
+          "threads": 7,
+          "handlesOrFds": 262
+        },
+        "server": {
+          "rss": 22605824,
+          "threads": 7,
+          "handlesOrFds": 312
+        }
+      },
+      "MiBPerSecond": 3.172,
+      "overlappingFileCheckpoints": false,
+      "passed": true
+    },
+    {
+      "direction": "download",
+      "channels": 1,
+      "seconds": 20.341,
+      "peaks": {
+        "client": {
+          "rss": 22192128,
+          "threads": 7,
+          "handlesOrFds": 292
+        },
+        "server": {
+          "rss": 23064576,
+          "threads": 7,
+          "handlesOrFds": 280
+        }
+      },
+      "MiBPerSecond": 3.196,
+      "overlappingFileCheckpoints": false,
+      "passed": true
+    },
+    {
+      "direction": "upload",
+      "channels": 2,
+      "seconds": 11.922,
+      "peaks": {
+        "client": {
+          "rss": 23994368,
+          "threads": 9,
+          "handlesOrFds": 321
+        },
+        "server": {
+          "rss": 25550848,
+          "threads": 9,
+          "handlesOrFds": 444
+        }
+      },
+      "MiBPerSecond": 5.452,
+      "overlappingFileCheckpoints": true,
+      "passed": true
+    },
+    {
+      "direction": "download",
+      "channels": 2,
+      "seconds": 12.004,
+      "peaks": {
+        "client": {
+          "rss": 24363008,
+          "threads": 9,
+          "handlesOrFds": 380
+        },
+        "server": {
+          "rss": 25866240,
+          "threads": 9,
+          "handlesOrFds": 386
+        }
+      },
+      "MiBPerSecond": 5.415,
+      "overlappingFileCheckpoints": true,
+      "passed": true
+    },
+    {
+      "direction": "upload",
+      "channels": 4,
+      "seconds": 7.656,
+      "peaks": {
+        "client": {
+          "rss": 26673152,
+          "threads": 11,
+          "handlesOrFds": 373
+        },
+        "server": {
+          "rss": 27828224,
+          "threads": 8,
+          "handlesOrFds": 509
+        }
+      },
+      "MiBPerSecond": 8.49,
+      "overlappingFileCheckpoints": true,
+      "passed": true
+    },
+    {
+      "direction": "download",
+      "channels": 4,
+      "seconds": 7.719,
+      "peaks": {
+        "client": {
+          "rss": 25563136,
+          "threads": 11,
+          "handlesOrFds": 392
+        },
+        "server": {
+          "rss": 28647424,
+          "threads": 8,
+          "handlesOrFds": 482
+        }
+      },
+      "MiBPerSecond": 8.421,
+      "overlappingFileCheckpoints": true,
+      "passed": true
+    },
+    {
+      "direction": "upload",
+      "channels": 8,
+      "seconds": 6.005,
+      "peaks": {
+        "client": {
+          "rss": 30146560,
+          "threads": 15,
+          "handlesOrFds": 477
+        },
+        "server": {
+          "rss": 33001472,
+          "threads": 12,
+          "handlesOrFds": 606
+        }
+      },
+      "MiBPerSecond": 10.824,
+      "overlappingFileCheckpoints": true,
+      "passed": true
+    },
+    {
+      "direction": "download",
+      "channels": 8,
+      "seconds": 6.053,
+      "peaks": {
+        "client": {
+          "rss": 30711808,
+          "threads": 15,
+          "handlesOrFds": 406
+        },
+        "server": {
+          "rss": 34279424,
+          "threads": 14,
+          "handlesOrFds": 678
+        }
+      },
+      "MiBPerSecond": 10.738,
+      "overlappingFileCheckpoints": true,
+      "passed": true
+    },
+    {
+      "direction": "upload",
+      "channels": 16,
+      "seconds": 5.274,
+      "peaks": {
+        "client": {
+          "rss": 41242624,
+          "threads": 23,
+          "handlesOrFds": 685
+        },
+        "server": {
+          "rss": 48353280,
+          "threads": 22,
+          "handlesOrFds": 799
+        }
+      },
+      "MiBPerSecond": 12.325,
+      "overlappingFileCheckpoints": true,
+      "passed": true
+    },
+    {
+      "direction": "download",
+      "channels": 16,
+      "seconds": 5.3,
+      "peaks": {
+        "client": {
+          "rss": 41279488,
+          "threads": 23,
+          "handlesOrFds": 464
+        },
+        "server": {
+          "rss": 43929600,
+          "threads": 22,
+          "handlesOrFds": 1064
+        }
+      },
+      "MiBPerSecond": 12.264,
+      "overlappingFileCheckpoints": true,
+      "passed": true
+    }
+  ],
+  "scope": "local opaque TLS proxy requests 4MiB/s per connection; timer granularity may reduce actual rate; complete command timings; not physical LAN performance",
+  "open": [
+    "fair allocation between tasks and complete budget/resource verification",
+    "extended fault offsets and platform matrix"
+  ]
+}

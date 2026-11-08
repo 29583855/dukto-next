@@ -69,13 +69,14 @@ int runStateCommand(const QCommandLineParser &parser, const QStringList &argumen
     const auto operation = arguments.value(2);
     const bool configuration = group == "budget" && (operation == "init" || operation == "set");
     const bool binding = group == "root" && operation == "bind";
+    const bool accounting = group == "root" && operation == "account";
     if (arguments.size() != 3 ||
-        !(configuration || binding ||
+        !(configuration || binding || accounting ||
           ((group == "budget" || group == "root") && operation == "show")) ||
         !parser.isSet("state-directory") || parser.value("state-directory").isEmpty())
         throw dukto::Error(
             dukto::ExitCode::Config,
-            QStringLiteral("用法：state budget init|show|set 或 state root bind|show；"
+            QStringLiteral("用法：state budget init|show|set 或 state root bind|show|account；"
                            "须显式指定--state-directory"),
             "arguments");
     QStringList allowed{"state-directory", "j", "json", "non-interactive"};
@@ -126,8 +127,9 @@ int runStateCommand(const QCommandLineParser &parser, const QStringList &argumen
         throw dukto::Error(dukto::ExitCode::Disk, QStringLiteral("无法准备状态父目录"),
                            "state-budget");
     dukto::PrivateStore coordinator(QDir(parent).filePath("budget"), operation == "init",
-                                    configuration ? dukto::PrivateStore::Use::Maintenance
-                                                  : dukto::PrivateStore::Use::Shared);
+                                    (configuration || accounting)
+                                        ? dukto::PrivateStore::Use::Maintenance
+                                        : dukto::PrivateStore::Use::Shared);
     if (operation == "init")
         dukto::StateDomain::initialize(coordinator, requested);
     dukto::StateDomain domain(coordinator, check);
@@ -136,10 +138,17 @@ int runStateCommand(const QCommandLineParser &parser, const QStringList &argumen
                       operation));
     } else {
         dukto::PrivateStore member(QDir(parent).filePath(rootName), binding,
-                                   binding ? dukto::PrivateStore::Use::Maintenance
-                                           : dukto::PrivateStore::Use::Shared);
+                                   (binding || accounting) ? dukto::PrivateStore::Use::Maintenance
+                                                           : dukto::PrivateStore::Use::Shared);
         const auto root = binding ? domain.bind(member) : domain.root(member);
+        const auto inventory = accounting ? domain.accountUnknown(member) : QJsonObject();
         auto value = report(domain.usage(), operation);
+        if (accounting) {
+            value.insert("inventory", inventory);
+            value.insert(
+                "message",
+                QStringLiteral("已有直接文件占用已持久计量；未知占用保留，生产写前限制仍待接入"));
+        }
         value.insert("event", "state-root");
         value.insert("root", rootName);
         value.insert("rootGeneration", root.generation.toString(QUuid::WithoutBraces));

@@ -465,6 +465,58 @@ StateBudget::Record StateBudget::lookup(const QByteArray &key) {
     throw Error(ExitCode::Config, QStringLiteral("预算对象尚未登记或已经退役"), "budget-missing");
 }
 
+// 日期：2026-11-08；已有数据不受新准入额度否认，持久记录只增不减；未决操作和其他类别不得被覆盖。
+StateBudget::Record StateBudget::accountExisting(const QByteArray &key, qint64 observedCharge) {
+    if (!store_.maintenance())
+        throw Error(ExitCode::Permission, QStringLiteral("已有对象计量需要协调根独占维护"),
+                    "budget");
+    checkKey(key);
+    if (observedCharge < 0)
+        throw Error(ExitCode::Config, QStringLiteral("已有对象占用不能为负数"), "budget");
+    BufferCredit credit(65536);
+    BudgetFile::Lock lock(file_, check_, timeoutMs_);
+    const auto header = load();
+    int selected = -1;
+    QByteArray previous;
+    for (int index = 0; index < SlotCount; ++index) {
+        const auto raw = file_.read(SlotOffset + qint64(index) * SlotBytes, SlotBytes);
+        const auto slot = Slot::decode(raw, index);
+        if ((slot.phase == 1 || slot.phase == 2) && slot.record.key == key) {
+            if (slot.record.category != Category::Unknown || slot.record.pending)
+                throw Error(ExitCode::Integrity,
+                            QStringLiteral("已有对象类别或未决授信不能被观察覆盖"), "budget-stale");
+            if (slot.record.committed >= observedCharge)
+                return slot.record;
+            selected = index;
+            previous = raw;
+            break;
+        }
+        if ((slot.phase == 0 || slot.phase == 3) && selected < 0) {
+            selected = index;
+            previous = raw;
+        }
+    }
+    if (selected < 0)
+        throw Error(ExitCode::Disk, QStringLiteral("预算固定记录槽已满，已有计量保留，需显式核对"),
+                    "budget-slots");
+    const auto old = Slot::decode(previous, selected);
+    Slot slot = old;
+    if (old.phase == 1) {
+        if (slot.record.revision == std::numeric_limits<quint64>::max())
+            invalid();
+        ++slot.record.revision;
+        slot.record.committed = observedCharge;
+    } else {
+        slot.phase = 1;
+        slot.record = {selected, key,  QUuid::createUuid(), {},
+                       {},       1,    Category::Unknown,   observedCharge,
+                       0,        false};
+    }
+    const auto after = adjusted(header, old, slot, false);
+    commit(header, after, selected, previous, slot.encode());
+    return slot.record;
+}
+
 // 日期：2026-11-08；先持久化对象级未决状态；相同对象的另一连接必须在预算锁外重新核对或等待。
 StateBudget::Record StateBudget::reserve(const Record &expected, qint64 maximumCharge) {
     if (maximumCharge < 0)

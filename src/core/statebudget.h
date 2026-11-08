@@ -51,6 +51,8 @@ class StateBudget final {
     Record enroll(const QByteArray &key, Category category, qint64 committed);
     // 日期：2026-11-08；固定内存逐槽查找，返回真实修订和未决预留；不按PID自动恢复额度。
     Record lookup(const QByteArray &key);
+    // 日期：2026-11-08；独占维护登记已存在未知对象的占用高水位，真实超额照实记透支，重复/缩小不退款。
+    Record accountExisting(const QByteArray &key, qint64 observedCharge);
     // 日期：2026-11-08；以登记代数和修订协调同一对象；先持久化绝对占用上界才允许调用方I/O。
     Record reserve(const Record &expected, qint64 maximumCharge);
     // 日期：2026-11-08；调用方须取得真实I/O后观察；部分失败不能退款，超预期真实占用记为透支并阻止新准入。

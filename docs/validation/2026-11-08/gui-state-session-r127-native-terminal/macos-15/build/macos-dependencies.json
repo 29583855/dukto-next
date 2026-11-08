@@ -1,0 +1,522 @@
+{
+  "formulae": [
+    {
+      "name": "qt@5",
+      "full_name": "qt@5",
+      "tap": "homebrew/core",
+      "oldnames": [],
+      "aliases": [
+        "qt5"
+      ],
+      "versioned_formulae": [],
+      "desc": "Cross-platform application and UI framework",
+      "license": "GFDL-1.3-only AND GPL-2.0-only AND GPL-3.0-only AND LGPL-2.1-only AND LGPL-3.0-only",
+      "homepage": "https://www.qt.io/",
+      "versions": {
+        "stable": "5.15.19",
+        "head": null,
+        "bottle": true
+      },
+      "urls": {
+        "stable": {
+          "url": "https://download.qt.io/archive/qt/5.15/5.15.19/single/qt-everywhere-opensource-src-5.15.19.tar.xz",
+          "tag": null,
+          "revision": null,
+          "using": null,
+          "checksum": "173c2326dae138bbb0d98921e9d911e55c00163d93a6db29f294b5e19ff306ae"
+        }
+      },
+      "patches": [
+        {
+          "strip": "p1",
+          "url": "https://invent.kde.org/qt/qt/qtlocation-mapboxgl/-/commit/5a07e1967dcc925d9def47accadae991436b9686.diff",
+          "sha256": "4f433bb009087d3fe51e3eec3eee6e33a51fde5c37712935b9ab96a7d7571e7d",
+          "directory": "qtlocation/src/3rdparty/mapbox-gl-native",
+          "resolves": [
+            {
+              "type": "defect",
+              "id": "https://bugreports.qt.io/browse/QTBUG-112906"
+            }
+          ]
+        },
+        {
+          "strip": "p1",
+          "url": "https://bugs.gentoo.org/attachment.cgi?id=916782",
+          "sha256": "6b655ba61128c04811e0426a1e25456914fc79c845469da6df10f2d3e29aa510",
+          "directory": "qtlocation",
+          "resolves": [
+            {
+              "type": "defect",
+              "id": "https://bugs.gentoo.org/936486"
+            }
+          ]
+        },
+        {
+          "strip": "p1",
+          "url": "https://salsa.debian.org/qt-kde-team/qt/qtlocation/-/raw/4ec161bda76cd4c80d2e50fff223a94594cc6b4c/debian/patches/gcc_13.diff",
+          "sha256": "85ef9bb775540d639cea03894101ab2b7476f633cbb7ff49a1ea0a6bbca82168",
+          "directory": "qtlocation",
+          "resolves": [
+            {
+              "type": "defect",
+              "id": "https://github.com/mapbox/mapbox-gl-native/pull/16669"
+            }
+          ]
+        }
+      ],
+      "local_patch_checksums": {},
+      "revision": 0,
+      "version_scheme": 0,
+      "compatibility_version": 1,
+      "autobump": true,
+      "no_autobump_message": null,
+      "skip_livecheck": false,
+      "bottle": {
+        "stable": {
+          "rebuild": 0,
+          "root_url": "https://ghcr.io/v2/homebrew/core",
+          "files": {
+            "arm64_sequoia": {
+              "cellar": ":any",
+              "url": "https://ghcr.io/v2/homebrew/core/qt/5/blobs/sha256:f9981c2cffae3a70a3e9c09e2b581c74566a2dd9294c6dee6e01ff6facf7935f",
+              "sha256": "f9981c2cffae3a70a3e9c09e2b581c74566a2dd9294c6dee6e01ff6facf7935f"
+            }
+          }
+        }
+      },
+      "pour_bottle_only_if": null,
+      "keg_only": true,
+      "keg_only_reason": {
+        "reason": ":versioned_formula",
+        "explanation": ""
+      },
+      "options": [],
+      "build_dependencies": [
+        "pkgconf"
+      ],
+      "dependencies": [
+        "freetype",
+        "glib",
+        "jpeg-turbo",
+        "libpng",
+        "libtiff",
+        "md4c",
+        "pcre2",
+        "sqlite",
+        "webp",
+        "zstd",
+        "gettext"
+      ],
+      "test_dependencies": [],
+      "recommended_dependencies": [],
+      "optional_dependencies": [],
+      "no_linkage_dependencies": [],
+      "uses_from_macos": [
+        {
+          "python": "build"
+        },
+        "krb5"
+      ],
+      "uses_from_macos_bounds": [
+        {},
+        {}
+      ],
+      "requirements": [],
+      "conflicts_with": [
+        "qt3d",
+        "qtbase",
+        "qtcharts",
+        "qtconnectivity",
+        "qtdatavis3d",
+        "qtdeclarative",
+        "qtmultimedia",
+        "qtnetworkauth",
+        "qtpositioning",
+        "qtquick3d",
+        "qtremoteobjects",
+        "qtscxml",
+        "qtsensors",
+        "qtserialport",
+        "qtspeech",
+        "qtsvg",
+        "qttools",
+        "qtwebchannel",
+        "qtwebsockets"
+      ],
+      "conflicts_with_reasons": [
+        "both link conflicting binaries",
+        "both link conflicting binaries",
+        "both link conflicting binaries",
+        "both link conflicting binaries",
+        "both link conflicting binaries",
+        "both link conflicting binaries",
+        "both link conflicting binaries",
+        "both link conflicting binaries",
+        "both link conflicting binaries",
+        "both link conflicting binaries",
+        "both link conflicting binaries",
+        "both link conflicting binaries",
+        "both link conflicting binaries",
+        "both link conflicting binaries",
+        "both link conflicting binaries",
+        "both link conflicting binaries",
+        "both link conflicting binaries",
+        "both link conflicting binaries",
+        "both link conflicting binaries"
+      ],
+      "link_overwrite": [],
+      "caveats": "We agreed to the Qt open source license for you.\nIf this is unacceptable you should uninstall.\n\nYou can add Homebrew's Qt to QtCreator's \"Qt Versions\" in:\n  Preferences > Qt Versions > Link with Qt...\npressing \"Choose...\" and selecting as the Qt installation path:\n  $HOMEBREW_PREFIX/opt/qt@5\n\nQtWebEngine is no longer included as its Chromium has unfixed vulnerabilities.\n",
+      "installed": [
+        {
+          "sbom": "/opt/homebrew/Cellar/qt@5/5.15.19/sbom.spdx.json",
+          "version": "5.15.19",
+          "used_options": [],
+          "built_as_bottle": true,
+          "poured_from_bottle": true,
+          "time": 1794092429,
+          "runtime_dependencies": [
+            {
+              "full_name": "brotli",
+              "version": "1.2.1",
+              "revision": 0,
+              "bottle_rebuild": 0,
+              "pkg_version": "1.2.1",
+              "declared_directly": false,
+              "compatibility_version": 1
+            },
+            {
+              "full_name": "libpng",
+              "version": "1.6.59",
+              "revision": 0,
+              "bottle_rebuild": 0,
+              "pkg_version": "1.6.59",
+              "declared_directly": true,
+              "compatibility_version": 1
+            },
+            {
+              "full_name": "freetype",
+              "version": "2.15.0",
+              "revision": 0,
+              "bottle_rebuild": 0,
+              "pkg_version": "2.15.0",
+              "declared_directly": true,
+              "compatibility_version": 1
+            },
+            {
+              "full_name": "pcre2",
+              "version": "10.49",
+              "revision": 0,
+              "bottle_rebuild": 0,
+              "pkg_version": "10.49",
+              "declared_directly": true,
+              "compatibility_version": 1
+            },
+            {
+              "full_name": "json-c",
+              "version": "0.19",
+              "revision": 0,
+              "bottle_rebuild": 1,
+              "pkg_version": "0.19",
+              "declared_directly": false,
+              "compatibility_version": 1
+            },
+            {
+              "full_name": "libunistring",
+              "version": "1.5",
+              "revision": 0,
+              "bottle_rebuild": 0,
+              "pkg_version": "1.5",
+              "declared_directly": false,
+              "compatibility_version": 1
+            },
+            {
+              "full_name": "gettext",
+              "version": "1.0",
+              "revision": 0,
+              "bottle_rebuild": 2,
+              "pkg_version": "1.0",
+              "declared_directly": true,
+              "compatibility_version": 1
+            },
+            {
+              "full_name": "glib",
+              "version": "2.90.1",
+              "revision": 0,
+              "bottle_rebuild": 1,
+              "pkg_version": "2.90.1",
+              "declared_directly": true,
+              "compatibility_version": 1
+            },
+            {
+              "full_name": "jpeg-turbo",
+              "version": "3.2.1",
+              "revision": 0,
+              "bottle_rebuild": 0,
+              "pkg_version": "3.2.1",
+              "declared_directly": true,
+              "compatibility_version": 1
+            },
+            {
+              "full_name": "giflib",
+              "version": "6.1.3",
+              "revision": 0,
+              "bottle_rebuild": 1,
+              "pkg_version": "6.1.3",
+              "declared_directly": false,
+              "compatibility_version": 1
+            },
+            {
+              "full_name": "webp",
+              "version": "1.6.0",
+              "revision": 0,
+              "bottle_rebuild": 1,
+              "pkg_version": "1.6.0",
+              "declared_directly": true,
+              "compatibility_version": 1
+            },
+            {
+              "full_name": "xz",
+              "version": "5.8.4",
+              "revision": 0,
+              "bottle_rebuild": 0,
+              "pkg_version": "5.8.4",
+              "declared_directly": false,
+              "compatibility_version": 1
+            },
+            {
+              "full_name": "lz4",
+              "version": "1.10.0",
+              "revision": 0,
+              "bottle_rebuild": 3,
+              "pkg_version": "1.10.0",
+              "declared_directly": false,
+              "compatibility_version": 1
+            },
+            {
+              "full_name": "zstd",
+              "version": "1.5.7",
+              "revision": 1,
+              "bottle_rebuild": 0,
+              "pkg_version": "1.5.7_1",
+              "declared_directly": true,
+              "compatibility_version": 1
+            },
+            {
+              "full_name": "libtiff",
+              "version": "4.7.2",
+              "revision": 0,
+              "bottle_rebuild": 2,
+              "pkg_version": "4.7.2",
+              "declared_directly": true,
+              "compatibility_version": 1
+            },
+            {
+              "full_name": "md4c",
+              "version": "0.6.0",
+              "revision": 0,
+              "bottle_rebuild": 0,
+              "pkg_version": "0.6.0",
+              "declared_directly": true,
+              "compatibility_version": 1
+            },
+            {
+              "full_name": "readline",
+              "version": "8.3.6",
+              "revision": 0,
+              "bottle_rebuild": 0,
+              "pkg_version": "8.3.6",
+              "declared_directly": false,
+              "compatibility_version": 1
+            },
+            {
+              "full_name": "sqlite",
+              "version": "3.54.1",
+              "revision": 0,
+              "bottle_rebuild": 0,
+              "pkg_version": "3.54.1",
+              "declared_directly": true,
+              "compatibility_version": 1
+            }
+          ],
+          "installed_on_request": true
+        }
+      ],
+      "linked_keg": "5.15.19",
+      "pinned": false,
+      "outdated": false,
+      "deprecated": true,
+      "deprecation_date": "2026-05-19",
+      "deprecation_reason": "unsupported",
+      "deprecation_replacement_formula": null,
+      "deprecation_replacement_cask": null,
+      "deprecate_args": {
+        "date": "2026-05-19",
+        "because": "unsupported",
+        "replacement_formula": null,
+        "replacement_cask": null
+      },
+      "disabled": false,
+      "disable_date": "2027-05-19",
+      "disable_reason": null,
+      "disable_replacement_formula": null,
+      "disable_replacement_cask": null,
+      "disable_args": {
+        "date": "2027-05-19",
+        "because": "unsupported",
+        "replacement_formula": null,
+        "replacement_cask": null
+      },
+      "post_install_steps": [],
+      "post_install_defined": false,
+      "service": null,
+      "tap_git_head": "ce55aa0fbe1a705fdfcecf2eee4a5a39a9ed6d54",
+      "ruby_source_path": "Formula/q/qt@5.rb",
+      "ruby_source_checksum": {
+        "sha256": "ac7c3a0117a74045e9b19673a16380febbf4c3ed06862d70cdb4e95c3f14b61e"
+      }
+    },
+    {
+      "name": "openssl@3",
+      "full_name": "openssl@3",
+      "tap": "homebrew/core",
+      "oldnames": [],
+      "aliases": [
+        "openssl@3.5"
+      ],
+      "versioned_formulae": [
+        "openssl@4",
+        "openssl@3.6",
+        "openssl@3.0"
+      ],
+      "desc": "Cryptography and SSL/TLS Toolkit",
+      "license": "Apache-2.0",
+      "homepage": "https://openssl-library.org",
+      "versions": {
+        "stable": "3.5.9",
+        "head": null,
+        "bottle": true
+      },
+      "urls": {
+        "stable": {
+          "url": "https://github.com/openssl/openssl/releases/download/openssl-3.5.9/openssl-3.5.9.tar.gz",
+          "tag": null,
+          "revision": null,
+          "using": null,
+          "checksum": "603f5602e2eef00d77fbd429d34dcd5822bb301757a1bc9cdb24c670f1eb859a"
+        }
+      },
+      "patches": [],
+      "local_patch_checksums": {},
+      "revision": 0,
+      "version_scheme": 1,
+      "compatibility_version": 1,
+      "autobump": true,
+      "no_autobump_message": null,
+      "skip_livecheck": false,
+      "bottle": {
+        "stable": {
+          "rebuild": 0,
+          "root_url": "https://ghcr.io/v2/homebrew/core",
+          "files": {
+            "arm64_sequoia": {
+              "cellar": "/opt/homebrew/Cellar",
+              "url": "https://ghcr.io/v2/homebrew/core/openssl/3/blobs/sha256:82b33ce156b289eaf95657b9ec16e8f49cb49c882cdeaeaf57e3e7d67fa85e25",
+              "sha256": "82b33ce156b289eaf95657b9ec16e8f49cb49c882cdeaeaf57e3e7d67fa85e25"
+            }
+          }
+        }
+      },
+      "pour_bottle_only_if": null,
+      "keg_only": true,
+      "keg_only_reason": {
+        "reason": ":versioned_formula",
+        "explanation": ""
+      },
+      "options": [],
+      "build_dependencies": [],
+      "dependencies": [
+        "ca-certificates"
+      ],
+      "test_dependencies": [],
+      "recommended_dependencies": [],
+      "optional_dependencies": [],
+      "no_linkage_dependencies": [
+        "ca-certificates"
+      ],
+      "uses_from_macos": [],
+      "uses_from_macos_bounds": [],
+      "requirements": [],
+      "conflicts_with": [],
+      "conflicts_with_reasons": [],
+      "link_overwrite": [],
+      "caveats": "To add additional certificates, place .pem files in\n  $HOMEBREW_PREFIX/etc/openssl@3/certs\n\nand run\n  $HOMEBREW_PREFIX/opt/openssl@3/bin/c_rehash\n",
+      "installed": [
+        {
+          "sbom": "/opt/homebrew/Cellar/openssl@3/3.5.9/sbom.spdx.json",
+          "version": "3.5.9",
+          "used_options": [],
+          "built_as_bottle": true,
+          "poured_from_bottle": true,
+          "time": 1793785996,
+          "runtime_dependencies": [
+            {
+              "full_name": "ca-certificates",
+              "version": "2026-10-20",
+              "revision": 0,
+              "bottle_rebuild": 0,
+              "pkg_version": "2026-10-20",
+              "declared_directly": true,
+              "compatibility_version": 1
+            }
+          ],
+          "installed_on_request": true
+        }
+      ],
+      "linked_keg": null,
+      "pinned": false,
+      "outdated": false,
+      "deprecated": false,
+      "deprecation_date": "2030-04-08",
+      "deprecation_reason": null,
+      "deprecation_replacement_formula": null,
+      "deprecation_replacement_cask": null,
+      "deprecate_args": {
+        "date": "2030-04-08",
+        "because": "unmaintained",
+        "replacement_formula": null,
+        "replacement_cask": null
+      },
+      "disabled": false,
+      "disable_date": "2031-04-08",
+      "disable_reason": null,
+      "disable_replacement_formula": null,
+      "disable_replacement_cask": null,
+      "disable_args": {
+        "date": "2031-04-08",
+        "because": "unmaintained",
+        "replacement_formula": null,
+        "replacement_cask": null
+      },
+      "post_install_steps": [
+        {
+          "source": {
+            "path": "{{etc}}/ca-certificates/cert.pem"
+          },
+          "target": {
+            "path": "{{pkgetc}}/cert.pem"
+          },
+          "force": true,
+          "type": "symlink"
+        }
+      ],
+      "post_install_defined": false,
+      "service": null,
+      "tap_git_head": "ce55aa0fbe1a705fdfcecf2eee4a5a39a9ed6d54",
+      "ruby_source_path": "Formula/o/openssl@3.rb",
+      "ruby_source_checksum": {
+        "sha256": "ff38ac43aa86a0484a12bace87feca515c745b3caf38a5b0738288b56fb86c97"
+      }
+    }
+  ],
+  "casks": []
+}

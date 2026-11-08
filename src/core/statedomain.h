@@ -1,6 +1,7 @@
 #pragma once
 #include "budgetfile.h"
 #include "statebudget.h"
+#include <QJsonObject>
 #include <memory>
 
 namespace dukto {
@@ -35,6 +36,8 @@ class StateDomain final {
     void verify(const PrivateStore &store, const Binding &expected);
     // 日期：2026-11-08；只报告该域账本已有登记，尚不代表全部生产写入已纳入总预算。
     StateBudget::Usage usage();
+    // 日期：2026-11-08；双根独占下逐项计量已有直接普通文件，未知对象高水位保留，不按名称授予业务归属或删除。
+    QJsonObject accountUnknown(const PrivateStore &member);
     // 日期：2026-11-08；先重验域和协调登记，再在独占维护下按修订修改持久额度。
     StateBudget::Usage configure(quint64 expectedRevision, const StateBudget::Limits &limits);
 

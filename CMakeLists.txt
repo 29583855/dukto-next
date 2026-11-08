@@ -100,6 +100,7 @@ add_library(dukto-core
     src/core/stateinventory.cpp
     src/core/statebudget.cpp
     src/core/statedomain.cpp
+    src/core/stateaccounting.cpp
     src/core/statesession.cpp
     src/core/identity.cpp
     src/core/auth.cpp
@@ -211,6 +212,10 @@ if(DUKTO_BUILD_TESTS)
     target_link_libraries(state-session-tests PRIVATE dukto-core Qt5::Test)
     add_dependencies(state-session-tests dukto-cli)
     dukto_add_qt_test(state-session-tests)
+    add_executable(state-accounting-tests tests/state_accounting_tests.cpp)
+    target_link_libraries(state-accounting-tests PRIVATE dukto-core Qt5::Test)
+    add_dependencies(state-accounting-tests dukto-cli)
+    dukto_add_qt_test(state-accounting-tests)
     add_executable(identity-tests tests/identity_tests.cpp)
     target_link_libraries(identity-tests PRIVATE dukto-core Qt5::Test)
     dukto_add_qt_test(identity-tests)

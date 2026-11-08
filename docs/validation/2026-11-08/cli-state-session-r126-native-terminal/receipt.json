@@ -1,11 +1,11 @@
 {
-  "observedUtc": "2026-11-07T23:29:52.664812+00:00",
+  "observedUtc": "2026-11-08T00:00:20.294795+00:00",
   "sourceCommit": "d661fbaf2eb2e71cea6fd19ea25875af2164e3d0",
   "run": {
     "id": 42421219300,
     "head_sha": "d661fbaf2eb2e71cea6fd19ea25875af2164e3d0",
-    "status": "in_progress",
-    "conclusion": null,
+    "status": "completed",
+    "conclusion": "failure",
     "html_url": "https://github.com/29583855/dukto-next/actions/runs/42421219300"
   },
   "records": [
@@ -832,9 +832,278 @@
       ]
     },
     {
+      "observedUtc": "2026-11-08T00:00:20.292777+00:00",
+      "sourceCommit": "d661fbaf2eb2e71cea6fd19ea25875af2164e3d0",
       "runner": "windows-2022",
-      "status": "in_progress",
-      "qualified": false
+      "jobId": 128549852181,
+      "status": "completed",
+      "conclusion": "failure",
+      "artifactId": 13595975106,
+      "artifactSha256": "8c0f82efc9aaa6e0ebefec8ee701eb6af74955288a4dd8ed41336c751b35c06b",
+      "jobLogSha256": "deb30a61a1c1f9a8ce825fb55f0d45291fee8e988f35f52fa078821cb18b0a51",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-07T22:34:12Z",
+          "completed_at": "2026-11-07T22:34:14Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-07T22:34:14Z",
+          "completed_at": "2026-11-07T22:34:29Z"
+        },
+        {
+          "name": "Run actions/setup-python@v5",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-11-07T22:34:29Z",
+          "completed_at": "2026-11-07T22:34:29Z"
+        },
+        {
+          "name": "Install Windows Qt",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-11-07T22:34:29Z",
+          "completed_at": "2026-11-07T22:35:10Z"
+        },
+        {
+          "name": "Install Linux Qt",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 5,
+          "started_at": "2026-11-07T22:35:10Z",
+          "completed_at": "2026-11-07T22:35:10Z"
+        },
+        {
+          "name": "Install macOS Qt5",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 6,
+          "started_at": "2026-11-07T22:35:10Z",
+          "completed_at": "2026-11-07T22:35:10Z"
+        },
+        {
+          "name": "Record native macOS toolchain",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 7,
+          "started_at": "2026-11-07T22:35:10Z",
+          "completed_at": "2026-11-07T22:35:10Z"
+        },
+        {
+          "name": "Windows early development TLS runtime",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-11-07T22:35:10Z",
+          "completed_at": "2026-11-07T22:35:12Z"
+        },
+        {
+          "name": "Install validation sampler",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-11-07T22:35:12Z",
+          "completed_at": "2026-11-07T22:35:13Z"
+        },
+        {
+          "name": "Validate source snapshot timestamps and contents",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-11-07T22:35:13Z",
+          "completed_at": "2026-11-07T22:35:15Z"
+        },
+        {
+          "name": "Validate bounded process sampling",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-11-07T22:35:15Z",
+          "completed_at": "2026-11-07T22:35:16Z"
+        },
+        {
+          "name": "Validate bounded proxy pacing",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-11-07T22:35:16Z",
+          "completed_at": "2026-11-07T22:35:21Z"
+        },
+        {
+          "name": "Configure",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-11-07T22:35:21Z",
+          "completed_at": "2026-11-07T22:35:33Z"
+        },
+        {
+          "name": "Compile",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-11-07T22:35:33Z",
+          "completed_at": "2026-11-07T22:37:26Z"
+        },
+        {
+          "name": "Archive macOS compilation outputs",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 15,
+          "started_at": "2026-11-07T22:37:26Z",
+          "completed_at": "2026-11-07T22:37:26Z"
+        },
+        {
+          "name": "Preserve macOS compiled GUI and CLI",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 16,
+          "started_at": "2026-11-07T22:37:26Z",
+          "completed_at": "2026-11-07T22:37:26Z"
+        },
+        {
+          "name": "Independent TLS certificate and protocol boundaries",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 17,
+          "started_at": "2026-11-07T22:37:26Z",
+          "completed_at": "2026-11-07T22:37:26Z"
+        },
+        {
+          "name": "Core and GUI controller tests",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18,
+          "started_at": "2026-11-07T22:37:26Z",
+          "completed_at": "2026-11-07T22:46:38Z"
+        },
+        {
+          "name": "Windows main window server navigation",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19,
+          "started_at": "2026-11-07T22:46:38Z",
+          "completed_at": "2026-11-07T22:46:49Z"
+        },
+        {
+          "name": "Cocoa main window server navigation",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 20,
+          "started_at": "2026-11-07T22:46:49Z",
+          "completed_at": "2026-11-07T22:46:49Z"
+        },
+        {
+          "name": "X11 main window server navigation",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 21,
+          "started_at": "2026-11-07T22:46:49Z",
+          "completed_at": "2026-11-07T22:46:49Z"
+        },
+        {
+          "name": "Preserve core diagnostics before protocol suite",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 22,
+          "started_at": "2026-11-07T22:46:49Z",
+          "completed_at": "2026-11-07T22:46:50Z"
+        },
+        {
+          "name": "Native Cocoa GUI render and process recovery",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 23,
+          "started_at": "2026-11-07T22:46:50Z",
+          "completed_at": "2026-11-07T22:46:50Z"
+        },
+        {
+          "name": "Protocol integration all independent cases",
+          "status": "completed",
+          "conclusion": "failure",
+          "number": 24,
+          "started_at": "2026-11-07T22:46:50Z",
+          "completed_at": "2026-11-07T23:37:20Z"
+        },
+        {
+          "name": "Real disk exhaustion on isolated Linux tmpfs",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 25,
+          "started_at": "2026-11-07T23:37:20Z",
+          "completed_at": "2026-11-07T23:37:20Z"
+        },
+        {
+          "name": "Real TLS transfer disk exhaustion and recovery",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 26,
+          "started_at": "2026-11-07T23:37:20Z",
+          "completed_at": "2026-11-07T23:37:20Z"
+        },
+        {
+          "name": "Preserve validation logs",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 27,
+          "started_at": "2026-11-07T23:37:20Z",
+          "completed_at": "2026-11-07T23:37:21Z"
+        },
+        {
+          "name": "Post Install Windows Qt",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 52,
+          "started_at": "2026-11-07T23:37:21Z",
+          "completed_at": "2026-11-07T23:37:21Z"
+        },
+        {
+          "name": "Post Run actions/setup-python@v5",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 53,
+          "started_at": "2026-11-07T23:37:21Z",
+          "completed_at": "2026-11-07T23:37:21Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 54,
+          "started_at": "2026-11-07T23:37:21Z",
+          "completed_at": "2026-11-07T23:37:22Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 55,
+          "started_at": "2026-11-07T23:37:22Z",
+          "completed_at": "2026-11-07T23:37:23Z"
+        }
+      ],
+      "qualified": false,
+      "deliveryComplete": false,
+      "releaseQualified": false,
+      "failedProtocolCases": [
+        {
+          "name": "task-items",
+          "exitCode": 1,
+          "seconds": 292.604,
+          "report": "build\\task-items.json",
+          "reportCreated": false,
+          "passed": false
+        }
+      ]
     }
   ],
   "allFourNativeProtocolJobsVerified": false,

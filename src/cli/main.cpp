@@ -117,6 +117,15 @@ void output(const QJsonObject &event, bool json) {
         if (event.contains("root"))
             stream << "root=" << event.value("root").toString()
                    << " generation=" << event.value("rootGeneration").toString() << '\n';
+        if (event.contains("inventory")) {
+            const auto inventory = event.value("inventory").toObject();
+            stream << "accountingScope=" << inventory.value("scope").toString() << '\n';
+            for (const auto &name :
+                 QStringList{"regularFiles", "logicalBytes", "allocatedBytes", "newlyChargedBytes",
+                             "directoriesUnaccounted", "linksUnaccounted", "otherUnaccounted"})
+                stream << name << '=' << inventory.value(name).toString() << '\n';
+            stream << "priorUnknownChargesRetained=true automaticDeletionAllowed=false\n";
+        }
         stream << "scope=registered-ledger-objects productionQuotaEnforced=false\n";
     } else if (event.value("event") == "devices") {
         const auto peers = event.value("peers").toArray();
@@ -400,7 +409,8 @@ int runApplication(int argc, char **argv) {
          {"budget-body", QStringLiteral("state budget init/set：临时正文额度字节数"), "bytes"},
          {"budget-unknown", QStringLiteral("state budget init/set：未知项额度字节数"), "bytes"},
          {"budget-revision", QStringLiteral("state budget set：查询所得的预算修订"), "revision"},
-         {"state-root", QStringLiteral("state root bind/show：service/clients/transfers/history"),
+         {"state-root",
+          QStringLiteral("state root bind/show/account：service/clients/transfers/history"),
           "name"},
          {"server-name",
           QStringLiteral("服务证书 SAN 的 IP/主机名，可重复（serve init/renew；配对时为一个名称）"),
