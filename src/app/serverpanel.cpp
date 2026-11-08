@@ -87,6 +87,18 @@ int ServerAction::code() const {
 // 日期：2026-11-08；GUI工作线程保留同目录协调资格，取消在预算锁外观察，私有状态不进入界面事件。
 void ServerAction::run() {
     try {
+        if (operation_ == "budget-show") {
+            // 日期：2026-11-08；查询只打开已有中央根，不建立目录/域/成员，不读取身份或任何秘密正文。
+            dukto::PrivateStore coordinator(QDir(directory_).filePath("budget"));
+            dukto::StateDomain domain(coordinator, [this]() {
+                // 日期：2026-11-08；共享查询与真实传输并行，取消仍在账本锁外检查。
+                if (cancelled_.load())
+                    throw dukto::Error(dukto::ExitCode::Cancelled, QStringLiteral("预算查询已取消"),
+                                       "state-budget");
+            });
+            result_ = dukto::StateBudget::report(domain.usage(), "show");
+            return;
+        }
         if (!QDir().mkpath(directory_))
             throw dukto::Error(dukto::ExitCode::Disk, QStringLiteral("无法准备服务器状态目录"));
         const auto stateCheck = [this]() {
@@ -482,11 +494,18 @@ QVariantMap ServerPanel::itemPage() const {
     return itemPage_.toVariantMap();
 }
 
+// 日期：2026-11-08；独立于任务/目录模型，后续进度事件不会覆盖已查询预算。
+QVariantMap ServerPanel::budget() const {
+    return budget_.toVariantMap();
+}
+
 // 日期：2026-11-05；按实际返回类型刷新模型，错误保留既有任务供重新查询与恢复。
 void ServerPanel::accept(const QJsonObject &event, int code) {
     if (event.isEmpty())
         return;
     outcome_ = event;
+    if (event["event"] == "state-budget")
+        budget_ = event;
     if (event.contains("taskId") && event.contains("state")) {
         if (task_["taskId"] != event["taskId"])
             task_ = {};
@@ -561,13 +580,16 @@ void ServerPanel::accept(const QJsonObject &event, int code) {
 // 日期：2026-11-04；普通操作一个槽、控制一个槽，拒绝无界创建线程。
 void ServerPanel::execute(const QString &operation, const QVariantMap &options) {
     const bool control = operation == "tasks" || operation == "task" || operation == "pause" ||
-                         operation == "cancel" || operation == "task-items";
+                         operation == "cancel" || operation == "task-items" ||
+                         operation == "budget-show";
     auto &slot = control ? control_ : action_;
     if (slot) {
         status_ = QStringLiteral("该操作槽仍忙，请等待或断开当前操作");
         emit changed();
         return;
     }
+    if (operation == "budget-show")
+        budget_ = {};
     auto action = new ServerAction(directory_, operation, options, this);
     slot = action;
     connect(action, &QThread::finished, this, [this, action, control]() {

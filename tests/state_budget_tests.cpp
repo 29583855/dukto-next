@@ -7,6 +7,8 @@
 #include <QCryptographicHash>
 #include <QDir>
 #include <QFile>
+#include <QJsonArray>
+#include <QJsonDocument>
 #include <QProcess>
 #include <QSqlDatabase>
 #include <QTemporaryDir>
@@ -156,6 +158,74 @@ int child(const QStringList &arguments) {
 class StateBudgetTests final : public QObject {
     Q_OBJECT
   private slots:
+    // 日期：2026-11-08；真实未决授信达到总额上限时，报告保留大于2^53的金额及最大修订文本，不写账本。
+    void reportExactAmountsAndHeadroom() {
+        QTemporaryDir root;
+        dukto::PrivateStore store(root.filePath("state"), true,
+                                  dukto::PrivateStore::Use::Maintenance);
+        const auto maximum = std::numeric_limits<qint64>::max();
+        Budget::initialize(store, Domain, {maximum, {{maximum, maximum, maximum, maximum}}});
+        Budget budget(store, Domain);
+        const auto record = budget.enroll(key(810), Category::Body, 0);
+        const auto reservation = budget.reserve(record, maximum - Budget::FileBytes);
+        const auto path = store.directory() + "/state-budget.bin";
+        const auto original = dukto::hashFile(path);
+        const auto value = Budget::report(budget.usage(), "show");
+        QCOMPARE(value["limit"].toString(), QString("9223372036854775807"));
+        QCOMPARE(value["reserved"].toString(), QString::number(maximum - Budget::FileBytes));
+        QCOMPARE(value["available"].toString(), QString("0"));
+        QCOMPARE(value["deficit"].toString(), QString("0"));
+        QCOMPARE(value["capacityState"].toString(), QString("total-exhausted"));
+        QCOMPARE(value["categories"].toArray().size(), 4);
+        for (const auto &row : value["categories"].toArray())
+            QCOMPARE(row.toObject()["available"].toString(), QString("0"));
+        QVERIFY(value["reclaimableBytes"].isNull());
+        QVERIFY(!value["reclaimableKnown"].toBool());
+        QVERIFY(!value["wholeDomainAccounted"].toBool());
+        QVERIFY(!value["productionQuotaEnforced"].toBool());
+        auto synthetic = budget.usage();
+        synthetic.revision = std::numeric_limits<quint64>::max();
+        QCOMPARE(Budget::report(synthetic, "show")["revision"].toString(),
+                 QString("18446744073709551615"));
+        QCOMPARE(dukto::hashFile(path), original);
+        budget.settle(reservation, 17);
+        const auto after = Budget::report(budget.usage(), "show");
+        QCOMPARE(after["reserved"].toString(), QString("0"));
+        QCOMPARE(after["available"].toString(), QString::number(maximum - Budget::FileBytes - 17));
+        synthetic = budget.usage();
+        ++synthetic.totalCommitted;
+        QVERIFY_EXCEPTION_THROWN(Budget::report(synthetic, "show"), dukto::Error);
+    }
+
+    // 日期：2026-11-08；类别透支即使全局有余额也阻止可用额，类别和全局超额分别准确报告。
+    void reportOverdrawnAndCategoryExhaustion() {
+        QTemporaryDir root;
+        dukto::PrivateStore store(root.filePath("state"), true,
+                                  dukto::PrivateStore::Use::Maintenance);
+        auto requested = limits(4096);
+        requested.categories[3] = 128;
+        Budget::initialize(store, Domain, requested);
+        Budget budget(store, Domain);
+        const auto first = budget.enroll(key(811), Category::Unknown, 128);
+        auto value = Budget::report(budget.usage(), "show");
+        QCOMPARE(value["categories"].toArray()[3].toObject()["capacityState"].toString(),
+                 QString("category-exhausted"));
+        QCOMPARE(value["available"].toString(), QString("3968"));
+        budget.settle(budget.reserve(first, 128), 129);
+        value = Budget::report(budget.usage(), "show");
+        QVERIFY(value["overdrawn"].toBool());
+        QCOMPARE(value["available"].toString(), QString("0"));
+        QCOMPARE(value["deficit"].toString(), QString("0"));
+        QCOMPARE(value["categories"].toArray()[3].toObject()["deficit"].toString(), QString("1"));
+        for (const auto &row : value["categories"].toArray())
+            QCOMPARE(row.toObject()["available"].toString(), QString("0"));
+        budget.accountExisting(key(812), 4096);
+        value = Budget::report(budget.usage(), "show");
+        QCOMPARE(value["deficit"].toString(), QString("129"));
+        QCOMPARE(value["categories"].toArray()[3].toObject()["deficit"].toString(),
+                 QString("4097"));
+    }
+
     // 日期：2026-11-08；固定实际文件长度、私有键保留、初始化幂等拒绝及账本自身计量均核对原文件。
     void fixedFileAndPrivateBoundary() {
         QTemporaryDir root;

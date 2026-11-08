@@ -3,6 +3,8 @@
 #include "error.h"
 #include "privatestore.h"
 #include <QCryptographicHash>
+#include <QJsonArray>
+#include <QStringList>
 #include <QtEndian>
 #include <limits>
 
@@ -636,5 +638,67 @@ StateBudget::Usage StateBudget::configure(quint64 expectedRevision, const Limits
     const auto after = configured(before, limits);
     commitConfiguration(before, after);
     return after.usage();
+}
+// 日期：2026-11-08；只序列化已核对的固定合计，不枚举业务文件；剩余额度同时受类别和总额约束。
+QJsonObject StateBudget::report(const Usage &usage, const QString &operation) {
+    qint64 committed = 0, reserved = 0;
+    bool overdrawn = false;
+    for (int index = 0; index < 4; ++index) {
+        if (usage.limits.categories[index] < 0)
+            invalid();
+        committed = add(committed, usage.committed[index]);
+        reserved = add(reserved, usage.reserved[index]);
+        overdrawn = overdrawn || add(usage.committed[index], usage.reserved[index]) >
+                                     usage.limits.categories[index];
+    }
+    const auto consumed = add(committed, reserved);
+    overdrawn = overdrawn || consumed > usage.limits.total;
+    if (usage.domain.isNull() || !usage.revision || usage.limits.total < 0 ||
+        committed != usage.totalCommitted || reserved != usage.totalReserved ||
+        overdrawn != usage.overdrawn)
+        invalid();
+    const auto available = qMax(qint64(0), usage.limits.total - consumed);
+    QJsonArray categories;
+    const QStringList names{"history", "metadata", "body", "unknown"};
+    for (int index = 0; index < 4; ++index) {
+        const auto used = add(usage.committed[index], usage.reserved[index]);
+        const auto limit = usage.limits.categories[index];
+        categories.append(QJsonObject{
+            {"name", names[index]},
+            {"limit", QString::number(limit)},
+            {"committed", QString::number(usage.committed[index])},
+            {"reserved", QString::number(usage.reserved[index])},
+            {"available",
+             QString::number(overdrawn ? 0 : qMin(available, qMax(qint64(0), limit - used)))},
+            {"deficit", QString::number(qMax(qint64(0), used - limit))},
+            {"capacityState",
+             used > limit ? "overdrawn"
+                          : (overdrawn ? "domain-overdrawn"
+                                       : (available == 0 ? "total-exhausted"
+                                                         : (used == limit ? "category-exhausted"
+                                                                          : "available")))}});
+    }
+    return {{"eventVersion", 1},
+            {"event", "state-budget"},
+            {"operation", operation},
+            {"domain", usage.domain.toString(QUuid::WithoutBraces)},
+            {"revision", QString::number(usage.revision)},
+            {"limit", QString::number(usage.limits.total)},
+            {"committed", QString::number(committed)},
+            {"reserved", QString::number(reserved)},
+            {"available", QString::number(overdrawn ? 0 : available)},
+            {"deficit", QString::number(qMax(qint64(0), consumed - usage.limits.total))},
+            {"capacityState",
+             overdrawn ? "overdrawn" : (available == 0 ? "total-exhausted" : "available")},
+            {"overdrawn", overdrawn},
+            {"categories", categories},
+            {"scope", "registered-ledger-objects"},
+            {"wholeDomainAccounted", false},
+            {"productionQuotaEnforced", false},
+            {"reclaimableKnown", false},
+            {"reclaimableBytes", QJsonValue(QJsonValue::Null)},
+            {"message",
+             QStringLiteral(
+                 "已读取已登记状态预算；未覆盖全部磁盘占用，生产写前限制和自动回收尚未启用")}};
 }
 } // namespace dukto

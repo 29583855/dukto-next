@@ -36,29 +36,6 @@ Budget::Limits limits(const QCommandLineParser &parser) {
     return result;
 }
 
-// 日期：2026-11-08；合计、额度和修订使用十进制字符串，固定四类别输出不枚举对象或暴露原生身份。
-QJsonObject report(const Budget::Usage &usage, const QString &operation) {
-    QJsonArray categories;
-    const QStringList names{"history", "metadata", "body", "unknown"};
-    for (int index = 0; index < names.size(); ++index)
-        categories.append(QJsonObject{{"name", names[index]},
-                                      {"limit", QString::number(usage.limits.categories[index])},
-                                      {"committed", QString::number(usage.committed[index])},
-                                      {"reserved", QString::number(usage.reserved[index])}});
-    return {{"eventVersion", 1},
-            {"event", "state-budget"},
-            {"operation", operation},
-            {"domain", usage.domain.toString(QUuid::WithoutBraces)},
-            {"revision", QString::number(usage.revision)},
-            {"limit", QString::number(usage.limits.total)},
-            {"committed", QString::number(usage.totalCommitted)},
-            {"reserved", QString::number(usage.totalReserved)},
-            {"overdrawn", usage.overdrawn},
-            {"categories", categories},
-            {"scope", "registered-ledger-objects"},
-            {"productionQuotaEnforced", false},
-            {"message", QStringLiteral("预算域配置已核对；当前生产写入尚未接入总预算限制")}};
-}
 } // namespace
 
 // 日期：2026-11-08；查询不创建父目录；初始化/修改/根登记使用独占资格，不隐式迁移旧历史或回收未知项。
@@ -134,15 +111,16 @@ int runStateCommand(const QCommandLineParser &parser, const QStringList &argumen
         dukto::StateDomain::initialize(coordinator, requested);
     dukto::StateDomain domain(coordinator, check);
     if (group == "budget") {
-        output(report(operation == "set" ? domain.configure(revision, requested) : domain.usage(),
-                      operation));
+        output(Budget::report(operation == "set" ? domain.configure(revision, requested)
+                                                 : domain.usage(),
+                              operation));
     } else {
         dukto::PrivateStore member(QDir(parent).filePath(rootName), binding,
                                    (binding || accounting) ? dukto::PrivateStore::Use::Maintenance
                                                            : dukto::PrivateStore::Use::Shared);
         const auto root = binding ? domain.bind(member) : domain.root(member);
         const auto inventory = accounting ? domain.accountUnknown(member) : QJsonObject();
-        auto value = report(domain.usage(), operation);
+        auto value = Budget::report(domain.usage(), operation);
         if (accounting) {
             value.insert("inventory", inventory);
             value.insert(

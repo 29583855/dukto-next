@@ -1088,6 +1088,67 @@ Rectangle {
                     }
 
                     CheckBox {
+                        id: showBudget
+
+                        objectName: "serverBudgetExpand"
+                        text: "状态存储预算"
+                    }
+
+                    GroupBox {
+                        title: "已登记的状态占用"
+                        visible: showBudget.checked
+                        Layout.fillWidth: true
+
+                        ColumnLayout {
+                            anchors.fill: parent
+
+                            Button {
+                                objectName: "serverBudgetRead"
+                                text: "刷新预算"
+                                enabled: !panel.controlBusy
+                                onClicked: panel.execute("budget-show", {
+                                })
+                            }
+
+                            Label {
+                                objectName: "serverBudgetSummary"
+                                text: panel.budget.domain ? "查询时额度：" + panel.budget.limit + " B\n已登记占用：" + panel.budget.committed + " B\n未决预留：" + panel.budget.reserved + " B\n剩余额度：" + panel.budget.available + " B\n超额：" + panel.budget.deficit + " B" : "刷新可读取已有预算；尚未建立状态时，请先建立身份或连接服务器。"
+                                textFormat: Text.PlainText
+                                wrapMode: Text.WrapAnywhere
+                                Layout.fillWidth: true
+                            }
+
+                            Repeater {
+                                model: panel.budget.categories || []
+
+                                delegate: Label {
+                                    Layout.fillWidth: true
+                                    text: ({
+                                        "history": "历史",
+                                        "metadata": "元数据",
+                                        "body": "临时正文",
+                                        "unknown": "未知占用"
+                                    })[modelData.name] + "：\n额度 " + modelData.limit + " B；占用 " + modelData.committed + " B；预留 " + modelData.reserved + " B\n剩余 " + modelData.available + " B；超额 " + modelData.deficit + " B"
+                                    textFormat: Text.PlainText
+                                    wrapMode: Text.WrapAnywhere
+                                }
+
+                            }
+
+                            Label {
+                                objectName: "serverBudgetScope"
+                                text: "这里只包括已登记项目及未知文件的保守高水位，不是全部磁盘用量。剩余额度不是磁盘剩余空间。生产写前限制与自动回收尚未启用；可回收量尚未确定。数值为查询时快照。" + (panel.budget.overdrawn ? "\n已登记用量超额，请先停止新任务并使用命令行核对状态；不会自动删除文件。" : "")
+                                textFormat: Text.PlainText
+                                wrapMode: Text.WordWrap
+                                Layout.fillWidth: true
+                                color: "#777"
+                            }
+
+                        }
+
+                    }
+
+                    CheckBox {
                         id: showSessionPolicy
 
                         objectName: "serverSessionExpand"

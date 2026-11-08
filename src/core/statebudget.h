@@ -1,6 +1,7 @@
 #pragma once
 #include "budgetfile.h"
 #include <QByteArray>
+#include <QJsonObject>
 #include <QUuid>
 #include <array>
 #include <functional>
@@ -63,6 +64,8 @@ class StateBudget final {
     Record reconcile(const Record &expected, qint64 actualCharge);
     // 日期：2026-11-08；返回固定类别合计与透支状态，账本自身固定长度计入元数据占用。
     Usage usage();
+    // 日期：2026-11-08；固定四类报告供GUI/CLI共用，64位金额用十进制字符串，不将账本余额称为磁盘可用空间。
+    static QJsonObject report(const Usage &usage, const QString &operation);
     // 日期：2026-11-08；独占维护按观察修订原子修改额度；不丢弃已有占用/预留，拒绝低于实际合计的配置。
     Usage configure(quint64 expectedRevision, const Limits &limits);
 

@@ -107,12 +107,17 @@ void output(const QJsonObject &event, bool json) {
                << " revision=" << event.value("revision").toString() << '\n'
                << "limit=" << event.value("limit").toString()
                << " committed=" << event.value("committed").toString()
-               << " reserved=" << event.value("reserved").toString() << " B\n";
+               << " reserved=" << event.value("reserved").toString()
+               << " available=" << event.value("available").toString()
+               << " deficit=" << event.value("deficit").toString() << " B\n"
+               << "capacityState=" << event.value("capacityState").toString() << '\n';
         for (const auto &value : event.value("categories").toArray()) {
             const auto row = value.toObject();
             stream << row.value("name").toString() << " limit=" << row.value("limit").toString()
                    << " committed=" << row.value("committed").toString()
-                   << " reserved=" << row.value("reserved").toString() << " B\n";
+                   << " reserved=" << row.value("reserved").toString()
+                   << " available=" << row.value("available").toString()
+                   << " deficit=" << row.value("deficit").toString() << " B\n";
         }
         if (event.contains("root"))
             stream << "root=" << event.value("root").toString()

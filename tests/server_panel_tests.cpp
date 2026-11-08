@@ -2,6 +2,7 @@
 #include "core/auth.h"
 #include "core/error.h"
 #include "core/files.h"
+#include "core/statedomain.h"
 #include "core/transferscheduler.h"
 #include <QDir>
 #include <QFile>
@@ -83,6 +84,138 @@ class SlowTestProxy final : public QTcpServer {
 class ServerPanelTests final : public QObject {
     Q_OBJECT
   private slots:
+    // 日期：2026-11-08；不存在的状态查询不初始化；共享占用下可查询，损坏后清除旧余额且原文件保持。
+    void budgetQueryReadOnlyAndFailureClearsSnapshot() {
+        QTemporaryDir root;
+        const auto directory = root.filePath(QStringLiteral("预算 中文 空格"));
+        {
+            ServerPanel missing(directory);
+            missing.execute("budget-show", {});
+            QTRY_VERIFY_WITH_TIMEOUT(!missing.controlBusy(), 15000);
+            QVERIFY(missing.budget().isEmpty());
+            QVERIFY(!QFileInfo::exists(directory));
+        }
+        QVERIFY(QDir().mkpath(directory));
+        const auto budgetPath = QDir(directory).filePath("budget");
+        {
+            dukto::PrivateStore store(budgetPath, true, dukto::PrivateStore::Use::Maintenance);
+            dukto::StateDomain::initialize(store, {8388608, {{1024, 8388608, 1024, 1024}}});
+        }
+        ServerPanel panel(directory);
+        const auto ledgerPath = QDir(budgetPath).filePath("state-budget.bin");
+        const auto before = dukto::hashFile(ledgerPath);
+        {
+            dukto::PrivateStore shared(budgetPath);
+            dukto::StateDomain domain(shared);
+            panel.execute("budget-show", {});
+            QVERIFY(panel.controlBusy());
+            QVERIFY(!panel.busy());
+            QTRY_VERIFY_WITH_TIMEOUT(!panel.controlBusy(), 15000);
+            QCOMPARE(QJsonObject::fromVariantMap(panel.budget()),
+                     dukto::StateBudget::report(domain.usage(), "show"));
+            QCOMPARE(dukto::hashFile(ledgerPath), before);
+        }
+        QVERIFY(!QFileInfo::exists(QDir(directory).filePath("service")));
+        QVERIFY(!QFileInfo::exists(QDir(directory).filePath("clients")));
+        QFile file(ledgerPath);
+        QVERIFY(file.open(QIODevice::ReadWrite));
+        QVERIFY(file.seek(0));
+        QCOMPARE(file.write("X", 1), qint64(1));
+        QVERIFY(file.flush());
+        file.close();
+        const auto corrupted = dukto::hashFile(ledgerPath);
+        panel.execute("budget-show", {});
+        QVERIFY(panel.budget().isEmpty());
+        QTRY_VERIFY_WITH_TIMEOUT(!panel.controlBusy(), 15000);
+        QVERIFY(panel.budget().isEmpty());
+        QCOMPARE(panel.outcome()["event"].toString(), QString("error"));
+        QCOMPARE(dukto::hashFile(ledgerPath), corrupted);
+    }
+
+    // 日期：2026-11-08；预算界面保持产品最小与默认宽度，两种布局都使用真实鼠标触发生产查询。
+    void budgetQueryThroughQml_data() {
+        QTest::addColumn<QSize>("size");
+        QTest::newRow("compact") << QSize(360, 560);
+        QTest::newRow("default") << QSize(430, 700);
+    }
+
+    // 日期：2026-11-08；大于JavaScript精确整数范围的持久额度原样显示；四类报告、不泄露路径及界面截图均核对。
+    void budgetQueryThroughQml() {
+        QFETCH(QSize, size);
+        QTemporaryDir temporary;
+        const auto path = temporary.filePath("budget");
+        const qint64 amount = 9007199254740993LL;
+        {
+            dukto::PrivateStore store(path, true, dukto::PrivateStore::Use::Maintenance);
+            dukto::StateDomain::initialize(store, {amount, {{1024, amount, 1024, 1024}}});
+        }
+        const auto original = dukto::hashFile(QDir(path).filePath("state-budget.bin"));
+        ServerPanel panel(temporary.path());
+        QQuickWidget view;
+        view.setResizeMode(QQuickWidget::SizeRootObjectToView);
+        view.resize(size);
+        QSignalSpy warnings(view.engine(), &QQmlEngine::warnings);
+        QQmlComponent component(view.engine(), QUrl("qrc:/ui/ServerPage.qml"));
+        auto root = component.createWithInitialProperties(
+            {{"panel", QVariant::fromValue<QObject *>(&panel)}});
+        QVERIFY2(root, qPrintable(component.errorString()));
+        view.setContent(QUrl("qrc:/ui/ServerPage.qml"), &component, root);
+        view.show();
+        auto sections = root->findChild<QObject *>("serverSections");
+        auto flick = root->findChild<QQuickItem *>("serverLocalFlick");
+        auto expand = root->findChild<QQuickItem *>("serverBudgetExpand");
+        auto button = root->findChild<QQuickItem *>("serverBudgetRead");
+        auto summary = root->findChild<QObject *>("serverBudgetSummary");
+        QVERIFY(sections && flick && expand && button && summary);
+        sections->setProperty("currentIndex", 2);
+        const auto click = [&](QQuickItem *item) {
+            // 日期：2026-11-08；只等待真实布局稳定，滚动后按可见场景坐标点击，不调用按钮槽替代交互。
+            QElapsedTimer timer;
+            timer.start();
+            QPoint previous(-1, -1);
+            int stable = 0;
+            while (timer.elapsed() < 3000) {
+                const auto top = item->mapToItem(flick, QPointF(0, 0)).y() +
+                                 flick->property("contentY").toDouble();
+                flick->setProperty(
+                    "contentY",
+                    qMax(0.0, qMin(top - 16,
+                                   flick->property("contentHeight").toDouble() - flick->height())));
+                QTest::qWait(25);
+                const auto point = item->mapToScene(item->boundingRect().center()).toPoint();
+                stable = point == previous ? stable + 1 : 0;
+                previous = point;
+                if (stable >= 3 && item->isVisible() && item->isEnabled() &&
+                    view.rect().contains(point)) {
+                    QTest::mouseClick(&view, Qt::LeftButton, Qt::NoModifier, point);
+                    return true;
+                }
+            }
+            return false;
+        };
+        QVERIFY(click(expand));
+        QTRY_VERIFY(expand->property("checked").toBool());
+        QVERIFY(click(button));
+        QTRY_VERIFY_WITH_TIMEOUT(!panel.controlBusy() && !panel.budget().isEmpty(), 15000);
+        QVERIFY(summary->property("text").toString().contains("9007199254740993"));
+        QCOMPARE(panel.budget()["categories"].toList().size(), 4);
+        const auto json = QJsonDocument(QJsonObject::fromVariantMap(panel.budget())).toJson();
+        QVERIFY(!json.contains(temporary.path().toUtf8()));
+        QVERIFY(root->findChild<QObject *>("serverBudgetScope")
+                    ->property("text")
+                    .toString()
+                    .contains(QStringLiteral("查询时快照")));
+        QTest::qWait(100);
+        QVERIFY(QDir().mkpath("Testing/QtTest"));
+        const auto image = view.grabFramebuffer();
+        QVERIFY(!image.isNull());
+        QVERIFY(image.save(QString("Testing/QtTest/budget-report-%1x%2.png")
+                               .arg(size.width())
+                               .arg(size.height())));
+        QCOMPARE(dukto::hashFile(QDir(path).filePath("state-budget.bin")), original);
+        QCOMPARE(warnings.count(), 0);
+    }
+
     // 日期：2026-11-08；真实GUI监听与CLI配置共享同一原生域，旧身份原件保持；停止及启动失败后归还资格。
     void stateSessionSharedWithCli() {
         QTemporaryDir temporary;
@@ -123,6 +256,9 @@ class ServerPanelTests final : public QObject {
             return result;
         };
         const auto before = invoke({"state", "budget", "show"});
+        panel.execute("budget-show", {});
+        QTRY_VERIFY_WITH_TIMEOUT(!panel.controlBusy(), 15000);
+        QCOMPARE(QJsonObject::fromVariantMap(panel.budget()), before);
         auto set = QStringList{"state",
                                "budget",
                                "set",
