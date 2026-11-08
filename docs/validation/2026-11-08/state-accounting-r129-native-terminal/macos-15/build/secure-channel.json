@@ -1,0 +1,189 @@
+{
+  "date": "2026-11-04",
+  "passed": true,
+  "scope": "production SecureChannel; independent TLS endpoints",
+  "cases": {
+    "trustedCa": {
+      "passed": true,
+      "exitCode": 0,
+      "elapsedMs": 320,
+      "stage": "encrypted-frame-exchange"
+    },
+    "wrongHostnameCa": {
+      "passed": true,
+      "exitCode": 4,
+      "elapsedMs": 282,
+      "stage": "tls"
+    },
+    "pinnedSelfSigned": {
+      "passed": true,
+      "exitCode": 0,
+      "elapsedMs": 255,
+      "stage": "encrypted-frame-exchange"
+    },
+    "untrustedNoPin": {
+      "passed": true,
+      "exitCode": 4,
+      "elapsedMs": 282,
+      "stage": "tls"
+    },
+    "wrongPin": {
+      "passed": true,
+      "exitCode": 4,
+      "elapsedMs": 220,
+      "stage": "tls"
+    },
+    "wrongPinTrustedCa": {
+      "passed": true,
+      "exitCode": 4,
+      "elapsedMs": 306,
+      "stage": "tls"
+    },
+    "wrongHostnamePinned": {
+      "passed": true,
+      "exitCode": 4,
+      "elapsedMs": 282,
+      "stage": "tls"
+    },
+    "duplicateJson": {
+      "passed": true,
+      "exitCode": 2,
+      "elapsedMs": 282,
+      "stage": "protocol"
+    },
+    "oversizeHeader": {
+      "passed": true,
+      "exitCode": 2,
+      "elapsedMs": 253,
+      "stage": "protocol"
+    },
+    "truncatedBody": {
+      "passed": true,
+      "exitCode": 3,
+      "elapsedMs": 262,
+      "stage": "protocol"
+    },
+    "absoluteFrameTimeout": {
+      "passed": true,
+      "exitCode": 3,
+      "elapsedMs": 663,
+      "stage": "protocol"
+    },
+    "atomicCancellation": {
+      "passed": true,
+      "exitCode": 7,
+      "elapsedMs": 451,
+      "stage": "protocol"
+    },
+    "scanDisconnection": {
+      "passed": true,
+      "exitCode": 3,
+      "elapsedMs": 214,
+      "stage": "scan"
+    },
+    "scanCancellation": {
+      "passed": true,
+      "exitCode": 7,
+      "elapsedMs": 355,
+      "stage": "scan"
+    },
+    "observerFragmentedNormalResponse": {
+      "passed": true,
+      "exitCode": 0,
+      "elapsedMs": 176,
+      "stage": "encrypted-frame-exchange"
+    },
+    "bufferedBurst": {
+      "passed": true,
+      "exitCode": 0,
+      "elapsedMs": 205,
+      "stage": "encrypted-frame-exchange"
+    },
+    "bufferedBurstAfterDisconnect": {
+      "passed": true,
+      "exitCode": 0,
+      "elapsedMs": 162,
+      "stage": "encrypted-frame-exchange"
+    },
+    "bufferedBurstCancellation": {
+      "passed": true,
+      "exitCode": 7,
+      "elapsedMs": 157,
+      "stage": "protocol"
+    },
+    "write-failure": {
+      "passed": true,
+      "exitCode": 5,
+      "elapsedMs": 200,
+      "stage": "receive"
+    },
+    "write-fragmented-failure": {
+      "passed": true,
+      "exitCode": 5,
+      "elapsedMs": 299,
+      "stage": "receive"
+    },
+    "write-wrong-correlation": {
+      "passed": true,
+      "exitCode": 6,
+      "elapsedMs": 343,
+      "stage": "transfer"
+    },
+    "write-invalid-failure": {
+      "passed": true,
+      "exitCode": 2,
+      "elapsedMs": 245,
+      "stage": "transfer"
+    },
+    "write-abrupt": {
+      "passed": true,
+      "exitCode": 3,
+      "elapsedMs": 178,
+      "stage": "send"
+    },
+    "write-failure-close": {
+      "passed": true,
+      "exitCode": 5,
+      "elapsedMs": 165,
+      "stage": "receive"
+    },
+    "write-fragmented-failure-close": {
+      "passed": true,
+      "exitCode": 5,
+      "elapsedMs": 301,
+      "stage": "receive"
+    },
+    "expiredPinned": {
+      "passed": true,
+      "exitCode": 4,
+      "elapsedMs": 216,
+      "stage": "tls"
+    },
+    "futurePinned": {
+      "passed": true,
+      "exitCode": 4,
+      "elapsedMs": 177,
+      "stage": "tls"
+    },
+    "clientOnlyPinned": {
+      "passed": true,
+      "exitCode": 4,
+      "elapsedMs": 174,
+      "stage": "tls"
+    },
+    "productionServer": {
+      "passed": true,
+      "exitCode": 0
+    },
+    "generatedIdentityPinned": {
+      "passed": true,
+      "exitCode": 0,
+      "elapsedMs": 216,
+      "stage": "encrypted-frame-exchange"
+    },
+    "generatedIdentityServer": {
+      "passed": true,
+      "exitCode": 0
+    }
+  }
+}

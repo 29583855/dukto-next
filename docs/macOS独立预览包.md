@@ -1,5 +1,16 @@
 # macOS独立开发预览包
 
+## R130含依赖开发预览
+
+精确源码`3094bcf6302e8c8164b6998802787a89ca5d808b`；[公开下载与四份附件](https://github.com/29583855/dukto-next/releases/tag/preview-r130-20261108)。两架构GUI、独立CLI、Qt5/OpenSSL、Cocoa/高DPI、中文空格目录搬迁与各五项包内实际业务已验；四张截图已查看。本轮新增状态预算查询，生产总配额/自动回收仍未启用。开发adhoc签名，正式签名、公证和最低干净系统继续。
+
+| 架构 | 下载 | tar.gz SHA-256 |
+| --- | --- | --- |
+| arm64 | [下载tar.gz](https://github.com/29583855/dukto-next/releases/download/preview-r130-20261108/DuktoNext-macos-arm64-preview.tar.gz) | `8e1e65d3b07795d86d6f48d3f0eafa7124817aea13cdaf9cf7e2ecf5589c641d` |
+| x86_64 | [下载tar.gz](https://github.com/29583855/dukto-next/releases/download/preview-r130-20261108/DuktoNext-macos-x86_64-preview.tar.gz) | `f2d678be4748efe7825328610a7a78b43b2fd1b6b8702da123ecd817ba811a28` |
+
+本机副本：dist/macos-preview-20261108-r130-budget-report/。命令行入口：`"Dukto Next.app/Contents/MacOS/dukto-cli" --help`。
+
 ## R129含依赖开发预览
 
 精确源码`5ee4d50299326340798396ec4b169c39f8adf797`；[公开下载与四份附件](https://github.com/29583855/dukto-next/releases/tag/preview-r129-20261108)。两架构包含GUI、独立CLI、Qt5/OpenSSL，Cocoa/高DPI、中文空格目录搬迁与各五项包内业务已验；四张截图已查看。开发adhoc签名，正式签名、公证与最低干净系统继续。
