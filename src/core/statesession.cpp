@@ -1,6 +1,7 @@
 #include "statesession.h"
 #include "error.h"
 #include "files.h"
+#include "statecleanup.h"
 #include <QDir>
 #include <QElapsedTimer>
 #include <QFileInfo>
@@ -125,6 +126,10 @@ std::shared_ptr<PrivateStore> StateSession::root(const QString &parent, const QS
     const auto path = memberPath(parent, relative);
     if (check)
         check();
+    // 日期：2026-11-08；打开业务共享根前机会式回收；其他进程正在使用时独占尝试立即让出。
+    if (use == PrivateStore::Use::Shared &&
+        (relative.endsWith("service") || relative.endsWith("transfers")))
+        tryAutomaticStateCleanup(parent, relative, check);
     if (create && !QDir().mkpath(QFileInfo(path).absolutePath()))
         throw Error(ExitCode::Disk, QStringLiteral("无法准备业务状态父目录"), "state-session");
     // 日期：2026-11-08；先核对实际业务根权限，失败不建立无关的预算域或覆盖已有文件。

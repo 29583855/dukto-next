@@ -1,7 +1,9 @@
 #include "statecommands.h"
 #include "core/error.h"
 #include "core/privatestore.h"
+#include "core/statecleanup.h"
 #include "core/statedomain.h"
+#include "core/statesession.h"
 #include <QDir>
 #include <QFileInfo>
 #include <QJsonArray>
@@ -44,6 +46,36 @@ int runStateCommand(const QCommandLineParser &parser, const QStringList &argumen
                     const std::function<bool()> &interrupted) {
     const auto group = arguments.value(1);
     const auto operation = arguments.value(2);
+    if (group == "gc") {
+        if (arguments.size() != 3 || (operation != "preview" && operation != "run") ||
+            !parser.isSet("state-directory") || parser.value("state-directory").isEmpty() ||
+            !QStringList{"service", "transfers", "remote/service", "remote/transfers"}.contains(
+                parser.value("state-root")))
+            throw dukto::Error(
+                dukto::ExitCode::Config,
+                QStringLiteral("用法：state gc preview|run --state-directory <目录> "
+                               "--state-root service|transfers|remote/service|remote/transfers"),
+                "arguments");
+        const QStringList allowed{"state-directory", "state-root", "j", "json", "non-interactive"};
+        for (const auto &name : parser.optionNames())
+            if (!allowed.contains(name) || parser.values(name).size() > 1 ||
+                parser.optionNames().count(name) > 1)
+                throw dukto::Error(dukto::ExitCode::Config, QStringLiteral("清理选项不适用或重复"),
+                                   "arguments");
+        const auto check = [&interrupted]() {
+            // 日期：2026-11-08；显式维护的取消不跳过未完成候选或清除已有删除意图。
+            if (interrupted())
+                throw dukto::Error(dukto::ExitCode::Cancelled, QStringLiteral("状态清理已取消"),
+                                   "cleanup");
+        };
+        auto store = dukto::StateSession::observe(parser.value("state-directory"),
+                                                  parser.value("state-root"),
+                                                  dukto::PrivateStore::Use::Maintenance, check);
+        const auto report = dukto::cleanupState(*store, QDateTime::currentDateTimeUtc(),
+                                                operation == "run", {}, check);
+        output(report);
+        return report["errorCount"].toString() == "0" ? 0 : int(dukto::ExitCode::Integrity);
+    }
     const bool configuration = group == "budget" && (operation == "init" || operation == "set");
     const bool binding = group == "root" && operation == "bind";
     const bool accounting = group == "root" && operation == "account";

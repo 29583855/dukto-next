@@ -132,6 +132,12 @@ void output(const QJsonObject &event, bool json) {
             stream << "priorUnknownChargesRetained=true automaticDeletionAllowed=false\n";
         }
         stream << "scope=registered-ledger-objects productionQuotaEnforced=false\n";
+    } else if (event.value("event") == "state-cleanup") {
+        stream << event.value("message").toString() << '\n';
+        for (const auto &name : QStringList{"tasksVisited", "eligible", "uploadTasksProcessed",
+                                            "scansVisited", "scansCleaned", "errorCount"})
+            stream << name << '=' << event.value(name).toString() << '\n';
+        stream << "more=" << (event.value("more").toBool() ? "true" : "false") << '\n';
     } else if (event.value("event") == "devices") {
         const auto peers = event.value("peers").toArray();
         if (peers.isEmpty())
@@ -415,7 +421,8 @@ int runApplication(int argc, char **argv) {
          {"budget-unknown", QStringLiteral("state budget init/set：未知项额度字节数"), "bytes"},
          {"budget-revision", QStringLiteral("state budget set：查询所得的预算修订"), "revision"},
          {"state-root",
-          QStringLiteral("state root bind/show/account：service/clients/transfers/history"),
+          QStringLiteral("state root：service/clients/transfers/history；state "
+                         "gc另接受remote/service、remote/transfers"),
           "name"},
          {"server-name",
           QStringLiteral("服务证书 SAN 的 IP/主机名，可重复（serve init/renew；配对时为一个名称）"),
