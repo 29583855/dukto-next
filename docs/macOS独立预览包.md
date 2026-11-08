@@ -1,8 +1,19 @@
 # macOS独立开发预览包
 
+## R129含依赖开发预览
+
+精确源码`5ee4d50299326340798396ec4b169c39f8adf797`；[公开下载与四份附件](https://github.com/29583855/dukto-next/releases/tag/preview-r129-20261108)。两架构包含GUI、独立CLI、Qt5/OpenSSL，Cocoa/高DPI、中文空格目录搬迁与各五项包内业务已验；四张截图已查看。开发adhoc签名，正式签名、公证与最低干净系统继续。
+
+| 架构 | 下载 | tar.gz SHA-256 |
+| --- | --- | --- |
+| arm64 | [下载tar.gz](https://github.com/29583855/dukto-next/releases/download/preview-r129-20261108/DuktoNext-macos-arm64-preview.tar.gz) | `4c0606522f1cfb49a962e1df887611639d109cf48303a0fe5dfc0c715af30bdf` |
+| x86_64 | [下载tar.gz](https://github.com/29583855/dukto-next/releases/download/preview-r129-20261108/DuktoNext-macos-x86_64-preview.tar.gz) | `ff043a5b5a5b4d80bd46e1898ca10cd65a395ab7489320a6d3d1bcebf97ea90a` |
+
+本机副本：dist/macos-preview-20261108-r129-state-accounting/。命令行入口：`"Dukto Next.app/Contents/MacOS/dukto-cli" --help`。
+
 R127精确6c6dc363GUI与CLI同目录状态接入已验，四原生各34核心/33份Qt XML、面板各8项通过；双Mac含Qt5/OpenSSL预览、迁移业务与四截图已验并公开下载。独立Ubuntu8项通过。R126原完整协议两项旧夹具假设已失败，原件保留；修正独立验收。普通历史迁移、全应用预算和自动GC未完成。
 
-## R127含依赖开发预览
+## R127含依赖开发预览（历史）
 
 精确源码`6c6dc363c7bb755f7b5aae1f7627385c009a0ac2`；[逐层回执](validation/2026-11-08/gui-state-session-r127-macos-package/receipt.json)。
 

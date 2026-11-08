@@ -1,0 +1,23 @@
+{
+  "date": "2026-11-08",
+  "kind": "manual-source-review",
+  "sourceCommit": "5ee4d50299326340798396ec4b169c39f8adf797",
+  "scope": "selected growing containers, whole-input reads and the new accounting path",
+  "observations": [
+    {"path": "src/core/stateaccounting.cpp", "result": "native directory visitor retains aggregate counters and one key; file bodies are never opened by this implementation"},
+    {"path": "src/core/statebudget.cpp", "result": "4096 fixed slots and per-observation fixed-size reads; exhaustion is explicit and does not reset committed charges"},
+    {"path": "src/app/avatars.cpp", "result": "retained peers stop at 256; the remaining readAll is guarded by a 2049-byte socket read buffer and request length check"},
+    {"path": "src/core/auth.cpp", "result": "grant encoding checks at most 16 shares before growing its name set"},
+    {"path": "src/core/protocol.cpp", "result": "parser limits depth to 16, total nodes to 4096, object fields to 32 and array elements to 100"},
+    {"path": "src/core/catalog.cpp", "result": "interrupted task recovery materializes only a LIMIT 100 page"},
+    {"path": "src/app/controller.cpp", "result": "received text page indexes remain under the existing 8 MiB protocol and shared-credit contract"},
+    {"path": "src/core/updates.cpp", "result": "version container holds three parts from a string capped at 32 characters"}
+  ],
+  "openFindings": [
+    {"path": "src/app/serverpanel.cpp", "function": "ServerPanel::chooseUpload", "result": "QFileDialog::getOpenFileNames materializes all selected names before the application regains control; this review does not grant bounded-memory or full native-picker qualification for arbitrarily large direct selections"}
+  ],
+  "isMemoryProfileOrSoakEvidence": false,
+  "wholeApplicationBoundedMemoryQualified": false,
+  "allNativePickersQualified": false,
+  "deliveryComplete": false
+}
