@@ -15,6 +15,9 @@ import tempfile
 from service_integration import free_port
 from transfer_integration import digest
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+from macos_compatibility import audit_app
+
 
 # 日期：2026-11-05；Cryptex实体文件验证Apple签名；仅在系统dyld共享缓存中的无实体系统镜像可通过缓存成员核验。
 def verify_apple_image(path, cryptex):
@@ -102,6 +105,8 @@ def main():
             assert path.is_symlink() and os.readlink(path) == item["target"]
             assert path.resolve(strict=True).is_relative_to(stage)
         app = stage / "Dukto Next.app"
+        compatibility = audit_app(app, manifest["minimumMacOS"], platform.machine())
+        assert compatibility == manifest["compatibilityAudit"]
         cli = stage / "dukto-cli"
         native_cli = app / "Contents/MacOS/dukto-cli"
         gui = app / "Contents/MacOS/dukto-gui"
@@ -143,6 +148,8 @@ def main():
             cases.append({"name": name, "passed": True, "reportSha256": digest(destination)})
         value = {"date": "2026-11-05", "passed": True, "archiveSha256": digest(archive),
                  "sourceCommit": manifest["sourceCommit"], "architecture": platform.machine(),
+                 "minimumMacOS": manifest["minimumMacOS"], "compatibilityAudit": compatibility,
+                 "runtimeHostMacOS": platform.mac_ver()[0],
                  "verifiedFiles": len(manifest["files"]), "verifiedLinks": len(manifest["links"]),
                  "cliModules": cli_modules, "guiModules": gui_modules,
                  "verifiedAppleSystemImages": list({item["loadPath"]: item for item in cli_apple + gui_apple}.values()),

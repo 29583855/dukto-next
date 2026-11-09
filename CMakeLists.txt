@@ -1,4 +1,8 @@
 cmake_minimum_required(VERSION 3.20)
+# 日期：2026-11-09；在编译器初始化前固定Mac部署目标，避免继承构建机的macOS 15版本。
+if(CMAKE_HOST_APPLE AND NOT DEFINED CMAKE_OSX_DEPLOYMENT_TARGET)
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "12.0" CACHE STRING "Minimum supported macOS version")
+endif()
 project(DuktoNext VERSION 0.1.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 14)
@@ -7,6 +11,11 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+# 日期：2026-11-09；新SDK的高版本API必须显式做可用性保护，不能悄悄破坏部署基线。
+if(APPLE)
+    add_compile_options(-Werror=unguarded-availability-new)
+endif()
 
 option(DUKTO_BUILD_GUI "Build desktop application" ON)
 option(DUKTO_BUILD_TESTS "Build validation tests" ON)
@@ -158,6 +167,10 @@ if(DUKTO_BUILD_GUI)
     target_link_libraries(dukto-gui PRIVATE dukto-core Qt5::Widgets Qt5::QuickWidgets Qt5::Quick Qt5::Qml)
     set_target_properties(dukto-gui PROPERTIES MACOSX_BUNDLE_BUNDLE_NAME "Dukto Next"
         MACOSX_BUNDLE_GUI_IDENTIFIER "org.duktonext.desktop")
+    if(APPLE)
+        set_target_properties(dukto-gui PROPERTIES
+            MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/resources/macos/Info.plist.in")
+    endif()
     install(TARGETS dukto-gui BUNDLE DESTINATION . RUNTIME DESTINATION bin)
 endif()
 

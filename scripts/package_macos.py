@@ -13,6 +13,7 @@ import tarfile
 
 from package_windows import sha256, source_archive
 from package_build import refresh_build, verify_build
+from macos_compatibility import audit_app, is_macho
 
 
 # 日期：2026-11-05；仅执行显式工具参数，原生部署/签名/依赖检查任一失败都中止。
@@ -37,9 +38,7 @@ def checked(command, timeout=300, log=None):
 
 # 日期：2026-11-05；只检查真实Mach-O文件，框架符号链接由最终归档清单单列。
 def native_file(path):
-    with path.open("rb") as stream:
-        return stream.read(4) in (b"\xcf\xfa\xed\xfe", b"\xfe\xed\xfa\xcf",
-                                  b"\xca\xfe\xba\xbe", b"\xbe\xba\xfe\xca")
+    return is_macho(path)
 
 
 # 日期：2026-11-05；展开loader/executable相对路径，绝对非系统依赖必须位于包中。
@@ -58,9 +57,9 @@ def load_names(image):
     return [name for name in names if name not in identities]
 
 
-# 日期：2026-11-05；Qt部署工具可能漏掉brotli等rpath传递库，只从本机已安装Cellar复制精确匹配文件。
-def deploy_transitive(app):
-    cellar = Path(checked(["brew", "--cellar"]).strip()).resolve()
+# 日期：2026-11-09；只从明确的依赖源码安装根或旧Cellar复制精确匹配的传递库。
+def deploy_transitive(app, roots):
+    roots = [path.resolve(strict=True) for path in roots]
     framework = app / "Contents/Frameworks"
     framework.mkdir(exist_ok=True)
     executable = app / "Contents/MacOS/dukto-gui"
@@ -91,7 +90,7 @@ def deploy_transitive(app):
                         if source is None:
                             source = Path(checked(["qmake", "-query", "QT_INSTALL_LIBS"]).strip()) / relative
                         source = source.resolve(strict=True)
-                        assert source.is_relative_to(cellar), ("Framework outside installed Cellar", source)
+                        assert any(source.is_relative_to(root) for root in roots), ("Framework outside declared dependency roots", source)
                         index_part = next(index for index, part in enumerate(source.parts) if part.endswith(".framework"))
                         source_root = Path(*source.parts[:index_part + 1])
                         destination = framework / source_root.name
@@ -111,11 +110,12 @@ def deploy_transitive(app):
                 else:
                     if index is None:
                         index = {}
-                        for path in cellar.rglob("*.dylib"):
-                            if path.is_file():
-                                index.setdefault(path.name, set()).add(path.resolve())
+                        for root in roots:
+                            for path in root.rglob("*.dylib"):
+                                if path.is_file():
+                                    index.setdefault(path.name, set()).add(path.resolve())
                     candidates = index.get(filename, set())
-                assert candidates and all(path.is_relative_to(cellar) for path in candidates), (image, name, candidates)
+                assert candidates and all(any(path.is_relative_to(root) for root in roots) for path in candidates), (image, name, candidates)
                 hashes = {sha256(path) for path in candidates}
                 assert len(hashes) == 1, ("Ambiguous installed dependency", image, name, candidates)
                 source = sorted(candidates)[0]
@@ -171,6 +171,9 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--build-directory", type=Path, default=Path("build"))
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--minimum-macos", default="12.0")
+    parser.add_argument("--dependency-root", type=Path, action="append", default=[])
+    parser.add_argument("--dependency-manifest", type=Path)
     args = parser.parse_args()
     assert platform.system() == "Darwin" and platform.machine() in ("arm64", "x86_64")
     root = Path(__file__).resolve().parents[1]
@@ -191,8 +194,13 @@ def main():
     checked([qt / "macdeployqt", app, "-executable=" + str(cli),
              "-qmldir=" + str(root / "ui"), "-always-overwrite", "-verbose=2"],
             timeout=900, log=output / "macdeployqt.log")
-    transitive = deploy_transitive(app)
+    roots = args.dependency_root or [Path(checked(["brew", "--cellar"]).strip())]
+    roots = [path.resolve(strict=True) for path in roots]
+    transitive = deploy_transitive(app, roots)
     bindings = dependencies(app)
+    compatibility = audit_app(app, args.minimum_macos, platform.machine())
+    (output / "macos-compatibility.json").write_text(
+        json.dumps(compatibility, indent=2) + "\n", encoding="utf-8")
     # 日期：2026-11-05；所有bundle写入结束后再签名，重定位的库和CLI必须一起通过严格签名检查。
     checked(["codesign", "--force", "--deep", "--sign", "-", app])
     signature = checked(["codesign", "--verify", "--deep", "--strict", "--verbose=2", app])
@@ -203,27 +211,35 @@ def main():
                         'exec "$base/Dukto Next.app/Contents/MacOS/dukto-cli" "$@"\n', encoding="utf-8")
     launcher.chmod(0o755)
     shutil.copy2(root / "LICENSE", stage / "LICENSE")
-    metadata = json.loads(checked(["brew", "info", "--json=v2", "--installed"]))
-    (stage / "HOMEBREW-DEPENDENCIES.json").write_text(
+    if args.dependency_manifest:
+        metadata = json.loads(args.dependency_manifest.read_text(encoding="utf-8"))
+        if metadata["minimumMacOS"] != args.minimum_macos:
+            raise ValueError("Dependency build baseline differs from application baseline")
+        metadata_name = "SOURCE-DEPENDENCIES.json"
+    else:
+        metadata = json.loads(checked(["brew", "info", "--json=v2", "--installed"]))
+        metadata_name = "HOMEBREW-DEPENDENCIES.json"
+    (stage / metadata_name).write_text(
         json.dumps(metadata, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     # 日期：2026-11-05；保存安装包附带的原始许可及其真实来源，完整对应源码/独立重建仍另行验收。
     licenses = []
-    cellar = Path(checked(["brew", "--cellar"]).strip())
-    for path in sorted(cellar.rglob("*")):
-        if not path.is_file() or path.is_symlink() or path.stat().st_size > 1024**2:
-            continue
-        if not re.match(r"^(?:LICENSE|COPYING|COPYRIGHT|NOTICE)(?:[._-].*)?$", path.name, re.I):
-            continue
-        relative = path.relative_to(cellar)
-        target = stage / "third-party-licenses" / relative
-        target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(path, target)
-        licenses.append({"path": target.relative_to(stage).as_posix(), "source": str(path), "sha256": sha256(path)})
+    for dependency_root in roots:
+        for path in sorted(dependency_root.rglob("*")):
+            if not path.is_file() or path.is_symlink() or path.stat().st_size > 1024**2:
+                continue
+            if not re.match(r"^(?:LICENSE|COPYING|COPYRIGHT|NOTICE)(?:[._-].*)?$", path.name, re.I):
+                continue
+            relative = Path(dependency_root.name) / path.relative_to(dependency_root)
+            target = stage / "third-party-licenses" / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(path, target)
+            licenses.append({"path": target.relative_to(stage).as_posix(), "source": str(path), "sha256": sha256(path)})
     source_files = source_archive(root, stage / "DuktoNext-application-source.zip")
     (stage / "README.txt").write_text(
         "Dukto Next macOS development preview\n\n"
         "Open Dukto Next.app for the GUI; run ./dukto-cli for the independent CLI.\n"
         "Qt5 runtime libraries and QML plugins are deployed inside the app.\n"
+        f"Minimum macOS: {args.minimum_macos}; architecture: {platform.machine()}.\n"
         "This preview uses a local adhoc signature. Developer ID signing, notarization,\n"
         "clean-system qualification and complete corresponding third-party sources remain pending.\n"
         "Source: https://github.com/29583855/dukto-next\n", encoding="utf-8")
@@ -238,6 +254,7 @@ def main():
     verify_build(root, build, build_provenance)
     manifest = {"date": datetime.now(timezone.utc).isoformat(), "architecture": platform.machine(),
                 "buildProvenance": build_provenance,
+                "minimumMacOS": args.minimum_macos, "compatibilityAudit": compatibility,
                 "sourceCommit": os.environ.get("GITHUB_SHA"), "files": files, "links": links,
                 "dependencies": bindings, "transitiveSources": transitive,
                 "licenses": licenses, "applicationSources": source_files,
