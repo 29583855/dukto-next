@@ -94,7 +94,7 @@ def many_files(executable, root, count):
         finally:
             stop(processes)
     checked = 0
-    with closing(sqlite3.connect(root / "state/receipts.sqlite")) as db:
+    with closing(sqlite3.connect(root / "state/history/receipts.sqlite")) as db:
         assert db.execute("SELECT state,total,received FROM tasks").fetchone() == ("completed", total, total)
         for relative, path, size, sha in db.execute("SELECT source,path,bytes,sha256 FROM files"):
             if size < 0:
@@ -111,7 +111,7 @@ def many_files(executable, root, count):
     assert not (root / "error.log").read_bytes()
     assert not any(output.rglob("*.part"))
     return {"test": "many-files", "passed": True, "files": checked, "bytes": str(total),
-            "catalogBytes": (root / "state/receipts.sqlite").stat().st_size, **metrics}
+            "catalogBytes": (root / "state/history/receipts.sqlite").stat().st_size, **metrics}
 
 
 # 日期：2026-11-04；同一监听器反复接收，记录暖机后与末轮资源，校验所有同名副本。
@@ -156,7 +156,7 @@ def repeated(executable, root, rounds):
             assert len(copies) == rounds
             for path in copies:
                 assert digest(path) == expected
-            with closing(sqlite3.connect(root / "state/receipts.sqlite")) as db:
+            with closing(sqlite3.connect(root / "state/history/receipts.sqlite")) as db:
                 assert db.execute("SELECT count(*) FROM tasks WHERE state='completed'").fetchone()[0] == rounds
             warm = snapshots[min(9, rounds - 1)]
             final = snapshots[-1]

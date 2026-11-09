@@ -22,6 +22,8 @@ class PrivateStore final {
     QByteArray read(const QString &name, qint64 maximum = 65536) const;
     // 日期：2026-11-04；大状态数据库仅核对原生权限和普通文件身份，不把整个数据库读入内存。
     qint64 validateFile(const QString &name) const;
+    // 日期：2026-11-09；SQLite路径用原生属性核验；POSIX不另开关同inode文件以免释放已有fcntl锁。
+    NativeDirectoryEntry validateSqlitePath(const QString &name) const;
     // 日期：2026-11-07；独占维护只校验规范SQLite回滚日志，保留私有DACL与独立普通对象要求。
     qint64 validateSqliteJournal(const QString &name) const;
     // 日期：2026-11-04；在受保护根内写入、同步并原子替换，内容不进入日志或命令行。

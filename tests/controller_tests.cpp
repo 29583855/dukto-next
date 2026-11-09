@@ -1,8 +1,10 @@
 #include "app/boundedfiledialog.h"
 #include "app/controller.h"
 #include "core/buffercredit.h"
+#include "core/catalog.h"
 #include "core/error.h"
 #include "core/files.h"
+#include "core/sqliteruntime.h"
 #include <QApplication>
 #include <QDir>
 #include <QItemSelectionModel>
@@ -19,6 +21,64 @@
 class ControllerTests final : public QObject {
     Q_OBJECT
   private slots:
+    // 日期：2026-11-09；真实生产控制器读取迁移前文本与旧接收明细路径，跨两次重启保持内容和原库摘要。
+    void protectedHistoryRetainsTextAndLegacyReceiptLinks() {
+        QTemporaryDir root;
+        QSettings::setDefaultFormat(QSettings::IniFormat);
+        QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, root.path());
+        QString task;
+        {
+            dukto::Catalog old(root.filePath("fixture.sqlite"));
+            task = old.begin(2, 2, "127.0.0.1");
+            old.append(task, 1, "first.txt", root.filePath("first.txt"), 1, QByteArray(32, 'a'));
+            old.append(task, 2, "second.txt", root.filePath("second.txt"), 1, QByteArray(32, 'b'));
+            old.finish(task, "completed", 2);
+        }
+        QVERIFY(QFile::rename(root.filePath("fixture.sqlite"), root.filePath("receipts.sqlite")));
+        const auto text = QString::fromUtf8("迁移前的文本 café 😀\n第二行");
+        const auto connection = QUuid::createUuid().toString();
+        {
+            auto database = dukto::addSqliteDatabase(connection);
+            database.setDatabaseName(root.filePath("history.sqlite"));
+            QVERIFY(database.open());
+            {
+                QSqlQuery query(database);
+                QVERIFY(query.exec(
+                    "CREATE TABLE history(time TEXT,path TEXT,bytes TEXT,message TEXT)"));
+                QVERIFY(query.exec(
+                    "CREATE TABLE text_history(record INTEGER PRIMARY KEY,content TEXT)"));
+                QVERIFY(query.exec("CREATE TABLE history_receipts(record INTEGER PRIMARY "
+                                   "KEY,catalog TEXT,task TEXT,entries INTEGER)"));
+                QVERIFY(query.exec("INSERT INTO history VALUES('2026-11-01','','0','old text')"));
+                QVERIFY(query.exec("INSERT INTO history VALUES('2026-11-02','','2','old batch')"));
+                query.prepare("INSERT INTO text_history VALUES(1,?)");
+                query.addBindValue(text);
+                QVERIFY(query.exec());
+                query.prepare("INSERT INTO history_receipts VALUES(2,?,?,2)");
+                query.addBindValue(root.filePath("receipts.sqlite"));
+                query.addBindValue(task);
+                QVERIFY(query.exec());
+            }
+            database.close();
+        }
+        QSqlDatabase::removeDatabase(connection);
+        const auto historyHash = dukto::hashFile(root.filePath("history.sqlite"));
+        const auto receiptsHash = dukto::hashFile(root.filePath("receipts.sqlite"));
+        for (int iteration = 0; iteration < 2; ++iteration) {
+            Controller controller(0, nullptr, root.path());
+            QCOMPARE(controller.history().size(), 2);
+            controller.openHistory("1");
+            QCOMPARE(controller.receivedTextPage(), text);
+            controller.openHistory("2");
+            QCOMPARE(controller.batchFiles().size(), 2);
+            QCOMPARE(controller.batchFiles()[0].toMap()["source"].toString(), QString("first.txt"));
+            QVERIFY(QFileInfo::exists(root.filePath("history/history.sqlite")));
+            QVERIFY(QFileInfo::exists(root.filePath("history/receipts.sqlite")));
+        }
+        QCOMPARE(dukto::hashFile(root.filePath("history.sqlite")), historyHash);
+        QCOMPARE(dukto::hashFile(root.filePath("receipts.sqlite")), receiptsHash);
+    }
+
     // 日期：2026-11-09；真实历史连接共享页缓存额度，双实例使用不同Qt注册项，销毁其一不关闭另一项。
     void historyCacheReservationsAndIndependentConnections() {
         QTemporaryDir root;
@@ -95,12 +155,12 @@ class ControllerTests final : public QObject {
         {
             dukto::BufferCredit full(128 * 1024 * 1024 - before["used"].toString().toLongLong());
             QVERIFY_EXCEPTION_THROWN(Controller(0, nullptr, root.filePath("retry")), dukto::Error);
-            QVERIFY(!QFileInfo::exists(root.filePath("retry/history.sqlite")));
+            QVERIFY(!QFileInfo::exists(root.filePath("retry/history/history.sqlite")));
             QCOMPARE(QSqlDatabase::connectionNames(), baseline);
         }
         {
             Controller retry(0, nullptr, root.filePath("retry"));
-            QVERIFY(QFileInfo::exists(root.filePath("retry/history.sqlite")));
+            QVERIFY(QFileInfo::exists(root.filePath("retry/history/history.sqlite")));
             QCOMPARE(dukto::BufferCredit::usage()["controlUsed"].toString().toLongLong(),
                      before["controlUsed"].toString().toLongLong() + 2112 * 1024);
         }

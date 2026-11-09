@@ -53,7 +53,7 @@ def crash_during_receive(executable, root):
                            b"partial.bin\0" + struct.pack("<q", pending_size) + b"p" * (256 * 1024))
             wait_for(lambda: completed.exists() and any(
                 item.stat().st_size > 0 for item in output.glob(".dukto-*.part")))
-            with closing(sqlite3.connect(state / "receipts.sqlite")) as database:
+            with closing(sqlite3.connect(state / "history/receipts.sqlite")) as database:
                 task = database.execute("SELECT id FROM tasks WHERE state='receiving'").fetchone()[0]
             assert receipt(executable, state, task)["state"] == "receiving"
             process.kill()
@@ -72,7 +72,7 @@ def crash_during_receive(executable, root):
     remnants = list(output.glob(".dukto-*.part"))
     assert len(remnants) == 1 and remnants[0].stat().st_size > 0
     assert not list(state.glob("*.lock"))
-    assert not list((state / "receipts.sqlite.locks").glob("*.lock"))
+    assert not list((state / "history/receipts.sqlite.locks").glob("*.lock"))
 
     port = free_port()
     restarted = receiver(executable, output, port)

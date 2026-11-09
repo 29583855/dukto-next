@@ -51,7 +51,7 @@ def receive_signal_contracts(executable, root):
             assert result["stage"] == "listen", result
             assert not list(output.iterdir())
             if active:
-                with sqlite3.connect(state / "receipts.sqlite") as database:
+                with sqlite3.connect(state / "history/receipts.sqlite") as database:
                     rows = database.execute("SELECT state,error FROM tasks").fetchall()
                 assert len(rows) == 1 and rows[0][0] == "failed" and "取消" in rows[0][1], rows
             results.append({"activeReceive": active, "signal": requested.name,

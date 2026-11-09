@@ -1,5 +1,6 @@
 #include "catalog.h"
 #include "error.h"
+#include "historystate.h"
 #include "sqliteruntime.h"
 #include <QDateTime>
 #include <QDir>
@@ -15,12 +16,16 @@ Catalog::Catalog(const QString &path)
     : connection_(QUuid::createUuid().toString(QUuid::WithoutBraces)) {
     if (!QDir().mkpath(QFileInfo(path).absolutePath()))
         throw Error(ExitCode::Disk, QStringLiteral("无法创建接收明细目录"), "catalog");
+    // 日期：2026-11-09；固定接收明细迁入私有历史根，整个连接寿命保留共享资格和旧库读锁。
+    state_ = HistoryState::catalog(path);
     database_ = addSqliteDatabase(connection_);
     try {
-        database_.setDatabaseName(QFileInfo(path).absoluteFilePath());
+        database_.setDatabaseName(state_ ? state_->path() : QFileInfo(path).absoluteFilePath());
         database_.setConnectOptions("QSQLITE_BUSY_TIMEOUT=2000");
         if (!database_.open())
             throw Error(ExitCode::Disk, database_.lastError().text(), "catalog");
+        if (state_)
+            state_->validate(database_);
         cacheCredit_.configure(database_);
         QSqlQuery query(database_);
         for (const auto sql :

@@ -7,6 +7,7 @@
 #include <memory>
 
 namespace dukto {
+class HistoryState;
 class Catalog final {
   public:
     // 日期：2026-11-04；任务明细存于单个有界 SQLite 数据库，各线程独立连接。
@@ -36,6 +37,7 @@ class Catalog final {
     // 日期：2026-11-04；每个任务持有跨进程锁，长传输不按文件年龄误判失效。
     std::unique_ptr<QLockFile> taskLock(const QString &id) const;
     SqliteCacheCredit cacheCredit_{2048};
+    std::shared_ptr<HistoryState> state_;
     QSqlDatabase database_;
     QString connection_;
     QString activeTask_;

@@ -137,6 +137,7 @@ add_library(dukto-core
     src/core/endpoint.cpp
     src/core/updates.cpp
     src/core/catalog.cpp
+    src/core/historystate.cpp
 )
 target_include_directories(dukto-core PUBLIC src)
 target_link_libraries(dukto-core PUBLIC Qt5::Core Qt5::Network Qt5::Sql)

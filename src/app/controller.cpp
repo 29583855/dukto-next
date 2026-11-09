@@ -6,6 +6,7 @@
 #include "core/endpoint.h"
 #include "core/error.h"
 #include "core/files.h"
+#include "core/historystate.h"
 #include "core/sqlitecache.h"
 #include "core/sqliteruntime.h"
 
@@ -28,15 +29,21 @@
 struct Controller::HistoryConnection final {
     dukto::SqliteCacheCredit cache{2048, true};
     const QString name = "gui-history-" + QUuid::createUuid().toString(QUuid::WithoutBraces);
+    std::shared_ptr<dukto::HistoryState> state;
+    QString parent;
     QSqlDatabase database;
 
     // 日期：2026-11-09；先取得共用控制额度再开库，各实例拥有独立注册名；配置须真实回读确认。
     explicit HistoryConnection(const QString &directory) {
+        // 日期：2026-11-09；历史写入只使用私有根，迁移保留旧文件并在整个连接寿命阻止旧库提交。
+        state = dukto::HistoryState::open(directory, "history.sqlite");
+        parent = directory;
         database = dukto::addSqliteDatabase(name);
         try {
-            database.setDatabaseName(QDir(directory).filePath("history.sqlite"));
+            database.setDatabaseName(state->path());
             if (!database.open())
                 throw dukto::Error(dukto::ExitCode::Disk, database.lastError().text(), "history");
+            state->validate(database);
             cache.configure(database);
             QSqlQuery query(database);
             for (const auto sql :
@@ -136,8 +143,7 @@ Controller::Controller(quint16 port, QObject *parent, const QString &storageDire
 QVariantMap Controller::diagnostics() {
     try {
         dukto::DiagnosticOptions options;
-        options.stateDirectory =
-            QFileInfo(historyConnection_->database.databaseName()).absolutePath();
+        options.stateDirectory = historyConnection_->parent;
         options.outputDirectory = outputDirectory();
         options.requireStateDirectory = true;
         options.requireOutputDirectory = true;

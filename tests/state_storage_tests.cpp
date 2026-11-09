@@ -4,6 +4,7 @@
 #include "core/buffercredit.h"
 #include "core/error.h"
 #include "core/files.h"
+#include "core/historystate.h"
 #include "core/privatestore.h"
 #include "core/sqliteruntime.h"
 #include "core/sqlitevfs.h"
@@ -60,6 +61,17 @@ int attemptSqliteWrite(const QString &path) {
     auto handle = dukto::sqliteHandle(connection.database);
     sqlite3_busy_timeout(handle, 0);
     return sqlite3_exec(handle, "INSERT INTO payload VALUES(2)", nullptr, nullptr, nullptr);
+}
+
+// 日期：2026-11-09；只在真实准备凭据或独占正文已发布边界退出，不给生产程序加入故障开关。
+void crashHistoryMigration(const QString &parent, bool published) {
+    dukto::HistoryState::open(parent, "history.sqlite", [&]() {
+        // 日期：2026-11-09；通过实际文件观察中断边界，重启必须复用相同迁移凭据。
+        if (QFileInfo::exists(parent + "/history/history.sqlite.origin.json") &&
+            QFileInfo::exists(parent + "/history/history.sqlite") == published)
+            std::_Exit(published ? 50 : 49);
+    });
+    std::_Exit(90);
 }
 
 // 日期：2026-11-07；只建立逻辑长度探针，Windows先启用稀疏属性，避免实际分配四GiB。
@@ -120,6 +132,198 @@ bool invoke(QProcess &process, const QStringList &arguments) {
 class StateStorageTests final : public QObject {
     Q_OBJECT
   private slots:
+    // 日期：2026-11-09；两种生产历史库都保留原件，迁移后的修改不会回写旧文件；真实子进程验证旧库写锁。
+    void protectedHistoryMigration_data() {
+        QTest::addColumn<QString>("name");
+        QTest::newRow("gui-history") << QString("history.sqlite");
+        QTest::newRow("receive-receipts") << QString("receipts.sqlite");
+    }
+
+    // 日期：2026-11-09；多连接共享新历史根，关闭其中一个仍阻止旧库写入，最后一个退出才归还锁。
+    void protectedHistoryMigration() {
+        QFETCH(QString, name);
+        QTemporaryDir root;
+        const auto source = root.filePath(name);
+        {
+            Connection original(source);
+            QVERIFY(original.database.open());
+            QSqlQuery query(original.database);
+            QVERIFY(query.exec("CREATE TABLE payload(value INTEGER)"));
+            QVERIFY(query.exec("INSERT INTO payload VALUES(1)"));
+        }
+        const auto originalHash = dukto::hashFile(source);
+        const auto baseline = QSqlDatabase::connectionNames();
+        auto first = dukto::HistoryState::open(root.path(), name);
+        auto second = dukto::HistoryState::open(root.path(), name);
+        QCOMPARE(first->path(), root.filePath("history/" + name));
+        QCOMPARE(first->path(), second->path());
+        QCOMPARE(dukto::hashFile(first->path()), originalHash);
+        QVERIFY_EXCEPTION_THROWN(dukto::PrivateStore(root.filePath("history"), false,
+                                                     dukto::PrivateStore::Use::Maintenance),
+                                 dukto::Error);
+        const auto attempt = [&]() {
+            // 日期：2026-11-09；新进程直接使用SQLite，不能把状态维护锁的拒绝当作旧库读锁生效。
+            QProcess child;
+            child.start(QCoreApplication::applicationFilePath(), {"--try-sqlite-write", source});
+            if (!child.waitForFinished(10000) || child.exitStatus() != QProcess::NormalExit)
+                return -1;
+            return child.exitCode();
+        };
+        QCOMPARE(attempt(), SQLITE_BUSY);
+        first.reset();
+        QCOMPARE(attempt(), SQLITE_BUSY);
+        {
+            Connection destination(second->path());
+            QVERIFY(destination.database.open());
+            QSqlQuery query(destination.database);
+            QVERIFY(query.exec("INSERT INTO payload VALUES(9)"));
+        }
+        second.reset();
+        QCOMPARE(QSqlDatabase::connectionNames(), baseline);
+        QCOMPARE(dukto::hashFile(source), originalHash);
+        {
+            auto reopened = dukto::HistoryState::open(root.path(), name);
+            Connection destination(reopened->path());
+            QVERIFY(destination.database.open());
+            QSqlQuery query(destination.database);
+            QVERIFY(query.exec("SELECT sum(value) FROM payload"));
+            QVERIFY(query.next());
+            QCOMPARE(query.value(0).toInt(), 10);
+        }
+        QCOMPARE(attempt(), SQLITE_OK);
+        QVERIFY_EXCEPTION_THROWN(dukto::HistoryState::open(root.path(), name), dukto::Error);
+        QVERIFY(QFileInfo::exists(root.filePath("history/" + name)));
+    }
+
+    // 日期：2026-11-09；初次使用无旧库时创建私有空库和完整凭据，不允许后来出现的旧库冒充相同来源。
+    void protectedHistoryAbsentAndUnknownTarget() {
+        QTemporaryDir root;
+        {
+            auto state = dukto::HistoryState::open(root.path(), "history.sqlite");
+            dukto::PrivateStore store(root.filePath("history"));
+            QCOMPARE(store.validateFile("history.sqlite"), qint64(0));
+            QCOMPARE(QJsonDocument::fromJson(store.read("history.sqlite.origin.json"))
+                         .object()["state"]
+                         .toString(),
+                     QString("complete"));
+            auto reopened = dukto::HistoryState::open(root.path(), "history.sqlite");
+            QCOMPARE(reopened->path(), state->path());
+            store.write("receipts.sqlite", "unknown target");
+            QVERIFY_EXCEPTION_THROWN(dukto::HistoryState::open(root.path(), "receipts.sqlite"),
+                                     dukto::Error);
+            QCOMPARE(store.read("receipts.sqlite"), QByteArray("unknown target"));
+        }
+        Connection late(root.filePath("history.sqlite"));
+        QVERIFY(late.database.open());
+        QVERIFY_EXCEPTION_THROWN(dukto::HistoryState::open(root.path(), "history.sqlite"),
+                                 dukto::Error);
+    }
+
+    // 日期：2026-11-09；对已活动主库重复路径/连接核验不能释放SQLite写锁，真实外部进程仍被拒绝。
+    void protectedHistoryPathValidationKeepsSqliteLocks() {
+        QTemporaryDir root;
+        auto state = dukto::HistoryState::open(root.path(), "history.sqlite");
+        Connection writer(state->path());
+        QVERIFY(writer.database.open());
+        QSqlQuery query(writer.database);
+        QVERIFY(query.exec("CREATE TABLE payload(value INTEGER)"));
+        QVERIFY(query.exec("BEGIN IMMEDIATE"));
+        QVERIFY(query.exec("INSERT INTO payload VALUES(1)"));
+        {
+            auto other = dukto::HistoryState::open(root.path(), "history.sqlite");
+            QCOMPARE(other->path(), state->path());
+            state->validate(writer.database);
+            other->validate(writer.database);
+        }
+        QProcess child;
+        child.start(QCoreApplication::applicationFilePath(), {"--try-sqlite-write", state->path()});
+        QVERIFY(child.waitForFinished(10000));
+        QCOMPARE(child.exitStatus(), QProcess::NormalExit);
+        QCOMPARE(child.exitCode(), SQLITE_BUSY);
+        QVERIFY(query.exec("ROLLBACK"));
+    }
+
+    // 日期：2026-11-09；任一旧旁路文件与损坏正文均拒绝迁移，不能创建新库掩盖原件。
+    void protectedHistoryRejectsUnsafeSource() {
+        QTemporaryDir root;
+        const auto source = root.filePath("history.sqlite");
+        {
+            Connection original(source);
+            QVERIFY(original.database.open());
+            QSqlQuery query(original.database);
+            QVERIFY(query.exec("CREATE TABLE payload(value INTEGER)"));
+        }
+        const auto originalHash = dukto::hashFile(source);
+        for (const auto suffix : {"-journal", "-wal", "-shm"}) {
+            QFile sidecar(source + suffix);
+            QVERIFY(sidecar.open(QIODevice::WriteOnly));
+            QCOMPARE(sidecar.write("preserved"), qint64(9));
+            sidecar.close();
+            QVERIFY_EXCEPTION_THROWN(dukto::HistoryState::open(root.path(), "history.sqlite"),
+                                     dukto::Error);
+            QCOMPARE(dukto::hashFile(source), originalHash);
+            QVERIFY(!QFileInfo::exists(root.filePath("history")));
+            QVERIFY(sidecar.remove());
+        }
+        QFile file(source);
+        QVERIFY(file.open(QIODevice::WriteOnly | QIODevice::Truncate));
+        QCOMPARE(file.write("broken history"), qint64(14));
+        file.close();
+        const auto brokenHash = dukto::hashFile(source);
+        const auto connections = QSqlDatabase::connectionNames();
+        QVERIFY_EXCEPTION_THROWN(dukto::HistoryState::open(root.path(), "history.sqlite"),
+                                 dukto::Error);
+        QCOMPARE(QSqlDatabase::connectionNames(), connections);
+        QCOMPARE(dukto::hashFile(source), brokenHash);
+        QVERIFY(!QFileInfo::exists(root.filePath("history")));
+    }
+
+    // 日期：2026-11-09；准备凭据后和正文发布后真实进程退出，重启分别创建或核验同一目标，不重复迁移。
+    void protectedHistoryCrashRecovery_data() {
+        QTest::addColumn<bool>("published");
+        QTest::newRow("prepared") << false;
+        QTest::newRow("published") << true;
+    }
+
+    // 日期：2026-11-09；中断重入要求原源身份与摘要未变，正文及状态原件分别独立核对。
+    void protectedHistoryCrashRecovery() {
+        QFETCH(bool, published);
+        QTemporaryDir root;
+        const auto source = root.filePath("history.sqlite");
+        {
+            Connection original(source);
+            QVERIFY(original.database.open());
+            QSqlQuery query(original.database);
+            QVERIFY(query.exec("CREATE TABLE payload(value INTEGER)"));
+            QVERIFY(query.exec("INSERT INTO payload VALUES(1)"));
+        }
+        const auto hash = dukto::hashFile(source);
+        QProcess child;
+        child.start(
+            QCoreApplication::applicationFilePath(),
+            {"--crash-history-migration", root.path(), published ? "published" : "prepared"});
+        QVERIFY(child.waitForFinished(20000));
+        QCOMPARE(child.exitStatus(), QProcess::NormalExit);
+        QCOMPARE(child.exitCode(), published ? 50 : 49);
+        {
+            dukto::PrivateStore store(root.filePath("history"));
+            QCOMPARE(QJsonDocument::fromJson(store.read("history.sqlite.origin.json"))
+                         .object()["state"]
+                         .toString(),
+                     QString("prepared"));
+            QCOMPARE(store.exists("history.sqlite"), published);
+        }
+        {
+            auto state = dukto::HistoryState::open(root.path(), "history.sqlite");
+            QCOMPARE(dukto::hashFile(state->path()), hash);
+            dukto::PrivateStore store(root.filePath("history"));
+            QCOMPARE(QJsonDocument::fromJson(store.read("history.sqlite.origin.json"))
+                         .object()["state"]
+                         .toString(),
+                     QString("complete"));
+        }
+        QCOMPARE(dukto::hashFile(source), hash);
+    }
     // 日期：2026-11-07；超32位逻辑长度、七类计数、正文保密和缓冲归还均用真实文件独立核验。
     void logicalLengthsAndCategories() {
         QTemporaryDir root;
@@ -541,6 +745,8 @@ class StateStorageTests final : public QObject {
 // 日期：2026-11-07；仅测试子进程提供真实热日志崩溃夹具，生产CLI没有测试开关。
 int main(int argc, char **argv) {
     QCoreApplication app(argc, argv);
+    if (app.arguments().value(1) == "--crash-history-migration")
+        crashHistoryMigration(app.arguments().value(2), app.arguments().value(3) == "published");
     if (app.arguments().value(1) == "--try-sqlite-write")
         return attemptSqliteWrite(app.arguments().value(2));
     if (app.arguments().value(1) == "--leave-journal") {

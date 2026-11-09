@@ -11,6 +11,8 @@
 #include <QRegularExpression>
 #include <QThread>
 #include <QUuid>
+#include <algorithm>
+#include <iterator>
 #include <limits>
 #ifdef Q_OS_WIN
 #ifndef NOMINMAX
@@ -420,6 +422,56 @@ bool PrivateStore::maintenance() const {
 // 日期：2026-11-04；大数据库只核对原生权限、文件类型及固定对象，避免整体读取。
 qint64 PrivateStore::validateFile(const QString &name) const {
     return validateFileObject(name, false);
+}
+
+// 日期：2026-11-09；普通私有单链接对象才可作为SQLite主库；返回实际属性供已打开SQLite句柄交叉核对。
+NativeDirectoryEntry PrivateStore::validateSqlitePath(const QString &name) const {
+    verify();
+    const auto target = path(name);
+    NativeDirectoryEntry entry;
+    entry.name = name;
+    entry.kind = NativeDirectoryEntry::Kind::Regular;
+#ifdef Q_OS_WIN
+    SourceFile source(target, SourceFile::OpenPolicy::PrivateState);
+    verifyFile(source.device());
+    const auto handle = reinterpret_cast<HANDLE>(_get_osfhandle(source.device().handle()));
+    FILE_ID_INFO identity{};
+    FILE_STANDARD_INFO standard{};
+    if (!GetFileInformationByHandleEx(handle, FileIdInfo, &identity, sizeof(identity)) ||
+        !GetFileInformationByHandleEx(handle, FileStandardInfo, &standard, sizeof(standard)) ||
+        standard.Directory || standard.NumberOfLinks != 1 || standard.EndOfFile.QuadPart < 0 ||
+        standard.AllocationSize.QuadPart < 0)
+        throw Error(ExitCode::Permission, QStringLiteral("SQLite路径不是私有单链接普通文件"),
+                    "identity");
+    entry.identityPlatform = 2;
+    entry.volume = identity.VolumeSerialNumber;
+    std::copy(std::begin(identity.FileId.Identifier), std::end(identity.FileId.Identifier),
+              entry.identity.begin());
+    entry.links = standard.NumberOfLinks;
+    entry.bytes = standard.EndOfFile.QuadPart;
+    entry.allocatedBytes = standard.AllocationSize.QuadPart;
+    source.verifyObject();
+#else
+    Q_UNUSED(target)
+    const auto info = root_->fileInformation(name);
+    if (!S_ISREG(info.st_mode) || info.st_uid != ::geteuid() || (info.st_mode & 0077) ||
+        info.st_nlink != 1 || info.st_size < 0 || info.st_blocks < 0 ||
+        quint64(info.st_blocks) > quint64(std::numeric_limits<qint64>::max() / 512))
+        throw Error(ExitCode::Permission, QStringLiteral("SQLite路径不是私有单链接普通文件"),
+                    "identity");
+    entry.identityPlatform = 1;
+    entry.volume = quint64(info.st_dev);
+    auto inode = quint64(info.st_ino);
+    for (int index = 0; index < 8; ++index) {
+        entry.identity[size_t(index)] = static_cast<unsigned char>(inode & 255);
+        inode >>= 8;
+    }
+    entry.links = quint64(info.st_nlink);
+    entry.bytes = info.st_size;
+    entry.allocatedBytes = qint64(info.st_blocks) * 512;
+#endif
+    verify();
+    return entry;
 }
 
 // 日期：2026-11-07；仅独占维护接受规范SQLite回滚日志，不能通过此接口放宽数据库、凭据或WAL。

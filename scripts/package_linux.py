@@ -23,6 +23,35 @@ def checked(command):
     return result.stdout
 
 
+# 日期：2026-11-09；兼容Debian合并usr后的路径别名，只接受dpkg精确登记且解析为同一真实文件的来源。
+def debian_owner(source):
+    source = Path(source).resolve(strict=True)
+    candidates = [source]
+    for directory in ('lib', 'lib32', 'lib64', 'libx32', 'bin', 'sbin'):
+        prefix = Path('/usr') / directory
+        if source.is_relative_to(prefix):
+            candidates.append(Path('/') / directory / source.relative_to(prefix))
+    for candidate in candidates:
+        if not candidate.exists() or candidate.resolve(strict=True) != source:
+            continue
+        result = subprocess.run(['dpkg-query', '-S', str(candidate)], capture_output=True,
+                                encoding='utf-8', errors='replace', timeout=180)
+        if result.returncode:
+            continue
+        owners = set()
+        for line in result.stdout.splitlines():
+            if ': ' not in line:
+                continue
+            package, registered = line.rsplit(': ', 1)
+            if registered == str(candidate) and re.fullmatch(r'[a-z0-9][a-z0-9+.-]*(?::[a-z0-9][a-z0-9-]*)?', package):
+                owners.add(package)
+        if len(owners) == 1:
+            return owners.pop(), str(candidate)
+        if owners:
+            raise RuntimeError(('Ambiguous exact dependency ownership', str(candidate), sorted(owners)))
+    raise RuntimeError(('No exact Debian package owner for deployed dependency', str(source)))
+
+
 # 日期：2026-11-05；文件复制绑定真实来源与摘要；同名 ELF 不同内容明确拒绝，不靠覆盖先后选择版本。
 def copy_file(source, target, stage, mapping):
     source = source.resolve(strict=True)
@@ -180,7 +209,7 @@ def main():
     for relative, source in sorted(mapping.items()):
         if source.is_relative_to(build):
             continue
-        package = checked(["dpkg-query", "-S", source]).splitlines()[0].rsplit(": ", 1)[0]
+        package, registered_path = debian_owner(source)
         assert ", " not in package, (source, package)
         if package not in packages:
             fields = checked(["dpkg-query", "-W", "-f=${Package}\\t${Version}\\t${source:Package}\\t${source:Version}\\n", package]).strip().split("\t")
@@ -191,7 +220,8 @@ def main():
             destination = stage / "licenses" / fields[0] / "copyright"
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(copyright_file, destination)
-        provenance.append({"path": relative, "sourcePath": str(source), "package": package, "sha256": sha256(stage / relative)})
+        provenance.append({"path": relative, "sourcePath": str(source), "package": package,
+                           "packageRecordedPath": registered_path, "sha256": sha256(stage / relative)})
     shutil.copyfile(root / "LICENSE", stage / "licenses/DuktoNext-GPL-3.0-or-later.txt")
     (stage / "dependency-packages.json").write_text(json.dumps(packages, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     sources = source_archive(root, stage / "DuktoNext-corresponding-source.zip")
