@@ -1,72 +1,14 @@
 # Dukto 功能复现与跨平台传输项目
 
-更新日期：2026-11-08
+更新日期：2026-11-09
 
-项目以 `Dukto/` 内的 Dukto R6 为功能参考，开发 Windows、macOS、Linux 共用内核的桌面应用和独立命令行程序，增加服务器上传/下载、多线程提速及可靠恢复能力。
+项目以 `Dukto/` 内的Dukto R6为只读功能参考，使用C++14和Qt5开发Windows、macOS、Linux共用内核的GUI及独立CLI，包含局域网发现、服务器上传/下载、多通道传输及恢复功能。
 
-R130精确3094bcf6已公开；双Windows各35核心、25条账本和11条面板已验；四原生核心4/4、完整协议0/4，双Mac依赖包2/2。独立Ubuntu报告专项4条通过。R129完整协议已验2/4，R128已验4/4；双Mac R130预览已公开并匿名下载核对。生产写前额度、自动GC与完整项目继续。 [本轮证据](docs/ci-verification-20261108-r130.json)。
+当前已验程序统一为R153，源码 `3d5a0fead47e31a28cd3994a549d25d23c256f55`，Windows含DLL、Ubuntu24.04及更新版本、macOS Apple Silicon/Intel分别存放。下载与摘要以[当前已验程序](dist/当前已验程序-20261109.md)为唯一入口，详细原件见[当前验证索引](docs/current-validation.json)。四原生完整核心各35/35通过；干净Ubuntu24.04无系统Qt/开发工具的X11/Wayland验包通过。最新完整协议结果单独记录。
 
-R128修正两项状态目录协议夹具，双Windows真实CLI专项均通过，原失败与首候选ACL失败保留；生产C++保持R127，四平台专项和完整协议等待精确提交收验。Mac含依赖预览为R127，历史迁移、实际总预算和自动GC继续。 [本轮证据](docs/ci-verification-20261108-r128.json)。
+默认局域网发现已实现；相同广播域、相同发现端口且防火墙允许时，启动软件会广播和回应设备信息。真实物理LAN/跨平台3×3互通仍待现场证据。生产统一总配额、历史合计预算、完整自动GC、最终24小时、Windows/Mac干净系统和正式签名等继续，整体未完成。
 
-R127精确6c6dc363GUI与CLI同目录状态接入已验，四原生各34核心/33份Qt XML、面板各8项通过；双Mac含Qt5/OpenSSL预览、迁移业务与四截图已验并公开下载。独立Ubuntu8项通过。R126原完整协议两项旧夹具假设已失败，原件保留；修正独立验收。普通历史迁移、全应用预算和自动GC未完成。 [Mac下载](docs/macOS独立预览包.md)。
-
-R127接入GUI服务器页/空闲监听和资料诊断，与CLI指向同一实际目录时共用持久域。双Windows各34核心、8项面板测试及真实GUI进程恢复/诊断通过；原生CI和独立Ubuntu继续。Mac含依赖预览仍R125，普通历史迁移和实际总预算/自动GC未完成。 [本轮证据](docs/ci-verification-20261108-r127.json)。
-
-R126精确d661fbaf四原生CLI状态会话各13项通过，四平台各34完整核心/33份Qt XML已验；双Mac GUI/CLI编译归档已核验，双Windows真实服务和1/2/4/8/16通道双向传输通过。独立Ubuntu13项通过。含依赖Mac下载仍R125；GUI映射、历史迁移、实际总预算与自动GC继续。 [本轮证据](docs/ci-verification-20261108-r126.json)。
-
-R126将CLI服务/客户端状态根接入持久协调会话，双Windows各34完整测试及13项生命周期专项通过。四原生与独立Ubuntu继续验收，Mac可下载预览仍R125；GUI根映射、历史迁移和实际总预算/自动GC未完成。 [本轮证据](docs/ci-verification-20261108-r126.json)。
-
-R125精确1b99cd63四原生持久配置/真实CLI各16条通过，完整核心4/4各33项；双Mac GUI/CLI含依赖包、迁移运行及截图已验，下载更新R125。独立Ubuntu16条通过。生产根/历史迁移、实际总预算和自动GC继续。 [Mac下载](docs/macOS独立预览包.md)。
-
-R125新增持久额度配置及state budget/root CLI，本机及四平台验证、双Mac含依赖包已按上文收验。生产总预算、迁移与自动GC未完成。 [本轮证据](docs/ci-verification-20261108-r125.json)。
-
-以下为历次验证记录，状态按当时观察保留；当前下载使用上方R125入口。
-
-R124精确424c78b7四原生各三轮12场景通过，完整核心已验4/4；两Mac旧版对照也各12条通过，历史间歇失败未复现、根因未证明。双Mac GUI/CLI含依赖包及迁移运行已验，下载更新R124。独立Ubuntu12条通过；生产总预算、自动GC及完整交付继续。 [本轮原件](docs/ci-verification-20261108-r124.json)。
-
-R123精确d7895420四原生目录关联各12条通过，完整核心已验4/4；双Mac GUI/独立CLI和含Qt5/OpenSSL包、迁移及五项业务和四截图已验，下载更新至R123。独立Ubuntu12条通过。R122 ARM完整协议保留暂停后超时失败。生产总预算、自动GC及完整交付继续。 [Mac下载](docs/macOS独立预览包.md)。
-
-R123持久预算域/多根关联底层和双Windows各32核心/31份Qt XML、12条专项通过；R122独立Ubuntu23条通过。新四原生/双Mac源码验证继续，当前可下载含依赖包为已验R122。生产全根/SQLite/正文预算、自动GC与完整交付仍未完成。 [本轮证据](docs/ci-verification-20261108-r123.json)。
-
-R122精确15bd1d0c的四原生账本专项各23条通过；完整核心已验4/4。双Mac GUI/独立CLI及含Qt5/OpenSSL包、迁移运行、五项业务与四截图已验，下载已更新。独立Ubuntu新目录23条账本专项通过。R121四原生完整协议全部通过。生产总预算、自动GC与完整交付仍未完成。 [Mac下载](docs/macOS独立预览包.md)。
-
-R122持久预算底层及双Windows各31完整核心/30份Qt XML、账本23行专项已验；四原生底层和完整核心已验，生产预算接入继续。双Mac可用含依赖包已更新R122；R121完整协议终态已验4/4。跨状态根总预算、自动GC和完整交付未完成。 [本轮证据](docs/ci-verification-20261108-r122.json)。
-
-R121应用源d924ba5c、CI源30169754的四原生状态专项和各30完整核心已验；双Mac GUI/独立CLI、含Qt5/OpenSSL包、迁移运行及四张截图已验，下载已更新。完整协议终态已验4/4；独立Ubuntu干净构建及15条状态专项已验。R120四原生完整协议全部终态通过。跨进程总预算、自动GC及完整交付仍未完成。 [Mac下载](docs/macOS独立预览包.md)。
-
-R121状态根原生观察已实现：直接普通文件可与SQLite句柄按原生身份关联，CLI分别报告逻辑长度和系统分配量；双Windows各30完整核心/29份Qt XML通过，计量专项各13通过/1权限跳过，新增身份/异常恢复/SQLite锁三方法全部通过。双Mac含依赖预览已更新到R121；所有状态根归属、跨进程总预算及自动GC继续。 [本轮证据](docs/ci-verification-20261108-r121.json)。
-
-R120精确c9872f72四原生各30完整核心/29份Qt XML、新文件专项各11条已验；Apple Silicon/Intel含Qt5/OpenSSL的GUI及独立CLI预览、迁移/传输和四张截图全部核验。环境修正c19aa40a的专项另按原件收验（当前4/4），完整协议终态已验4/4。总预算/跨进程账本、自动GC及完整项目仍未完成。 [Mac下载](docs/macOS独立预览包.md)、[接口](docs/SQLite原生占用观察.md)、[证据](docs/ci-verification-20261108-r120.json)。
-
-R119最终夹具d2c8c4ff已公开：三个POSIX各29核心/28份Qt XML及VFS10条通过，Windows原28/29失败保留，新计量11条及20轮专项通过；双Mac GUI/CLI编译与含Qt5/OpenSSL预览、迁移/传输和四截图全部核验。[Mac下载](docs/macOS独立预览包.md)、[本轮回执](docs/ci-verification-20261107-r119.json)。完整协议、总配额/自动GC与整体交付继续。
-
-R119固定SQLite 3.53.4与Qt完整驱动，每连接VFS支持写入前策略；双Windows各29完整CTest/28份XML通过，新专项各10条全通过。原件依赖与许可进入源码包；首次259份输入已公开，Windows自动换行导致摘要拒绝的原失败保留；检出修正后260份输入重新原生验证。实际总预算/自动GC仍待接入。[设计](docs/SQLite运行时与写入拦截.md)、[证据](docs/ci-verification-20261107-r119.json)。
-
-R118精确e84f34f已公开，状态占用查询及双Windows各28完整CTest/27份XML通过。双Mac GUI/独立CLI、含Qt5/OpenSSL预览、迁移运行及四截图已验；ubuntu-22.04、macos-15、macos-15-intel、windows-2022各28核心已验，完整协议继续。总配额/自动GC和完整项目继续按计划实施。[Mac下载](docs/macOS独立预览包.md)、[用法](docs/状态占用查询.md)、[证据](docs/ci-verification-20261107-r118.json)。
-
-R117精确`a46454d0ece59d178f1763c56f60cc61298e3154`已公开；Windows原生日志恢复通过双工具链各27核心及云端两轮各29条，双Mac含依赖GUI/CLI预览、迁移运行及截图已验。[Mac下载](docs/macOS独立预览包.md)、[本轮证据](docs/ci-verification-20261107-r117.json)。完整项目继续按计划验收。
-
-R116精确`0a60da9120b6be49d1768fa500d042ff394ac9f7`已公开，新增上传扫描中断后的七天保留/预览/按请求清理；缓存额度耗尽不遗留Qt连接。双Windows各24条通过/1符号链接权限跳过，独立Ubuntu25条通过；双Mac GUI/独立CLI已编译并验归档。[原生CI](https://github.com/29583855/dukto-next/actions/runs/42375666807)继续收验；双架构[含依赖包](https://github.com/29583855/dukto-next/actions/runs/42375918838)、迁移运行及四张截图已验，[下载](docs/macOS独立预览包.md)。[清理规则](docs/decisions/0029-未发布上传源扫描清理.md)、[验证索引](docs/ci-verification-20261107-r116.json)。
-
-R114精确`d922dc4`已上传，修复私有配置原子换代与读取竞争；双Windows核心/身份、Ubuntu8000次读取及四项拒绝反例通过，双Mac GUI/CLI已编译并验归档。完整原生CI与含依赖包继续验收。[设计与证据](docs/decisions/0028-私有配置原子换代的有界重读.md)。
-
-R113四平台各26个CTest及目录各59条已验；双Mac含Qt5/OpenSSL预览、迁移运行及截图已验并可下载，四平台完整协议已验，Windows51/51、Ubuntu/Apple Silicon/Intel各47/47。[下载](docs/macOS独立预览包.md)。
-
-R112只修正配置变更故障测试预期，双Windows共24个真实故障用例通过，双Mac专项48个真实故障用例已通过；[原失败与修正边界](docs/decisions/0026-配置变更竞态与故障测试预期.md)。
-
-R111精确`dfe245b`已公开，四平台C++14 GUI/CLI编译、各26个CTest及目录清理各49条通过；skip目录清理与最终处置日志原子协调，删除后中断可恢复。双Mac编译归档及含Qt5/OpenSSL预览、系统PATH迁移已验；完整协议Ubuntu通过，Apple Silicon 46/47、下载撤权错误断言原失败保留，Intel 45/47（凭据轮换与会话恢复失败），Windows完整协议51/51且终态success。[本轮进度](开发计划与进度.md)、[Mac下载及依赖范围](docs/macOS独立预览包.md)。
-
-当前已建立 C++14 共用核心、Qt Quick 2 桌面端和独立 CLI。Windows 已验证与原版文件/目录/文本双向互传、超过 4 GiB、10 万文件、100 轮接收，以及首次说明/设置/截图/单实例和有界头像模块。完整原版交互、服务器、多线程、恢复和跨平台验收继续按计划推进。原版目录保留用于对照。
-
-公开仓库为[29583855/dukto-next](https://github.com/29583855/dukto-next)。R110精确`a29960a`已上传，Windows/Ubuntu/Apple Silicon/Intel以C++14编译GUI和独立CLI，各26个CTest与目录专项各45条数据行通过；双Mac编译归档、含Qt5/OpenSSL部署包及系统PATH迁移报告已验，[下载入口](docs/macOS独立预览包.md)。新增客户端/服务器未发布空目录临时项维护，见[清理范围](docs/过期任务临时文件清理.md)。四平台完整协议终态success，双Mac精确Darwin端口独占XFAIL与已有头像负例警告保留。R109精确bea5d81四平台完整job已终态success、各47协议项原件通过；完整项目/发布按[计划](开发计划与进度.md)继续验收。
-
-新增[b9d9b78上传发送端确认](docs/decisions/0022-上传发送端持久处置与证据恢复.md)已通过本机专项；原CI终态failure保留：四平台临时库glob误判，另Windows并发隔离空闲线程5/基线3的原因未确认。旧运行不再视为进行中，完整历史见主计划v0.64。
-
-新增[3fbec42覆盖占用修正](docs/decisions/0023-Windows覆盖共享占用与同任务恢复.md)已包含于当前Mac包。其完整四runner终态failure：各21核心通过，协议154/155，Windows改共享根时私有配置替换失败；Ubuntu/双Mac各38、Alpine另38协议通过。新[私有状态修复](docs/decisions/0024-私有状态原子替换与读者竞争.md)按7772151单独复验。
-
-R104已增加状态目录共享使用/独占维护保护，四原生核心与双Windows多进程子项已验，完整协议继续；过期回收及全局配额仍待实现。R102的188协议及R103的192协议四平台完整终态success均已严格收验。详见[状态维护边界](docs/状态目录维护保护.md)和[本轮回执](docs/validation/2026-11-07/state-use-r104-qualified/receipt.json)。
-
-R105只修正逐项查询测试对永久占用锁的假设，双Windows定向复验通过；R104 Ubuntu完整协议原失败及独立Ubuntu上传超时均保留，新原生验证继续。[修正与证据](docs/ci-verification-20261107-r105.json)。
+R154只调整测试从业务结束后的空闲时刻开始计70秒，保持原资源和维护期限门槛；产品仍为R153。此前进度及失败原文保存于[历史README](docs/history/before-r155-20261109/README.md)，各时点记录不构成当前通过资格。
 
 ## 文档入口
 
