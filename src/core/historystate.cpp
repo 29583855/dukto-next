@@ -2,6 +2,7 @@
 #include "buffercredit.h"
 #include "error.h"
 #include "files.h"
+#include "historybudget.h"
 #include "sqlitecache.h"
 #include "sqliteruntime.h"
 #include "sqlitevfs.h"
@@ -246,6 +247,9 @@ std::shared_ptr<HistoryState> HistoryState::open(const QString &parent, const QS
         result->legacy_.reset(new Legacy(source, check));
     result->store_ = StateSession::root(parent, "history", true, PrivateStore::Use::Shared, check);
     auto &store = *result->store_;
+    result->budget_.reset(new HistoryBudget(result->store_, parent));
+    result->budget_->admit(name, result->legacy_ ? result->legacy_->info.logicalBytes : 0);
+    result->budget_->admit(name + ".origin.json", 65536);
     QLockFile initialization(QDir(store.directory()).filePath(name + ".migration.lock"));
     initialization.setStaleLockTime(0);
     if (!initialization.tryLock(5000))
@@ -331,6 +335,7 @@ QString HistoryState::path() const {
 
 // 日期：2026-11-09；SQLite原生观察与不跟随链接的私有路径属性相同才允许使用，POSIX不打开额外主库描述符。
 void HistoryState::validate(const QSqlDatabase &database) const {
+    budget_->check();
     const auto expected = store_->validateSqlitePath(name_);
     DuktoSqliteFileInfo observed{};
     if (!database.isOpen() ||
@@ -343,5 +348,9 @@ void HistoryState::validate(const QSqlDatabase &database) const {
         observed.links != 1)
         throw Error(ExitCode::Integrity, QStringLiteral("历史数据库连接与受保护路径不一致"),
                     "history-state");
+}
+// 日期：2026-11-09；策略寿命由Qt驱动覆盖全部派生文件，且持续保留同一历史根共享资格。
+std::shared_ptr<SqliteFilePolicy> HistoryState::policy() const {
+    return std::make_shared<HistoryBudget>(store_, QFileInfo(store_->directory()).absolutePath());
 }
 } // namespace dukto

@@ -23,6 +23,10 @@ class StateSession final : public std::enable_shared_from_this<StateSession> {
     static StateBudget::Limits defaults();
     // 日期：2026-11-08；仅查询该持久账本已登记对象，业务正文和SQLite尚未自动进入合计。
     StateBudget::Usage usage();
+    // 日期：2026-11-09；核对业务根后返回固定域绑定，用于生产历史角色键，不隐式认领其他根。
+    StateDomain::Binding binding(const PrivateStore &store);
+    // 日期：2026-11-09；新账本句柄保留同一中央共享会话，调用方必须先取得成员根资格。
+    std::shared_ptr<StateBudget> budget(const PrivateStore &store);
     // 日期：2026-11-08；先关闭域的原生文件，再归还协调根共享占用；不删除或退款。
     ~StateSession();
 

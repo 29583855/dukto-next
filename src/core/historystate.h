@@ -6,6 +6,8 @@
 class QSqlDatabase;
 
 namespace dukto {
+class HistoryBudget;
+class SqliteFilePolicy;
 class HistoryState final {
   public:
     // 日期：2026-11-09；固定两种历史库迁入受保护共享根，原库保留并持续持有SQLite读事务。
@@ -19,12 +21,15 @@ class HistoryState final {
     QString path() const;
     // 日期：2026-11-09；开库后以SQLite实际持有的句柄交叉核验受保护路径，禁止路径换代接管连接。
     void validate(const QSqlDatabase &database) const;
+    // 日期：2026-11-09；新历史连接必须传入同域策略，主库、旁路和匿名临时文件共用历史总额。
+    std::shared_ptr<SqliteFilePolicy> policy() const;
 
   private:
     // 日期：2026-11-09；只由工厂初始化，迁移失败不会泄漏旧SQLite连接或源读锁。
     HistoryState();
     struct Legacy;
     std::shared_ptr<PrivateStore> store_;
+    std::shared_ptr<HistoryBudget> budget_;
     std::unique_ptr<Legacy> legacy_;
     QString name_;
 };

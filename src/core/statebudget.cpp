@@ -544,6 +544,76 @@ StateBudget::Record StateBudget::reserve(const Record &expected, qint64 maximumC
     return slot.record;
 }
 
+// 日期：2026-11-09；角色包络在独立短锁内持久增加，额度不足不改变旧槽或允许后续原生I/O。
+StateBudget::Record StateBudget::admitHighWater(const QByteArray &key, Category category,
+                                                qint64 maximumCharge) {
+    checkKey(key);
+    if (quint64(category) > 3 || maximumCharge < 0)
+        throw Error(ExitCode::Config, QStringLiteral("预算高水位参数无效"), "budget");
+    BufferCredit credit(65536);
+    BudgetFile::Lock lock(file_, check_, timeoutMs_);
+    const auto header = load();
+    int selected = -1;
+    QByteArray previous;
+    for (int index = 0; index < SlotCount; ++index) {
+        const auto raw = file_.read(SlotOffset + qint64(index) * SlotBytes, SlotBytes);
+        const auto slot = Slot::decode(raw, index);
+        if ((slot.phase == 1 || slot.phase == 2) && slot.record.key == key) {
+            if (slot.record.category != category || slot.record.pending)
+                throw Error(ExitCode::Integrity, QStringLiteral("预算高水位角色存在冲突"),
+                            "budget-stale");
+            if (slot.record.committed >= maximumCharge)
+                return slot.record;
+            selected = index;
+            previous = raw;
+            break;
+        }
+        if ((slot.phase == 0 || slot.phase == 3) && selected < 0) {
+            selected = index;
+            previous = raw;
+        }
+    }
+    if (selected < 0)
+        throw Error(ExitCode::Disk, QStringLiteral("预算固定角色槽已满"), "budget-slots");
+    const auto old = Slot::decode(previous, selected);
+    Slot slot = old;
+    if (old.phase == 1) {
+        if (slot.record.revision == std::numeric_limits<quint64>::max())
+            invalid();
+        ++slot.record.revision;
+        slot.record.committed = maximumCharge;
+    } else {
+        slot.phase = 1;
+        slot.record = {selected, key,      QUuid::createUuid(), {}, {},
+                       1,        category, maximumCharge,       0,  false};
+    }
+    const auto after = adjusted(header, old, slot, true);
+    commit(header, after, selected, previous, slot.encode());
+    return slot.record;
+}
+
+// 日期：2026-11-09；扩展保持同一执行者与操作UUID，先持久增加预留；旧通知不能结算新修订。
+StateBudget::Record StateBudget::extend(const Record &reservation, qint64 maximumCharge) {
+    if (!reservation.pending || reservation.actor != actor_ || maximumCharge < 0)
+        throw Error(ExitCode::Config, QStringLiteral("预算预留扩展参数无效"), "budget");
+    BufferCredit credit(65536);
+    BudgetFile::Lock lock(file_, check_, timeoutMs_);
+    const auto header = load();
+    const auto old = checked(reservation, header);
+    if (old.phase != 2)
+        throw Error(ExitCode::Integrity, QStringLiteral("预算扩展不属于未决操作"), "budget-stale");
+    if (maximumCharge <= old.record.committed + old.record.reserved)
+        return old.record;
+    auto slot = old;
+    if (slot.record.revision == std::numeric_limits<quint64>::max())
+        invalid();
+    ++slot.record.revision;
+    slot.record.reserved = maximumCharge - slot.record.committed;
+    const auto after = adjusted(header, old, slot, true);
+    commit(header, after, reservation.slot, old.encode(), slot.encode());
+    return slot.record;
+}
+
 // 日期：2026-11-08；完成通知幂等只接受最近一次确切操作；真实超预期占用不丢弃，后续准入受透支约束。
 StateBudget::Record StateBudget::settle(const Record &reservation, qint64 actualCharge) {
     if (!reservation.pending || reservation.operation.isNull() || actualCharge < 0 ||

@@ -18,7 +18,7 @@ Catalog::Catalog(const QString &path)
         throw Error(ExitCode::Disk, QStringLiteral("无法创建接收明细目录"), "catalog");
     // 日期：2026-11-09；固定接收明细迁入私有历史根，整个连接寿命保留共享资格和旧库读锁。
     state_ = HistoryState::catalog(path);
-    database_ = addSqliteDatabase(connection_);
+    database_ = addSqliteDatabase(connection_, state_ ? state_->policy() : nullptr);
     try {
         database_.setDatabaseName(state_ ? state_->path() : QFileInfo(path).absoluteFilePath());
         database_.setConnectOptions("QSQLITE_BUSY_TIMEOUT=2000");

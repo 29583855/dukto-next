@@ -38,7 +38,7 @@ struct Controller::HistoryConnection final {
         // 日期：2026-11-09；历史写入只使用私有根，迁移保留旧文件并在整个连接寿命阻止旧库提交。
         state = dukto::HistoryState::open(directory, "history.sqlite");
         parent = directory;
-        database = dukto::addSqliteDatabase(name);
+        database = dukto::addSqliteDatabase(name, state->policy());
         try {
             database.setDatabaseName(state->path());
             if (!database.open())

@@ -101,6 +101,7 @@ add_library(dukto-core
     src/core/statebudget.cpp
     src/core/statedomain.cpp
     src/core/stateaccounting.cpp
+    src/core/historybudget.cpp
     src/core/statesession.cpp
     src/core/statecleanup.cpp
     src/core/identity.cpp

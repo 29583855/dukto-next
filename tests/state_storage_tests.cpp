@@ -4,10 +4,12 @@
 #include "core/buffercredit.h"
 #include "core/error.h"
 #include "core/files.h"
+#include "core/historybudget.h"
 #include "core/historystate.h"
 #include "core/privatestore.h"
 #include "core/sqliteruntime.h"
 #include "core/sqlitevfs.h"
+#include "core/statesession.h"
 #include <QCoreApplication>
 #include <QDir>
 #include <QFile>
@@ -18,6 +20,7 @@
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QTemporaryDir>
+#include <QTextStream>
 #include <QUuid>
 #include <QtTest>
 #include <cstdlib>
@@ -52,6 +55,81 @@ struct Connection {
         QSqlDatabase::removeDatabase(name);
     }
 };
+
+struct HistoryConnection {
+    std::shared_ptr<dukto::HistoryState> state;
+    QString name = QUuid::createUuid().toString();
+    QSqlDatabase database;
+    // 日期：2026-11-09；测试实际生产策略及固定驱动，不以单独VFS mock代替SQL回滚。
+    HistoryConnection(const QString &parent, const QString &file)
+        : state(dukto::HistoryState::open(parent, file)),
+          database(dukto::addSqliteDatabase(name, state->policy())) {
+        try {
+            database.setDatabaseName(state->path());
+            if (!database.open())
+                throw dukto::Error(dukto::ExitCode::Disk, "history fixture open", "test");
+            state->validate(database);
+        } catch (...) {
+            database.close();
+            database = QSqlDatabase();
+            QSqlDatabase::removeDatabase(name);
+            throw;
+        }
+    }
+    // 日期：2026-11-09；断言提前返回也先关闭全部数据库文件，再归还状态共享资格。
+    ~HistoryConnection() {
+        database.close();
+        database = QSqlDatabase();
+        QSqlDatabase::removeDatabase(name);
+    }
+};
+
+// 日期：2026-11-09；小额度测试使用相同持久配置接口，保留真实默认256MiB生产值。
+void historyLimit(const QString &parent, qint64 bytes) {
+    {
+        auto root = dukto::StateSession::root(parent, "history", true);
+    }
+    dukto::PrivateStore coordinator(QDir(parent).filePath("budget"), false,
+                                    dukto::PrivateStore::Use::Maintenance);
+    dukto::StateDomain domain(coordinator);
+    auto usage = domain.usage();
+    usage.limits.categories[0] = bytes;
+    domain.configure(usage.revision, usage.limits);
+}
+
+// 日期：2026-11-09；子进程在真实持久域竞争不同库最后一份额度；退出不删除高水位记录。
+int historyAdmission(const QStringList &arguments) {
+    try {
+        HistoryConnection connection(arguments[2], arguments[3]);
+        QTextStream(stdout) << "ready" << Qt::endl;
+        std::getchar();
+        auto policy = std::dynamic_pointer_cast<dukto::HistoryBudget>(connection.state->policy());
+        policy->admit(arguments[3], 512 * 1024);
+        return 10;
+    } catch (const dukto::Error &) {
+        return 11;
+    }
+}
+
+// 日期：2026-11-09；真实匿名SQLite文件写入后直接退出，不执行析构，以验证遗留预留不会被伪退款。
+int crashHistoryTemporary(const QString &parent) {
+    auto policy = std::make_shared<dukto::HistoryBudget>(
+        dukto::StateSession::root(parent, "history"), parent);
+    dukto::SqliteVfs vfs(policy);
+    auto native = sqlite3_vfs_find(vfs.name().constData());
+    if (!native)
+        return 91;
+    std::unique_ptr<unsigned char[]> storage(new unsigned char[size_t(native->szOsFile)]{});
+    auto file = reinterpret_cast<sqlite3_file *>(storage.get());
+    const auto flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_TEMP_DB |
+                       SQLITE_OPEN_DELETEONCLOSE;
+    if (native->xOpen(native, nullptr, file, flags, nullptr) != SQLITE_OK)
+        return 92;
+    const QByteArray bytes(131072, 'c');
+    if (file->pMethods->xWrite(file, bytes.constData(), bytes.size(), 0) != SQLITE_OK)
+        return 93;
+    std::_Exit(73);
+}
 
 // 日期：2026-11-08；真实子进程只测试SQLite锁，故意不取得应用状态锁，避免把维护拒绝误当数据库互斥。
 int attemptSqliteWrite(const QString &path) {
@@ -132,6 +210,148 @@ bool invoke(QProcess &process, const QStringList &arguments) {
 class StateStorageTests final : public QObject {
     Q_OBJECT
   private slots:
+    // 日期：2026-11-09；两库交替增长触达同一合计额度，SQLITE_FULL后原记录和完整性保持。
+    void protectedHistorySharedQuota() {
+        QTemporaryDir root;
+        historyLimit(root.path(), 1024 * 1024);
+        HistoryConnection first(root.path(), "history.sqlite");
+        HistoryConnection second(root.path(), "receipts.sqlite");
+        QSqlQuery one(first.database), two(second.database);
+        QVERIFY(one.exec("CREATE TABLE payload(value BLOB)"));
+        QVERIFY(two.exec("CREATE TABLE payload(value BLOB)"));
+        int counts[2]{};
+        bool rejected = false;
+        for (int round = 0; round < 64; ++round) {
+            auto &query = round % 2 ? two : one;
+            if (!query.exec("INSERT INTO payload VALUES(zeroblob(32768))")) {
+                rejected = true;
+                break;
+            }
+            ++counts[round % 2];
+        }
+        QVERIFY(rejected);
+        QVERIFY(counts[0] > 0 && counts[1] > 0);
+        for (int index = 0; index < 2; ++index) {
+            auto &query = index ? two : one;
+            QVERIFY(query.exec("SELECT count(*) FROM payload"));
+            QVERIFY(query.next());
+            QCOMPARE(query.value(0).toInt(), counts[index]);
+            query.finish();
+            QVERIFY(query.exec("PRAGMA integrity_check"));
+            QVERIFY(query.next());
+            QCOMPARE(query.value(0).toString(), QString("ok"));
+            query.finish();
+        }
+        const auto usage = dukto::StateSession::open(root.path())->usage();
+        QVERIFY(usage.committed[0] <= 1024 * 1024);
+        QVERIFY(!usage.overdrawn);
+        QCOMPARE(usage.reserved[0], qint64(0));
+    }
+
+    // 日期：2026-11-09；真正两个进程竞争最后增长额度，只能一方成功，重开仍保留同一份合计。
+    void protectedHistoryProcessesCompete() {
+        QTemporaryDir root;
+        historyLimit(root.path(), 1024 * 1024);
+        {
+            HistoryConnection first(root.path(), "history.sqlite"),
+                second(root.path(), "receipts.sqlite");
+        }
+        QProcess first, second;
+        const auto start = [&](QProcess &process, const QString &name) {
+            // 日期：2026-11-09；两个进程均完成实际开库才放行竞争，避免串行初始化假冒并发。
+            process.start(QCoreApplication::applicationFilePath(),
+                          {"--history-admit", root.path(), name});
+            if (!process.waitForStarted(10000))
+                return false;
+            QElapsedTimer timer;
+            timer.start();
+            while (!process.canReadLine() && timer.elapsed() < 30000 &&
+                   process.state() != QProcess::NotRunning)
+                process.waitForReadyRead(100);
+            return process.readLine().trimmed() == "ready";
+        };
+        QVERIFY(start(first, "history.sqlite"));
+        QVERIFY(start(second, "receipts.sqlite"));
+        first.write("x");
+        second.write("x");
+        QVERIFY(first.waitForFinished(30000));
+        QVERIFY(second.waitForFinished(30000));
+        QVERIFY((first.exitCode() == 10 && second.exitCode() == 11) ||
+                (first.exitCode() == 11 && second.exitCode() == 10));
+        const auto usage = dukto::StateSession::open(root.path())->usage();
+        QCOMPARE(usage.committed[0], qint64(832 * 1024));
+        QCOMPARE(usage.reserved[0], qint64(0));
+        QVERIFY(!usage.overdrawn);
+    }
+
+    // 日期：2026-11-09；真实WAL/shm及匿名排序溢写进入合计，正常关闭后的临时预留可重复使用。
+    void protectedHistoryWalAndTemporary() {
+        QTemporaryDir root;
+        historyLimit(root.path(), 4 * 1024 * 1024);
+        HistoryConnection connection(root.path(), "history.sqlite");
+        auto handle = dukto::sqliteHandle(connection.database);
+        QSqlQuery query(connection.database);
+        QVERIFY(query.exec("PRAGMA journal_mode=WAL"));
+        QVERIFY(query.next());
+        QCOMPARE(query.value(0).toString(), QString("wal"));
+        query.finish();
+        QVERIFY(query.exec("CREATE TABLE payload(value BLOB)"));
+        QVERIFY(query.exec("INSERT INTO payload VALUES(zeroblob(262144))"));
+        const auto walUsage = dukto::StateSession::open(root.path())->usage();
+        QVERIFY(walUsage.committed[0] >= 640 * 1024);
+        // 日期：2026-11-09；显式打开真正SQLite匿名文件，验证写入拦截/关闭退款，不依赖优化器是否溢写。
+        auto temporaryPolicy = std::make_shared<dukto::HistoryBudget>(
+            dukto::StateSession::root(root.path(), "history"), root.path());
+        dukto::SqliteVfs vfs(temporaryPolicy);
+        auto native = sqlite3_vfs_find(vfs.name().constData());
+        QVERIFY(native);
+        for (int round = 0; round < 40; ++round) {
+            std::unique_ptr<unsigned char[]> storage(new unsigned char[size_t(native->szOsFile)]{});
+            auto file = reinterpret_cast<sqlite3_file *>(storage.get());
+            const auto flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_TEMP_DB |
+                               SQLITE_OPEN_DELETEONCLOSE;
+            QCOMPARE(native->xOpen(native, nullptr, file, flags, nullptr), SQLITE_OK);
+            QByteArray block(131072, 't');
+            QCOMPARE(file->pMethods->xWrite(file, block.constData(), block.size(), 0), SQLITE_OK);
+            const auto during = dukto::StateSession::open(root.path())->usage();
+            QCOMPARE(during.reserved[0], qint64(block.size()));
+            QCOMPARE(file->pMethods->xClose(file), SQLITE_OK);
+            temporaryPolicy->check();
+            const auto after = dukto::StateSession::open(root.path())->usage();
+            QCOMPARE(after.reserved[0], qint64(0));
+        }
+        QCOMPARE(sqlite3_errcode(handle), SQLITE_OK);
+    }
+
+    // 日期：2026-11-09；进程消失不等于额度可释放；关闭成功的后续临时对象不能退款其他进程的遗留预留。
+    void protectedHistoryCrashRetainsTemporary() {
+        QTemporaryDir root;
+        historyLimit(root.path(), 4 * 1024 * 1024);
+        {
+            HistoryConnection connection(root.path(), "history.sqlite");
+        }
+        QProcess child;
+        child.start(QCoreApplication::applicationFilePath(), {"--history-temp-crash", root.path()});
+        QVERIFY(child.waitForFinished(30000));
+        QCOMPARE(child.exitStatus(), QProcess::NormalExit);
+        QCOMPARE(child.exitCode(), 73);
+        auto session = dukto::StateSession::open(root.path());
+        QCOMPARE(session->usage().reserved[0], qint64(131072));
+        auto policy = std::make_shared<dukto::HistoryBudget>(
+            dukto::StateSession::root(root.path(), "history"), root.path());
+        dukto::SqliteVfs vfs(policy);
+        auto native = sqlite3_vfs_find(vfs.name().constData());
+        QVERIFY(native);
+        std::unique_ptr<unsigned char[]> storage(new unsigned char[size_t(native->szOsFile)]{});
+        auto file = reinterpret_cast<sqlite3_file *>(storage.get());
+        const auto flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_TEMP_DB |
+                           SQLITE_OPEN_DELETEONCLOSE;
+        QCOMPARE(native->xOpen(native, nullptr, file, flags, nullptr), SQLITE_OK);
+        QCOMPARE(session->usage().reserved[0], qint64(196608));
+        QCOMPARE(file->pMethods->xClose(file), SQLITE_OK);
+        QCOMPARE(session->usage().reserved[0], qint64(131072));
+    }
+
     // 日期：2026-11-09；两种生产历史库都保留原件，迁移后的修改不会回写旧文件；真实子进程验证旧库写锁。
     void protectedHistoryMigration_data() {
         QTest::addColumn<QString>("name");
@@ -791,6 +1011,10 @@ class StateStorageTests final : public QObject {
 // 日期：2026-11-07；仅测试子进程提供真实热日志崩溃夹具，生产CLI没有测试开关。
 int main(int argc, char **argv) {
     QCoreApplication app(argc, argv);
+    if (app.arguments().value(1) == "--history-admit")
+        return historyAdmission(app.arguments());
+    if (app.arguments().value(1) == "--history-temp-crash")
+        return crashHistoryTemporary(app.arguments().value(2));
     if (app.arguments().value(1) == "--crash-history-migration")
         crashHistoryMigration(app.arguments().value(2), app.arguments().value(3) == "published");
     if (app.arguments().value(1) == "--try-sqlite-write")

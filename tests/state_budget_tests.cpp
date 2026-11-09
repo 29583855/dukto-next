@@ -158,6 +158,32 @@ int child(const QStringList &arguments) {
 class StateBudgetTests final : public QObject {
     Q_OBJECT
   private slots:
+    // 日期：2026-11-09；未决临时预留扩展保持原操作，额度不足不改账本，旧修订不能退款。
+    void pendingExtensionAndRoleHighWater() {
+        QTemporaryDir root;
+        dukto::PrivateStore store(root.filePath("state"), true,
+                                  dukto::PrivateStore::Use::Maintenance);
+        Budget::initialize(store, Domain, limits(4096));
+        Budget first(store, Domain), second(store, Domain);
+        auto role = first.admitHighWater(key(1), Category::History, 1024);
+        QCOMPARE(second.admitHighWater(key(1), Category::History, 512).committed, qint64(1024));
+        QCOMPARE(second.admitHighWater(key(1), Category::History, 1536).committed, qint64(1536));
+        QVERIFY_EXCEPTION_THROWN(first.admitHighWater(key(1), Category::Body, 1024), dukto::Error);
+        auto record = first.enroll(key(2), Category::History, 0);
+        const auto original = first.reserve(record, 512);
+        record = first.extend(original, 2048);
+        QCOMPARE(record.operation, original.operation);
+        QCOMPARE(record.reserved, qint64(2048));
+        QVERIFY_EXCEPTION_THROWN(second.extend(record, 2500), dukto::Error);
+        QVERIFY_EXCEPTION_THROWN(first.extend(record, 4096), dukto::Error);
+        QCOMPARE(first.lookup(key(2)).revision, record.revision);
+        QVERIFY_EXCEPTION_THROWN(first.settle(original, 0), dukto::Error);
+        QCOMPARE(first.settle(record, 0).committed, qint64(0));
+        QCOMPARE(first.usage().totalCommitted, Budget::FileBytes + 1536);
+        QCOMPARE(first.usage().totalReserved, qint64(0));
+        Q_UNUSED(role)
+    }
+
     // 日期：2026-11-08；真实未决授信达到总额上限时，报告保留大于2^53的金额及最大修订文本，不写账本。
     void reportExactAmountsAndHeadroom() {
         QTemporaryDir root;

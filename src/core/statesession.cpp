@@ -205,4 +205,20 @@ std::shared_ptr<PrivateStore> StateSession::observe(const QString &parent, const
 StateBudget::Usage StateSession::usage() {
     return domain_->usage();
 }
+
+// 日期：2026-11-09；业务根原生身份及标记与中央登记同时核对，不从目录名推定域身份。
+StateDomain::Binding StateSession::binding(const PrivateStore &store) {
+    return domain_->root(store);
+}
+
+// 日期：2026-11-09；别名删除器先关闭账本，再归还捕获的会话及中央共享资格。
+std::shared_ptr<StateBudget> StateSession::budget(const PrivateStore &store) {
+    const auto member = binding(store);
+    return std::shared_ptr<StateBudget>(new StateBudget(*coordinator_, member.domain, check_),
+                                        [session = shared_from_this()](StateBudget *value) {
+                                            // 日期：2026-11-09；关闭账本期间中央根保持有效，未决预留不在析构时退款。
+                                            Q_UNUSED(session)
+                                            delete value;
+                                        });
+}
 } // namespace dukto

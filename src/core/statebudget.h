@@ -54,8 +54,12 @@ class StateBudget final {
     Record lookup(const QByteArray &key);
     // 日期：2026-11-08；独占维护登记已存在未知对象的占用高水位，真实超额照实记透支，重复/缩小不退款。
     Record accountExisting(const QByteArray &key, qint64 observedCharge);
+    // 日期：2026-11-09；固定业务角色在I/O前持久保留高水位包络；只增不减，跨进程共用同一份额度。
+    Record admitHighWater(const QByteArray &key, Category category, qint64 maximumCharge);
     // 日期：2026-11-08；以登记代数和修订协调同一对象；先持久化绝对占用上界才允许调用方I/O。
     Record reserve(const Record &expected, qint64 maximumCharge);
+    // 日期：2026-11-09；仅原执行者扩展同一未决临时对象；扩展先过额度，失败保持原预留和修订。
+    Record extend(const Record &reservation, qint64 maximumCharge);
     // 日期：2026-11-08；调用方须取得真实I/O后观察；部分失败不能退款，超预期真实占用记为透支并阻止新准入。
     Record settle(const Record &reservation, qint64 actualCharge);
     // 日期：2026-11-08；仅独占维护在已证明对象释放后注销；墓碑防止重复退款及槽复用ABA。
