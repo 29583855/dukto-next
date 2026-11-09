@@ -278,6 +278,52 @@ class StateStorageTests final : public QObject {
         QVERIFY(!QFileInfo::exists(root.filePath("history")));
     }
 
+    // 日期：2026-11-09；旧接收的活动锁、遗留锁或准入锁均保留并拒绝迁移，不能误把仍在写用户文件的任务标为中断。
+    void protectedHistoryRetainsOldReceiverLocks() {
+        QTemporaryDir root;
+        const auto source = root.filePath("receipts.sqlite");
+        {
+            Connection original(source);
+            QVERIFY(original.database.open());
+            QSqlQuery query(original.database);
+            QVERIFY(query.exec("CREATE TABLE payload(value INTEGER)"));
+        }
+        const auto hash = dukto::hashFile(source);
+        QVERIFY(QDir().mkdir(source + ".locks"));
+        const auto locked =
+            source + ".locks/" + QUuid::createUuid().toString(QUuid::WithoutBraces) + ".lock";
+        {
+            QLockFile live(locked);
+            live.setStaleLockTime(0);
+            QVERIFY(live.tryLock(0));
+            QVERIFY_EXCEPTION_THROWN(dukto::HistoryState::open(root.path(), "receipts.sqlite"),
+                                     dukto::Error);
+            QVERIFY(QFileInfo::exists(locked));
+            QVERIFY(!QFileInfo::exists(root.filePath("history")));
+        }
+        {
+            QFile stale(locked);
+            QVERIFY(stale.open(QIODevice::WriteOnly));
+            QCOMPARE(stale.write("unknown legacy lock"), qint64(19));
+            stale.close();
+            const auto lockHash = dukto::hashFile(locked);
+            QVERIFY_EXCEPTION_THROWN(dukto::HistoryState::open(root.path(), "receipts.sqlite"),
+                                     dukto::Error);
+            QCOMPARE(dukto::hashFile(locked), lockHash);
+            QVERIFY(stale.remove());
+        }
+        {
+            QLockFile admission(source + ".admission.lock");
+            QVERIFY(admission.tryLock(0));
+            QVERIFY_EXCEPTION_THROWN(dukto::HistoryState::open(root.path(), "receipts.sqlite"),
+                                     dukto::Error);
+            QVERIFY(QFileInfo::exists(source + ".admission.lock"));
+        }
+        auto state = dukto::HistoryState::open(root.path(), "receipts.sqlite");
+        QCOMPARE(dukto::hashFile(state->path()), hash);
+        QCOMPARE(dukto::hashFile(source), hash);
+    }
+
     // 日期：2026-11-09；准备凭据后和正文发布后真实进程退出，重启分别创建或核验同一目标，不重复迁移。
     void protectedHistoryCrashRecovery_data() {
         QTest::addColumn<bool>("published");

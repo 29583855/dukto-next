@@ -44,6 +44,30 @@ void noSidecars(const QString &path) {
                         "history-state");
 }
 
+// 日期：2026-11-09；旧接收锁的存在不是删除授权；活动或遗留锁一律保留，防止迁移后误报旧任务已中断。
+void noLegacyReceivers(const QString &path) {
+    if (QFileInfo(path).fileName() != "receipts.sqlite")
+        return;
+    if (present(path + ".admission.lock"))
+        throw Error(ExitCode::Permission,
+                    QStringLiteral("旧接收正在准入，请先关闭旧程序并核对接收任务"),
+                    "history-state");
+    const auto locks = path + ".locks";
+    if (!present(locks))
+        return;
+#ifdef Q_OS_WIN
+    NativeDirectoryLock directory(locks, false);
+#else
+    PosixDirectory directory(locks, false);
+#endif
+    directory.visitEntries([](const NativeDirectoryEntry &) {
+        // 日期：2026-11-09；不依据PID、文件年龄或名称移除旧锁，未知项同样要求人工核对。
+        throw Error(ExitCode::Permission,
+                    QStringLiteral("旧接收任务锁尚未释放，请先关闭旧程序并核对旧任务"),
+                    "history-state");
+    });
+}
+
 // 日期：2026-11-09；固定大小身份以平台/卷/原生ID编码；内容摘要另外核验，inode复用不会认可不同正文。
 QByteArray objectKey(const DuktoSqliteFileInfo &info) {
     return QByteArray::number(info.platform) + ':' + QByteArray::number(info.volume) + ':' +
@@ -109,6 +133,7 @@ struct HistoryState::Legacy final {
                             "history-state");
             verifyPath();
             noSidecars(path);
+            noLegacyReceivers(path);
             if (info.logicalBytes > 0) {
                 const auto header = readBlock(file, 0, 100);
                 if (header.left(16) != QByteArray("SQLite format 3\0", 16) || header[18] != 1 ||
@@ -197,6 +222,7 @@ struct HistoryState::Legacy final {
         }
         verifyPath();
         noSidecars(path);
+        noLegacyReceivers(path);
         return digest.result();
     }
 };
