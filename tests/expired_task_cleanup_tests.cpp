@@ -170,6 +170,9 @@ class ExpiredTaskCleanupTests final : public QObject {
             auto timer = listener.findChild<QTimer *>("stateMaintenanceTimer");
             QVERIFY(timer);
             QCOMPARE(timer->interval(), 60000);
+            QVERIFY(!timer->isSingleShot());
+            // 日期：2026-11-09；本阶段只触发一次真实定时维护，避免下一轮开始覆盖末尾终态观察。
+            timer->setSingleShot(true);
             QSignalSpy events(&listener, &dukto::ServiceListener::event);
             {
                 dukto::PrivateStore active(state);
@@ -179,7 +182,7 @@ class ExpiredTaskCleanupTests final : public QObject {
                     QVERIFY(query.exec("UPDATE tasks SET updated='2000-01-01T00:00:00Z'"));
                 });
                 timer->setInterval(20);
-                QTRY_VERIFY_WITH_TIMEOUT(events.size() >= 2, 3000);
+                QTRY_COMPARE_WITH_TIMEOUT(events.size(), 2, 3000);
                 QCOMPARE(qvariant_cast<QJsonObject>(events.first().at(0))["event"].toString(),
                          QString("state-cleanup-started"));
                 QCOMPARE(qvariant_cast<QJsonObject>(events.last().at(0))["event"].toString(),
@@ -190,6 +193,9 @@ class ExpiredTaskCleanupTests final : public QObject {
                                                              dukto::PrivateStore::Use::Maintenance),
                                          dukto::Error);
             }
+            // 日期：2026-11-09；共享根释放后恢复循环定时器，真实验证后续批次回收而非手动清理。
+            timer->setSingleShot(false);
+            timer->start();
             QTRY_VERIFY_WITH_TIMEOUT(!QFileInfo::exists(pending), 10000);
             timer->stop();
             listener.stop();
