@@ -10,7 +10,7 @@
 
 [GitHub Release：四平台运行包与对应源码](https://github.com/29583855/dukto-next/releases/tag/preview-r158-20261109)，附 SHA256SUMS、运行说明和验收回执；9个公开附件均已匿名下载核对摘要。当前保留开发预览标记。
 
-macOS 12.7.6 出现最低系统版本提示的原因及兼容构建方案见 [macOS 12 兼容说明](docs/macOS12兼容说明.md)。旧 R158 Mac 包只适用于 macOS 15，兼容包的实际构建与运行结果分别记录。
+macOS 已提供 [macOS12兼容版](https://github.com/29583855/dukto-next/releases/tag/preview-macos12-20261109)，最低目标12.0，包含12.7.6；Intel和Apple Silicon包均通过原生编译、完整核心及独立包业务测试。安装、架构选择和验证范围见 [macOS12兼容说明](docs/macOS12兼容说明.md)；客户macOS12.7.6仍待现场确认，旧R158 Mac包要求15.0。
 
 ## 文档入口
 
