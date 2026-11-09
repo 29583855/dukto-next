@@ -2,6 +2,9 @@
 #include "core/durablereceive.h"
 #include "core/error.h"
 #include "core/files.h"
+#include "core/protocol.h"
+#include "core/statecleanup.h"
+#include "core/statesession.h"
 #include "core/strongmanifest.h"
 
 #include <QCoreApplication>
@@ -152,6 +155,19 @@ struct Fixture {
         });
         return result;
     }
+
+    // 日期：2026-11-09；保留期凭据由产品入口生成，时钟注入不依赖修改文件时间。
+    void note(dukto::PrivateStore &store, const QDateTime &now) const {
+        dukto::StrongManifest manifest(store, manifestName, false);
+        dukto::noteClientDownloadActivity(
+            store, task, QByteArray::fromHex(manifest.summary()["sha256"].toString().toLatin1()),
+            now);
+    }
+
+    // 日期：2026-11-09；只读测试自有凭据，用独立断言检查分页和活动刷新实际落盘。
+    QString retentionName() const {
+        return "download-retention-" + task.toString(QUuid::WithoutBraces) + ".json";
+    }
 };
 } // namespace
 
@@ -159,6 +175,215 @@ struct Fixture {
 class ClientDownloadCleanupTests final : public QObject {
     Q_OBJECT
   private slots:
+    // 日期：2026-11-09；旧任务、七天内及采样宽限期保留；到期预览不修改正文或凭据。
+    void retentionBoundaryAndPreview() {
+        Fixture fixture;
+        dukto::PrivateStore store(fixture.state, false, dukto::PrivateStore::Use::Maintenance);
+        const auto now = QDateTime::fromString("2026-11-09T00:00:00.000Z", Qt::ISODateWithMs);
+        QCOMPARE(dukto::cleanupExpiredClientDownload(store, fixture.task, now, true)["action"],
+                 QJsonValue("no-retention-evidence"));
+        fixture.note(store, now);
+        const auto original = store.read(fixture.retentionName());
+        const auto temporary =
+            QDir(fixture.output).filePath(receiveTemporary(store, fixture.task, 2));
+        for (const auto seconds : {qint64(0), qint64(7 * 86400), qint64(7 * 86400 + 59)}) {
+            const auto result = dukto::cleanupExpiredClientDownload(store, fixture.task,
+                                                                    now.addSecs(seconds), true);
+            QVERIFY(!result["eligible"].toBool());
+            QVERIFY(QFileInfo::exists(temporary));
+            QCOMPARE(store.read(fixture.retentionName()), original);
+        }
+        const auto preview = dukto::cleanupExpiredClientDownload(store, fixture.task,
+                                                                 now.addDays(7).addSecs(60), false);
+        QVERIFY(preview["eligible"].toBool());
+        QCOMPARE(preview["entries"].toArray().size(), 2);
+        QCOMPARE(store.read(fixture.retentionName()), original);
+        QVERIFY(QFileInfo::exists(temporary));
+        QCOMPARE(fixture.blockCount(store, 2), 1);
+    }
+
+    // 日期：2026-11-09；执行每批最多一项，跨重开继续游标，完成文件和请求清单始终保留。
+    void retentionBoundedPagesAndRenewal() {
+        Fixture fixture;
+        const auto now = QDateTime::fromString("2026-11-09T00:00:00.000Z", Qt::ISODateWithMs);
+        {
+            dukto::PrivateStore store(fixture.state);
+            fixture.note(store, now.addDays(-8));
+        }
+        for (int batch = 0; batch < 2; ++batch) {
+            dukto::PrivateStore store(fixture.state, false, dukto::PrivateStore::Use::Maintenance);
+            const auto result =
+                dukto::cleanupExpiredClientDownload(store, fixture.task, now, true, 1);
+            QCOMPARE(result["visited"].toString(), QString("1"));
+            QCOMPARE(result["more"].toBool(), batch == 0);
+            QCOMPARE(result["cleanedFiles"].toString(), batch == 0 ? QString("0") : QString("1"));
+            QVERIFY(QFileInfo::exists(QDir(fixture.output).filePath("a.bin")));
+            QVERIFY(store.exists(fixture.manifestName));
+            QCOMPARE(fixture.blockCount(store, 1), 1);
+        }
+        dukto::PrivateStore store(fixture.state, false, dukto::PrivateStore::Use::Maintenance);
+        QCOMPARE(dukto::cleanupExpiredClientDownload(store, fixture.task, now, true)["action"],
+                 QJsonValue("already-cleaned"));
+        {
+            dukto::StrongManifest manifest(store, fixture.manifestName, false);
+            dukto::DurableReceive receiver(store, fixture.receiveName, fixture.task, manifest,
+                                           fixture.output);
+            QCOMPARE(receiver.open(2, "b.bin"), quint64(0));
+        }
+        fixture.note(store, now);
+        QVERIFY(!dukto::cleanupExpiredClientDownload(store, fixture.task, now.addDays(1),
+                                                     true)["eligible"]
+                     .toBool());
+        QCOMPARE(fixture.fileState(store, 2)["state"].toString(), QString("receiving"));
+    }
+
+    // 日期：2026-11-09；凭据的未来时间和实际时钟后退均不能缩短已有保留期。
+    void retentionClockRollback() {
+        Fixture fixture;
+        dukto::PrivateStore store(fixture.state, false, dukto::PrivateStore::Use::Maintenance);
+        const auto now = QDateTime::fromString("2026-11-09T00:00:00.000Z", Qt::ISODateWithMs);
+        fixture.note(store, now.addDays(20));
+        const auto original = store.read(fixture.retentionName());
+        fixture.note(store, now);
+        QCOMPARE(store.read(fixture.retentionName()), original);
+        QVERIFY(!dukto::cleanupExpiredClientDownload(store, fixture.task, now, true)["eligible"]
+                     .toBool());
+        QCOMPARE(fixture.blockCount(store, 2), 1);
+    }
+
+    // 日期：2026-11-09；逐项损坏时间/版本/身份/摘要/游标都必须拒绝，不把损坏凭据重置。
+    void retentionTampering_data() {
+        QTest::addColumn<QString>("field");
+        QTest::addColumn<QJsonValue>("value");
+        QTest::newRow("version") << QString("version") << QJsonValue(2);
+        QTest::newRow("root") << QString("root") << QJsonValue("abcd");
+        QTest::newRow("receive") << QString("receive") << QJsonValue("abcd");
+        QTest::newRow("manifest") << QString("manifest") << QJsonValue(QString(64, '0'));
+        QTest::newRow("task") << QString("task") << QJsonValue(QUuid::createUuid().toString());
+        QTest::newRow("negative-cursor") << QString("after") << QJsonValue("-1");
+        QTest::newRow("numeric-cursor") << QString("after") << QJsonValue(0);
+        QTest::newRow("noncanonical-time") << QString("updated") << QJsonValue("2026-11-01");
+        QTest::newRow("extra-field") << QString("extra") << QJsonValue(true);
+    }
+
+    // 日期：2026-11-09；正文和检查点使用独立SQL/路径检查，不能仅相信清理返回值。
+    void retentionTampering() {
+        QFETCH(QString, field);
+        QFETCH(QJsonValue, value);
+        Fixture fixture;
+        dukto::PrivateStore store(fixture.state, false, dukto::PrivateStore::Use::Maintenance);
+        const auto now = QDateTime::fromString("2026-11-09T00:00:00.000Z", Qt::ISODateWithMs);
+        fixture.note(store, now.addDays(-8));
+        auto marker = dukto::next::parseControl(store.read(fixture.retentionName()));
+        marker[field] = value;
+        const auto corrupted = dukto::next::encodeControl(marker);
+        store.write(fixture.retentionName(), corrupted);
+        const auto temporary =
+            QDir(fixture.output).filePath(receiveTemporary(store, fixture.task, 2));
+        QVERIFY_EXCEPTION_THROWN(
+            dukto::cleanupExpiredClientDownload(store, fixture.task, now, true), dukto::Error);
+        QVERIFY(QFileInfo::exists(temporary));
+        QCOMPARE(fixture.blockCount(store, 2), 1);
+        QCOMPARE(store.read(fixture.retentionName()), corrupted);
+    }
+
+    // 日期：2026-11-09；同名接收库被真实复制替换，旧保留期不得用于新对象。
+    void retentionReplacedReceive() {
+        Fixture fixture;
+        dukto::PrivateStore store(fixture.state, false, dukto::PrivateStore::Use::Maintenance);
+        const auto now = QDateTime::fromString("2026-11-09T00:00:00.000Z", Qt::ISODateWithMs);
+        fixture.note(store, now.addDays(-8));
+        const auto path = QDir(fixture.state).filePath(fixture.receiveName);
+        QVERIFY(QFile::rename(path, path + ".saved"));
+        QVERIFY(QFile::copy(path + ".saved", path));
+        QVERIFY_EXCEPTION_THROWN(
+            dukto::cleanupExpiredClientDownload(store, fixture.task, now, true), dukto::Error);
+        QCOMPARE(fixture.blockCount(store, 2), 1);
+    }
+
+    // 日期：2026-11-09；状态维护实际枚举到期下载凭据，调用逐批清理并留下脱敏计数。
+    void retentionStateMaintenance() {
+        Fixture fixture;
+        const auto now = QDateTime::currentDateTimeUtc();
+        {
+            dukto::PrivateStore store(fixture.state);
+            fixture.note(store, now.addDays(-8));
+        }
+        dukto::PrivateStore store(fixture.state, false, dukto::PrivateStore::Use::Maintenance);
+        const auto result = dukto::cleanupState(store, now, true, {32, 256, 30000});
+        QCOMPARE(result["errorCount"].toString(), QString("0"));
+        QCOMPARE(result["downloadTasksVisited"].toString(), QString("1"));
+        QCOMPARE(result["downloadFilesCleaned"].toString(), QString("1"));
+        QCOMPARE(fixture.fileState(store, 2)["state"].toString(), QString("planned"));
+        QVERIFY(QFileInfo::exists(QDir(fixture.output).filePath("a.bin")));
+    }
+
+    // 日期：2026-11-09；真实业务打开根之前会清理到期下载，共享占用期间相同维护必须让出。
+    void retentionAutomaticOpenAndActiveGuard() {
+        Fixture fixture;
+        const auto now = QDateTime::currentDateTimeUtc();
+        {
+            auto active = dukto::StateSession::root(fixture.stateDirectory, "transfers", false);
+            fixture.note(*active, now.addDays(-8));
+            dukto::tryAutomaticStateCleanup(fixture.stateDirectory, "transfers");
+            QCOMPARE(fixture.fileState(*active, 2)["state"].toString(), QString("receiving"));
+        }
+        auto reopened = dukto::StateSession::root(fixture.stateDirectory, "transfers", false);
+        QCOMPARE(fixture.fileState(*reopened, 2)["state"].toString(), QString("planned"));
+        QVERIFY(QFileInfo::exists(QDir(fixture.output).filePath("a.bin")));
+    }
+
+    // 日期：2026-11-09；自动回收在删除后直接退出，重开仍从原游标幂等解决检查点，不重复删除新文件。
+    void retentionProcessExitAfterRemoval() {
+        Fixture fixture;
+        QString temporary;
+        QByteArray marker;
+        {
+            dukto::PrivateStore store(fixture.state);
+            fixture.note(store, QDateTime::currentDateTimeUtc().addDays(-8));
+            temporary = QDir(fixture.output).filePath(receiveTemporary(store, fixture.task, 2));
+            marker = store.read(fixture.retentionName());
+        }
+        QProcess worker;
+        worker.start(QCoreApplication::applicationFilePath(),
+                     {"--crash-expired", fixture.state, fixture.task.toString(QUuid::WithoutBraces),
+                      temporary});
+        QVERIFY(worker.waitForFinished(30000));
+        QCOMPARE(worker.exitCode(), 87);
+        QVERIFY(!QFileInfo::exists(temporary));
+        dukto::PrivateStore store(fixture.state, false, dukto::PrivateStore::Use::Maintenance);
+        QCOMPARE(store.read(fixture.retentionName()), marker);
+        QCOMPARE(fixture.fileState(store, 2)["state"].toString(), QString("receiving"));
+        QCOMPARE(fixture.blockCount(store, 2), 1);
+        const auto result = dukto::cleanupExpiredClientDownload(
+            store, fixture.task, QDateTime::currentDateTimeUtc(), true);
+        QCOMPARE(result["cleanedFiles"].toString(), QString("1"));
+        QCOMPARE(fixture.blockCount(store, 2), 0);
+        QFile replacement(temporary);
+        QVERIFY(replacement.open(QIODevice::WriteOnly));
+        QCOMPARE(replacement.write("replacement"), qint64(11));
+        replacement.close();
+        QCOMPARE(dukto::cleanupExpiredClientDownload(
+                     store, fixture.task, QDateTime::currentDateTimeUtc(), true)["action"],
+                 QJsonValue("already-cleaned"));
+        QVERIFY(replacement.open(QIODevice::ReadOnly));
+        QCOMPARE(replacement.readAll(), QByteArray("replacement"));
+    }
+
+    // 日期：2026-11-09；跳过策略中未决接收由原契约保留，到期凭据也不能扩大删除范围。
+    void retentionSkipPolicyPreserved() {
+        Fixture fixture(dukto::ConflictPolicy::Skip);
+        dukto::PrivateStore store(fixture.state, false, dukto::PrivateStore::Use::Maintenance);
+        const auto now = QDateTime::currentDateTimeUtc();
+        fixture.note(store, now.addDays(-8));
+        const auto temporary =
+            QDir(fixture.output).filePath(receiveTemporary(store, fixture.task, 2));
+        const auto result = dukto::cleanupExpiredClientDownload(store, fixture.task, now, true);
+        QCOMPARE(result["cleanedFiles"].toString(), QString("0"));
+        QVERIFY(QFileInfo::exists(temporary));
+        QCOMPARE(fixture.blockCount(store, 2), 1);
+    }
+
     // 日期：2026-11-07；预览确认文件路径和任务状态，随后执行并恢复相同清单中的未完成文件。
     void previewRunAndResume() {
         Fixture fixture;
@@ -453,6 +678,16 @@ class ClientDownloadCleanupTests final : public QObject {
 int main(int argc, char **argv) {
     QCoreApplication app(argc, argv);
     const auto arguments = app.arguments();
+    if (arguments.size() == 5 && arguments[1] == "--crash-expired") {
+        dukto::PrivateStore store(arguments[2], false, dukto::PrivateStore::Use::Maintenance);
+        dukto::cleanupExpiredClientDownload(store, QUuid(arguments[3]),
+                                            QDateTime::currentDateTimeUtc(), true, 32, [&]() {
+                                                // 日期：2026-11-09；退出位置在真实unlink之后、FULL检查点重置与游标保存之前。
+                                                if (!QFileInfo::exists(arguments[4]))
+                                                    std::_Exit(87);
+                                            });
+        return 88;
+    }
     if (arguments.size() == 5 && arguments[1] == "--crash-cleanup") {
         dukto::PrivateStore store(arguments[2], false, dukto::PrivateStore::Use::Maintenance);
         dukto::cleanupClientDownload(store, QUuid(arguments[3]), true, 0, [&]() {

@@ -107,6 +107,49 @@ struct Binding {
     ConflictPolicy conflict = ConflictPolicy::Rename;
 };
 
+constexpr qint64 DownloadRetentionSeconds = 7 * 24 * 60 * 60;
+constexpr qint64 ActivitySamplingSeconds = 60;
+
+// 日期：2026-11-09；文件名只定位保留期凭据，实际删除仍逐项验证强清单和原生对象。
+QString retentionName(const QUuid &task) {
+    if (task.isNull())
+        throw Error(ExitCode::Config, QStringLiteral("下载保留期任务无效"), "cleanup");
+    return "download-retention-" + task.toString(QUuid::WithoutBraces) + ".json";
+}
+
+// 日期：2026-11-09；凭据固定字段和规范编码，未知版本、时钟或游标损坏时保留正文。
+QJsonObject retention(PrivateStore &store, const QUuid &task) {
+    const auto raw = store.read(retentionName(task), 4096);
+    const auto value = next::parseControl(raw);
+    bool afterOk = false;
+    const auto after = value["after"].toString().toULongLong(&afterOk);
+    const auto updated = QDateTime::fromString(value["updated"].toString(), Qt::ISODateWithMs);
+    static const QRegularExpression digest("\\A[0-9a-f]{64}\\z");
+    static const QRegularExpression identity("\\A[0-9a-f]{2,512}\\z");
+    if (value.size() != 8 || value["version"] != 1 ||
+        value["task"] != task.toString(QUuid::WithoutBraces) ||
+        !digest.match(value["manifest"].toString()).hasMatch() ||
+        !identity.match(value["root"].toString()).hasMatch() ||
+        !identity.match(value["receive"].toString()).hasMatch() || !updated.isValid() ||
+        updated.timeSpec() != Qt::UTC ||
+        updated.toString(Qt::ISODateWithMs) != value["updated"].toString() || !afterOk ||
+        after > quint64(std::numeric_limits<qint64>::max()) ||
+        value["after"] != QString::number(after) || !value["cleaned"].isBool() ||
+        (value["cleaned"].toBool() && after != 0) || raw != next::encodeControl(value))
+        throw Error(ExitCode::Integrity, QStringLiteral("下载保留期凭据无效，保留原数据"),
+                    "cleanup");
+    return value;
+}
+
+// 日期：2026-11-09；同一任务还须匹配根、接收日志原生身份；时间凭据不能跨文件换代复用。
+void verifyRetention(PrivateStore &store, const QJsonObject &value, SourceFile &receive) {
+    receive.verifyObject();
+    if (value["root"] != QString::fromLatin1(store.identity().toHex()) ||
+        value["receive"] != QString::fromLatin1(receive.objectIdentity().toHex()))
+        throw Error(ExitCode::Integrity, QStringLiteral("下载保留期对象已换代，保留原数据"),
+                    "cleanup");
+}
+
 // 日期：2026-11-07；精确核对版本化任务绑定与原生目标根，不能由调用者替换清理目的地。
 Binding verifyBinding(QSqlDatabase database, const QUuid &task, const QJsonObject &summary) {
     QSqlQuery query(database);
@@ -235,10 +278,12 @@ void clean(QSqlDatabase database, const Candidate &value, const QString &root,
 }
 } // namespace
 
-// 日期：2026-11-07；独占维护一个下载任务，分页预览或逐项回收中断正文并保留其余历史。
-QJsonObject cleanupClientDownload(PrivateStore &store, const QUuid &task, bool apply, quint64 after,
-                                  const std::function<void()> &check) {
-    if (!store.maintenance() || task.isNull() || (apply && after) ||
+// 日期：2026-11-09；独占维护一个下载任务；自动执行也分页，保留已发布和提交结果不确定项。
+static QJsonObject cleanupClientDownloadBatch(PrivateStore &store, const QUuid &task, bool apply,
+                                              quint64 after, int maximumEntries,
+                                              const QByteArray &expectedManifest,
+                                              const std::function<void()> &check) {
+    if (!store.maintenance() || task.isNull() || maximumEntries < 0 || maximumEntries > 1000 ||
         after > static_cast<quint64>(std::numeric_limits<qint64>::max()))
         throw Error(ExitCode::Config, QStringLiteral("客户端清理需要有效任务和独占维护"),
                     "cleanup");
@@ -255,6 +300,10 @@ QJsonObject cleanupClientDownload(PrivateStore &store, const QUuid &task, bool a
     StrongManifest manifest(store, manifestName, false, check);
     manifest.verify(check);
     const auto summary = manifest.summary();
+    if (!expectedManifest.isEmpty() &&
+        summary["sha256"] != QString::fromLatin1(expectedManifest.toHex()))
+        throw Error(ExitCode::Integrity, QStringLiteral("下载保留期清单不同，保留原数据"),
+                    "cleanup");
     Journal journal(store, receiveName, apply);
     auto database = journal.database();
     const auto binding = verifyBinding(database, task, summary);
@@ -284,6 +333,7 @@ QJsonObject cleanupClientDownload(PrivateStore &store, const QUuid &task, bool a
     quint64 cleanedDirectories = 0;
     quint64 preservedDirectories = 0;
     bool more = false;
+    int visited = 0;
     for (;;) {
         if (check)
             check();
@@ -300,10 +350,11 @@ QJsonObject cleanupClientDownload(PrivateStore &store, const QUuid &task, bool a
                 throw Error(ExitCode::Disk, QStringLiteral("下载文件记录读取失败"), "cleanup");
             break;
         }
-        if (!apply && entries.size() == 100) {
+        if (maximumEntries && visited == maximumEntries) {
             more = true;
             break;
         }
+        ++visited;
         if (query.value(14).toBool()) {
             const auto value = readCleanupDirectory(query, manifest);
             query.finish();
@@ -362,6 +413,7 @@ QJsonObject cleanupClientDownload(PrivateStore &store, const QUuid &task, bool a
         {"applied", apply},
         {"after", QString::number(cursor)},
         {"more", more},
+        {"visited", QString::number(visited)},
         {"entries", entries},
         {"cleanedFiles", QString::number(cleaned)},
         {"preservedFiles", QString::number(preserved)},
@@ -369,6 +421,83 @@ QJsonObject cleanupClientDownload(PrivateStore &store, const QUuid &task, bool a
         {"preservedDirectories", QString::number(preservedDirectories)},
         {"message", apply ? QStringLiteral("客户端下载临时项清理结束；任务与已发布项目保留")
                           : QStringLiteral("客户端下载清理预览；未删除文件或修改任务日志")}};
+    return result;
+}
+
+// 日期：2026-11-09；手动执行保持从头处理契约，预览仍限制100项；自动维护另用持久分页游标。
+QJsonObject cleanupClientDownload(PrivateStore &store, const QUuid &task, bool apply, quint64 after,
+                                  const std::function<void()> &check) {
+    if (apply && after)
+        throw Error(ExitCode::Config, QStringLiteral("手动清理执行不接受分页起点"), "cleanup");
+    return cleanupClientDownloadBatch(store, task, apply, after, apply ? 0 : 100, {}, check);
+}
+
+// 日期：2026-11-09；仅执行者在接收绑定验证后调用；活动刷新清零维护游标，时钟后退不缩短保留期。
+void noteClientDownloadActivity(PrivateStore &store, const QUuid &task, const QByteArray &manifest,
+                                const QDateTime &now) {
+    if (manifest.size() != 32 || !now.isValid() || now.timeSpec() != Qt::UTC)
+        throw Error(ExitCode::Config, QStringLiteral("下载活动时间或清单无效"), "cleanup");
+    const auto name = retentionName(task);
+    const auto receiveName = "receive-" + task.toString(QUuid::WithoutBraces) + ".sqlite";
+    store.validateFile(receiveName);
+    SourceFile receive(QDir(store.directory()).filePath(receiveName),
+                       SourceFile::OpenPolicy::PrivateState);
+    auto updated = now;
+    if (store.exists(name)) {
+        const auto previous = retention(store, task);
+        verifyRetention(store, previous, receive);
+        if (previous["manifest"] != QString::fromLatin1(manifest.toHex()))
+            throw Error(ExitCode::Integrity, QStringLiteral("下载活动清单已变化"), "cleanup");
+        updated =
+            qMax(updated, QDateTime::fromString(previous["updated"].toString(), Qt::ISODateWithMs));
+    }
+    const QJsonObject value{{"version", 1},
+                            {"task", task.toString(QUuid::WithoutBraces)},
+                            {"manifest", QString::fromLatin1(manifest.toHex())},
+                            {"root", QString::fromLatin1(store.identity().toHex())},
+                            {"receive", QString::fromLatin1(receive.objectIdentity().toHex())},
+                            {"updated", updated.toString(Qt::ISODateWithMs)},
+                            {"after", "0"},
+                            {"cleaned", false}};
+    store.write(name, next::encodeControl(value));
+}
+
+// 日期：2026-11-09；凭据仅证明保留期；每批删除仍复用原任务、冻结清单、根身份及FULL日志协议。
+QJsonObject cleanupExpiredClientDownload(PrivateStore &store, const QUuid &task,
+                                         const QDateTime &now, bool apply, int maximumEntries,
+                                         const std::function<void()> &check) {
+    if (!store.maintenance() || !now.isValid() || now.timeSpec() != Qt::UTC || maximumEntries < 1 ||
+        maximumEntries > 1000)
+        throw Error(ExitCode::Config, QStringLiteral("下载到期清理需要独占根、UTC时间和有界批量"),
+                    "cleanup");
+    QJsonObject result{{"eligible", false}, {"action", "no-retention-evidence"}};
+    if (!store.exists(retentionName(task)))
+        return result;
+    auto value = retention(store, task);
+    const auto updated = QDateTime::fromString(value["updated"].toString(), Qt::ISODateWithMs);
+    if (value["cleaned"].toBool() || updated > now ||
+        updated.secsTo(now) < DownloadRetentionSeconds + ActivitySamplingSeconds) {
+        result["action"] = value["cleaned"].toBool() ? "already-cleaned" : "retained";
+        return result;
+    }
+    const auto receiveName = "receive-" + task.toString(QUuid::WithoutBraces) + ".sqlite";
+    store.validateFile(receiveName);
+    SourceFile receive(QDir(store.directory()).filePath(receiveName),
+                       SourceFile::OpenPolicy::PrivateState);
+    verifyRetention(store, value, receive);
+    result = cleanupClientDownloadBatch(
+        store, task, apply, value["after"].toString().toULongLong(), maximumEntries,
+        QByteArray::fromHex(value["manifest"].toString().toLatin1()), check);
+    verifyRetention(store, value, receive);
+    result["eligible"] = true;
+    result["action"] = apply ? "cleaned-batch" : "expired-preview";
+    result["retentionSeconds"] = QString::number(DownloadRetentionSeconds);
+    result["activitySamplingGraceSeconds"] = QString::number(ActivitySamplingSeconds);
+    if (apply) {
+        value["after"] = result["more"].toBool() ? result["after"] : QJsonValue("0");
+        value["cleaned"] = !result["more"].toBool();
+        store.write(retentionName(task), next::encodeControl(value));
+    }
     return result;
 }
 } // namespace dukto

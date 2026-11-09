@@ -1,3 +1,4 @@
+#include "clientdownloadcleanup.h"
 #include "dispositionjournal.h"
 #include "error.h"
 #include "fileexchange.h"
@@ -699,11 +700,14 @@ QJsonObject RemoteClient::download(const QUuid &requestId, const QString &share,
         create["channels"] = QString::number(channels);
     }
     bool confirmingDisposition = false;
+    std::function<void()> retentionActivity;
     QElapsedTimer dispositionHeartbeat;
     dispositionHeartbeat.start();
     const auto dispositionCheck = [&]() {
         // 日期：2026-11-06；本地日志工作仍响应取消；最终帧可已缓存在断开的连接中，连接状态交给协议读取验证。
         QCoreApplication::processEvents(QEventLoop::AllEvents, 1);
+        if (retentionActivity)
+            retentionActivity();
         if (summaryProtocol && confirmingDisposition && dispositionHeartbeat.elapsed() >= 250) {
             channel_.write(next::Type::TaskState, correlation_, {{"state", "busy"}});
             dispositionHeartbeat.restart();
@@ -782,6 +786,23 @@ QJsonObject RemoteClient::download(const QUuid &requestId, const QString &share,
         progress(ready);
     DurableReceive receiver(local, "receive-" + key + ".sqlite", id, manifest, destination,
                             conflict);
+    // 日期：2026-11-09；接收绑定已验证后才建立保留期；进度/本地校验至多每分钟持久刷新。
+    noteClientDownloadActivity(local, id, expected, QDateTime::currentDateTimeUtc());
+    QElapsedTimer activityTimer;
+    activityTimer.start();
+    retentionActivity = [&]() {
+        // 日期：2026-11-09；活动根共享锁持续阻止维护，异常退出最多遗失一分钟活动采样。
+        if (activityTimer.elapsed() >= 60000) {
+            noteClientDownloadActivity(local, id, expected, QDateTime::currentDateTimeUtc());
+            activityTimer.restart();
+        }
+    };
+    const auto trackedProgress = [&](const QJsonObject &value) {
+        // 日期：2026-11-09；即使调用者没有界面回调，也持续记录实际接收活动。
+        retentionActivity();
+        if (progress)
+            progress(value);
+    };
     // 日期：2026-11-06；本地接收结果先持久化再发布事件；缓存授信及分页不随文件数增长。
     DispositionJournal outcomes(local, "disposition-" + key + ".sqlite", id, manifest,
                                 conflictPolicyName(conflict), dispositionCheck);
@@ -791,17 +812,16 @@ QJsonObject RemoteClient::download(const QUuid &requestId, const QString &share,
         // 日期：2026-11-06；最终处置按实际复制或跳过持久化，跳过目录保留整棵子树的根身份。
         outcomes.append(entry.id, path, result.skipped ? "skipped" : "copied", result.skippedRoot);
         // 日期：2026-11-04；事件逐条输出，十万文件不会累积成内存中的结果数组。
-        if (progress)
-            progress({{"taskId", key},
-                      {"event", result.skipped ? "file-skipped" : "file-completed"},
-                      {"file", QString::number(entry.id)},
-                      {"path", path},
-                      {"bytes", QString::number(result.skipped ? 0 : entry.bytes)},
-                      {"logicalBytes", QString::number(entry.bytes)}});
+        trackedProgress({{"taskId", key},
+                         {"event", result.skipped ? "file-skipped" : "file-completed"},
+                         {"file", QString::number(entry.id)},
+                         {"path", path},
+                         {"bytes", QString::number(result.skipped ? 0 : entry.bytes)},
+                         {"logicalBytes", QString::number(entry.bytes)}});
     };
-    TransferProgress meter(channel_, correlation_, id, expected,
-                           summary["bytes"].toString().toLongLong(), true, byteProgress, progress,
-                           accounting, next::decimal(summary["entries"], 10000000));
+    TransferProgress meter(
+        channel_, correlation_, id, expected, summary["bytes"].toString().toLongLong(), true,
+        byteProgress, trackedProgress, accounting, next::decimal(summary["entries"], 10000000));
     int actual = 1;
     if (channels > 1) {
         const auto ticket = control(channel_, correlation_, next::Type::ChannelTicket);
@@ -830,6 +850,7 @@ QJsonObject RemoteClient::download(const QUuid &requestId, const QString &share,
                                 summaryProtocol ? disposition : QJsonObject{},
                                 accounting ? meter.snapshot() : QJsonObject{});
     result["channels"] = QString::number(actual);
+    noteClientDownloadActivity(local, id, expected, QDateTime::currentDateTimeUtc());
     return result;
 }
 } // namespace dukto
