@@ -237,14 +237,15 @@ def main():
                 assert digest(destination / small.name) == small_sha
                 if index >= 3:
                     samples.append(maintenance_idle_sample(server, output, samples[0] if samples else None))
-            # 日期：2026-11-09；每次专项均跨过真实一分钟维护，不能因较快本机在定时器前结束而漏验。
+            # 日期：2026-11-09；一分钟周期在繁忙时让出；从最后业务结束起保留70秒原期限，不把忙碌时长计作空闲延迟。
             waiting = time.monotonic()
             while maintenance_state(output)["started"] == 0:
-                assert time.monotonic() - listening_at < 70, output.snapshot()
+                assert time.monotonic() - waiting < 70, output.snapshot()
                 assert server.poll() is None, server.returncode
                 time.sleep(0.02)
             samples.append(maintenance_idle_sample(server, output, samples[0]))
             maintenance_wait = round(time.monotonic() - waiting, 3)
+            maintenance_service_age = round(time.monotonic() - listening_at, 3)
             maintenance = maintenance_state(output)
             assert maintenance["started"] == maintenance["finished"] and maintenance["finished"] >= 1
             baseline = samples[0]
@@ -272,6 +273,8 @@ def main():
               "pauseSecondsWhileSaturated": pause_seconds, "unrelatedTaskContinued": True,
               "resumeChannels": 16, "idleSamplesAfterWarmup": samples,
               "realMinuteMaintenance": maintenance, "waitForMinuteMaintenanceSeconds": maintenance_wait,
+              "idleMaintenanceWaitLimitSeconds": 70,
+              "serverUptimeAtMaintenanceSeconds": maintenance_service_age,
               "scope": "two active owners and a third queued/cancelled, shared16 slots and independent pause; broader fair-owner ordering and budgets have separate validation"}
     text = json.dumps(report, ensure_ascii=False, indent=2) + "\n"
     Path(args.report).write_text(text, encoding="utf-8")
