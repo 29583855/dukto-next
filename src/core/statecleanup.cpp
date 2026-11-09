@@ -1,4 +1,5 @@
 #include "statecleanup.h"
+#include "browse.h"
 #include "clientdownloadcleanup.h"
 #include "error.h"
 #include "expiredtaskcleanup.h"
@@ -119,7 +120,7 @@ struct Cursor {
 
 struct ScanCandidate {
     QUuid task;
-    bool download = false;
+    int kind = 0;
 };
 
 // 日期：2026-11-08；进度只决定下一次从哪里扫描，不赋予任何文件删除资格；损坏时保留现场。
@@ -170,6 +171,7 @@ QJsonObject cleanupState(PrivateStore &store, const QDateTime &now, bool apply,
     };
     qint64 tasksVisited = 0, eligible = 0, uploads = 0, scansVisited = 0, scans = 0;
     qint64 downloadsVisited = 0, downloads = 0;
+    qint64 snapshotsVisited = 0, snapshots = 0;
     qint64 failures = 0;
     QJsonArray errors;
     bool taskMore = false, scanMore = false, timedOut = false;
@@ -222,6 +224,8 @@ QJsonObject cleanupState(PrivateStore &store, const QDateTime &now, bool apply,
         static const QRegularExpression marker("\\Aupload-source-([0-9a-f-]{36})\\.scan\\.json\\z");
         static const QRegularExpression downloadMarker(
             "\\Adownload-retention-([0-9a-f-]{36})\\.json\\z");
+        static const QRegularExpression snapshotMarker(
+            "\\Asnapshot-retention-([0-9a-f-]{36})\\.json\\z");
         try {
             store.visitStorageEntries(
                 [&](const NativeDirectoryEntry &entry) {
@@ -235,14 +239,20 @@ QJsonObject cleanupState(PrivateStore &store, const QDateTime &now, bool apply,
                     }
                     ++visited;
                     auto match = marker.match(entry.name);
-                    const bool download = !match.hasMatch();
-                    if (download)
+                    int kind = 0;
+                    if (!match.hasMatch()) {
+                        kind = 1;
                         match = downloadMarker.match(entry.name);
+                    }
+                    if (!match.hasMatch()) {
+                        kind = 2;
+                        match = snapshotMarker.match(entry.name);
+                    }
                     const QUuid request(match.captured(1));
                     if (entry.kind == NativeDirectoryEntry::Kind::Regular && match.hasMatch() &&
                         !request.isNull() &&
                         request.toString(QUuid::WithoutBraces) == match.captured(1))
-                        candidates.append({request, download});
+                        candidates.append({request, kind});
                 },
                 check);
         } catch (const BatchEnd &) {
@@ -254,17 +264,24 @@ QJsonObject cleanupState(PrivateStore &store, const QDateTime &now, bool apply,
             checkpoint();
             try {
                 const auto result =
-                    candidate.download
+                    candidate.kind == 2 ? cleanupExpiredBrowseSnapshot(store, candidate.task, now,
+                                                                       apply, checkpoint)
+                    : candidate.kind == 1
                         ? cleanupExpiredClientDownload(store, candidate.task, now, apply, 32,
                                                        checkpoint)
                         : cleanupUploadScan(store, candidate.task, now, apply, checkpoint);
-                if (candidate.download)
+                if (candidate.kind == 2)
+                    ++snapshotsVisited;
+                else if (candidate.kind == 1)
                     ++downloadsVisited;
                 else
                     ++scansVisited;
                 if (result["eligible"].toBool()) {
                     ++eligible;
-                    if (candidate.download) {
+                    if (candidate.kind == 2) {
+                        if (apply && result["action"] == "cleaned")
+                            ++snapshots;
+                    } else if (candidate.kind == 1) {
                         if (apply)
                             downloads += result["cleanedFiles"].toString().toLongLong();
                         scanMore = scanMore || result["more"].toBool();
@@ -294,6 +311,8 @@ QJsonObject cleanupState(PrivateStore &store, const QDateTime &now, bool apply,
                        {"uploadTasksProcessed", QString::number(uploads)},
                        {"scansVisited", QString::number(scansVisited)},
                        {"scansCleaned", QString::number(scans)},
+                       {"browseSnapshotsVisited", QString::number(snapshotsVisited)},
+                       {"browseSnapshotsCleaned", QString::number(snapshots)},
                        {"downloadTasksVisited", QString::number(downloadsVisited)},
                        {"downloadFilesCleaned", QString::number(downloads)},
                        {"errors", errors},
@@ -305,8 +324,9 @@ QJsonObject cleanupState(PrivateStore &store, const QDateTime &now, bool apply,
                        {"globalQuotaEnforced", false},
                        {"message", apply ? QStringLiteral("本批过期临时项维护完成")
                                          : QStringLiteral("过期临时项预览完成，正文保留")}};
-    if (apply && (tasksVisited || scansVisited || downloadsVisited || failures ||
-                  cursor.entries != original.entries || cursor.tasks != original.tasks)) {
+    if (apply &&
+        (tasksVisited || scansVisited || downloadsVisited || snapshotsVisited || failures ||
+         cursor.entries != original.entries || cursor.tasks != original.tasks)) {
         store.write(CursorName,
                     next::encodeControl({{"version", 1},
                                          {"tasks", QString::number(cursor.tasks)},

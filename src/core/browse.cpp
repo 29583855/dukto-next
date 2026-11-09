@@ -29,6 +29,63 @@ QString snapshotName(const QString &id) {
     return "browse-" + id;
 }
 
+// 日期：2026-11-09；名称仅定位凭据，不能凭前缀授予快照删除资格。
+QString retentionName(const QUuid &snapshot) {
+    if (snapshot.isNull())
+        throw Error(ExitCode::Config, QStringLiteral("浏览快照身份无效"), "cleanup");
+    return "snapshot-retention-" + snapshot.toString(QUuid::WithoutBraces) + ".json";
+}
+
+// 日期：2026-11-09；源句柄身份去掉内部尾分隔符，与原生删除接口使用同一编码。
+QByteArray snapshotIdentity(SourceFile &file) {
+    auto identity = file.objectIdentity();
+    if (!identity.endsWith(':'))
+        throw Error(ExitCode::Integrity, QStringLiteral("浏览对象身份编码无效"), "cleanup");
+    identity.chop(1);
+    return identity;
+}
+
+// 日期：2026-11-09；在发布说明后记录两个实际普通对象身份；老快照无凭据时不进入新自动回收。
+void noteRetention(PrivateStore &store, const QString &id) {
+    const auto base = snapshotName(id);
+    store.validateFile(base + ".data");
+    store.validateFile(base + ".json");
+    SourceFile data(QDir(store.directory()).filePath(base + ".data"),
+                    SourceFile::OpenPolicy::PrivateState);
+    SourceFile metadata(QDir(store.directory()).filePath(base + ".json"),
+                        SourceFile::OpenPolicy::PrivateState);
+    const auto value = next::parseControl(store.read(base + ".json"));
+    store.write(
+        retentionName(QUuid(id)),
+        next::encodeControl({{"version", 1},
+                             {"snapshot", id},
+                             {"root", QString::fromLatin1(store.identity().toHex())},
+                             {"data", QString::fromLatin1(snapshotIdentity(data).toHex())},
+                             {"metadata", QString::fromLatin1(snapshotIdentity(metadata).toHex())},
+                             {"expires", value["expires"]},
+                             {"phase", "ready"}}));
+}
+
+// 日期：2026-11-09；身份须规范编码且有界，空身份不能被原生删除接口当成授权。
+QByteArray identityField(const QJsonValue &value) {
+    const auto text = value.toString().toLatin1();
+    const auto result = QByteArray::fromHex(text);
+    if (!value.isString() || result.isEmpty() || result.size() > 256 || result.toHex() != text)
+        throw Error(ExitCode::Integrity, QStringLiteral("浏览回收原生身份无效"), "cleanup");
+    return result;
+}
+
+// 日期：2026-11-09；预先核对全部仍存在的对象，删除首项之前拒绝同名换代或不安全权限。
+void verifySnapshotObject(PrivateStore &store, const QString &name, const QByteArray &identity) {
+    if (!store.exists(name))
+        return;
+    store.validateFile(name);
+    SourceFile file(QDir(store.directory()).filePath(name), SourceFile::OpenPolicy::PrivateState);
+    if (snapshotIdentity(file) != identity)
+        throw Error(ExitCode::Integrity, QStringLiteral("浏览快照对象已换代，保留原数据"),
+                    "cleanup");
+}
+
 // 日期：2026-11-04；游标包含不可伪造的快照/偏移 HMAC，偏移只使用规范十进制。
 QString cursorFor(const QString &id, quint64 offset, const QByteArray &key) {
     const auto body = id.toLatin1() + '.' + QByteArray::number(offset);
@@ -58,7 +115,74 @@ QJsonObject entry(const QString &path) {
     }
     return result;
 }
+// 日期：2026-11-09；仅由独占维护或持browse.lock的创建入口调用，同一校验覆盖两条回收路径。
+QJsonObject cleanupSnapshot(PrivateStore &store, const QUuid &snapshot, const QDateTime &now,
+                            bool apply, const std::function<void()> &check) {
+    if (!now.isValid() || now.timeSpec() != Qt::UTC)
+        throw Error(ExitCode::Config, QStringLiteral("浏览回收需要独占根和UTC时钟"), "cleanup");
+    const auto checkpoint = [&]() {
+        // 日期：2026-11-09；取消不回滚已持久的删除意图，后续批次重新验证原对象再继续。
+        if (check)
+            check();
+    };
+    checkpoint();
+    const auto name = retentionName(snapshot);
+    if (!store.exists(name))
+        return {{"eligible", false}, {"action", "no-retention-evidence"}};
+    const auto raw = store.read(name, 4096);
+    auto value = next::parseControl(raw);
+    const auto expiry = QDateTime::fromString(value["expires"].toString(), Qt::ISODate);
+    if (value.size() != 7 || raw != next::encodeControl(value) || value["version"] != 1 ||
+        value["snapshot"] != snapshot.toString(QUuid::WithoutBraces) ||
+        (value["phase"] != "ready" && value["phase"] != "deleting") || !expiry.isValid() ||
+        expiry.timeSpec() != Qt::UTC || expiry.toString(Qt::ISODate) != value["expires"].toString())
+        throw Error(ExitCode::Integrity, QStringLiteral("浏览回收凭据损坏，保留原数据"), "cleanup");
+    const auto root = identityField(value["root"]);
+    const auto data = identityField(value["data"]);
+    const auto metadata = identityField(value["metadata"]);
+    if (store.identity() != root)
+        throw Error(ExitCode::Integrity, QStringLiteral("浏览回收状态根已换代"), "cleanup");
+    if (value["phase"] == "ready" && expiry > now)
+        return {{"eligible", false}, {"action", "retained"}};
+    const auto base = snapshotName(snapshot.toString(QUuid::WithoutBraces));
+    verifySnapshotObject(store, base + ".data", data);
+    verifySnapshotObject(store, base + ".json", metadata);
+    checkpoint();
+    if (!apply)
+        return {{"eligible", true}, {"action", "expired-preview"}};
+    if (value["phase"] == "ready") {
+        value["phase"] = "deleting";
+        store.write(name, next::encodeControl(value));
+    }
+    checkpoint();
+    removeReceivedTemporary(QDir(store.directory()).filePath(base + ".data"), data, false, root);
+    checkpoint();
+    removeReceivedTemporary(QDir(store.directory()).filePath(base + ".json"), metadata, false,
+                            root);
+    checkpoint();
+    QByteArray marker;
+    {
+        SourceFile file(QDir(store.directory()).filePath(name),
+                        SourceFile::OpenPolicy::PrivateState);
+        if (store.read(name, 4096) != next::encodeControl(value))
+            throw Error(ExitCode::Integrity, QStringLiteral("浏览删除意图已换代"), "cleanup");
+        marker = snapshotIdentity(file);
+    }
+    removeReceivedTemporary(QDir(store.directory()).filePath(name), marker, false, root);
+    checkpoint();
+    return {{"eligible", true}, {"action", "cleaned"}};
+}
+
 } // namespace
+
+// 日期：2026-11-09；外部自动维护必须持独占根；普通共享会话不能调用此入口删除快照。
+QJsonObject cleanupExpiredBrowseSnapshot(PrivateStore &store, const QUuid &snapshot,
+                                         const QDateTime &now, bool apply,
+                                         const std::function<void()> &check) {
+    if (!store.maintenance())
+        throw Error(ExitCode::Config, QStringLiteral("浏览回收需要独占状态根"), "cleanup");
+    return cleanupSnapshot(store, snapshot, now, apply, check);
+}
 
 // 日期：2026-11-04；实例不缓存授权或完整目录条目，跨连接权限变化会在 list 重新核对。
 BrowseStore::BrowseStore(PrivateStore &store, const std::atomic_bool *cancel,
@@ -77,28 +201,22 @@ void BrowseStore::check() const {
     }
 }
 
-// 日期：2026-11-04；只有持有全局浏览修改锁时调用，不能把尚在构建中的快照误删。
+// 日期：2026-11-09；持有浏览修改锁时复用身份凭据；无凭据的老快照保持，旁路不会无限积累。
 void BrowseStore::collect() const {
-    QDirIterator iterator(store_.directory(), {"browse-*.data", "browse-*.json"},
+    QDirIterator iterator(store_.directory(), {"snapshot-retention-*.json"},
                           QDir::Files | QDir::Hidden);
     while (iterator.hasNext()) {
         check();
-        const auto path = iterator.next();
-        const auto info = iterator.fileInfo();
-        const auto base = info.completeBaseName();
-        if (base.size() != 43 || QUuid(base.mid(7)).isNull())
+        iterator.next();
+        const auto name = iterator.fileInfo().fileName();
+        const auto text = name.mid(19, 36);
+        const QUuid id(text);
+        if (id.isNull() || id.toString(QUuid::WithoutBraces) != text || name != retentionName(id))
             continue;
-        const auto meta = base + ".json";
-        bool expired = !store_.exists(meta);
-        if (!expired) {
-            const auto object = next::parseControl(store_.read(meta));
-            const auto expiry = QDateTime::fromString(object["expires"].toString(), Qt::ISODate);
-            expired = !expiry.isValid() || expiry <= QDateTime::currentDateTimeUtc();
-        }
-        if (expired) {
-            store_.remove(base + ".data");
-            store_.remove(meta);
-        }
+        cleanupSnapshot(store_, id, QDateTime::currentDateTimeUtc(), true, [this]() {
+            // 日期：2026-11-09；逐个原生删除边界同样观察浏览取消，删除意图可交给后续维护继续。
+            check();
+        });
     }
 }
 
@@ -175,6 +293,7 @@ QString BrowseStore::create(const Principal &principal, const QString &share,
                  {"bytes", QString::number(bytes)},
                  {"entries", QString::number(entries)},
                  {"expires", QDateTime::currentDateTimeUtc().addSecs(300).toString(Qt::ISODate)}}));
+        noteRetention(store_, id);
     } catch (...) {
         if (!committed.isEmpty())
             QFile::remove(committed);
