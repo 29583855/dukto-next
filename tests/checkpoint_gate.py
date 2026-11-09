@@ -52,23 +52,25 @@ class CheckpointGate:
             record["waiting"] = False
             self.condition.notify_all()
 
-    # 日期：2026-11-05；每次仅给一个已有数据流追加4MiB，真实落盘增加后再放行，保持其他文件中途状态。
+    # 日期：2026-11-09；逐次追加4MiB；无确认进展250ms后轮换等待流，避免跨通道依赖饿死其他TLS连接。
     def checkpoint(self, read_confirmed, minimum, timeout=120):
         deadline = time.monotonic() + timeout
-        selected, baseline = None, 0
+        selected, baseline, granted_at = None, 0, 0.0
         while time.monotonic() < deadline:
             confirmed = read_confirmed()
             with self.condition:
                 if confirmed >= minimum:
                     self.accepting = False
                     return confirmed
-                if selected is not None and (confirmed > baseline or selected["finished"]):
+                if selected is not None and (confirmed > baseline or selected["finished"]
+                                             or time.monotonic() - granted_at >= 0.25):
                     selected = None
                 if selected is None:
                     waiting = [value for value in self.streams if value["waiting"] and not value["finished"]]
                     if waiting:
-                        selected = max(waiting, key=lambda value: value["forwarded"])
+                        selected = min(waiting, key=lambda value: (value["grants"], -value["forwarded"]))
                         baseline = confirmed
+                        granted_at = time.monotonic()
                         selected["limit"] += 4 * 1024 * 1024
                         selected["grants"] += 1
                         self.condition.notify_all()

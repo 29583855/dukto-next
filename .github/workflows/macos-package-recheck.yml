@@ -29,6 +29,8 @@ jobs:
         with:
           python-version: '3.12'
       - run: python -m pip install psutil
+      # 日期：2026-11-09；先验证代理跨通道依赖和真实确认门槛，保持原恢复预算。
+      - run: python -X utf8 tests/checkpoint_gate_tests.py
       # 日期：2026-11-06；复查原始归档，不重新编译包；Actions下载校验附件摘要。
       - uses: actions/download-artifact@v4
         with:
