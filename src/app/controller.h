@@ -195,7 +195,8 @@ class Controller final : public QObject {
     bool batchHasNext_ = false;
     dukto::LegacyListener *listener_ = nullptr;
     dukto::LegacyJob *sender_ = nullptr;
-    QSqlDatabase historyDatabase_;
+    struct HistoryConnection;
+    std::unique_ptr<HistoryConnection> historyConnection_;
     QVariantList history_;
     std::shared_ptr<dukto::BufferCredit> displayedTextCredit_;
     QString displayedText_;

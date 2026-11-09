@@ -1,21 +1,115 @@
 #include "app/boundedfiledialog.h"
 #include "app/controller.h"
 #include "core/buffercredit.h"
+#include "core/error.h"
 #include "core/files.h"
 #include <QApplication>
 #include <QDir>
 #include <QItemSelectionModel>
 #include <QSignalSpy>
+#include <QSqlQuery>
 #include <QStandardItemModel>
 #include <QStandardPaths>
 #include <QTcpSocket>
 #include <QTemporaryDir>
 #include <QtEndian>
 #include <QtTest>
+#include <memory>
 
 class ControllerTests final : public QObject {
     Q_OBJECT
   private slots:
+    // 日期：2026-11-09；真实历史连接共享页缓存额度，双实例使用不同Qt注册项，销毁其一不关闭另一项。
+    void historyCacheReservationsAndIndependentConnections() {
+        QTemporaryDir root;
+        QVERIFY(root.isValid());
+        QSettings::setDefaultFormat(QSettings::IniFormat);
+        QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, root.path());
+        const auto before = dukto::BufferCredit::usage();
+        const auto baseline = QSqlDatabase::connectionNames();
+        {
+            Controller first(0, nullptr, root.filePath("first"));
+            auto firstNames = QSqlDatabase::connectionNames();
+            for (const auto &name : baseline)
+                firstNames.removeAll(name);
+            QCOMPARE(firstNames.size(), 1);
+            const auto firstName = firstNames[0];
+            QVERIFY(firstName.startsWith("gui-history-"));
+            QCOMPARE(dukto::BufferCredit::usage()["controlUsed"].toString().toLongLong(),
+                     before["controlUsed"].toString().toLongLong() + 2112 * 1024);
+            {
+                Controller second(0, nullptr, root.filePath("second"));
+                auto names = QSqlDatabase::connectionNames();
+                for (const auto &name : baseline)
+                    names.removeAll(name);
+                QCOMPARE(names.size(), 2);
+                QCOMPARE(dukto::BufferCredit::usage()["controlUsed"].toString().toLongLong(),
+                         before["controlUsed"].toString().toLongLong() + 4224 * 1024);
+                QCOMPARE(dukto::BufferCredit::usage()["dataUsed"], before["dataUsed"]);
+                for (const auto &name : names) {
+                    QSqlQuery query(QSqlDatabase::database(name));
+                    for (const auto &setting :
+                         {qMakePair(QString("main.cache_size"), qint64(-2048)),
+                          qMakePair(QString("temp.cache_size"), qint64(-64)),
+                          qMakePair(QString("temp_store"), qint64(1)),
+                          qMakePair(QString("mmap_size"), qint64(0))}) {
+                        QVERIFY(query.exec("PRAGMA " + setting.first));
+                        QVERIFY(query.next());
+                        QCOMPARE(query.value(0).toLongLong(), setting.second);
+                        QVERIFY(!query.next());
+                    }
+                }
+            }
+            QVERIFY(QSqlDatabase::contains(firstName));
+            QSqlQuery query(QSqlDatabase::database(firstName));
+            QVERIFY(query.exec("SELECT COUNT(*) FROM history"));
+            QVERIFY(query.next());
+            QCOMPARE(query.value(0).toInt(), 0);
+        }
+        QCOMPARE(QSqlDatabase::connectionNames(), baseline);
+        // 日期：2026-11-09；只核对当前占用归还，历史峰值按定义不会在连接关闭后回退。
+        for (const auto &key : {"used", "dataUsed", "controlUsed"})
+            QCOMPARE(dukto::BufferCredit::usage()[key], before[key]);
+    }
+
+    // 日期：2026-11-09；坏历史文件导致初始化失败时，Qt连接/缓存额度均归还，坏库原字节保持。
+    void historyCacheFailureAndBudgetRefusalRecover() {
+        QTemporaryDir root;
+        QVERIFY(root.isValid());
+        QSettings::setDefaultFormat(QSettings::IniFormat);
+        QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, root.path());
+        QVERIFY(QDir().mkpath(root.filePath("broken")));
+        QFile file(root.filePath("broken/history.sqlite"));
+        QVERIFY(file.open(QIODevice::WriteOnly));
+        QCOMPARE(file.write(QByteArray(4096, 'x')), qint64(4096));
+        file.close();
+        const auto hash = dukto::hashFile(file.fileName());
+        const auto baseline = QSqlDatabase::connectionNames();
+        const auto before = dukto::BufferCredit::usage();
+        QVERIFY_EXCEPTION_THROWN(Controller(0, nullptr, root.filePath("broken")), dukto::Error);
+        QCOMPARE(dukto::hashFile(file.fileName()), hash);
+        QCOMPARE(QSqlDatabase::connectionNames(), baseline);
+        // 日期：2026-11-09；只核对当前占用归还，历史峰值按定义不会在连接关闭后回退。
+        for (const auto &key : {"used", "dataUsed", "controlUsed"})
+            QCOMPARE(dukto::BufferCredit::usage()[key], before[key]);
+        {
+            dukto::BufferCredit full(128 * 1024 * 1024 - before["used"].toString().toLongLong());
+            QVERIFY_EXCEPTION_THROWN(Controller(0, nullptr, root.filePath("retry")), dukto::Error);
+            QVERIFY(!QFileInfo::exists(root.filePath("retry/history.sqlite")));
+            QCOMPARE(QSqlDatabase::connectionNames(), baseline);
+        }
+        {
+            Controller retry(0, nullptr, root.filePath("retry"));
+            QVERIFY(QFileInfo::exists(root.filePath("retry/history.sqlite")));
+            QCOMPARE(dukto::BufferCredit::usage()["controlUsed"].toString().toLongLong(),
+                     before["controlUsed"].toString().toLongLong() + 2112 * 1024);
+        }
+        QCOMPARE(QSqlDatabase::connectionNames(), baseline);
+        // 日期：2026-11-09；只核对当前占用归还，历史峰值按定义不会在连接关闭后回退。
+        for (const auto &key : {"used", "dataUsed", "controlUsed"})
+            QCOMPARE(dukto::BufferCredit::usage()[key], before[key]);
+    }
+
     // 日期：2026-11-08；界面路径选择在文件数或累计路径字符超预算时撤销新增项。
     void transferSelectionHasFixedBudget() {
         QStandardItemModel countModel;

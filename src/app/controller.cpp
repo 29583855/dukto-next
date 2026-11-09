@@ -6,6 +6,7 @@
 #include "core/endpoint.h"
 #include "core/error.h"
 #include "core/files.h"
+#include "core/sqlitecache.h"
 #include "core/sqliteruntime.h"
 
 #include <QApplication>
@@ -24,6 +25,51 @@
 #include <QTimer>
 #include <QUrl>
 
+struct Controller::HistoryConnection final {
+    dukto::SqliteCacheCredit cache{2048, true};
+    const QString name = "gui-history-" + QUuid::createUuid().toString(QUuid::WithoutBraces);
+    QSqlDatabase database;
+
+    // 日期：2026-11-09；先取得共用控制额度再开库，各实例拥有独立注册名；配置须真实回读确认。
+    explicit HistoryConnection(const QString &directory) {
+        database = dukto::addSqliteDatabase(name);
+        try {
+            database.setDatabaseName(QDir(directory).filePath("history.sqlite"));
+            if (!database.open())
+                throw dukto::Error(dukto::ExitCode::Disk, database.lastError().text(), "history");
+            cache.configure(database);
+            QSqlQuery query(database);
+            for (const auto sql :
+                 {"PRAGMA max_page_count=65536",
+                  "CREATE TABLE IF NOT EXISTS history(time TEXT, path TEXT, bytes TEXT, message "
+                  "TEXT)",
+                  "CREATE TABLE IF NOT EXISTS text_history(record INTEGER PRIMARY KEY, content "
+                  "TEXT)",
+                  "CREATE TABLE IF NOT EXISTS history_peers(record INTEGER PRIMARY KEY, peer TEXT)",
+                  "CREATE TABLE IF NOT EXISTS history_receipts(record INTEGER PRIMARY KEY, catalog "
+                  "TEXT, "
+                  "task TEXT, entries INTEGER)"})
+                if (!query.exec(sql))
+                    throw dukto::Error(dukto::ExitCode::Disk, query.lastError().text(), "history");
+        } catch (...) {
+            close();
+            throw;
+        }
+    }
+
+    // 日期：2026-11-09；构造失败或控制器后续初始化失败同样先关闭/移除连接，再归还页缓存目标额度。
+    ~HistoryConnection() {
+        close();
+    }
+
+    // 日期：2026-11-09；先销毁本实例数据库引用，按唯一名称注销，不影响仍存活的其他窗口实例。
+    void close() {
+        database.close();
+        database = QSqlDatabase();
+        QSqlDatabase::removeDatabase(name);
+    }
+};
+
 // 日期：2026-11-07；初始化独立设置、历史和接收服务，并缓存剪贴板初始可用状态。
 Controller::Controller(quint16 port, QObject *parent, const QString &storageDirectory)
     : QObject(parent),
@@ -41,20 +87,7 @@ Controller::Controller(quint16 port, QObject *parent, const QString &storageDire
             : storageDirectory;
     if (!QDir().mkpath(dataDirectory))
         throw dukto::Error(dukto::ExitCode::Disk, QStringLiteral("无法创建应用数据目录"));
-    historyDatabase_ = dukto::addSqliteDatabase("gui-history");
-    historyDatabase_.setDatabaseName(QDir(dataDirectory).filePath("history.sqlite"));
-    if (!historyDatabase_.open())
-        throw dukto::Error(dukto::ExitCode::Disk, historyDatabase_.lastError().text());
-    QSqlQuery query(historyDatabase_);
-    for (const auto sql :
-         {"PRAGMA cache_size=-2048", "PRAGMA max_page_count=65536",
-          "CREATE TABLE IF NOT EXISTS history(time TEXT, path TEXT, bytes TEXT, message TEXT)",
-          "CREATE TABLE IF NOT EXISTS text_history(record INTEGER PRIMARY KEY, content TEXT)",
-          "CREATE TABLE IF NOT EXISTS history_peers(record INTEGER PRIMARY KEY, peer TEXT)",
-          "CREATE TABLE IF NOT EXISTS history_receipts(record INTEGER PRIMARY KEY, catalog TEXT, "
-          "task TEXT, entries INTEGER)"})
-        if (!query.exec(sql))
-            throw dukto::Error(dukto::ExitCode::Disk, query.lastError().text());
+    historyConnection_.reset(new HistoryConnection(dataDirectory));
     loadHistory();
     connect(QApplication::clipboard(), &QClipboard::dataChanged, this,
             &Controller::refreshClipboardAvailability);
@@ -103,7 +136,8 @@ Controller::Controller(quint16 port, QObject *parent, const QString &storageDire
 QVariantMap Controller::diagnostics() {
     try {
         dukto::DiagnosticOptions options;
-        options.stateDirectory = QFileInfo(historyDatabase_.databaseName()).absolutePath();
+        options.stateDirectory =
+            QFileInfo(historyConnection_->database.databaseName()).absolutePath();
         options.outputDirectory = outputDirectory();
         options.requireStateDirectory = true;
         options.requireOutputDirectory = true;
@@ -160,9 +194,7 @@ Controller::~Controller() {
         delete sender_;
     }
     delete listener_;
-    historyDatabase_.close();
-    historyDatabase_ = QSqlDatabase();
-    QSqlDatabase::removeDatabase("gui-history");
+    historyConnection_.reset();
 }
 
 // 日期：2026-11-04；发现列表最多 256 个设备。
@@ -604,8 +636,8 @@ void Controller::onResult(int code, const dukto::LegacyResult &ownedResult) {
                 .arg(result.value("elapsedMs").toString().toLongLong() / 1000.0, 0, 'f', 2)
                 .arg(result.value("rateBytesPerSecond").toString().toDouble() / 1048576, 0, 'f', 1);
     {
-        QSqlQuery query(historyDatabase_);
-        bool saved = historyDatabase_.transaction();
+        QSqlQuery query(historyConnection_->database);
+        bool saved = historyConnection_->database.transaction();
         query.prepare("INSERT INTO history VALUES (?, ?, ?, ?)");
         query.addBindValue(QDateTime::currentDateTimeUtc().toString(Qt::ISODate));
         query.addBindValue(result.value("path").toString());
@@ -644,10 +676,11 @@ void Controller::onResult(int code, const dukto::LegacyResult &ownedResult) {
                 "DELETE FROM history_peers WHERE record NOT IN (SELECT rowid FROM history)") &&
             query.exec(
                 "DELETE FROM history_receipts WHERE record NOT IN (SELECT rowid FROM history)");
-        const auto failure = query.lastError().isValid() ? query.lastError().text()
-                                                         : historyDatabase_.lastError().text();
-        if (!saved || !historyDatabase_.commit()) {
-            historyDatabase_.rollback();
+        const auto failure = query.lastError().isValid()
+                                 ? query.lastError().text()
+                                 : historyConnection_->database.lastError().text();
+        if (!saved || !historyConnection_->database.commit()) {
+            historyConnection_->database.rollback();
             status_ += QStringLiteral("；历史保存失败：") + failure;
         }
         loadHistory();
@@ -661,7 +694,7 @@ void Controller::onResult(int code, const dukto::LegacyResult &ownedResult) {
 // 日期：2026-11-04；界面模型只持有一页，扫描和历史总数量不能放大内存。
 void Controller::loadHistory() {
     history_.clear();
-    QSqlQuery query(historyDatabase_);
+    QSqlQuery query(historyConnection_->database);
     if (!query.exec("SELECT time, path, bytes, message, rowid, EXISTS(SELECT 1 FROM text_history "
                     "WHERE record=history.rowid), (SELECT peer FROM history_peers WHERE "
                     "record=history.rowid) FROM history ORDER BY rowid DESC LIMIT 100")) {
@@ -775,7 +808,7 @@ void Controller::displayReceivedText(QString text, std::shared_ptr<dukto::Buffer
 
 // 日期：2026-11-06；按需打开历史文本前核对UTF-8长度并授信，旧显示在新文本替换完成前仍有额度。
 void Controller::openHistory(const QString &id) {
-    QSqlQuery query(historyDatabase_);
+    QSqlQuery query(historyConnection_->database);
     query.prepare("SELECT catalog, task, entries FROM history_receipts WHERE record=?");
     query.addBindValue(id);
     if (!query.exec()) {
