@@ -97,6 +97,37 @@ def completed(operation):
     return events[-1]
 
 
+# 日期：2026-11-09；以真实开始/终态事件区分后台活动，不把阈值超额或新增Qt线程当作等待理由。
+def maintenance_state(output):
+    assert not output.error, output.error
+    counts = output.snapshot()["events"]
+    started = counts.get("state-cleanup-started", 0)
+    finished = sum(counts.get(name, 0) for name in
+                   ("state-cleanup", "state-cleanup-deferred", "state-cleanup-error"))
+    assert finished <= started <= finished + 1, counts
+    return {"started": started, "finished": finished, "active": started != finished}
+
+
+# 日期：2026-11-09；只在明确后台活动跨过取样时重采，原活动样本保留；五秒仍未归还即失败。
+def maintenance_idle_sample(process, output, baseline=None):
+    started = time.monotonic()
+    observations = []
+    while True:
+        before = maintenance_state(output)
+        sample = idle_sample(process, None if before["active"] else baseline)
+        after = maintenance_state(output)
+        if not before["active"] and not after["active"] and before == after:
+            result = dict(sample, maintenanceState=after)
+            if observations:
+                result.update(maintenanceActivitySamples=observations,
+                              maintenanceWaitSeconds=round(time.monotonic() - started, 3),
+                              maintenanceWaitLimitSeconds=5)
+            return result
+        observations.append({"sample": sample, "before": before, "after": after,
+                             "elapsedSeconds": round(time.monotonic() - started, 3)})
+        assert time.monotonic() - started < 5 and len(observations) < 32, observations
+
+
 # 日期：2026-11-05；隔离目录、独立身份及回环服务，不改共享配置或触碰旧版长时测试。
 def main():
     parser = argparse.ArgumentParser()
@@ -140,6 +171,7 @@ def main():
         operations = []
         try:
             assert json.loads(server.stdout.readline())["event"] == "service-listening"
+            listening_at = time.monotonic()
             output = JsonOutputDrain(server.stdout)
             clients = [root / f"client-{index}" for index in range(3)]
             for client, offer, proxy in zip(clients, offers, proxies):
@@ -204,7 +236,17 @@ def main():
                                                    "--remote-path", destination.name, "--threads", "4"])
                 assert digest(destination / small.name) == small_sha
                 if index >= 3:
-                    samples.append(idle_sample(server, samples[0] if samples else None))
+                    samples.append(maintenance_idle_sample(server, output, samples[0] if samples else None))
+            # 日期：2026-11-09；每次专项均跨过真实一分钟维护，不能因较快本机在定时器前结束而漏验。
+            waiting = time.monotonic()
+            while maintenance_state(output)["started"] == 0:
+                assert time.monotonic() - listening_at < 70, output.snapshot()
+                assert server.poll() is None, server.returncode
+                time.sleep(0.02)
+            samples.append(maintenance_idle_sample(server, output, samples[0]))
+            maintenance_wait = round(time.monotonic() - waiting, 3)
+            maintenance = maintenance_state(output)
+            assert maintenance["started"] == maintenance["finished"] and maintenance["finished"] >= 1
             baseline = samples[0]
             assert max(item["handlesOrFds"] for item in samples) <= baseline["handlesOrFds"] + 8, samples
             assert max(item["threads"] for item in samples) <= baseline["threads"] + 1, samples
@@ -229,6 +271,7 @@ def main():
               "readyTimeoutSeconds": args.ready_timeout, "requestedChannels": [8, 16], "actualChannels": [8, 8], "thirdTaskQueuedAndCancelled": True,
               "pauseSecondsWhileSaturated": pause_seconds, "unrelatedTaskContinued": True,
               "resumeChannels": 16, "idleSamplesAfterWarmup": samples,
+              "realMinuteMaintenance": maintenance, "waitForMinuteMaintenanceSeconds": maintenance_wait,
               "scope": "two active owners and a third queued/cancelled, shared16 slots and independent pause; broader fair-owner ordering and budgets have separate validation"}
     text = json.dumps(report, ensure_ascii=False, indent=2) + "\n"
     Path(args.report).write_text(text, encoding="utf-8")

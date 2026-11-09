@@ -14,6 +14,7 @@ class JsonOutputDrain:
         self.events = Counter()
         self.recent = deque(maxlen=16)
         self.error = None
+        self.lock = threading.Lock()
         self.thread = threading.Thread(target=self.read, daemon=True)
         self.thread.start()
 
@@ -21,18 +22,24 @@ class JsonOutputDrain:
     def read(self):
         try:
             for line in self.stream:
-                self.bytes += len(line.encode("utf-8"))
                 event = json.loads(line)
-                self.events[event.get("event", "")] += 1
-                self.recent.append(event)
+                with self.lock:
+                    self.bytes += len(line.encode("utf-8"))
+                    self.events[event.get("event", "")] += 1
+                    self.recent.append(event)
         except Exception as error:
             self.error = repr(error)
+
+    # 日期：2026-11-09；原子复制固定汇总，后台活动和资源取样间可核对生命周期修订。
+    def snapshot(self):
+        with self.lock:
+            return {"bytes": self.bytes, "events": dict(self.events), "lastEvents": list(self.recent)}
 
     # 日期：2026-11-05；只有服务真实退出后调用；读取异常和未退出线程必须使专项失败。
     def finish(self):
         self.thread.join(5)
         assert not self.thread.is_alive() and not self.error, (self.error, list(self.recent))
-        return {"bytes": self.bytes, "events": dict(self.events), "lastEvents": list(self.recent)}
+        return self.snapshot()
 
 
 # 日期：2026-11-05；截断末行、非 JSON 输出不能覆盖原期限失败；最多保留十六条有效事件和固定整数。

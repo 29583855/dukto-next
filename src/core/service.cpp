@@ -761,7 +761,11 @@ bool ServiceListener::requestMaintenance() {
         return false;
     auto worker = new ServiceMaintenance(stateParent_, relative_, rootIdentity_, this);
     maintenance_ = worker;
-    QObject::connect(worker, &QThread::finished, this, [this, worker]() {
+    // 日期：2026-11-09；完成通知投递给主线程中的worker对象，删除会撤销旧通知，避免地址复用误认。
+    QObject::connect(worker, &QThread::finished, worker, [this, worker]() {
+        // 日期：2026-11-09；重复完成通知先核对槽，不重复归还或发布终态。
+        if (maintenance_ != worker)
+            return;
         // 日期：2026-11-09；join后读取结果；先归还维护槽再发布事件，允许槽内响应停止。
         worker->wait();
         const auto result = worker->result;
@@ -770,6 +774,8 @@ bool ServiceListener::requestMaintenance() {
         emit event(result);
     });
     worker->start();
+    // 日期：2026-11-09；明确后台活动边界，完成事件仅在join后发布；信号槽可同步请求停止。
+    emit event({{"eventVersion", 1}, {"event", "state-cleanup-started"}});
     return true;
 }
 
@@ -782,10 +788,12 @@ ServiceListener::~ServiceListener() {
 void ServiceListener::stop() {
     maintenanceTimer_.stop();
     close();
+    QJsonObject maintenanceResult;
     if (maintenance_) {
         QObject::disconnect(maintenance_, nullptr, this, nullptr);
         maintenance_->requestInterruption();
         maintenance_->wait();
+        maintenanceResult = maintenance_->result;
         delete maintenance_;
         maintenance_ = nullptr;
     }
@@ -799,6 +807,9 @@ void ServiceListener::stop() {
         delete worker;
     }
     workers_.clear();
+    // 日期：2026-11-09；停止也闭合已公开的维护活动；所有槽先归还，重复/同步停止不重复完成。
+    if (!maintenanceResult.isEmpty())
+        emit event(maintenanceResult);
 }
 
 // 日期：2026-11-05；分别公开运行快照和磁盘指纹，续期后不得将旧监听器误报为已采用新证书。
@@ -830,7 +841,11 @@ void ServiceListener::incomingConnection(qintptr descriptor) {
     auto worker = new ServiceWorker(descriptor, state_, identity_, timeoutMs_, this, rootIdentity_);
     workers_.insert(worker);
     QObject::connect(worker, &ServiceWorker::event, this, &ServiceListener::event);
-    QObject::connect(worker, &QThread::finished, this, [this, worker]() {
+    // 日期：2026-11-09；worker是主线程对象，停止删除时一并撤销其排队通知和旧对象代数。
+    QObject::connect(worker, &QThread::finished, worker, [this, worker]() {
+        // 日期：2026-11-09；仅当前活动集合中的线程可以归还连接槽。
+        if (!workers_.contains(worker))
+            return;
         // 日期：2026-11-04；回调只在监听线程运行，不能与 incomingConnection 并发修改活动集合。
         workers_.remove(worker);
         worker->deleteLater();

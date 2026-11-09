@@ -179,7 +179,11 @@ class ExpiredTaskCleanupTests final : public QObject {
                     QVERIFY(query.exec("UPDATE tasks SET updated='2000-01-01T00:00:00Z'"));
                 });
                 timer->setInterval(20);
-                QTRY_VERIFY_WITH_TIMEOUT(!events.isEmpty(), 3000);
+                QTRY_VERIFY_WITH_TIMEOUT(events.size() >= 2, 3000);
+                QCOMPARE(qvariant_cast<QJsonObject>(events.first().at(0))["event"].toString(),
+                         QString("state-cleanup-started"));
+                QCOMPARE(qvariant_cast<QJsonObject>(events.last().at(0))["event"].toString(),
+                         QString("state-cleanup-deferred"));
                 QVERIFY(QFileInfo::exists(pending));
                 QCOMPARE(active.read("unknown.part"), QByteArray("keep-unknown"));
                 QVERIFY_EXCEPTION_THROWN(dukto::PrivateStore(fixture.root.filePath("budget"), false,
@@ -243,7 +247,7 @@ class ExpiredTaskCleanupTests final : public QObject {
         }
         QSignalSpy events(&listener, &dukto::ServiceListener::event);
         QVERIFY(listener.requestMaintenance());
-        QTRY_VERIFY_WITH_TIMEOUT(!events.isEmpty(), 3000);
+        QTRY_VERIFY_WITH_TIMEOUT(events.size() == 2, 3000);
         const auto report = qvariant_cast<QJsonObject>(events.last().at(0));
         QCOMPARE(report["event"].toString(), QString("state-cleanup-error"));
         QCOMPARE(report["code"].toInt(), int(dukto::ExitCode::Integrity));
@@ -254,6 +258,63 @@ class ExpiredTaskCleanupTests final : public QObject {
         QCOMPARE(original.read("original.json"), QByteArray("original"));
         QCOMPARE(replacement.read("unknown.part"), QByteArray("replacement"));
         QVERIFY(!replacement.exists("gc-cursor.json"));
+    }
+
+    // 日期：2026-11-09；真实维护已退出但完成通知仍排队时停止，原生槽归还且不得重复访问已释放线程。
+    void serviceMaintenanceQueuedCompletionAndStop() {
+        QTemporaryDir root;
+        {
+            dukto::PrivateStore store(root.filePath("service"), true);
+            dukto::initializeIdentity(store, {"127.0.0.1"});
+        }
+        dukto::ServiceListener listener(root.path(), "service", 2000);
+        QVERIFY(listener.listen(QHostAddress::LocalHost, 0));
+        listener.findChild<QTimer *>("stateMaintenanceTimer")->stop();
+        QSignalSpy events(&listener, &dukto::ServiceListener::event);
+        QVERIFY(listener.requestMaintenance());
+        QCOMPARE(events.size(), 1);
+        QCOMPARE(qvariant_cast<QJsonObject>(events.first().at(0)),
+                 (QJsonObject{{"eventVersion", 1}, {"event", "state-cleanup-started"}}));
+        auto worker = listener.findChild<QThread *>();
+        QVERIFY(worker);
+        QVERIFY(worker->wait(5000));
+        listener.stop();
+        QCOMPARE(events.size(), 2);
+        QCOMPARE(qvariant_cast<QJsonObject>(events.last().at(0))["event"].toString(),
+                 QString("state-cleanup"));
+        QCoreApplication::sendPostedEvents();
+        QCoreApplication::processEvents();
+        listener.stop();
+        QCOMPARE(events.size(), 2);
+        dukto::PrivateStore exclusive(root.filePath("service"), false,
+                                      dukto::PrivateStore::Use::Maintenance);
+        QVERIFY(exclusive.maintenance());
+    }
+
+    // 日期：2026-11-09；开始事件的同步观察者可立即停止，开始/终态成对且不会在线程退出后重新启动。
+    void serviceMaintenanceDirectStopOnStarted() {
+        QTemporaryDir root;
+        {
+            dukto::PrivateStore store(root.filePath("service"), true);
+            dukto::initializeIdentity(store, {"127.0.0.1"});
+        }
+        dukto::ServiceListener listener(root.path(), "service", 2000);
+        QVERIFY(listener.listen(QHostAddress::LocalHost, 0));
+        QSignalSpy events(&listener, &dukto::ServiceListener::event);
+        connect(&listener, &dukto::ServiceListener::event, &listener,
+                [&](const QJsonObject &event) {
+                    // 日期：2026-11-09；仅针对真实开始事件同步停止，不通过测试开关控制生产线程。
+                    if (event["event"] == "state-cleanup-started")
+                        listener.stop();
+                });
+        QVERIFY(listener.requestMaintenance());
+        QVERIFY(!listener.isListening());
+        QCOMPARE(events.size(), 2);
+        const auto final = qvariant_cast<QJsonObject>(events.last().at(0))["event"].toString();
+        QVERIFY(final == "state-cleanup" || final == "state-cleanup-deferred");
+        QCoreApplication::processEvents();
+        QCOMPARE(events.size(), 2);
+        QVERIFY(!listener.requestMaintenance());
     }
 
     // 日期：2026-11-08；自动维护不得凭tasks.sqlite名称初始化未知普通库或隐式迁移旧版库。
