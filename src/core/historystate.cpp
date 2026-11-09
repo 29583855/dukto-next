@@ -351,6 +351,6 @@ void HistoryState::validate(const QSqlDatabase &database) const {
 }
 // 日期：2026-11-09；策略寿命由Qt驱动覆盖全部派生文件，且持续保留同一历史根共享资格。
 std::shared_ptr<SqliteFilePolicy> HistoryState::policy() const {
-    return std::make_shared<HistoryBudget>(store_, QFileInfo(store_->directory()).absolutePath());
+    return budget_->connection();
 }
 } // namespace dukto

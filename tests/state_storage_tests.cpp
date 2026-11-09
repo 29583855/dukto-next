@@ -43,9 +43,10 @@ constexpr qint64 LargeLength = 4294967296LL + 19;
 
 struct Connection {
     QString name = QUuid::createUuid().toString();
-    QSqlDatabase database = dukto::addSqliteDatabase(name);
+    QSqlDatabase database;
     // 日期：2026-11-08；测试固定驱动的真实句柄与枚举观察可交叉核对，使用独立命名连接。
-    explicit Connection(const QString &path) {
+    explicit Connection(const QString &path, std::shared_ptr<dukto::SqliteFilePolicy> policy = {})
+        : database(dukto::addSqliteDatabase(name, std::move(policy))) {
         database.setDatabaseName(path);
     }
     // 日期：2026-11-08；先销毁本地连接引用再注销，断言提前返回也不会泄漏连接。
@@ -53,6 +54,26 @@ struct Connection {
         database.close();
         database = QSqlDatabase();
         QSqlDatabase::removeDatabase(name);
+    }
+};
+
+class FailedHistoryObservation final : public dukto::SqliteFilePolicy {
+  public:
+    std::shared_ptr<dukto::SqliteFilePolicy> delegate;
+    dukto::SqliteFileEvent::Action action = dukto::SqliteFileEvent::Action::Open;
+    bool injected = false;
+    // 日期：2026-11-09；真实连接仍由原生产策略授信，不伪造成功的底层写入。
+    int before(const dukto::SqliteFileEvent &event) noexcept override {
+        return delegate->before(event);
+    }
+    // 日期：2026-11-09；仅改变一次真实成功调用的观察错误码，不改正文、长度或原生操作结果。
+    void after(const dukto::SqliteFileEvent &event, int result) noexcept override {
+        auto changed = event;
+        if (!injected && event.action == action && result == SQLITE_OK) {
+            changed.observation.fileResult = SQLITE_IOERR_FSTAT;
+            injected = true;
+        }
+        delegate->after(changed, result);
     }
 };
 
@@ -223,6 +244,67 @@ bool invoke(QProcess &process, const QStringList &arguments) {
 class StateStorageTests final : public QObject {
     Q_OBJECT
   private slots:
+    // 日期：2026-11-09；真实打开和事务写入各注入一次观察失败，覆盖两个不同完成边界。
+    void protectedHistoryObservationFailure_data() {
+        QTest::addColumn<bool>("write");
+        QTest::newRow("open") << false;
+        QTest::newRow("write") << true;
+    }
+
+    // 日期：2026-11-09；同一状态已有/新连接均看到错误锁存；独立VFS句柄槽继续各自分配。
+    void protectedHistoryObservationFailure() {
+        QFETCH(bool, write);
+        QTemporaryDir root;
+        auto state = dukto::HistoryState::open(root.path(), "history.sqlite");
+        auto original = state->policy();
+        Connection first(state->path(), original);
+        QVERIFY(first.database.open());
+        state->validate(first.database);
+        auto fault = std::make_shared<FailedHistoryObservation>();
+        fault->delegate = state->policy();
+        fault->action =
+            write ? dukto::SqliteFileEvent::Action::Write : dukto::SqliteFileEvent::Action::Open;
+        Connection second(state->path(), fault);
+        QVERIFY(second.database.open());
+        if (write) {
+            state->validate(second.database);
+            QSqlQuery query(second.database);
+            QVERIFY(!query.exec("CREATE TABLE failed_observation(value INTEGER)"));
+        }
+        QVERIFY(fault->injected);
+        QVERIFY_EXCEPTION_THROWN(state->validate(second.database), dukto::Error);
+        QVERIFY_EXCEPTION_THROWN(state->validate(first.database), dukto::Error);
+        const auto active = std::dynamic_pointer_cast<dukto::HistoryBudget>(fault->delegate);
+        const auto sibling = std::dynamic_pointer_cast<dukto::HistoryBudget>(original);
+        QVERIFY(active);
+        QVERIFY(sibling);
+        QVERIFY_EXCEPTION_THROWN(active->check(), dukto::Error);
+        QVERIFY_EXCEPTION_THROWN(sibling->check(), dukto::Error);
+        const auto later = std::dynamic_pointer_cast<dukto::HistoryBudget>(state->policy());
+        QVERIFY(later);
+        QVERIFY_EXCEPTION_THROWN(later->check(), dukto::Error);
+    }
+
+    // 日期：2026-11-09；角色核验必须拒绝其他原生根中的同名主库，拒绝后本根新连接仍可正常读写。
+    void protectedHistoryRejectsOtherNativeRoot() {
+        QTemporaryDir root, other;
+        auto state = dukto::HistoryState::open(root.path(), "history.sqlite");
+        auto foreign = dukto::HistoryState::open(other.path(), "history.sqlite");
+        const auto before = dukto::hashFile(foreign->path());
+        {
+            Connection wrong(foreign->path(), state->policy());
+            QVERIFY(!wrong.database.open());
+        }
+        QCOMPARE(dukto::hashFile(foreign->path()), before);
+        Connection correct(state->path(), state->policy());
+        QVERIFY(correct.database.open());
+        state->validate(correct.database);
+        QSqlQuery query(correct.database);
+        QVERIFY(query.exec("CREATE TABLE correct_root(value INTEGER)"));
+        QVERIFY(query.exec("INSERT INTO correct_root VALUES(1)"));
+        state->validate(correct.database);
+    }
+
     // 日期：2026-11-09；两库交替增长触达同一合计额度，SQLITE_FULL后原记录和完整性保持。
     void protectedHistorySharedQuota() {
         QTemporaryDir root;

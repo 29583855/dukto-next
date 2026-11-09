@@ -3,6 +3,7 @@
 #include "sqlitevfs.h"
 #include "statebudget.h"
 #include <array>
+#include <atomic>
 #include <memory>
 
 namespace dukto {
@@ -17,12 +18,17 @@ class HistoryBudget final : public SqliteFilePolicy {
     void admit(const QString &name, qint64 maximum);
     // 日期：2026-11-09；打开后观察超出授信时禁止继续初始化，但不删除现有对象。
     void check() const;
+    // 日期：2026-11-09；每个VFS独立持有句柄编号和预留，但同一历史状态共享不可清除的观察错误。
+    std::shared_ptr<HistoryBudget> connection() const;
     // 日期：2026-11-09；固定64个连接内句柄，匿名临时文件从全域固定池获得持久预留。
     int before(const SqliteFileEvent &event) noexcept override;
     // 日期：2026-11-09；原生操作后补充高水位；只有已成功删除的匿名临时文件才归还其预留。
     void after(const SqliteFileEvent &event, int result) noexcept override;
 
   private:
+    // 日期：2026-11-09；状态对象与派生连接共享错误锁存；新策略不能让既有观察错误变为健康。
+    HistoryBudget(std::shared_ptr<PrivateStore> store, const QString &parent,
+                  std::shared_ptr<std::atomic_bool> failedObservation);
     struct Entry {
         quint64 file = 0;
         QString name;
@@ -43,10 +49,11 @@ class HistoryBudget final : public SqliteFilePolicy {
     // 日期：2026-11-09；映射需求按SQLite原生共享节点范围计算，旁路额度与主库分别合计。
     void grow(Entry &entry, qint64 bytes, bool sharedMemory = false);
     std::shared_ptr<PrivateStore> store_;
+    QString parent_;
     std::shared_ptr<StateBudget> budget_;
     QByteArray rootKey_;
     std::array<Entry, 64> entries_{};
     std::array<qint64, 10> admitted_{};
-    bool failedObservation_ = false;
+    std::shared_ptr<std::atomic_bool> failedObservation_;
 };
 } // namespace dukto

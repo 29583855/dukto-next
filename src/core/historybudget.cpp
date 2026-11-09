@@ -24,7 +24,13 @@ qint64 endOf(const SqliteFileEvent &event) {
 
 // 日期：2026-11-09；成员根和中央会话持续持有共享资格，配置/独占回收不能穿过活动策略。
 HistoryBudget::HistoryBudget(std::shared_ptr<PrivateStore> store, const QString &parent)
-    : store_(std::move(store)) {
+    : HistoryBudget(std::move(store), parent, std::make_shared<std::atomic_bool>(false)) {
+}
+
+// 日期：2026-11-09；连接持有独立账本执行者和固定句柄槽，只有健康锁存在同一状态内共享。
+HistoryBudget::HistoryBudget(std::shared_ptr<PrivateStore> store, const QString &parent,
+                             std::shared_ptr<std::atomic_bool> failedObservation)
+    : store_(std::move(store)), parent_(parent), failedObservation_(std::move(failedObservation)) {
     auto session = StateSession::open(parent);
     rootKey_ = session->binding(*store_).key;
     budget_ = session->budget(*store_);
@@ -42,6 +48,11 @@ HistoryBudget::HistoryBudget(std::shared_ptr<PrivateStore> store, const QString 
 
 // 日期：2026-11-09；所有打开句柄须先由SQLite关闭，析构不按进程消失伪造释放证据。
 HistoryBudget::~HistoryBudget() = default;
+
+// 日期：2026-11-09；只共享错误状态，不把两个独立VFS的本地编号或匿名预留混为同一连接。
+std::shared_ptr<HistoryBudget> HistoryBudget::connection() const {
+    return std::shared_ptr<HistoryBudget>(new HistoryBudget(store_, parent_, failedObservation_));
+}
 
 // 日期：2026-11-09；稳定角色只在已核验的私有根内使用，同一角色跨连接共用一份高水位。
 QByteArray HistoryBudget::key(const QString &name) const {
@@ -74,18 +85,31 @@ void HistoryBudget::admit(const QString &name, qint64 maximum) {
     cached = amount;
 }
 
-// 日期：2026-11-09；主库/旁路仅接受当前根的精确直接路径；SQLite临时库另走固定池。
+// 日期：2026-11-09；固定角色按原生父目录身份核验，接受macOS系统别名而不跟随任意目录链接。
 QString HistoryBudget::role(const QByteArray &path) const {
     const auto file = QString::fromUtf8(path);
-    const auto name = QFileInfo(file).fileName();
-    if (QDir::cleanPath(file) != QDir(store_->directory()).filePath(name))
+    const QFileInfo info(file);
+    const auto name = info.fileName();
+    if (!info.isAbsolute() || file.contains(QChar('\0')))
         throw Error(ExitCode::Permission, QStringLiteral("历史SQLite路径不属于当前根"),
                     "history-budget");
+    bool allowed = false;
     for (const auto &base : {QString("history.sqlite"), QString("receipts.sqlite")})
         if (name == base || name == base + "-journal" || name == base + "-wal" ||
             name == base + "-shm")
-            return name;
-    throw Error(ExitCode::Permission, QStringLiteral("历史SQLite旁路名称无效"), "history-budget");
+            allowed = true;
+    if (!allowed)
+        throw Error(ExitCode::Permission, QStringLiteral("历史SQLite旁路名称无效"),
+                    "history-budget");
+#ifdef Q_OS_WIN
+    NativeDirectoryLock parent(info.absolutePath(), false);
+#else
+    PosixDirectory parent(info.absolutePath(), false);
+#endif
+    if (parent.identity() != store_->identity())
+        throw Error(ExitCode::Permission, QStringLiteral("历史SQLite路径不属于当前根"),
+                    "history-budget");
+    return name;
 }
 
 // 日期：2026-11-09；没有登记的句柄不获得隐式无限额度，重复open同一编号亦不能覆盖旧临时预留。
@@ -148,7 +172,7 @@ int HistoryBudget::before(const SqliteFileEvent &event) noexcept {
         if (event.action == Action::Close || event.action == Action::UnmapSharedMemory)
             return SQLITE_OK;
         if (event.action == Action::Open) {
-            if (failedObservation_)
+            if (failedObservation_->load())
                 return SQLITE_FULL;
             Entry *empty = nullptr;
             for (auto &item : entries_) {
@@ -176,7 +200,7 @@ int HistoryBudget::before(const SqliteFileEvent &event) noexcept {
             return SQLITE_OK;
         }
         auto &item = entry(event.file);
-        if (failedObservation_) {
+        if (failedObservation_->load()) {
             const auto &file = event.observation.file;
             const bool shrinking = event.action == Action::Truncate && file.kind == 1 &&
                                    event.bytes <= file.logicalBytes;
@@ -215,7 +239,7 @@ void HistoryBudget::after(const SqliteFileEvent &event, int result) noexcept {
         const auto &observed = event.observation;
         if (result == SQLITE_OK &&
             (observed.fileResult != SQLITE_OK || (!item.anonymous && observed.file.kind != 1)))
-            failedObservation_ = true;
+            failedObservation_->store(true);
         if (observed.fileResult == SQLITE_OK && observed.file.kind == 1)
             grow(item, qMax(observed.file.logicalBytes, observed.file.allocatedBytes));
         if (observed.sharedMemoryResult == SQLITE_OK && observed.sharedMemory.kind == 1)
@@ -225,13 +249,13 @@ void HistoryBudget::after(const SqliteFileEvent &event, int result) noexcept {
         if (event.action == SqliteFileEvent::Action::Open && result != SQLITE_OK)
             item = {};
     } catch (...) {
-        failedObservation_ = true;
+        failedObservation_->store(true);
     }
 }
 
 // 日期：2026-11-09；观察失败不能解释为零占用，调用方保留历史原件并停止该连接初始化。
 void HistoryBudget::check() const {
-    if (failedObservation_)
+    if (failedObservation_->load())
         throw Error(ExitCode::Disk, QStringLiteral("历史分配量无法纳入额度，原件与预留已保留"),
                     "history-budget");
 }
