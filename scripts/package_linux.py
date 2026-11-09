@@ -11,6 +11,7 @@ import subprocess
 import tarfile
 
 from package_windows import sha256, source_archive
+from package_build import refresh_build, verify_build
 
 
 # 日期：2026-11-05；仅执行显式工具及参数列表，工具失败或依赖缺失均中止生成。
@@ -54,6 +55,8 @@ def main():
     build, output = Path(args.build_directory).resolve(), Path(args.output).resolve()
     assert not output.exists(), "Output must be a new directory"
     output.mkdir(parents=True)
+    build_provenance = refresh_build(root, build, ["dukto-cli", "dukto-gui"],
+                                     output / "build-refresh.log")
     stage = output / "DuktoNext-linux-glibc-x64-preview"
     stage.mkdir()
     mapping = {}
@@ -155,7 +158,9 @@ def main():
         encoding="utf-8")
     files = [{"path": path.relative_to(stage).as_posix(), "bytes": path.stat().st_size, "sha256": sha256(path)}
              for path in sorted(stage.rglob("*")) if path.is_file()]
+    verify_build(root, build, build_provenance)
     report = {"date": datetime.now(timezone.utc).isoformat(), "kind": "development-preview", "releaseQualified": False,
+              "buildProvenance": build_provenance,
               "platform": "linux-x86_64-glibc", "sourceCommit": os.environ.get("GITHUB_SHA"),
               "inputCliSha256": sha256(build / "dukto-cli"), "inputGuiSha256": sha256(build / "dukto-gui"),
               "buildGlibc": checked(["getconf", "GNU_LIBC_VERSION"]).strip(),

@@ -11,6 +11,8 @@ import shutil
 import subprocess
 import zipfile
 
+from package_build import refresh_build, verify_build
+
 
 # 日期：2026-11-05；固定大小流式计算摘要，不把依赖 DLL 或源码归档整体放进内存。
 def sha256(path):
@@ -78,6 +80,8 @@ def main():
     stage.mkdir()
     environment = os.environ.copy()
     environment["PATH"] = str(prefix / "bin") + os.pathsep + environment["PATH"]
+    build_provenance = refresh_build(root, build, ["dukto-cli.exe", "dukto-gui.exe"],
+                                     output / "build-refresh.log", environment)
     for binary in ("dukto-cli.exe", "dukto-gui.exe"):
         shutil.copyfile(build / binary, stage / binary)
     deployed = checked([prefix / "bin/windeployqt-qt5.exe", "--release", "--no-patchqt", "--qmldir", root / "ui",
@@ -177,7 +181,9 @@ def main():
         encoding="utf-8")
     files = [{"path": path.relative_to(stage).as_posix(), "bytes": path.stat().st_size, "sha256": sha256(path)}
              for path in sorted(stage.rglob("*")) if path.is_file()]
+    verify_build(root, build, build_provenance)
     report = {"date": datetime.now(timezone.utc).isoformat(), "platform": "windows-x64-ucrt",
+              "buildProvenance": build_provenance,
               "kind": "development-preview", "releaseQualified": False, "files": files,
               "dependencyFiles": provenance, "peImports": imports, "windowsSystemImports": sorted(os_imports),
               "sourceFiles": source_files, "deployer": packages.get("mingw-w64-ucrt-x86_64-qt5-tools"),

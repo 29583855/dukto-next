@@ -1,0 +1,35 @@
+name: Package build source identity regression
+on:
+  push:
+    paths:
+      - scripts/package_build.py
+      - scripts/package_windows.py
+      - scripts/package_linux.py
+      - scripts/package_macos.py
+      - tests/package_build_integration.py
+      - .github/workflows/package-build-regression.yml
+  workflow_dispatch:
+
+jobs:
+  source-identity:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022, ubuntu-24.04, macos-15, macos-15-intel]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: ilammy/msvc-dev-cmd@v1
+        if: runner.os == 'Windows'
+      # 日期：2026-11-09；真实编译两份C++14程序，复现旧mtime并验证错误源目录和包内原件变化拒绝。
+      - name: Compile and verify source identity boundaries
+        run: python -X utf8 tests/package_build_integration.py --report validation/package-source.json
+      - name: Preserve original build logs and result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: package-source-${{ runner.os }}-${{ runner.arch }}
+          path: validation/*

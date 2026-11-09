@@ -12,6 +12,7 @@ import subprocess
 import tarfile
 
 from package_windows import sha256, source_archive
+from package_build import refresh_build, verify_build
 
 
 # 日期：2026-11-05；仅执行显式工具参数，原生部署/签名/依赖检查任一失败都中止。
@@ -176,6 +177,8 @@ def main():
     build, output = args.build_directory.resolve(), args.output.resolve()
     assert not output.exists()
     output.mkdir(parents=True)
+    build_provenance = refresh_build(root, build, ["dukto-cli", "dukto-gui.app/Contents/MacOS/dukto-gui"],
+                                     output / "build-refresh.log")
     stage = output / ("DuktoNext-macos-" + platform.machine() + "-preview")
     stage.mkdir()
     original = build / "dukto-gui.app"
@@ -232,7 +235,9 @@ def main():
             links.append({"path": relative, "target": os.readlink(path)})
         elif path.is_file():
             files.append({"path": relative, "sha256": sha256(path), "bytes": path.stat().st_size})
+    verify_build(root, build, build_provenance)
     manifest = {"date": datetime.now(timezone.utc).isoformat(), "architecture": platform.machine(),
+                "buildProvenance": build_provenance,
                 "sourceCommit": os.environ.get("GITHUB_SHA"), "files": files, "links": links,
                 "dependencies": bindings, "transitiveSources": transitive,
                 "licenses": licenses, "applicationSources": source_files,
