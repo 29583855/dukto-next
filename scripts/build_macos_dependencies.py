@@ -90,7 +90,7 @@ def main():
     base_build.mkdir()
     options = ["-prefix", str(qt), "-release", "-opensource", "-confirm-license",
                "-nomake", "examples", "-nomake", "tests", "-no-pch", "-no-pkg-config",
-               "-no-glib", "-no-icu", "-no-dbus", "-no-zstd", "-no-feature-brotli",
+               "-no-glib", "-no-icu", "-no-dbus", "-no-zstd",
                "-qt-zlib", "-qt-pcre", "-qt-doubleconversion", "-qt-harfbuzz", "-qt-freetype",
                "-qt-libpng", "-qt-libjpeg", "-qt-sqlite", "-openssl-linked",
                "-I", str(openssl / "include"), "-L", str(openssl / "lib"),
@@ -110,10 +110,12 @@ def main():
         licenses(sources[name], qt, name)
     deploy_build = work / "macdeployqt-build"
     deploy_build.mkdir()
-    run([qt / "bin/qmake", sources["qttools"] / "src/macdeployqt/macdeployqt.pro"],
+    # 日期：2026-11-09；先生成QtTools模块配置，再只编译安装Mac部署工具。
+    run([qt / "bin/qmake", sources["qttools"]], deploy_build, environment, work / "macdeployqt.log")
+    run(["make", "-C", "src/macdeployqt", "-j" + str(args.jobs)],
         deploy_build, environment, work / "macdeployqt.log")
-    run(["make", "-j" + str(args.jobs)], deploy_build, environment, work / "macdeployqt.log")
-    run(["make", "install"], deploy_build, environment, work / "macdeployqt.log")
+    run(["make", "-C", "src/macdeployqt", "install"],
+        deploy_build, environment, work / "macdeployqt.log")
     licenses(sources["qttools"], qt, "qttools")
     receipt = {**lock, "architecture": architecture, "sourceBuild": True,
                "qtBaseMacConfOriginalSha256": hashlib.sha256(original).hexdigest(),
