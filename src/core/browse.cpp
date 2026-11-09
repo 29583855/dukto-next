@@ -268,28 +268,30 @@ QString BrowseStore::create(const Principal &principal, const QString &share,
     const auto base = snapshotName(id);
     QString committed;
     try {
-        IncomingFile snapshot(QDir(store_.directory()).filePath(base + ".data"));
-        QDirIterator iterator(path, QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Hidden |
-                                        QDir::System);
+        DataFileCredit snapshotCredit;
         qint64 bytes = 0;
         qint64 entries = 0;
-        while (iterator.hasNext()) {
-            check();
-            const auto line = next::encodeControl(entry(iterator.next())) + '\n';
-            if (++entries > 10000000 || line.size() > MaxMetadataBytes - used - bytes - 4096)
-                throw Error(ExitCode::Disk, QStringLiteral("目录浏览快照超过磁盘预算"), "browse");
-            writeAll(snapshot.device(), line);
-            bytes += line.size();
-        }
-        root->verify();
-        if (directory.stamp() != stamp)
-            throw Error(ExitCode::Integrity, QStringLiteral("目录在建立快照期间已变化，请重试"),
-                        "browse");
-        if (reauthorize_)
-            reauthorize_();
-        committed = snapshot.commit();
-        if (committed != QDir(store_.directory()).filePath(base + ".data"))
-            throw Error(ExitCode::Disk, QStringLiteral("浏览快照名称冲突"), "browse");
+        store_.create(base + ".data", MaxMetadataBytes - used - 4096, [&](QIODevice &device) {
+            // 日期：2026-11-09；从创建时设置私有所有者，保持逐项扫描、取消及原有字节上限。
+            QDirIterator iterator(path, QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Hidden |
+                                            QDir::System);
+            while (iterator.hasNext()) {
+                check();
+                const auto line = next::encodeControl(entry(iterator.next())) + '\n';
+                if (++entries > 10000000 || line.size() > MaxMetadataBytes - used - bytes - 4096)
+                    throw Error(ExitCode::Disk, QStringLiteral("目录浏览快照超过磁盘预算"),
+                                "browse");
+                writeAll(device, line);
+                bytes += line.size();
+            }
+            root->verify();
+            if (directory.stamp() != stamp)
+                throw Error(ExitCode::Integrity, QStringLiteral("目录在建立快照期间已变化，请重试"),
+                            "browse");
+            if (reauthorize_)
+                reauthorize_();
+        });
+        committed = QDir(store_.directory()).filePath(base + ".data");
         store_.write(
             base + ".json",
             next::encodeControl(

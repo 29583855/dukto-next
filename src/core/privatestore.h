@@ -7,6 +7,8 @@
 #include <functional>
 #include <memory>
 
+class QIODevice;
+
 namespace dukto {
 class StateUseGuard;
 class PrivateStore final {
@@ -24,6 +26,9 @@ class PrivateStore final {
     qint64 validateSqliteJournal(const QString &name) const;
     // 日期：2026-11-04；在受保护根内写入、同步并原子替换，内容不进入日志或命令行。
     void write(const QString &name, const QByteArray &bytes) const;
+    // 日期：2026-11-09；从创建时设置私有所有者/权限，有界流式写入并独占发布，不覆盖已有键。
+    void create(const QString &name, qint64 maximum,
+                const std::function<void(QIODevice &)> &writer) const;
     // 日期：2026-11-04；仅查询固定根的单个合法文件名，不解析客户端路径。
     bool exists(const QString &name) const;
     // 日期：2026-11-04；仅删除固定私有根内的单个合法键，不递归遍历或跟随目标链接。

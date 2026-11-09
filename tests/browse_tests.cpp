@@ -14,8 +14,48 @@
 #include <QtTest>
 #include <cstdio>
 #include <cstdlib>
+#ifdef Q_OS_WIN
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <aclapi.h>
+#include <io.h>
+#include <windows.h>
+#endif
 
 namespace {
+#ifdef Q_OS_WIN
+// 日期：2026-11-09；只输出所有者是否匹配的布尔证据，不把账户SID或访问令牌写入测试报告。
+bool ownedByCurrentUser(QFile &file) {
+    HANDLE token = nullptr;
+    if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token))
+        throw std::runtime_error("owner probe token");
+    struct TokenGuard {
+        HANDLE value;
+        // 日期：2026-11-09；属性缓冲分配失败也关闭测试取得的令牌句柄。
+        ~TokenGuard() {
+            CloseHandle(value);
+        }
+    } guard{token};
+    DWORD size = 0;
+    GetTokenInformation(token, TokenUser, nullptr, 0, &size);
+    QByteArray bytes(int(size), '\0');
+    const bool read = size && GetTokenInformation(token, TokenUser, bytes.data(), size, &size);
+    if (!read)
+        throw std::runtime_error("owner probe user");
+    PSID owner = nullptr;
+    PSECURITY_DESCRIPTOR security = nullptr;
+    const auto handle = reinterpret_cast<HANDLE>(_get_osfhandle(file.handle()));
+    if (GetSecurityInfo(handle, SE_FILE_OBJECT, OWNER_SECURITY_INFORMATION, &owner, nullptr,
+                        nullptr, nullptr, &security) != ERROR_SUCCESS)
+        throw std::runtime_error("owner probe file");
+    const bool result =
+        owner && EqualSid(owner, reinterpret_cast<TOKEN_USER *>(bytes.data())->User.Sid);
+    LocalFree(security);
+    return result;
+}
+#endif
+
 // 日期：2026-11-04；每个样本在独立临时根建立文件，避免改动用户目录及参考软件。
 void createFile(const QString &path) {
     QFile file(path);
@@ -71,6 +111,60 @@ struct SnapshotFixture {
 class BrowseTests final : public QObject {
     Q_OBJECT
   private slots:
+    // 日期：2026-11-09；流式私有正文在提升账户下同样具有正确所有者；超限/取消/冲突不发布或覆盖。
+    void privateStreamCreationAndRollback() {
+        QTemporaryDir root;
+        dukto::PrivateStore store(root.filePath("private"), true);
+        store.create("immutable.data", 6, [](QIODevice &device) {
+            // 日期：2026-11-09；实际分两次触盘，不以一次小对象原子写代替流式创建。
+            dukto::writeAll(device, "abc");
+            dukto::writeAll(device, "def");
+        });
+        QCOMPARE(store.validateFile("immutable.data"), qint64(6));
+        QCOMPARE(store.read("immutable.data"), QByteArray("abcdef"));
+#ifdef Q_OS_WIN
+        {
+            dukto::SourceFile created(store.directory() + "/immutable.data");
+            QTemporaryFile qtDefault(store.directory() + "/.qt-owner-XXXXXX.part");
+            QVERIFY(qtDefault.open());
+            const bool privateOwned = ownedByCurrentUser(created.device());
+            const bool qtOwned = ownedByCurrentUser(qtDefault);
+            qInfo("private stream owner matches current user: %s; Qt default temporary owner "
+                  "matches current user: %s",
+                  privateOwned ? "true" : "false", qtOwned ? "true" : "false");
+            QVERIFY(privateOwned);
+        }
+#endif
+        const auto names = QDir(store.directory()).entryList(QDir::Files | QDir::Hidden);
+        QVERIFY_EXCEPTION_THROWN(store.create("immutable.data", 6,
+                                              [](QIODevice &) {
+                                                  // 日期：2026-11-09；已有键在回调运行之前拒绝，不能触碰原件。
+                                                  throw std::runtime_error(
+                                                      "existing key callback must not run");
+                                              }),
+                                 dukto::Error);
+        for (const bool overflow : {false, true}) {
+            QVERIFY_EXCEPTION_THROWN(store.create("failed.data", 3,
+                                                  [overflow](QIODevice &device) {
+                                                      // 日期：2026-11-09；取消在真实部分写入后触发；超额错误即使被回调忽略也不能发布。
+                                                      dukto::writeAll(device, "abc");
+                                                      if (overflow)
+                                                          device.write("d");
+                                                      else
+                                                          throw dukto::Error(
+                                                              dukto::ExitCode::Cancelled, "cancel",
+                                                              "test");
+                                                  }),
+                                     dukto::Error);
+            QVERIFY(!store.exists("failed.data"));
+            QCOMPARE(QDir(store.directory()).entryList(QDir::Files | QDir::Hidden), names);
+        }
+        store.create("empty.data", 0, [](QIODevice &) {
+            // 日期：2026-11-09；空目录快照允许零正文，仍需要安全普通对象及独占发布。
+        });
+        QCOMPARE(store.validateFile("empty.data"), qint64(0));
+    }
+
     // 日期：2026-11-09；精确到期边界、只读预览和重复清理均核对实际文件及原始用户源保持。
     void snapshotRetentionBoundaryAndPreview() {
         SnapshotFixture fixture;

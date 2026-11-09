@@ -31,6 +31,50 @@
 
 namespace dukto {
 namespace {
+class PrivateStream final : public QIODevice {
+  public:
+    // 日期：2026-11-09；仅借用当前私有临时文件，逐次写入前限制总量，不在内存拼接完整快照。
+    PrivateStream(QFile &file, qint64 maximum) : file_(file), maximum_(maximum) {
+        open(QIODevice::WriteOnly | QIODevice::Unbuffered);
+    }
+    // 日期：2026-11-09；只允许顺序写，回调不能通过seek越过累计字节上限。
+    bool isSequential() const override {
+        return true;
+    }
+    // 日期：2026-11-09；即使回调忽略短写/超额错误，发布前仍拒绝失败流。
+    bool succeeded() const {
+        return !failed_;
+    }
+
+  protected:
+    // 日期：2026-11-09；创建入口不提供读取能力。
+    qint64 readData(char *, qint64) override {
+        return -1;
+    }
+    // 日期：2026-11-09；在触盘之前核对剩余额度，底层短写或失败保留为不可发布状态。
+    qint64 writeData(const char *bytes, qint64 size) override {
+        if (failed_ || size < 0 || size > maximum_ - written_) {
+            failed_ = true;
+            setErrorString(QStringLiteral("私有状态流超过写入上限"));
+            return -1;
+        }
+        const auto result = file_.write(bytes, size);
+        if (result != size) {
+            failed_ = true;
+            setErrorString(file_.errorString());
+        }
+        if (result > 0)
+            written_ += result;
+        return result;
+    }
+
+  private:
+    QFile &file_;
+    qint64 maximum_;
+    qint64 written_ = 0;
+    bool failed_ = false;
+};
+
 #ifdef Q_OS_WIN
 // 日期：2026-11-04；访问令牌只取当前用户 SID，不把用户名翻译或组成员身份当作同一安全主体。
 QByteArray accountSid() {
@@ -432,6 +476,93 @@ QByteArray PrivateStore::read(const QString &name, qint64 maximum) const {
         verify();
         verifyFile(file);
         return bytes;
+    }
+}
+
+// 日期：2026-11-09；私有大对象同样显式设置所有者，不依赖提升进程的默认组所有者；只发布新键。
+void PrivateStore::create(const QString &name, qint64 maximum,
+                          const std::function<void(QIODevice &)> &writer) const {
+    verify();
+    const auto target = path(name);
+    if (!writer || maximum < 0 || maximum > MaxMetadataBytes)
+        throw Error(ExitCode::Config, QStringLiteral("私有流写入参数无效"), "identity");
+    if (exists(name))
+        throw Error(ExitCode::Permission, QStringLiteral("私有状态键已存在，不覆盖原件"),
+                    "identity");
+    QString temporary;
+    int descriptor = -1;
+#ifdef Q_OS_WIN
+    temporary =
+        QDir(directory_)
+            .filePath(".dukto-" + QUuid::createUuid().toString(QUuid::WithoutBraces) + ".part");
+    const auto native = longPath(temporary);
+    auto security = privateSecurity();
+    SECURITY_ATTRIBUTES attributes{sizeof(SECURITY_ATTRIBUTES), security, FALSE};
+    const auto handle = CreateFileW(reinterpret_cast<LPCWSTR>(native.utf16()),
+                                    GENERIC_READ | GENERIC_WRITE, 0, &attributes, CREATE_NEW,
+                                    FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OPEN_REPARSE_POINT, nullptr);
+    LocalFree(security);
+    if (handle == INVALID_HANDLE_VALUE)
+        throw Error(ExitCode::Disk, QStringLiteral("私有流临时文件创建失败"), "identity");
+    descriptor = _open_osfhandle(reinterpret_cast<intptr_t>(handle), _O_RDWR | _O_BINARY);
+    if (descriptor < 0) {
+        CloseHandle(handle);
+        DeleteFileW(reinterpret_cast<LPCWSTR>(native.utf16()));
+        throw Error(ExitCode::Disk, QStringLiteral("无法接管私有流句柄"), "identity");
+    }
+#else
+    descriptor = root_->createTemporary(temporary);
+#endif
+    QFile file;
+    if (!file.open(descriptor, QIODevice::WriteOnly, QFileDevice::AutoCloseHandle)) {
+#ifdef Q_OS_WIN
+        _close(descriptor);
+        DeleteFileW(reinterpret_cast<LPCWSTR>(native.utf16()));
+#else
+        ::close(descriptor);
+        root_->removeTemporary(temporary);
+#endif
+        throw Error(ExitCode::Disk, QStringLiteral("无法打开私有流"), "identity");
+    }
+    try {
+        verifyFile(file);
+        PrivateStream stream(file, maximum);
+        writer(stream);
+        if (!stream.succeeded())
+            throw Error(ExitCode::Disk, stream.errorString(), "identity");
+        stream.close();
+        verify();
+        verifyFile(file);
+        if (!file.flush())
+            throw Error(ExitCode::Disk, file.errorString(), "identity");
+#ifdef Q_OS_WIN
+        if (!FlushFileBuffers(reinterpret_cast<HANDLE>(_get_osfhandle(file.handle()))))
+#else
+        if (::fsync(file.handle()) != 0)
+#endif
+            throw Error(ExitCode::Disk, QStringLiteral("私有流同步失败"), "identity");
+        file.close();
+        verify();
+#ifdef Q_OS_WIN
+        if (!renameNoReplace(temporary, target, true))
+#else
+        if (!root_->commitTemporary(temporary, name))
+#endif
+            throw Error(ExitCode::Permission, QStringLiteral("私有状态键发布冲突"), "identity");
+        temporary.clear();
+#ifndef Q_OS_WIN
+        root_->synchronize();
+#endif
+    } catch (...) {
+        file.close();
+        if (!temporary.isEmpty()) {
+#ifdef Q_OS_WIN
+            DeleteFileW(reinterpret_cast<LPCWSTR>(longPath(temporary).utf16()));
+#else
+            root_->removeTemporary(temporary);
+#endif
+        }
+        throw;
     }
 }
 
