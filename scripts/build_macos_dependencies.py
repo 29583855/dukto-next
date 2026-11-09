@@ -17,6 +17,7 @@ def run(command, directory, environment, log):
     with log.open("ab") as output:
         output.write((json.dumps([str(part) for part in command]) + "\n").encode())
         output.flush()
+        print(json.dumps({"directory": str(directory), "command": [str(part) for part in command]}), flush=True)
         subprocess.run([str(part) for part in command], cwd=directory, env=environment,
                        stdout=output, stderr=subprocess.STDOUT, check=True, timeout=7200)
 
@@ -111,7 +112,7 @@ def main():
     deploy_build = work / "macdeployqt-build"
     deploy_build.mkdir()
     # 日期：2026-11-09；先生成QtTools模块配置，再只编译安装Mac部署工具。
-    run([qt / "bin/qmake", sources["qttools"]], deploy_build, environment, work / "macdeployqt.log")
+    run([qt / "bin/qmake", "-r", sources["qttools"]], deploy_build, environment, work / "macdeployqt.log")
     run(["make", "-C", "src/macdeployqt", "-j" + str(args.jobs)],
         deploy_build, environment, work / "macdeployqt.log")
     run(["make", "-C", "src/macdeployqt", "install"],
