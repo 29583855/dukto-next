@@ -7,9 +7,12 @@
 #include "tcplistener.h"
 #include <QSet>
 #include <QThread>
+#include <QTimer>
 #include <atomic>
 
 namespace dukto {
+class StateSession;
+class ServiceMaintenance;
 class StrongManifest;
 struct ParallelState;
 struct ClientProfile {
@@ -107,7 +110,7 @@ class ServiceWorker final : public QThread {
   public:
     // 日期：2026-11-04；监听线程仅转交描述符和不可变配置；TLS/磁盘对象在工作线程内创建。
     ServiceWorker(qintptr descriptor, QString state, ServiceIdentity identity, int timeoutMs,
-                  QObject *parent = nullptr);
+                  QObject *parent = nullptr, QByteArray rootIdentity = {});
     // 日期：2026-11-04；原子取消由安全通道固定轮询周期观察，不能从主线程操作 socket。
     void cancel();
     // 日期：2026-11-04；析构等候工作线程清理，防止 TLS 或凭据对象在线程运行时被释放。
@@ -124,6 +127,7 @@ class ServiceWorker final : public QThread {
     QString state_;
     ServiceIdentity identity_;
     int timeoutMs_;
+    QByteArray rootIdentity_;
     std::atomic_bool cancelled_{false};
 };
 
@@ -132,6 +136,11 @@ class ServiceListener final : public TcpListener {
   public:
     // 日期：2026-11-04；只加载已有身份；最多 32 个 TLS 连接，其中数据会话合计不超过 16 通道。
     ServiceListener(const QString &state, int timeoutMs, QObject *parent = nullptr);
+    // 日期：2026-11-09；生产监听保留域共享资格，成员根仅活动期间占用，空闲每分钟后台分批维护。
+    ServiceListener(const QString &stateParent, const QString &relative, int timeoutMs,
+                    QObject *parent = nullptr);
+    // 日期：2026-11-09；请求一次空闲后台维护；有连接、既有维护或未监听时立即让出。
+    bool requestMaintenance();
     // 日期：2026-11-04；停止新连接并取消、等待所有工作线程，关闭服务也能快速归还资源。
     ~ServiceListener() override;
     // 日期：2026-11-04；显式停止所有活动连接，监听对象保留，供 CLI 信号/GUI 统一调用。
@@ -146,7 +155,15 @@ class ServiceListener final : public TcpListener {
     void incomingConnection(qintptr descriptor) override;
 
   private:
+    // 日期：2026-11-09；初始化时固定根身份与策略；重新打开时拒绝同名换代根。
+    void initialize(PrivateStore &store);
     QString state_;
+    QString stateParent_;
+    QString relative_;
+    QByteArray rootIdentity_;
+    std::shared_ptr<StateSession> session_;
+    QTimer maintenanceTimer_;
+    ServiceMaintenance *maintenance_ = nullptr;
     ServiceIdentity identity_;
     int timeoutMs_;
     QSet<ServiceWorker *> workers_;

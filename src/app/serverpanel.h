@@ -146,8 +146,6 @@ class ServerPanel final : public QObject {
     QJsonObject budget_;
     ServerAction *action_ = nullptr;
     ServerAction *control_ = nullptr;
-    // 日期：2026-11-08；析构体先停止监听器及工作线程，成员随后才归还同域共享资格。
-    std::shared_ptr<dukto::PrivateStore> listenerState_;
     dukto::ServiceListener *listener_ = nullptr;
     QTimer timer_;
 };

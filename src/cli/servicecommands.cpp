@@ -264,8 +264,7 @@ int runServiceCommand(const QCommandLineParser &parser, const QStringList &argum
             if (bind.isNull())
                 throw dukto::Error(dukto::ExitCode::Config, QStringLiteral("监听地址无效"),
                                    "arguments");
-            auto bound = stateRoot("service");
-            dukto::ServiceListener listener(bound->directory(), timeout(parser));
+            dukto::ServiceListener listener(stateDirectory, "service", timeout(parser));
             QObject::connect(&listener, &dukto::ServiceListener::event, &listener, output);
             if (!listener.listen(bind, endpoint.port))
                 throw dukto::Error(dukto::ExitCode::Network, QStringLiteral("服务端口无法监听"),

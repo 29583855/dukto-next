@@ -5,9 +5,13 @@
 #include "paralleltransfer.h"
 #include "sessionpolicy.h"
 #include "shares.h"
+#include "statecleanup.h"
+#include "statesession.h"
 #include "taskstore.h"
 #include "transferservice.h"
 
+#include <QDir>
+#include <QElapsedTimer>
 #include <QJsonArray>
 #include <QLockFile>
 #include <QRegularExpression>
@@ -15,6 +19,52 @@
 #include <limits>
 
 namespace dukto {
+class ServiceMaintenance final : public QThread {
+  public:
+    // 日期：2026-11-09；只复制固定根定位与原生身份，磁盘和SQLite对象全部在后台线程建立。
+    ServiceMaintenance(QString parent, QString relative, QByteArray identity, QObject *owner)
+        : QThread(owner), parent_(std::move(parent)), relative_(std::move(relative)),
+          identity_(std::move(identity)) {
+    }
+    QJsonObject result;
+
+  protected:
+    // 日期：2026-11-09；独占不等待，先验证原根再复用有界清理；新连接和关闭可在检查点取消。
+    void run() override {
+        try {
+            const auto check = [this]() {
+                // 日期：2026-11-09；取消不清除持久删除意图，后续同根维护按原协议恢复。
+                if (isInterruptionRequested())
+                    throw Error(ExitCode::Cancelled, QStringLiteral("后台维护已让出"), "cleanup");
+            };
+            auto store =
+                StateSession::observe(parent_, relative_, PrivateStore::Use::Maintenance, check);
+            if (store->identity() != identity_)
+                throw Error(ExitCode::Integrity, QStringLiteral("服务状态根已换代"),
+                            "state-session");
+            result = cleanupState(*store, QDateTime::currentDateTimeUtc(), true, {}, check);
+        } catch (const Error &error) {
+            result = {
+                {"eventVersion", 1},
+                {"event", error.code == ExitCode::Cancelled ||
+                                  (error.code == ExitCode::Permission && error.stage == "state-use")
+                              ? "state-cleanup-deferred"
+                              : "state-cleanup-error"},
+                {"code", int(error.code)},
+                {"stage", error.stage.left(64)}};
+        } catch (...) {
+            result = {{"eventVersion", 1},
+                      {"event", "state-cleanup-error"},
+                      {"code", int(ExitCode::Runtime)},
+                      {"stage", "cleanup"}};
+        }
+    }
+
+  private:
+    QString parent_;
+    QString relative_;
+    QByteArray identity_;
+};
 namespace {
 // 日期：2026-11-04；凭据按固定 32 字节编码，Qt fromHex 容忍非法字符的行为不能用于认证解析。
 QByteArray secret(const QJsonValue &value) {
@@ -454,9 +504,10 @@ void RemoteClient::close() {
 
 // 日期：2026-11-04；线程尚未启动时不创建 socket、数据库连接或其他线程归属的 Qt 对象。
 ServiceWorker::ServiceWorker(qintptr descriptor, QString state, ServiceIdentity identity,
-                             int timeoutMs, QObject *parent)
+                             int timeoutMs, QObject *parent, QByteArray rootIdentity)
     : QThread(parent), descriptor_(descriptor), state_(std::move(state)),
-      identity_(std::move(identity)), timeoutMs_(timeoutMs) {
+      identity_(std::move(identity)), timeoutMs_(timeoutMs),
+      rootIdentity_(std::move(rootIdentity)) {
 }
 
 // 日期：2026-11-04；只修改取消原子量，TLS 通道在自己的工作线程执行关闭。
@@ -486,7 +537,24 @@ void ServiceWorker::run() {
         }
         auto &channel = *connection;
         channel.accept(descriptor_, identity_.configuration());
-        PrivateStore store(state_);
+        std::unique_ptr<PrivateStore> bound;
+        QElapsedTimer waiting;
+        waiting.start();
+        for (;;) {
+            channel.checkpoint("state-session");
+            try {
+                bound.reset(new PrivateStore(state_));
+                break;
+            } catch (const Error &error) {
+                if (error.code != ExitCode::Permission || error.stage != "state-use" ||
+                    waiting.elapsed() >= qMin(timeoutMs_, 5000))
+                    throw;
+                QThread::msleep(20);
+            }
+        }
+        auto &store = *bound;
+        if (!rootIdentity_.isEmpty() && store.identity() != rootIdentity_)
+            throw Error(ExitCode::Integrity, QStringLiteral("服务状态根已换代"), "state-session");
         AuthStore auth(store);
         const auto sessionSeconds = loadSessionSeconds(store);
         const auto first = channel.read();
@@ -655,9 +723,54 @@ ServiceListener::ServiceListener(const QString &state, int timeoutMs, QObject *p
     if (timeoutMs < 100 || timeoutMs > 3600000)
         throw Error(ExitCode::Config, QStringLiteral("服务连接超时无效"), "service");
     PrivateStore store(state);
+    initialize(store);
+}
+
+// 日期：2026-11-09；业务根先登记核对，监听寿命持续持有域共享资格，不长期阻挡空闲成员维护。
+ServiceListener::ServiceListener(const QString &stateParent, const QString &relative, int timeoutMs,
+                                 QObject *parent)
+    : TcpListener(parent), stateParent_(stateParent), relative_(relative), timeoutMs_(timeoutMs) {
+    if ((relative != "service" && relative != "remote/service") || timeoutMs < 100 ||
+        timeoutMs > 3600000)
+        throw Error(ExitCode::Config, QStringLiteral("服务状态位置或超时无效"), "service");
+    auto bound = StateSession::root(stateParent, relative);
+    state_ = bound->directory();
+    session_ = StateSession::open(stateParent);
+    initialize(*bound);
+    maintenanceTimer_.setParent(this);
+    maintenanceTimer_.setObjectName("stateMaintenanceTimer");
+    maintenanceTimer_.setInterval(60000);
+    QObject::connect(&maintenanceTimer_, &QTimer::timeout, this, [this]() {
+        // 日期：2026-11-09；只调度一批，已有连接优先，后续由下一次定时器继续持久游标。
+        requestMaintenance();
+    });
+    maintenanceTimer_.start();
+}
+
+// 日期：2026-11-09；固定原生根身份，旧构造入口也拒绝运行期间换代的同名目录。
+void ServiceListener::initialize(PrivateStore &store) {
+    rootIdentity_ = store.identity();
     identity_ = loadIdentity(store);
     loadSessionSeconds(store);
     setMaxPendingConnections(32);
+}
+
+// 日期：2026-11-09；不在GUI线程扫描磁盘，单维护槽与活动槽互斥启动，完成后只传递有界报告。
+bool ServiceListener::requestMaintenance() {
+    if (!session_ || !isListening() || !workers_.isEmpty() || maintenance_)
+        return false;
+    auto worker = new ServiceMaintenance(stateParent_, relative_, rootIdentity_, this);
+    maintenance_ = worker;
+    QObject::connect(worker, &QThread::finished, this, [this, worker]() {
+        // 日期：2026-11-09；join后读取结果；先归还维护槽再发布事件，允许槽内响应停止。
+        worker->wait();
+        const auto result = worker->result;
+        maintenance_ = nullptr;
+        worker->deleteLater();
+        emit event(result);
+    });
+    worker->start();
+    return true;
 }
 
 // 日期：2026-11-04；关闭监听与工作线程，不留下后台不受管理的 TLS 连接。
@@ -667,7 +780,15 @@ ServiceListener::~ServiceListener() {
 
 // 日期：2026-11-04；先统一通知取消再等待，多个连接不会各自串行等待完整网络超时。
 void ServiceListener::stop() {
+    maintenanceTimer_.stop();
     close();
+    if (maintenance_) {
+        QObject::disconnect(maintenance_, nullptr, this, nullptr);
+        maintenance_->requestInterruption();
+        maintenance_->wait();
+        delete maintenance_;
+        maintenance_ = nullptr;
+    }
     const auto active = workers_;
     for (auto worker : active) {
         QObject::disconnect(worker, nullptr, this, nullptr);
@@ -684,6 +805,8 @@ void ServiceListener::stop() {
 QJsonObject ServiceListener::publicInfo() const {
     auto result = identity_.publicInfo();
     PrivateStore store(state_);
+    if (store.identity() != rootIdentity_)
+        throw Error(ExitCode::Integrity, QStringLiteral("服务状态根已换代"), "state-session");
     result["sessionSeconds"] = QString::number(loadSessionSeconds(store));
     result["certificateSource"] = "listener-snapshot";
     result["storedFingerprint"] = inspectIdentity(store)["fingerprint"];
@@ -702,7 +825,9 @@ void ServiceListener::incomingConnection(qintptr descriptor) {
                     {"message", QStringLiteral("服务活动连接已达上限")}});
         return;
     }
-    auto worker = new ServiceWorker(descriptor, state_, identity_, timeoutMs_, this);
+    if (maintenance_)
+        maintenance_->requestInterruption();
+    auto worker = new ServiceWorker(descriptor, state_, identity_, timeoutMs_, this, rootIdentity_);
     workers_.insert(worker);
     QObject::connect(worker, &ServiceWorker::event, this, &ServiceListener::event);
     QObject::connect(worker, &QThread::finished, this, [this, worker]() {

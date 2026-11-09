@@ -607,26 +607,23 @@ void ServerPanel::execute(const QString &operation, const QVariantMap &options) 
     emit changed();
 }
 
-// 日期：2026-11-08；空闲及活动监听全过程保留协调资格；失败由局部RAII归还，停止先清理所有工作线程。
+// 日期：2026-11-09；监听器自行保留域资格，空闲成员可后台维护，停止先取消并等待全部线程。
 void ServerPanel::setServing(bool enabled, const QString &address, int port) {
     try {
         if (!enabled) {
             delete listener_;
             listener_ = nullptr;
-            listenerState_.reset();
             status_ = QStringLiteral("本机 TLS 服务已停止");
         } else if (!listener_) {
             const QHostAddress bind(address);
             if (bind.isNull() || port < 1 || port > 65535)
                 throw dukto::Error(dukto::ExitCode::Config, QStringLiteral("监听地址或端口无效"));
-            auto bound = dukto::StateSession::root(directory_, "service");
             std::unique_ptr<dukto::ServiceListener> listener(
-                new dukto::ServiceListener(bound->directory(), 30000));
+                new dukto::ServiceListener(directory_, "service", 30000));
             if (!listener->listen(bind, static_cast<quint16>(port)))
                 throw dukto::Error(dukto::ExitCode::Network,
                                    QStringLiteral("本机服务端口无法监听"));
             const auto info = listener->publicInfo();
-            listenerState_ = std::move(bound);
             listener_ = listener.release();
             identity_ = info;
             connect(listener_, &dukto::ServiceListener::event, this,

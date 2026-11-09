@@ -3,6 +3,7 @@
 #include "core/expiredtaskcleanup.h"
 #include "core/files.h"
 #include "core/protocol.h"
+#include "core/service.h"
 #include "core/statecleanup.h"
 #include "core/statesession.h"
 #include "core/strongmanifest.h"
@@ -13,7 +14,9 @@
 #include <QJsonDocument>
 #include <QProcess>
 #include <QSqlQuery>
+#include <QTcpSocket>
 #include <QTemporaryDir>
+#include <QTimer>
 #include <QtTest>
 #include <cstdio>
 #include <cstdlib>
@@ -149,6 +152,110 @@ int crashWorker(const QStringList &args) {
 class ExpiredTaskCleanupTests final : public QObject {
     Q_OBJECT
   private slots:
+    // 日期：2026-11-09；真实定时器在长期开启的监听中回收过期正文，共享使用时让出，已发布和未知项保持。
+    void idleServiceTimerAndSharedPriority() {
+        Fixture fixture;
+        const auto state = fixture.root.filePath("service");
+        QVERIFY(QDir().rename(fixture.root.filePath("private"), state));
+        {
+            dukto::PrivateStore store(state);
+            dukto::initializeIdentity(store, {"127.0.0.1"});
+            store.write("unknown.part", "keep-unknown");
+        }
+        const auto pending = fixture.root.filePath("output/" + fixture.pending);
+        const auto published = dukto::hashFile(fixture.root.filePath("output/f000.bin"));
+        {
+            dukto::ServiceListener listener(fixture.root.path(), "service", 2000);
+            QVERIFY(listener.listen(QHostAddress::LocalHost, 0));
+            auto timer = listener.findChild<QTimer *>("stateMaintenanceTimer");
+            QVERIFY(timer);
+            QCOMPARE(timer->interval(), 60000);
+            QSignalSpy events(&listener, &dukto::ServiceListener::event);
+            {
+                dukto::PrivateStore active(state);
+                database(active, "tasks.sqlite", [](QSqlDatabase db) {
+                    // 日期：2026-11-09；仅调整测试任务UTC字段，不使用生产虚拟时钟开关。
+                    QSqlQuery query(db);
+                    QVERIFY(query.exec("UPDATE tasks SET updated='2000-01-01T00:00:00Z'"));
+                });
+                timer->setInterval(20);
+                QTRY_VERIFY_WITH_TIMEOUT(!events.isEmpty(), 3000);
+                QVERIFY(QFileInfo::exists(pending));
+                QCOMPARE(active.read("unknown.part"), QByteArray("keep-unknown"));
+                QVERIFY_EXCEPTION_THROWN(dukto::PrivateStore(fixture.root.filePath("budget"), false,
+                                                             dukto::PrivateStore::Use::Maintenance),
+                                         dukto::Error);
+            }
+            QTRY_VERIFY_WITH_TIMEOUT(!QFileInfo::exists(pending), 10000);
+            timer->stop();
+            listener.stop();
+            QVERIFY(!listener.requestMaintenance());
+            QCOMPARE(dukto::hashFile(fixture.root.filePath("output/f000.bin")), published);
+            dukto::PrivateStore retained(state);
+            QCOMPARE(retained.read("unknown.part"), QByteArray("keep-unknown"));
+            dukto::TaskStore tasks(retained);
+            QCOMPARE(tasks.task(fixture.owner, fixture.id).request, fixture.request);
+        }
+        dukto::PrivateStore coordinator(fixture.root.filePath("budget"), false,
+                                        dukto::PrivateStore::Use::Maintenance);
+        QVERIFY(coordinator.maintenance());
+    }
+
+    // 日期：2026-11-09；真实未完成TLS连接占据工作槽时不能启动维护，断开后可恢复维护且停止归还根。
+    void activeConnectionDefersServiceMaintenance() {
+        QTemporaryDir root;
+        {
+            dukto::PrivateStore store(root.filePath("service"), true);
+            dukto::initializeIdentity(store, {"127.0.0.1"});
+        }
+        dukto::ServiceListener listener(root.path(), "service", 2000);
+        QVERIFY(listener.listen(QHostAddress::LocalHost, 0));
+        QTcpSocket connection;
+        connection.connectToHost(QHostAddress::LocalHost, listener.serverPort());
+        QTRY_COMPARE_WITH_TIMEOUT(connection.state(), QAbstractSocket::ConnectedState, 3000);
+        QTest::qWait(50);
+        QVERIFY(!listener.requestMaintenance());
+        connection.abort();
+        bool scheduled = false;
+        QTRY_VERIFY_WITH_TIMEOUT(scheduled || (scheduled = listener.requestMaintenance()), 5000);
+        listener.stop();
+        dukto::PrivateStore exclusive(root.filePath("service"), false,
+                                      dukto::PrivateStore::Use::Maintenance);
+        QVERIFY(exclusive.maintenance());
+    }
+
+    // 日期：2026-11-09；空闲共享根释放后同名换代也不授予清理或认证资格，原目录和新目录均保留。
+    void serviceMaintenanceRejectsReplacementRoot() {
+        QTemporaryDir root;
+        const auto state = root.filePath("service");
+        {
+            dukto::PrivateStore store(state, true);
+            dukto::initializeIdentity(store, {"127.0.0.1"});
+            store.write("original.json", "original");
+        }
+        dukto::ServiceListener listener(root.path(), "service", 2000);
+        QVERIFY(listener.listen(QHostAddress::LocalHost, 0));
+        QVERIFY(QDir().rename(state, root.filePath("original")));
+        {
+            dukto::PrivateStore replacement(state, true);
+            dukto::initializeIdentity(replacement, {"127.0.0.1"});
+            replacement.write("unknown.part", "replacement");
+        }
+        QSignalSpy events(&listener, &dukto::ServiceListener::event);
+        QVERIFY(listener.requestMaintenance());
+        QTRY_VERIFY_WITH_TIMEOUT(!events.isEmpty(), 3000);
+        const auto report = qvariant_cast<QJsonObject>(events.last().at(0));
+        QCOMPARE(report["event"].toString(), QString("state-cleanup-error"));
+        QCOMPARE(report["code"].toInt(), int(dukto::ExitCode::Integrity));
+        QVERIFY_EXCEPTION_THROWN(listener.publicInfo(), dukto::Error);
+        listener.stop();
+        dukto::PrivateStore original(root.filePath("original"));
+        dukto::PrivateStore replacement(state);
+        QCOMPARE(original.read("original.json"), QByteArray("original"));
+        QCOMPARE(replacement.read("unknown.part"), QByteArray("replacement"));
+        QVERIFY(!replacement.exists("gc-cursor.json"));
+    }
+
     // 日期：2026-11-08；自动维护不得凭tasks.sqlite名称初始化未知普通库或隐式迁移旧版库。
     void batchPreservesUnknownDatabaseBytes() {
         QTemporaryDir root;
