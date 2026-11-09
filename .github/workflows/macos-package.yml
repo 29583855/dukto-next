@@ -1,6 +1,12 @@
 name: Native macOS deployed preview packages
 on:
   workflow_dispatch:
+    inputs:
+      architecture:
+        description: Native architecture to build
+        type: choice
+        default: both
+        options: [both, arm64, x86_64]
 permissions:
   contents: read
 jobs:
@@ -9,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-15, macos-15-intel]
+        os: ${{ fromJSON(inputs.architecture == 'arm64' && '["macos-15"]' || inputs.architecture == 'x86_64' && '["macos-15-intel"]' || '["macos-15", "macos-15-intel"]') }}
     runs-on: ${{ matrix.os }}
     env:
       MACOSX_DEPLOYMENT_TARGET: '12.0'
