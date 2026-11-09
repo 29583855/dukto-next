@@ -20,7 +20,9 @@ jobs:
           python-version: '3.12'
       - run: python -m pip install psutil
       - name: Validate Mach-O compatibility gate
-        run: python -X utf8 tests/macos_compatibility_tests.py
+        run: |
+          python -X utf8 tests/macos_compatibility_tests.py
+          python -X utf8 tests/macos_dependency_load_tests.py
       # 日期：2026-11-09；源码依赖统一按macOS12编译，不能使用要求更高系统的Homebrew运行库。
       - uses: actions/cache/restore@v4
         id: dependencies

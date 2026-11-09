@@ -49,12 +49,25 @@ def expand_path(value, image, executable):
     return Path(value).resolve() if value.startswith("/") else None
 
 
-# 日期：2026-11-05；加载名允许空格；动态库自身LC_ID_DYLIB不属于外部依赖。
+# 日期：2026-11-09；直接按加载命令类型识别依赖，裸文件名形式的库自身ID也不能误当外部依赖。
+def parse_dylib_loads(commands):
+    names = []
+    for block in re.split(r"^Load command \d+\s*$", commands, flags=re.M):
+        command = re.search(r"^\s*cmd (LC_\w+)\s*$", block, re.M)
+        if command is None or command.group(1) not in (
+                "LC_LOAD_DYLIB", "LC_LOAD_WEAK_DYLIB", "LC_REEXPORT_DYLIB",
+                "LC_LAZY_LOAD_DYLIB", "LC_LOAD_UPWARD_DYLIB"):
+            continue
+        name = re.search(r"^\s*name (.+?) \(offset \d+\)\s*$", block, re.M)
+        if name is None:
+            raise ValueError("Dylib load command has no install name")
+        names.append(name.group(1))
+    return list(dict.fromkeys(names))
+
+
+# 日期：2026-11-09；读取实际LC_LOAD命令，避免otool -L将LC_ID_DYLIB混入依赖列表导致无效重写循环。
 def load_names(image):
-    names = re.findall(r"^\s+(.+?) \(compatibility version", checked(["otool", "-L", image]), re.M)
-    identities = {line.strip() for line in checked(["otool", "-D", image]).splitlines()
-                  if line.strip().startswith(("@", "/")) and not line.rstrip().endswith(":")}
-    return [name for name in names if name not in identities]
+    return parse_dylib_loads(checked(["otool", "-l", image]))
 
 
 # 日期：2026-11-09；只从明确的依赖源码安装根或旧Cellar复制精确匹配的传递库。
@@ -68,7 +81,7 @@ def deploy_transitive(app, roots):
         if "path @executable_path/../Frameworks (offset" not in commands:
             checked(["install_name_tool", "-add_rpath", "@executable_path/../Frameworks", image])
     index, copied = None, []
-    for _ in range(64):
+    for attempt in range(64):
         changed = False
         images = sorted(path for path in app.rglob("*")
                         if path.is_file() and not path.is_symlink() and native_file(path))
@@ -102,6 +115,9 @@ def deploy_transitive(app, roots):
                                        "originalSha256": sha256(source)})
                     checked(["install_name_tool", "-change", name,
                              "@executable_path/../Frameworks/" + relative, image])
+                    if name in load_names(image):
+                        raise RuntimeError(("Framework load name did not change", image, name))
+                    print(json.dumps({"pass": attempt, "image": str(image), "rewritten": name}), flush=True)
                     changed = True
                     continue
                 filename = Path(name).name
@@ -128,6 +144,9 @@ def deploy_transitive(app, roots):
                                    "originalSha256": sha256(source)})
                 replacement = "@executable_path/../Frameworks/" + filename
                 checked(["install_name_tool", "-change", name, replacement, image])
+                if name in load_names(image):
+                    raise RuntimeError(("Dylib load name did not change", image, name, replacement))
+                print(json.dumps({"pass": attempt, "image": str(image), "rewritten": name}), flush=True)
                 changed = True
         if not changed:
             return copied
