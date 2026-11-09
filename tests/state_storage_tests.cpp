@@ -125,9 +125,22 @@ int crashHistoryTemporary(const QString &parent) {
                        SQLITE_OPEN_DELETEONCLOSE;
     if (native->xOpen(native, nullptr, file, flags, nullptr) != SQLITE_OK)
         return 92;
-    const QByteArray bytes(131072, 'c');
-    if (file->pMethods->xWrite(file, bytes.constData(), bytes.size(), 0) != SQLITE_OK)
-        return 93;
+    // 日期：2026-11-09；原生POSIX单次写入长度须小于128KiB；分两次验证相同128KiB累计预留。
+    const QByteArray bytes(65536, 'c');
+    for (int index = 0; index < 2; ++index)
+        if (file->pMethods->xWrite(file, bytes.constData(), bytes.size(),
+                                   qint64(index) * bytes.size()) != SQLITE_OK)
+            return 93;
+    DuktoSqliteFileInfo observed{};
+    if (file->pMethods->xFileControl(file, dukto::SqliteFileInfoControl, &observed) != SQLITE_OK ||
+        observed.kind != 1 || observed.logicalBytes != 131072)
+        return 94;
+    // 日期：2026-11-09；退出前只输出原生长度/分配量，父进程独立核验崩溃后真实保留额度。
+    QTextStream(stdout)
+        << QJsonDocument(QJsonObject{{"logicalBytes", QString::number(observed.logicalBytes)},
+                                     {"allocatedBytes", QString::number(observed.allocatedBytes)}})
+               .toJson(QJsonDocument::Compact)
+        << Qt::endl;
     std::_Exit(73);
 }
 
@@ -311,10 +324,22 @@ class StateStorageTests final : public QObject {
             const auto flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_TEMP_DB |
                                SQLITE_OPEN_DELETEONCLOSE;
             QCOMPARE(native->xOpen(native, nullptr, file, flags, nullptr), SQLITE_OK);
-            QByteArray block(131072, 't');
-            QCOMPARE(file->pMethods->xWrite(file, block.constData(), block.size(), 0), SQLITE_OK);
+            // 日期：2026-11-09；遵守原生单次长度，累计增长跨越64KiB授信边界，保持128KiB验收量。
+            QByteArray block(65536, 't');
+            for (int index = 0; index < 2; ++index)
+                QCOMPARE(file->pMethods->xWrite(file, block.constData(), block.size(),
+                                                qint64(index) * block.size()),
+                         SQLITE_OK);
+            DuktoSqliteFileInfo observed{};
+            QCOMPARE(file->pMethods->xFileControl(file, dukto::SqliteFileInfoControl, &observed),
+                     SQLITE_OK);
+            QCOMPARE(observed.kind, 1);
+            QCOMPARE(observed.logicalBytes, sqlite3_int64(131072));
+            // 日期：2026-11-09；NTFS分次增长可能预分配更多簇；额度须覆盖实际分配量而非只等于正文。
+            const auto expected =
+                (qMax(observed.logicalBytes, observed.allocatedBytes) + 65535) / 65536 * 65536;
             const auto during = dukto::StateSession::open(root.path())->usage();
-            QCOMPARE(during.reserved[0], qint64(block.size()));
+            QCOMPARE(during.reserved[0], qint64(expected));
             QCOMPARE(file->pMethods->xClose(file), SQLITE_OK);
             temporaryPolicy->check();
             const auto after = dukto::StateSession::open(root.path())->usage();
@@ -335,8 +360,15 @@ class StateStorageTests final : public QObject {
         QVERIFY(child.waitForFinished(30000));
         QCOMPARE(child.exitStatus(), QProcess::NormalExit);
         QCOMPARE(child.exitCode(), 73);
+        const auto observation = QJsonDocument::fromJson(child.readAllStandardOutput());
+        QVERIFY(observation.isObject());
+        const auto logical = observation.object()["logicalBytes"].toString().toLongLong();
+        const auto allocated = observation.object()["allocatedBytes"].toString().toLongLong();
+        QCOMPARE(logical, qint64(131072));
+        QVERIFY(allocated >= 0);
+        const auto retained = (qMax(logical, allocated) + 65535) / 65536 * 65536;
         auto session = dukto::StateSession::open(root.path());
-        QCOMPARE(session->usage().reserved[0], qint64(131072));
+        QCOMPARE(session->usage().reserved[0], retained);
         auto policy = std::make_shared<dukto::HistoryBudget>(
             dukto::StateSession::root(root.path(), "history"), root.path());
         dukto::SqliteVfs vfs(policy);
@@ -347,10 +379,24 @@ class StateStorageTests final : public QObject {
         const auto flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_TEMP_DB |
                            SQLITE_OPEN_DELETEONCLOSE;
         QCOMPARE(native->xOpen(native, nullptr, file, flags, nullptr), SQLITE_OK);
-        QCOMPARE(session->usage().reserved[0], qint64(196608));
+        QCOMPARE(session->usage().reserved[0], retained + 65536);
         QCOMPARE(file->pMethods->xClose(file), SQLITE_OK);
-        QCOMPARE(session->usage().reserved[0], qint64(131072));
+        QCOMPARE(session->usage().reserved[0], retained);
     }
+
+#ifdef Q_OS_MACOS
+    // 日期：2026-11-09；显式覆盖macOS系统/tmp别名，真实SQLite规范路径仍须属于同一私有根。
+    void protectedHistorySystemDirectoryAlias() {
+        QTemporaryDir root("/tmp/dukto-history-budget-XXXXXX");
+        QVERIFY(root.isValid());
+        QVERIFY(root.path().startsWith("/tmp/"));
+        HistoryConnection connection(root.path(), "history.sqlite");
+        QSqlQuery query(connection.database);
+        QVERIFY(query.exec("CREATE TABLE alias_payload(value INTEGER)"));
+        QVERIFY(query.exec("INSERT INTO alias_payload VALUES(1)"));
+        connection.state->validate(connection.database);
+    }
+#endif
 
     // 日期：2026-11-09；两种生产历史库都保留原件，迁移后的修改不会回写旧文件；真实子进程验证旧库写锁。
     void protectedHistoryMigration_data() {

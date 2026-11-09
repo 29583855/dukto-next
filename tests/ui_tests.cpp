@@ -160,6 +160,11 @@ class UiTests final : public QObject {
         const auto port = reservation.serverPort();
         reservation.close();
         Controller controller(port, nullptr, temporary.filePath("state"));
+        // 日期：2026-11-09；发送分支也须先证明接收监听成功，保留端口预留后再绑定的真实失败诊断。
+        auto listener = controller.findChild<dukto::LegacyListener *>();
+        QVERIFY(listener);
+        QVERIFY2(listener->isListening(), qPrintable(listener->errorString()));
+        QCOMPARE(listener->serverPort(), port);
         QQuickWidget view;
         view.setResizeMode(QQuickWidget::SizeRootObjectToView);
         view.resize(430, 700);
@@ -261,8 +266,10 @@ class UiTests final : public QObject {
         QCOMPARE(dukto::hashFile(nextSource.fileName()),
                  dukto::hashFile(QDir(nextOutput).filePath("next.bin")));
         QTcpSocket next;
+        QVERIFY2(listener->isListening(), qPrintable(listener->errorString()));
+        QCOMPARE(listener->serverPort(), port);
         next.connectToHost(QHostAddress::LocalHost, port);
-        QVERIFY(next.waitForConnected(2000));
+        QVERIFY2(next.waitForConnected(2000), qPrintable(next.errorString()));
         const auto frame = number(1) + number(payload.size()) + QByteArray("after.bin\0", 10) +
                            number(payload.size()) + payload;
         QCOMPARE(next.write(frame), qint64(frame.size()));
