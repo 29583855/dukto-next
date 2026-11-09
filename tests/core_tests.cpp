@@ -14,6 +14,7 @@
 
 #include <QDir>
 #include <QFile>
+#include <QRandomGenerator>
 #include <QTcpSocket>
 #include <QTemporaryDir>
 #include <QThread>
@@ -219,10 +220,28 @@ class CoreTests final : public QObject {
         QCOMPARE(second.serverPort(), port);
     }
 
-    // 日期：2026-11-06；显式IPv6监听不占用IPv4，双栈监听仍能同时接收两个地址族。
+    // 日期：2026-11-09；先独立探测双族静态候选端口，再一次断言产品IPv6/IPv4共存及双栈接收。
     void tcpAddressFamilies() {
+        quint16 port = 0;
+        QString lastProbeError;
+        for (int attempt = 0; attempt < 32; ++attempt) {
+            // 日期：2026-11-09；IPv6端口0只保证该族可用；IPv4可能有其他监听或连接，不能据此判产品失败。
+            const auto candidate = quint16(20000 + QRandomGenerator::global()->bounded(10000));
+            QTcpServer ipv4Probe, ipv6Probe;
+            if (!ipv4Probe.listen(QHostAddress::AnyIPv4, candidate)) {
+                lastProbeError = ipv4Probe.errorString();
+                continue;
+            }
+            if (!ipv6Probe.listen(QHostAddress::AnyIPv6, candidate)) {
+                lastProbeError = ipv6Probe.errorString();
+                continue;
+            }
+            port = candidate;
+            break;
+        }
+        QVERIFY2(port != 0, qPrintable("dual-family port preparation failed: " + lastProbeError));
         dukto::TcpListener ipv6;
-        QVERIFY2(ipv6.listen(QHostAddress::AnyIPv6), qPrintable(ipv6.errorString()));
+        QVERIFY2(ipv6.listen(QHostAddress::AnyIPv6, port), qPrintable(ipv6.errorString()));
         dukto::TcpListener ipv4;
         QVERIFY2(ipv4.listen(QHostAddress::AnyIPv4, ipv6.serverPort()),
                  qPrintable(ipv4.errorString()));
