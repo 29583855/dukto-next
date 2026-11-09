@@ -88,9 +88,9 @@ class PosixDirectory final {
     void discardTemporary(const QString &name) const;
     // 日期：2026-11-04；显式状态清理检查 unlinkat 结果，除不存在外的错误必须报告。
     void removeEntry(const QString &name) const;
-    // 日期：2026-11-05；只清理身份匹配的普通临时项或空目录，父描述符固定且不递归。
-    void removeOwnedTemporary(const QString &name, const QByteArray &identity,
-                              bool directory) const;
+    // 日期：2026-11-09；固定父目录核对原生身份；不可变文件可额外核对换代指纹，目录不递归。
+    void removeOwnedTemporary(const QString &name, const QByteArray &identity, bool directory,
+                              const QByteArray &revision = {}) const;
     // 日期：2026-11-07；固定父描述符查询子目录身份，仅真正ENOENT返回空，链接/类型错误明确拒绝。
     QByteArray childDirectoryIdentity(const QString &name) const;
     // 日期：2026-11-04；独占创建单层子目录，已有同名项返回 false，其余错误明确失败。
@@ -115,9 +115,17 @@ void replaceReceivedFile(const QString &source, const QString &destination,
                          const std::function<void()> &check = {});
 #endif
 
-// 日期：2026-11-07；原生句柄删除自有临时项；维护可额外指定父目录身份，防止核验后父路径替换。
+// 日期：2026-11-09；不可变文件的换代指纹包含身份、大小和原生修改/状态时间；不包含最后访问时间。
+QByteArray nativeFileRevision(int descriptor);
+#ifndef Q_OS_WIN
+// 日期：2026-11-09；固定父目录取得的属性与已打开句柄使用相同格式，删除前重验同一观察。
+QByteArray nativeFileRevision(const struct stat &information);
+#endif
+
+// 日期：2026-11-09；固定父目录及对象身份；可选换代指纹在实际删除使用的句柄/属性上再次核对。
 void removeReceivedTemporary(const QString &path, const QByteArray &identity, bool directory,
-                             const QByteArray &parentIdentity = {});
+                             const QByteArray &parentIdentity = {},
+                             const QByteArray &revision = {});
 
 // 日期：2026-11-07；以原生不跟随链接方式查询目录身份，仅明确不存在时返回空值。
 QByteArray receivedDirectoryIdentity(const QString &path, const QByteArray &parentIdentity = {});

@@ -24,6 +24,8 @@ class SourceFile final {
     void verifyObject() const;
     // 日期：2026-11-05；先核对普通对象和固定路径，再返回不含内容时间的原生身份供持久决策。
     QByteArray objectIdentity() const;
+    // 日期：2026-11-09；不可变快照持久凭据使用原生换代属性，防止旧inode/文件ID复用后误认。
+    QByteArray revisionIdentity() const;
 
   private:
     friend class PrivateStore;
@@ -41,5 +43,6 @@ class SourceFile final {
     QFile file_;
     QByteArray identity_;
     QByteArray objectIdentity_;
+    QByteArray revision_;
 };
 } // namespace dukto

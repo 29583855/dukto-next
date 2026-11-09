@@ -55,15 +55,17 @@ void noteRetention(PrivateStore &store, const QString &id) {
     SourceFile metadata(QDir(store.directory()).filePath(base + ".json"),
                         SourceFile::OpenPolicy::PrivateState);
     const auto value = next::parseControl(store.read(base + ".json"));
-    store.write(
-        retentionName(QUuid(id)),
-        next::encodeControl({{"version", 1},
-                             {"snapshot", id},
-                             {"root", QString::fromLatin1(store.identity().toHex())},
-                             {"data", QString::fromLatin1(snapshotIdentity(data).toHex())},
-                             {"metadata", QString::fromLatin1(snapshotIdentity(metadata).toHex())},
-                             {"expires", value["expires"]},
-                             {"phase", "ready"}}));
+    store.write(retentionName(QUuid(id)),
+                next::encodeControl(
+                    {{"version", 2},
+                     {"snapshot", id},
+                     {"root", QString::fromLatin1(store.identity().toHex())},
+                     {"data", QString::fromLatin1(snapshotIdentity(data).toHex())},
+                     {"metadata", QString::fromLatin1(snapshotIdentity(metadata).toHex())},
+                     {"dataRevision", QString::fromLatin1(data.revisionIdentity().toHex())},
+                     {"metadataRevision", QString::fromLatin1(metadata.revisionIdentity().toHex())},
+                     {"expires", value["expires"]},
+                     {"phase", "ready"}}));
 }
 
 // 日期：2026-11-09；身份须规范编码且有界，空身份不能被原生删除接口当成授权。
@@ -76,12 +78,13 @@ QByteArray identityField(const QJsonValue &value) {
 }
 
 // 日期：2026-11-09；预先核对全部仍存在的对象，删除首项之前拒绝同名换代或不安全权限。
-void verifySnapshotObject(PrivateStore &store, const QString &name, const QByteArray &identity) {
+void verifySnapshotObject(PrivateStore &store, const QString &name, const QByteArray &identity,
+                          const QByteArray &revision) {
     if (!store.exists(name))
         return;
     store.validateFile(name);
     SourceFile file(QDir(store.directory()).filePath(name), SourceFile::OpenPolicy::PrivateState);
-    if (snapshotIdentity(file) != identity)
+    if (snapshotIdentity(file) != identity || file.revisionIdentity() != revision)
         throw Error(ExitCode::Integrity, QStringLiteral("浏览快照对象已换代，保留原数据"),
                     "cleanup");
 }
@@ -132,7 +135,7 @@ QJsonObject cleanupSnapshot(PrivateStore &store, const QUuid &snapshot, const QD
     const auto raw = store.read(name, 4096);
     auto value = next::parseControl(raw);
     const auto expiry = QDateTime::fromString(value["expires"].toString(), Qt::ISODate);
-    if (value.size() != 7 || raw != next::encodeControl(value) || value["version"] != 1 ||
+    if (value.size() != 9 || raw != next::encodeControl(value) || value["version"] != 2 ||
         value["snapshot"] != snapshot.toString(QUuid::WithoutBraces) ||
         (value["phase"] != "ready" && value["phase"] != "deleting") || !expiry.isValid() ||
         expiry.timeSpec() != Qt::UTC || expiry.toString(Qt::ISODate) != value["expires"].toString())
@@ -140,13 +143,15 @@ QJsonObject cleanupSnapshot(PrivateStore &store, const QUuid &snapshot, const QD
     const auto root = identityField(value["root"]);
     const auto data = identityField(value["data"]);
     const auto metadata = identityField(value["metadata"]);
+    const auto dataRevision = identityField(value["dataRevision"]);
+    const auto metadataRevision = identityField(value["metadataRevision"]);
     if (store.identity() != root)
         throw Error(ExitCode::Integrity, QStringLiteral("浏览回收状态根已换代"), "cleanup");
     if (value["phase"] == "ready" && expiry > now)
         return {{"eligible", false}, {"action", "retained"}};
     const auto base = snapshotName(snapshot.toString(QUuid::WithoutBraces));
-    verifySnapshotObject(store, base + ".data", data);
-    verifySnapshotObject(store, base + ".json", metadata);
+    verifySnapshotObject(store, base + ".data", data, dataRevision);
+    verifySnapshotObject(store, base + ".json", metadata, metadataRevision);
     checkpoint();
     if (!apply)
         return {{"eligible", true}, {"action", "expired-preview"}};
@@ -155,20 +160,24 @@ QJsonObject cleanupSnapshot(PrivateStore &store, const QUuid &snapshot, const QD
         store.write(name, next::encodeControl(value));
     }
     checkpoint();
-    removeReceivedTemporary(QDir(store.directory()).filePath(base + ".data"), data, false, root);
+    removeReceivedTemporary(QDir(store.directory()).filePath(base + ".data"), data, false, root,
+                            dataRevision);
     checkpoint();
-    removeReceivedTemporary(QDir(store.directory()).filePath(base + ".json"), metadata, false,
-                            root);
+    removeReceivedTemporary(QDir(store.directory()).filePath(base + ".json"), metadata, false, root,
+                            metadataRevision);
     checkpoint();
     QByteArray marker;
+    QByteArray markerRevision;
     {
         SourceFile file(QDir(store.directory()).filePath(name),
                         SourceFile::OpenPolicy::PrivateState);
         if (store.read(name, 4096) != next::encodeControl(value))
             throw Error(ExitCode::Integrity, QStringLiteral("浏览删除意图已换代"), "cleanup");
         marker = snapshotIdentity(file);
+        markerRevision = file.revisionIdentity();
     }
-    removeReceivedTemporary(QDir(store.directory()).filePath(name), marker, false, root);
+    removeReceivedTemporary(QDir(store.directory()).filePath(name), marker, false, root,
+                            markerRevision);
     checkpoint();
     return {{"eligible", true}, {"action", "cleaned"}};
 }

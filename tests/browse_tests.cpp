@@ -54,6 +54,7 @@ struct SnapshotFixture {
         auto proof = dukto::next::parseControl(store.read(marker()));
         proof["expires"] = expiry.toString(Qt::ISODate);
         proof["metadata"] = QString::fromLatin1(identity.toHex());
+        proof["metadataRevision"] = QString::fromLatin1(file.revisionIdentity().toHex());
         store.write(marker(), dukto::next::encodeControl(proof));
     }
     // 日期：2026-11-09；仅拼接生产返回的规范UUID，不用文件名前缀授予删除资格。
@@ -101,16 +102,22 @@ class BrowseTests final : public QObject {
 
     // 日期：2026-11-09；损坏版本、额外字段、无效/非UTC时间及非规范身份都保留全部原件。
     void snapshotRetentionRejectsCorruption() {
-        for (const auto &field : {QString("version"), QString("extra"), QString("expires"),
-                                  QString("offset"), QString("root"), QString("data"),
-                                  QString("metadata"), QString("snapshot"), QString("phase")}) {
+        for (const auto &field :
+             {QString("version"), QString("extra"), QString("expires"), QString("offset"),
+              QString("root"), QString("data"), QString("metadata"), QString("snapshot"),
+              QString("phase"), QString("dataRevision"), QString("metadataRevision"),
+              QString("legacy")}) {
             SnapshotFixture fixture;
             dukto::PrivateStore store(fixture.root.filePath("service"), false,
                                       dukto::PrivateStore::Use::Maintenance);
             auto value = dukto::next::parseControl(store.read(fixture.marker()));
             if (field == "version")
-                value[field] = 2;
-            else if (field == "expires")
+                value[field] = 1;
+            else if (field == "legacy") {
+                value["version"] = 1;
+                value.remove("dataRevision");
+                value.remove("metadataRevision");
+            } else if (field == "expires")
                 value[field] = "invalid";
             else if (field == "offset")
                 value["expires"] = "2000-01-01T01:00:00+01:00";
@@ -297,6 +304,78 @@ class BrowseTests final : public QObject {
         QCOMPARE(store.read(fixture.base() + ".data"), QByteArray("new-object"));
         QCOMPARE(store.read(fixture.base() + ".json"), metadata);
         QCOMPARE(store.read(fixture.marker()), marker);
+    }
+
+    // 日期：2026-11-09；即使旧原生ID与新对象ID相同，旧换代指纹也不能认领同内容的新对象。
+    void snapshotRetentionRejectsReusedNativeIdentity() {
+        SnapshotFixture fixture;
+        dukto::PrivateStore store(fixture.root.filePath("service"), false,
+                                  dukto::PrivateStore::Use::Maintenance);
+        const auto data = store.read(fixture.base() + ".data");
+        const auto metadata = store.read(fixture.base() + ".json");
+        auto proof = dukto::next::parseControl(store.read(fixture.marker()));
+        store.remove(fixture.base() + ".data");
+        QTest::qWait(20);
+        store.write(fixture.base() + ".data", data);
+        {
+            dukto::SourceFile file(store.directory() + '/' + fixture.base() + ".data");
+            auto identity = file.objectIdentity();
+            identity.chop(1);
+            // 日期：2026-11-09；令原始ID比较必定相等，跨平台稳定覆盖Linux原失败的ID复用条件。
+            proof["data"] = QString::fromLatin1(identity.toHex());
+            QVERIFY(file.revisionIdentity().toHex() != proof["dataRevision"].toString().toLatin1());
+        }
+        store.write(fixture.marker(), dukto::next::encodeControl(proof));
+        const auto marker = store.read(fixture.marker());
+        QVERIFY_EXCEPTION_THROWN(
+            dukto::cleanupExpiredBrowseSnapshot(store, fixture.id, fixture.expiry, true),
+            dukto::Error);
+        QCOMPARE(store.read(fixture.base() + ".data"), data);
+        QCOMPARE(store.read(fixture.base() + ".json"), metadata);
+        QCOMPARE(store.read(fixture.marker()), marker);
+    }
+
+    // 日期：2026-11-09；同一inode原地等长改写并恢复修改时间仍须拒绝；原生删除入口也重验指纹。
+    void snapshotRetentionRejectsInPlaceChange() {
+        for (const bool afterPreflight : {false, true}) {
+            SnapshotFixture fixture;
+            dukto::PrivateStore store(fixture.root.filePath("service"), false,
+                                      dukto::PrivateStore::Use::Maintenance);
+            const auto path = store.directory() + '/' + fixture.base() + ".data";
+            const auto before = store.read(fixture.base() + ".data");
+            auto changed = before;
+            changed[0] = changed[0] == 'X' ? 'Y' : 'X';
+            bool edited = false;
+            const auto edit = [&]() {
+                // 日期：2026-11-09；实际打开原文件改写，保留inode、长度和原修改时间，不通过原子换代。
+                QFile file(path);
+                if (!file.open(QIODevice::ReadWrite))
+                    throw std::runtime_error("snapshot in-place open");
+                const auto modified = file.fileTime(QFileDevice::FileModificationTime);
+                QTest::qWait(20);
+                if (file.write(changed) != changed.size() || !file.flush() ||
+                    !file.setFileTime(modified, QFileDevice::FileModificationTime))
+                    throw std::runtime_error("snapshot in-place edit");
+                file.close();
+                edited = true;
+            };
+            if (!afterPreflight)
+                edit();
+            QVERIFY_EXCEPTION_THROWN(dukto::cleanupExpiredBrowseSnapshot(
+                                         store, fixture.id, fixture.expiry, true,
+                                         [&]() {
+                                             // 日期：2026-11-09；在预检之后、原生删除之前改变对象，证明删除入口未只信预检。
+                                             if (afterPreflight && !edited &&
+                                                 dukto::next::parseControl(store.read(
+                                                     fixture.marker()))["phase"] == "deleting")
+                                                 edit();
+                                         }),
+                                     dukto::Error);
+            QVERIFY(edited);
+            QCOMPARE(store.read(fixture.base() + ".data"), changed);
+            QVERIFY(store.exists(fixture.base() + ".json"));
+            QVERIFY(store.exists(fixture.marker()));
+        }
     }
 
     // 日期：2026-11-09；真实CLI预览/执行和生产状态根打开均接通快照回收，活动共享时明确拒绝。

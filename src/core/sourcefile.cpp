@@ -125,6 +125,7 @@ SourceFile::SourceFile(const QString &path, OpenPolicy policy) {
     }
     identity_ = fileIdentity(file_.handle());
     objectIdentity_ = fileIdentity(file_.handle(), false);
+    revision_ = nativeFileRevision(file_.handle());
 }
 
 // 日期：2026-11-04；成员按声明逆序析构，文件的关闭先于父目录锁的释放。
@@ -149,6 +150,14 @@ void SourceFile::verifyObject() const {
 QByteArray SourceFile::objectIdentity() const {
     verifyObject();
     return objectIdentity_;
+}
+
+// 日期：2026-11-09；只对未改变的普通文件返回创建时指纹；可变SQLite对象继续使用objectIdentity。
+QByteArray SourceFile::revisionIdentity() const {
+    verify();
+    if (nativeFileRevision(file_.handle()) != revision_)
+        throw Error(ExitCode::Integrity, QStringLiteral("文件换代属性在读取期间已变化"), "read");
+    return revision_;
 }
 
 // 日期：2026-11-07；只比较原生对象身份；同对象的内容修改不能借此成为可重试的配置换代。

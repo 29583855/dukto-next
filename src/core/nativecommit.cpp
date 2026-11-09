@@ -14,6 +14,7 @@
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
+#include <io.h>
 #include <windows.h>
 #else
 #include <cerrno>
@@ -49,6 +50,20 @@ QByteArray replacementIdentity(HANDLE handle) {
     return QByteArray::number(static_cast<qulonglong>(info.dwVolumeSerialNumber)) + ':' +
            QByteArray::number(static_cast<qulonglong>(info.nFileIndexHigh)) + ':' +
            QByteArray::number(static_cast<qulonglong>(info.nFileIndexLow));
+}
+
+// 日期：2026-11-09；从同一普通文件句柄取得换代指纹，创建/状态时间可识别复用的文件ID。
+QByteArray windowsFileRevision(HANDLE handle) {
+    auto result = replacementIdentity(handle) + ':';
+    FILE_STANDARD_INFO size;
+    FILE_BASIC_INFO times;
+    if (!GetFileInformationByHandleEx(handle, FileStandardInfo, &size, sizeof(size)) ||
+        !GetFileInformationByHandleEx(handle, FileBasicInfo, &times, sizeof(times)))
+        throw Error(ExitCode::Disk, QStringLiteral("无法读取文件换代属性"), "cleanup");
+    for (const auto value : {size.EndOfFile.QuadPart, times.CreationTime.QuadPart,
+                             times.LastWriteTime.QuadPart, times.ChangeTime.QuadPart})
+        result += QByteArray::number(static_cast<qlonglong>(value)) + ':';
+    return result;
 }
 } // namespace
 
@@ -453,7 +468,7 @@ void PosixDirectory::removeEntry(const QString &name) const {
 
 // 日期：2026-11-05；只删除原生身份仍匹配的普通临时项；POSIX不宣称具备外部改名CAS。
 void PosixDirectory::removeOwnedTemporary(const QString &name, const QByteArray &identity,
-                                          bool directory) const {
+                                          bool directory, const QByteArray &revision) const {
     verify();
     if (name.isEmpty() || name == "." || name == ".." || name.contains('/') ||
         name.contains(QChar::Null) || identity.isEmpty())
@@ -471,6 +486,8 @@ void PosixDirectory::removeOwnedTemporary(const QString &name, const QByteArray 
                           QByteArray::number(static_cast<qulonglong>(info.st_ino));
     if ((directory ? !S_ISDIR(info.st_mode) : !S_ISREG(info.st_mode)) || observed != identity)
         throw Error(ExitCode::Integrity, QStringLiteral("待清理临时项已被替换"), "receive");
+    if (!revision.isEmpty() && nativeFileRevision(info) != revision)
+        throw Error(ExitCode::Integrity, QStringLiteral("待清理文件换代属性已变化"), "cleanup");
     verify();
     if (::unlinkat(descriptor_, encoded.constData(), directory ? AT_REMOVEDIR : 0) != 0)
         throw Error(ExitCode::Disk, QStringLiteral("自有临时项清理失败，保留证据"), "receive");
@@ -624,9 +641,40 @@ void replaceReceivedFile(const QString &source, const QString &destination,
 }
 #endif
 
-// 日期：2026-11-07；删除所用固定父句柄须匹配预约身份，不能仅在另一次路径查询中核对父目录。
+// 日期：2026-11-09；POSIX状态时间采用纳秒精度，inode复用及原地改写都不能仅凭旧对象ID通过。
+#ifndef Q_OS_WIN
+QByteArray nativeFileRevision(const struct stat &info) {
+    if (!S_ISREG(info.st_mode))
+        throw Error(ExitCode::Integrity, QStringLiteral("换代属性要求普通文件"), "cleanup");
+    auto result = QByteArray::number(static_cast<qulonglong>(info.st_dev)) + ':' +
+                  QByteArray::number(static_cast<qulonglong>(info.st_ino)) + ':' +
+                  QByteArray::number(static_cast<qlonglong>(info.st_size)) + ':';
+#ifdef Q_OS_MACOS
+    for (const auto &time : {info.st_mtimespec, info.st_ctimespec, info.st_birthtimespec})
+#else
+    for (const auto &time : {info.st_mtim, info.st_ctim})
+#endif
+        result += QByteArray::number(static_cast<qlonglong>(time.tv_sec)) + ':' +
+                  QByteArray::number(static_cast<qlonglong>(time.tv_nsec)) + ':';
+    return result;
+}
+#endif
+
+// 日期：2026-11-09；描述符与原生删除入口共用同一指纹编码，不依赖QFileInfo毫秒时间或正文散列。
+QByteArray nativeFileRevision(int descriptor) {
+#ifdef Q_OS_WIN
+    return windowsFileRevision(reinterpret_cast<HANDLE>(_get_osfhandle(descriptor)));
+#else
+    struct stat info;
+    if (::fstat(descriptor, &info) != 0)
+        throw Error(ExitCode::Disk, QStringLiteral("无法读取文件换代属性"), "cleanup");
+    return nativeFileRevision(info);
+#endif
+}
+
+// 日期：2026-11-09；删除所用固定父句柄、对象ID和可选换代指纹均须匹配凭据。
 void removeReceivedTemporary(const QString &path, const QByteArray &identity, bool directory,
-                             const QByteArray &parentIdentity) {
+                             const QByteArray &parentIdentity, const QByteArray &revision) {
     const QFileInfo information(path);
 #ifdef Q_OS_WIN
     NativeDirectoryLock parent(information.absolutePath(), false);
@@ -653,6 +701,8 @@ void removeReceivedTemporary(const QString &path, const QByteArray &identity, bo
             QByteArray::number(static_cast<qulonglong>(info.nFileIndexLow));
         if (identity.isEmpty() || observed != identity)
             throw Error(ExitCode::Integrity, QStringLiteral("待清理临时项身份已变化"), "receive");
+        if (!revision.isEmpty() && windowsFileRevision(handle) != revision)
+            throw Error(ExitCode::Integrity, QStringLiteral("待清理文件换代属性已变化"), "cleanup");
         FILE_DISPOSITION_INFO disposition;
         disposition.DeleteFile = TRUE;
         if (!SetFileInformationByHandle(handle, FileDispositionInfo, &disposition,
@@ -668,7 +718,7 @@ void removeReceivedTemporary(const QString &path, const QByteArray &identity, bo
     PosixDirectory parent(information.absolutePath(), false);
     if (!parentIdentity.isEmpty() && parent.identity() != parentIdentity)
         throw Error(ExitCode::Integrity, QStringLiteral("清理父目录原生身份已变化"), "cleanup");
-    parent.removeOwnedTemporary(information.fileName(), identity, directory);
+    parent.removeOwnedTemporary(information.fileName(), identity, directory, revision);
 #endif
 }
 
