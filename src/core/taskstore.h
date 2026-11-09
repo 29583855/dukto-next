@@ -86,6 +86,8 @@ class TaskStore final {
     TransferTask requestStop(const QUuid &owner, const QUuid &id, bool pause);
     // 日期：2026-11-07；独占维护下核对保留期与不可恢复的过期凭据，不删除任务及幂等键。
     QJsonObject expiryInfo(const TaskLease &lease, const QDateTime &now) const;
+    // 日期：2026-11-08；独占维护按稳定rowid逐项读取上传候选，不向网络接口开放其他主体信息。
+    QJsonObject nextCleanupTask(quint64 after) const;
     // 日期：2026-11-07；过期标记与终止状态在同一FULL事务提交，随后才允许清理临时正文。
     void expire(const TaskLease &lease, const QDateTime &now);
 

@@ -45,9 +45,18 @@ def failure(operation):
     return events[-1]
 
 
-# 日期：2026-11-07；配置原子替换可触发精确路径/对象拒绝，仍要求任务未完成；其他完整性错误不能混入撤权预期。
+# 日期：2026-11-08；配置原子替换和同尺寸源变更均核对精确拒绝契约及未完成状态。
 def validate_fault_refusal(error, fault, stopped, platform_name=os.name):
     signature = tuple(error.get(key) for key in ("event", "eventVersion", "code", "stage", "message"))
+    source_change_refusal = (
+        fault == "same-size-mtime-source-change"
+        and signature
+        in (
+            ("error", 1, 6, "read", "源文件路径在读取期间已被替换"),
+            ("error", 1, 6, "read", "读取期间源文件已变化"),
+            ("error", 1, 6, "parallel", "并行发送源块内容已变化"),
+        )
+    )
     path_refusal = (
         platform_name == "posix"
         and fault in ("revoke", "root-reconfigure")
@@ -58,7 +67,7 @@ def validate_fault_refusal(error, fault, stopped, platform_name=os.name):
             ("error", 1, 6, "read", "读取期间源文件已变化"),
         )
     )
-    if path_refusal:
+    if path_refusal or source_change_refusal:
         assert stopped["state"] in ("failed", "interrupted"), stopped
         assert 0 <= stopped["confirmed"] < stopped["total"], stopped
     else:

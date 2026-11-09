@@ -3,6 +3,7 @@
 import argparse
 import json
 import os
+import random
 from pathlib import Path
 import socket
 import signal
@@ -163,20 +164,22 @@ def main():
         config = root / "settings.ini"
         output = root / "received"
         output.mkdir()
-        # 日期：2026-11-07；CLI同时绑定TCP传输和UDP发现，选择两种协议都可用的同一端口。
-        for _ in range(32):
-            with socket.socket() as reservation:
-                reservation.bind(("127.0.0.1", 0))
-                candidate = reservation.getsockname()[1]
+        # 日期：2026-11-08；选动态端口段之外的随机候选，避免Windows保留/排除动态端口导致反复探测失败。
+        last_port_error = None
+        for _ in range(128):
+            candidate = random.SystemRandom().randrange(20000, 45000)
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as datagram:
                 try:
-                    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as datagram:
-                        datagram.bind(("127.0.0.1", candidate))
-                except OSError:
+                    datagram.bind(("127.0.0.1", candidate))
+                    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as reservation:
+                        reservation.bind(("127.0.0.1", candidate))
+                except OSError as error:
+                    last_port_error = error
                     continue
                 port = str(candidate)
                 break
         else:
-            raise AssertionError("could not reserve a TCP/UDP port pair")
+            raise AssertionError(f"could not reserve a TCP/UDP port pair: {last_port_error!r}")
         for key, value in {"output": str(output), "server": "127.0.0.1", "port": port, "timeout": "5", "bind": "127.0.0.1"}.items():
             run(executable, config, ["config", "set", key, value])
         values = run(executable, config, ["config", "show"])[0]["values"]

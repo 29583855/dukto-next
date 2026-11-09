@@ -245,8 +245,11 @@ def main():
     parser.add_argument("--payload-mib", type=int, default=24)
     parser.add_argument("--resume-timeout", type=int, default=90)
     parser.add_argument("--ready-timeout", type=int, default=30)
+    # 日期：2026-11-08；慢速虚拟磁盘可显式增加真实SQLite同步等待，不改变产品默认超时。
+    parser.add_argument("--service-timeout", type=int, default=10)
     args = parser.parse_args()
     assert 1 <= args.resume_timeout <= 600 and 1 <= args.ready_timeout <= 300
+    assert 1 <= args.service_timeout <= 3600
     assert 1 <= args.files <= 64 and 4 <= args.payload_mib <= 256
     executable = str(Path(args.executable).resolve())
     cases = []
@@ -296,7 +299,8 @@ def main():
         # 日期：2026-11-05；重启沿用身份/目录/端口，监听后持续读取故障关闭事件并保持有界内存。
         def start_server():
             service = subprocess.Popen([executable, "serve", "start", "--bind", "127.0.0.1", "--port", str(port),
-                                        "--state-directory", str(server_state), "--timeout", "10", "--json"],
+                                        "--state-directory", str(server_state), "--timeout",
+                                        str(args.service_timeout), "--json"],
                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
             assert json.loads(service.stdout.readline())["event"] == "service-listening"
             service.output_drain = JsonOutputDrain(service.stdout)
@@ -444,6 +448,7 @@ def main():
                 "conflictPolicy": args.on_conflict, "channelsRequested": args.threads,
                 "checkpointBytesRequired": checkpoint, "checkpointPercentRequested": args.checkpoint_percent,
                 "resumeBudgetSeconds": args.resume_timeout, "readyBudgetSeconds": args.ready_timeout,
+                "serviceTimeoutSeconds": args.service_timeout,
                 "completedCases": cases, "binarySha256": binary_sha, "scriptSha256": script_sha,
                 "client": active.diagnostics() if active else None,
                 "serviceExitCode": process.poll() if process else None,
@@ -471,6 +476,7 @@ def main():
     report = {"date": "2026-11-05", "passed": True, "payloadBytes": total_bytes,
               "binarySha256": binary_sha, "inPlaceExecution": args.in_place, "scriptSha256": script_sha,
               "resumeBudgetSeconds": args.resume_timeout, "readyBudgetSeconds": args.ready_timeout,
+              "serviceTimeoutSeconds": args.service_timeout,
               "defaultTimingGatesPassed": args.resume_timeout == 90 and args.ready_timeout == 30,
               "payloadSha256": expected, "cases": cases, "foreignOwnerRefused": True, "revokedQueryRefused": True,
               "conflictPolicy": args.on_conflict, "channelsRequested": args.threads, "resumeChannelsRequested": args.resume_threads or args.threads,

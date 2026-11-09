@@ -15,6 +15,7 @@
 #include <QJsonDocument>
 #include <QMutex>
 #include <QMutexLocker>
+#include <QSqlError>
 #include <QSqlQuery>
 #include <QThread>
 #include <limits>
@@ -440,6 +441,32 @@ QJsonObject TaskStore::page(const QUuid &owner, quint64 after) const {
         last = query.value(15).toULongLong();
     }
     return {{"tasks", entries}, {"after", QString::number(last)}, {"more", more}};
+}
+
+// 日期：2026-11-08；枚举只产生候选，保留期、任务租约及原生对象仍由原维护入口逐项核对。
+QJsonObject TaskStore::nextCleanupTask(quint64 after) const {
+    if (!store_.maintenance() || after > quint64(std::numeric_limits<qint64>::max()))
+        throw Error(ExitCode::Config, QStringLiteral("清理枚举需要独占根和有效游标"), "cleanup");
+    QSqlQuery query(database_);
+    query.prepare("SELECT rowid,CASE WHEN length(owner)=36 THEN owner ELSE NULL END,"
+                  "CASE WHEN length(id)=36 THEN id ELSE NULL END FROM tasks WHERE rowid>? "
+                  "AND state IN('paused','interrupted','failed','cancelled') "
+                  "AND length(manifest)=32 ORDER BY rowid LIMIT 1");
+    query.addBindValue(static_cast<qlonglong>(after));
+    checked(query);
+    if (!query.next()) {
+        if (query.lastError().isValid())
+            throw Error(ExitCode::Disk, QStringLiteral("清理候选读取失败"), "cleanup");
+        return {};
+    }
+    const auto position = query.value(0).toLongLong();
+    const auto ownerText = query.value(1).toString();
+    const auto taskText = query.value(2).toString();
+    const QUuid owner(ownerText), task(taskText);
+    if (position <= 0 || owner.isNull() || task.isNull() || uuid(owner) != ownerText ||
+        uuid(task) != taskText)
+        throw Error(ExitCode::Integrity, QStringLiteral("清理候选身份无效"), "cleanup");
+    return {{"after", QString::number(position)}, {"owner", ownerText}, {"task", taskText}};
 }
 
 // 日期：2026-11-04；只在原生跨进程锁成功后返回有效租约，不凭数据库状态推断进程是否存活。

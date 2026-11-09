@@ -3,6 +3,8 @@
 #include "core/expiredtaskcleanup.h"
 #include "core/files.h"
 #include "core/protocol.h"
+#include "core/statecleanup.h"
+#include "core/statesession.h"
 #include "core/strongmanifest.h"
 #include <QCoreApplication>
 #include <QDir>
@@ -147,6 +149,232 @@ int crashWorker(const QStringList &args) {
 class ExpiredTaskCleanupTests final : public QObject {
     Q_OBJECT
   private slots:
+    // 日期：2026-11-08；自动维护不得凭tasks.sqlite名称初始化未知普通库或隐式迁移旧版库。
+    void batchPreservesUnknownDatabaseBytes() {
+        QTemporaryDir root;
+        dukto::PrivateStore store(root.filePath("service"), true,
+                                  dukto::PrivateStore::Use::Maintenance);
+        store.write("tasks.sqlite", QByteArray());
+        const auto name = root.filePath("service/tasks.sqlite");
+        database(store, "tasks.sqlite", [](QSqlDatabase db) {
+            // 日期：2026-11-08；真实未知库含独立业务数据，不能被自动维护补建任务表或更改版本。
+            QSqlQuery query(db);
+            if (!query.exec("CREATE TABLE personal_note(value TEXT)") ||
+                !query.exec("INSERT INTO personal_note VALUES('preserve')") ||
+                !query.exec("PRAGMA user_version=3"))
+                throw dukto::Error(dukto::ExitCode::Runtime, "unknown database fixture", "test");
+        });
+        const auto before = dukto::hashFile(name);
+        const auto report = dukto::cleanupState(store, QDateTime::currentDateTimeUtc(), true);
+        QVERIFY2(report["errorCount"].toString() == "0",
+                 qPrintable(QJsonDocument(report).toJson(QJsonDocument::Compact)));
+        QVERIFY(!report["taskDatabaseEligible"].toBool());
+        QCOMPARE(dukto::hashFile(name), before);
+        QVERIFY(!store.exists("gc-cursor.json"));
+        database(store, "tasks.sqlite", [](QSqlDatabase db) {
+            // 日期：2026-11-08；版本和表名相同但列属于其他业务的库，也不能被维护器认领。
+            QSqlQuery query(db);
+            if (!query.exec("DROP TABLE personal_note") ||
+                !query.exec("CREATE TABLE tasks(value TEXT)") ||
+                !query.exec("CREATE TABLE task_expiry(value TEXT)"))
+                throw dukto::Error(dukto::ExitCode::Runtime, "same-name database fixture", "test");
+        });
+        const auto sameName = dukto::hashFile(name);
+        QVERIFY(!dukto::cleanupState(store, QDateTime::currentDateTimeUtc(),
+                                     true)["taskDatabaseEligible"]
+                     .toBool());
+        QCOMPARE(dukto::hashFile(name), sameName);
+        QVERIFY(!store.exists("tasks.sqlite-wal"));
+        QVERIFY(!store.exists("tasks.sqlite-shm"));
+
+        Fixture fixture;
+        fixture.change("tasks.sqlite", "PRAGMA user_version=2");
+        dukto::PrivateStore old(fixture.root.filePath("private"), false,
+                                dukto::PrivateStore::Use::Maintenance);
+        const auto path = fixture.root.filePath("private/tasks.sqlite");
+        const auto original = dukto::hashFile(path);
+        const auto retained = dukto::cleanupState(old, fixture.updated.addDays(8), true);
+        QVERIFY(!retained["taskDatabaseEligible"].toBool());
+        QCOMPARE(dukto::hashFile(path), original);
+        QVERIFY(QFileInfo::exists(fixture.root.filePath("output/" + fixture.pending)));
+    }
+
+    // 日期：2026-11-08；真实CLI验证批量预览/执行、活动共享拒绝及参数误用，不用库内调用代替接线。
+    void batchCommandLineAndSharedRefusal() {
+        Fixture fixture;
+        fixture.change("tasks.sqlite", "UPDATE tasks SET updated='2000-01-01T00:00:00Z'");
+        QVERIFY(QDir().rename(fixture.root.filePath("private"), fixture.root.filePath("service")));
+        auto cli = QDir(QCoreApplication::applicationDirPath()).filePath("dukto-cli");
+#ifdef Q_OS_WIN
+        cli += ".exe";
+#endif
+        QStringList args{
+            "state",        "gc",      "preview", "--state-directory", fixture.root.path(),
+            "--state-root", "service", "--json"};
+        const auto invoke = [&](const QStringList &arguments, int expected) {
+            // 日期：2026-11-08；核对进程真实退出码和单条JSON，失败输出保存在测试原件。
+            QProcess process;
+            process.start(cli, arguments);
+            if (!process.waitForFinished(30000) || process.exitCode() != expected)
+                throw dukto::Error(dukto::ExitCode::Runtime, "batch CLI exit", "test");
+            const auto value = QJsonDocument::fromJson(process.readAllStandardOutput()).object();
+            if (value.isEmpty())
+                throw dukto::Error(dukto::ExitCode::Runtime, "batch CLI JSON", "test");
+            return value;
+        };
+        QCOMPARE(invoke(args, 0)["eligible"].toString(), QString("1"));
+        QVERIFY(QFileInfo::exists(fixture.root.filePath("output/" + fixture.pending)));
+        {
+            dukto::PrivateStore busy(fixture.root.filePath("service"));
+            QCOMPARE(invoke(args, int(dukto::ExitCode::Permission))["stage"].toString(),
+                     QString("state-use"));
+            QVERIFY(!busy.exists("gc-cursor.json"));
+        }
+        auto bad = args;
+        bad << "--budget-total" << "1";
+        invoke(bad, int(dukto::ExitCode::Config));
+        args[2] = "run";
+        QCOMPARE(invoke(args, 0)["uploadTasksProcessed"].toString(), QString("1"));
+        QVERIFY(!QFileInfo::exists(fixture.root.filePath("output/" + fixture.pending)));
+        QVERIFY(QFileInfo::exists(fixture.root.filePath("output/f000.bin")));
+    }
+
+    // 日期：2026-11-08；删除后取消不推进任务游标，已有FULL意图可由下一批安全重入。
+    void batchCancellationResumesDeletionIntent() {
+        Fixture fixture;
+        dukto::PrivateStore store(fixture.root.filePath("private"), false,
+                                  dukto::PrivateStore::Use::Maintenance);
+        dukto::StateCleanupLimits limits;
+        limits.milliseconds = 30000;
+        const auto path = fixture.root.filePath("output/" + fixture.pending);
+        const auto check = [&]() {
+            // 日期：2026-11-08；以真实临时正文消失为取消条件，避免依赖内部调用次数。
+            if (!QFileInfo::exists(path))
+                throw dukto::Error(dukto::ExitCode::Cancelled, "test cancellation", "test");
+        };
+        QVERIFY_EXCEPTION_THROWN(
+            dukto::cleanupState(store, fixture.updated.addDays(8), true, limits, check),
+            dukto::Error);
+        QVERIFY(!store.exists("gc-cursor.json"));
+        const auto result = dukto::cleanupState(store, fixture.updated.addDays(8), true, limits);
+        QCOMPARE(result["errorCount"].toString(), QString("0"));
+        QVERIFY(!QFileInfo::exists(path));
+        QVERIFY(QFileInfo::exists(fixture.root.filePath("output/f000.bin")));
+    }
+
+    // 日期：2026-11-08；自动维护必须先核对已有域关联，伪造/残片标记不会触发任何临时正文删除。
+    void automaticCleanupRejectsBrokenDomain() {
+        Fixture fixture;
+        fixture.change("tasks.sqlite", "UPDATE tasks SET updated='2000-01-01T00:00:00Z'");
+        QVERIFY(QDir().rename(fixture.root.filePath("private"), fixture.root.filePath("service")));
+        QFile marker(fixture.root.filePath("service/state-domain.bin"));
+        QVERIFY(marker.open(QIODevice::WriteOnly));
+        QCOMPARE(marker.write("broken"), qint64(6));
+        marker.close();
+        dukto::tryAutomaticStateCleanup(fixture.root.path(), "service");
+        QVERIFY(QFileInfo::exists(fixture.root.filePath("output/" + fixture.pending)));
+        QVERIFY_EXCEPTION_THROWN(dukto::StateSession::root(fixture.root.path(), "service"),
+                                 dukto::Error);
+        QVERIFY(QFileInfo::exists(fixture.root.filePath("output/" + fixture.pending)));
+    }
+
+    // 日期：2026-11-08；批次预览保持正文与任务，执行复用原删除凭据并保留最终文件和请求身份。
+    void batchCleanupRetainsOriginalsAndRequests() {
+        Fixture fixture;
+        dukto::PrivateStore store(fixture.root.filePath("private"), false,
+                                  dukto::PrivateStore::Use::Maintenance);
+        dukto::StateCleanupLimits limits;
+        limits.milliseconds = 30000;
+        const auto path = fixture.root.filePath("output/" + fixture.pending);
+        const auto now = fixture.updated.addDays(7);
+        const auto preview = dukto::cleanupState(store, now, false, limits);
+        QCOMPARE(preview["eligible"].toString(), QString("1"));
+        QCOMPARE(preview["errorCount"].toString(), QString("0"));
+        QVERIFY(QFileInfo::exists(path));
+        QVERIFY(!store.exists("gc-cursor.json"));
+        const auto result = dukto::cleanupState(store, now, true, limits);
+        QCOMPARE(result["uploadTasksProcessed"].toString(), QString("1"));
+        QCOMPARE(result["errorCount"].toString(), QString("0"));
+        QVERIFY(!QFileInfo::exists(path));
+        QCOMPARE(dukto::hashFile(fixture.root.filePath("output/f000.bin")),
+                 dukto::hashFile(fixture.root.filePath("sources/f000.bin")));
+        dukto::TaskStore tasks(store);
+        QCOMPARE(tasks
+                     .create(fixture.owner, fixture.request, "upload", "docs", "",
+                             fixture.root.filePath("output"), fixture.identity)
+                     .id,
+                 fixture.id);
+        const auto repeated = dukto::cleanupState(store, now.addDays(1), true, limits);
+        QCOMPARE(repeated["errorCount"].toString(), QString("0"));
+        QVERIFY(!QFileInfo::exists(path));
+        QVERIFY(store.exists("gc-last.json"));
+    }
+
+    // 日期：2026-11-08；共享占用优先，释放后真实业务根打开触发过期清理，不需用户手动指定任务。
+    void automaticBusinessOpenHonorsSharedUse() {
+        Fixture fixture;
+        fixture.change("tasks.sqlite", "UPDATE tasks SET updated='2000-01-01T00:00:00Z'");
+        QVERIFY(QDir().rename(fixture.root.filePath("private"), fixture.root.filePath("service")));
+        const auto path = fixture.root.filePath("output/" + fixture.pending);
+        {
+            dukto::PrivateStore busy(fixture.root.filePath("service"));
+            dukto::tryAutomaticStateCleanup(fixture.root.path(), "service");
+            QVERIFY(QFileInfo::exists(path));
+        }
+        const auto store = dukto::StateSession::root(fixture.root.path(), "service");
+        QVERIFY(!QFileInfo::exists(path));
+        QVERIFY(store->exists("gc-last.json"));
+        QVERIFY(QFileInfo::exists(fixture.root.filePath("output/f000.bin")));
+    }
+
+    // 日期：2026-11-08；提交结果未知及损坏进度均保留正文；错误不会被批次完成或后续业务掩盖。
+    void batchCleanupRejectsUnknownCommitAndCursor() {
+        Fixture fixture;
+        fixture.change("receive-" + fixture.id.toString(QUuid::WithoutBraces) + ".sqlite",
+                       "UPDATE files SET state='committing' WHERE id=2");
+        dukto::PrivateStore store(fixture.root.filePath("private"), false,
+                                  dukto::PrivateStore::Use::Maintenance);
+        dukto::StateCleanupLimits limits;
+        limits.milliseconds = 30000;
+        const auto result = dukto::cleanupState(store, fixture.updated.addDays(8), true, limits);
+        QCOMPARE(result["errorCount"].toString(), QString("1"));
+        QVERIFY(QFileInfo::exists(fixture.root.filePath("output/" + fixture.pending)));
+        store.write("gc-cursor.json", "{}");
+        QVERIFY_EXCEPTION_THROWN(dukto::cleanupState(store, fixture.updated.addDays(8), true),
+                                 dukto::Error);
+        QVERIFY(QFileInfo::exists(fixture.root.filePath("output/" + fixture.pending)));
+    }
+
+    // 日期：2026-11-08；单项批次持久推进稳定任务游标，后续运行仍能处理同根中的其他过期任务。
+    void batchCleanupPersistsTaskCursor() {
+        Fixture fixture;
+        dukto::PrivateStore store(fixture.root.filePath("private"), false,
+                                  dukto::PrivateStore::Use::Maintenance);
+        dukto::TaskStore tasks(store);
+        const auto secondRequest = QUuid::createUuid();
+        auto second = tasks.create(fixture.owner, secondRequest, "upload", "docs", "",
+                                   fixture.root.filePath("output"), fixture.identity);
+        {
+            auto lease = tasks.acquire(fixture.owner, second.id);
+            dukto::StrongManifest manifest(store, "fixture.sqlite", false);
+            second = tasks.bindManifest(*lease, manifest.summary());
+            second = tasks.advance(*lease, second.revision, "transferring", 0);
+            tasks.advance(*lease, second.revision, "interrupted", 0);
+        }
+        dukto::StateCleanupLimits limits;
+        limits.tasks = 1;
+        limits.milliseconds = 30000;
+        const auto now = fixture.updated.addDays(8);
+        const auto first = dukto::cleanupState(store, now, true, limits);
+        QCOMPARE(first["tasksVisited"].toString(), QString("1"));
+        QVERIFY(first["more"].toBool());
+        const auto next = dukto::cleanupState(store, now, true, limits);
+        QCOMPARE(next["tasksVisited"].toString(), QString("1"));
+        // 日期：2026-11-08；第二任务故意无接收证据，必须报告失败而非删除或反复只处理第一任务。
+        QCOMPARE(next["errorCount"].toString(), QString("1"));
+        QCOMPARE(tasks.task(fixture.owner, second.id).state, QString("interrupted"));
+    }
+
     // 日期：2026-11-07；保留期边界、预览零正文变更、最终文件和源文件保护及幂等请求均实测。
     void retentionAndIdempotency() {
         Fixture fixture;

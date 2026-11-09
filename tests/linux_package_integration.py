@@ -183,7 +183,8 @@ def main():
         recovery_report = working / "overwrite-recovery.json"
         checked([sys.executable, "-X", "utf8", root / "tests/transfer_recovery_integration.py", executable,
                  "--on-conflict", "overwrite", "--threads", "4", "--resume-threads", "8", "--files", "4",
-                 "--payload-mib", "8", "--checkpoint-percent", "50", "--report", recovery_report],
+                 "--payload-mib", "8", "--checkpoint-percent", "50", "--service-timeout", "60",
+                 "--report", recovery_report],
                 environment, working, timeout=600)
         recovery = json.loads(recovery_report.read_text(encoding="utf-8"))
         assert recovery["passed"] and recovery["conflictPolicy"] == "overwrite"

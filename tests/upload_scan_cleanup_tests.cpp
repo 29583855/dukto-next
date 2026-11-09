@@ -2,6 +2,8 @@
 #include "core/files.h"
 #include "core/protocol.h"
 #include "core/service.h"
+#include "core/statecleanup.h"
+#include "core/statesession.h"
 #include "core/uploadmanifest.h"
 
 #include <QCoreApplication>
@@ -97,6 +99,55 @@ void leaveHotJournal(const QString &path) {
 class UploadScanCleanupTests final : public QObject {
     Q_OBJECT
   private slots:
+    // 日期：2026-11-08；真实直接退出遗留扫描在业务打开前自动清理，源文件和未知同名普通项保持。
+    void automaticAbandonedScanCleanup() {
+        Fixture fixture;
+        fixture.abandon("before");
+        fixture.age();
+        const auto source = dukto::hashFile(fixture.root.filePath("source.bin"));
+        {
+            dukto::PrivateStore store(fixture.state);
+            store.write("unknown.part", "preserve-me");
+        }
+        const auto store = dukto::StateSession::root(fixture.parent, "transfers");
+        QVERIFY(!store->exists(fixture.stem() + ".sqlite"));
+        QVERIFY(!store->exists(fixture.stem() + ".scan.json"));
+        QCOMPARE(store->read("unknown.part"), QByteArray("preserve-me"));
+        QCOMPARE(dukto::hashFile(fixture.root.filePath("source.bin")), source);
+    }
+
+    // 日期：2026-11-08；目录扫描分批继续，预览不落进度且新鲜扫描不因开启自动维护而提前删除。
+    void batchScanCursorAndRetention() {
+        Fixture fixture;
+        fixture.abandon("before");
+        dukto::PrivateStore store(fixture.state, false, dukto::PrivateStore::Use::Maintenance);
+        dukto::StateCleanupLimits limits;
+        limits.directoryEntries = 1;
+        limits.milliseconds = 30000;
+        const auto now = QDateTime::currentDateTimeUtc();
+        const auto preview = dukto::cleanupState(store, now, false, limits);
+        QVERIFY(preview["more"].toBool());
+        QVERIFY(!store.exists("gc-cursor.json"));
+        bool wrapped = false;
+        for (int pass = 0; pass < 32; ++pass) {
+            const auto result = dukto::cleanupState(store, now, true, limits);
+            QCOMPARE(result["errorCount"].toString(), QString("0"));
+            QVERIFY(store.exists(fixture.stem() + ".sqlite"));
+            if (!result["more"].toBool()) {
+                wrapped = true;
+                break;
+            }
+        }
+        QVERIFY(wrapped);
+        auto marker = dukto::next::parseControl(store.read(fixture.stem() + ".scan.json"));
+        marker["created"] = QString::number(now.toSecsSinceEpoch() - 8 * 86400);
+        store.write(fixture.stem() + ".scan.json", dukto::next::encodeControl(marker));
+        for (int pass = 0; pass < 32 && store.exists(fixture.stem() + ".sqlite"); ++pass)
+            dukto::cleanupState(store, now, true, limits);
+        QVERIFY(!store.exists(fixture.stem() + ".sqlite"));
+        QVERIFY(QFileInfo::exists(fixture.root.filePath("source.bin")));
+    }
+
     // 日期：2026-11-07；空闲已建库和真实热回滚库均需按相同持久身份恢复。
     void retainedPreviewAndCleanup_data() {
         QTest::addColumn<QString>("phase");

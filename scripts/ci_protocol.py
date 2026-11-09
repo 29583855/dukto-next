@@ -11,10 +11,10 @@ import sys
 import time
 
 
-# 日期：2026-11-07；集中声明跨平台真实专项及必需计量验证，保留原参数/时限和首次失败。
-def commands(build):
+# 日期：2026-11-08；独立选择运行程序与新报告目录，兼容MSVC、UCRT及单层POSIX构建布局。
+def commands(build, binary_directory=None, openssl=None):
     windows = sys.platform == "win32"
-    binary = build / "Release" if windows else build
+    binary = Path(binary_directory) if binary_directory is not None else (build / "Release" if windows else build)
     suffix = ".exe" if windows else ""
     cli = str(binary / ("dukto-cli" + suffix))
     cases = []
@@ -92,19 +92,21 @@ def commands(build):
         str(binary / ("server-panel-process-probe" + suffix)))
     add("task-store", "task_store_integration", executable=str(binary / ("task-store-probe" + suffix)))
     if windows:
-        add("secure-channel", "secure_channel_integration", "--openssl", ".tools/openssl/Library/bin/openssl.exe",
+        add("secure-channel", "secure_channel_integration", "--openssl", str(openssl or ".tools/openssl/Library/bin/openssl.exe"),
             executable=str(binary / "secure-channel-probe.exe"))
     return cases
 
 
-# 日期：2026-11-05；实时转发子进程输出、不积累日志正文，分别保存退出码/耗时/摘要并在结束返回总失败。
+# 日期：2026-11-08；报告目录与构建目录可分离，逐项保留真实失败及原脚本摘要，不复用旧报告。
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--build-directory", type=Path, default=Path("build"))
+    parser.add_argument("--binary-directory", type=Path)
+    parser.add_argument("--openssl", type=Path)
     parser.add_argument("--list", action="store_true")
     args = parser.parse_args()
     build = args.build_directory
-    cases = commands(build)
+    cases = commands(build, args.binary_directory, args.openssl)
     if args.list:
         print(json.dumps([{"name": name, "command": command} for name, command, _ in cases],
                          ensure_ascii=False, indent=2))
