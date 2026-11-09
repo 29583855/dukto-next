@@ -1,10 +1,19 @@
 name: Native Linux glibc deployed preview
 on:
   workflow_dispatch:
+    inputs:
+      runner:
+        description: Native Ubuntu baseline for the package and runtime validation
+        required: true
+        default: ubuntu-24.04
+        type: choice
+        options:
+          - ubuntu-24.04
+          - ubuntu-22.04
 
 jobs:
   package:
-    runs-on: ubuntu-24.04
+    runs-on: ${{ inputs.runner || 'ubuntu-24.04' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -22,7 +31,9 @@ jobs:
           git rev-parse HEAD > build/source-commit.txt
           git ls-files -z | xargs -0 sha256sum > build/source-before.sha256
       - name: Validate module sampling exit and live-process boundaries
-        run: python -X utf8 tests/linux_package_sampling_integration.py --report build/module-sampling.json
+        run: |
+          python -X utf8 tests/linux_abi_integration.py --report build/elf-abi.json
+          python -X utf8 tests/linux_package_sampling_integration.py --report build/module-sampling.json
       - name: Configure C++14 GUI CLI and validation
         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
       - name: Compile native application and validation targets

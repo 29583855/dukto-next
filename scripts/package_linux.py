@@ -43,14 +43,61 @@ def copy_directory(source, target, stage, mapping):
             copy_file(path, target / path.relative_to(source), stage, mapping)
 
 
-# 日期：2026-11-05；生成带启动器的 Ubuntu 24.04+ x86_64 glibc 预览包；不把 musl 或其他系统视为兼容验证。
+# 日期：2026-11-09；只读取ELF需求节，定义节的导出版本不能被误认成应用实际需要的glibc版本。
+def required_glibc(text):
+    needs = False
+    versions = set()
+    features = {}
+    for line in text.splitlines():
+        if re.match(r"^Version .* section ", line):
+            needs = line.startswith("Version needs section ")
+        if not needs:
+            continue
+        for name in re.findall(r"\bName:\s+(GLIBC_[A-Za-z0-9_.]+)\b", line):
+            numeric = re.fullmatch(r"GLIBC_(\d+\.\d+(?:\.\d+)?)", name)
+            if numeric:
+                versions.add(numeric.group(1))
+            elif name == "GLIBC_ABI_DT_RELR":
+                # 日期：2026-11-09；此加载器能力从glibc2.36提供，不是可忽略的普通非数字标签。
+                features[name] = "2.36"
+            else:
+                raise RuntimeError("Unsupported required glibc ABI: " + name)
+    return {"versions": sorted(versions, key=version_tuple), "features": features}
+
+
+# 日期：2026-11-09；按数值比较2.9、2.35和2.2.5，不使用字符串排序推断最低加载器版本。
+def version_tuple(value):
+    if not re.fullmatch(r"\d+\.\d+(?:\.\d+)?", value):
+        raise ValueError("Invalid glibc version: " + value)
+    return tuple(int(part) for part in value.split('.'))
+
+
+# 日期：2026-11-09；每个实际部署ELF逐项取证；未知私有ABI拒绝，宿主版本不替代载荷需求观察。
+def glibc_abi(stage, elf_paths):
+    versions, features, files = set(), {}, []
+    for relative in sorted(elf_paths):
+        observed = required_glibc(checked(["env", "LC_ALL=C", "readelf", "--version-info", "--wide", stage / relative]))
+        versions.update(observed["versions"])
+        features.update(observed["features"])
+        files.append(dict(path=relative, **observed))
+    candidates = versions | set(features.values())
+    if not candidates:
+        raise RuntimeError("No glibc version requirement found in deployed ELF payload")
+    return {"minimumVersion": max(candidates, key=version_tuple),
+            "requiredVersions": sorted(versions, key=version_tuple),
+            "featureMinimumVersions": features, "elfFiles": files,
+            "scope": "ELF symbol and loader ABI requirements; complete OS compatibility requires runtime validation"}
+
+
+# 日期：2026-11-09；生成当前原生系统的glibc预览并记录实际ABI，不把musl或未测发行版记为兼容通过。
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--build-directory", default="build")
     parser.add_argument("--output", required=True)
     args = parser.parse_args()
     assert os.name == "posix" and os.uname().sysname == "Linux" and os.uname().machine == "x86_64"
-    assert "glibc" in checked(["getconf", "GNU_LIBC_VERSION"])
+    build_glibc = checked(["getconf", "GNU_LIBC_VERSION"]).strip()
+    assert re.fullmatch(r"glibc \d+\.\d+(?:\.\d+)?", build_glibc), build_glibc
     root = Path(__file__).resolve().parents[1]
     build, output = Path(args.build_directory).resolve(), Path(args.output).resolve()
     assert not output.exists(), "Output must be a new directory"
@@ -117,6 +164,8 @@ def main():
                 else:
                     copy_file(path, stage / "lib" / name, stage, mapping)
             dependencies[relative] = names
+    abi = glibc_abi(stage, scanned)
+    assert version_tuple(abi["minimumVersion"]) <= version_tuple(build_glibc.split()[1]), abi
     (stage / "bin/qt.conf").write_text("[Paths]\nPrefix=..\nPlugins=plugins\nQml2Imports=qml\n", encoding="utf-8")
     for name in ("dukto-cli", "dukto-gui"):
         launcher = stage / name
@@ -149,7 +198,8 @@ def main():
     (stage / "README.txt").write_text(
         "Dukto Next Linux x86_64 glibc development preview\n\n"
         "Run ./dukto-gui or ./dukto-cli --help. Use these launchers, which set the bundled runtime paths.\n"
-        "Built on Ubuntu 24.04; glibc 2.39 or newer, X11 or Wayland and suitable system fonts are required.\n"
+        f"ELF payload requires glibc {abi['minimumVersion']} or newer; build host uses {build_glibc}.\n"
+        "X11 or Wayland and suitable system fonts are required; see package-manifest.json for the tested distribution.\n"
         "The CLI runs independently without a desktop session. The GUI uses Qt software rendering.\n"
         "The GUI defaults LIBGL_ALWAYS_SOFTWARE to 1; set it explicitly to 0 to choose hardware EGL.\n"
         "A compatible host Mesa/EGL implementation and its driver dependencies are required for Wayland.\n"
@@ -163,14 +213,14 @@ def main():
               "buildProvenance": build_provenance,
               "platform": "linux-x86_64-glibc", "sourceCommit": os.environ.get("GITHUB_SHA"),
               "inputCliSha256": sha256(build / "dukto-cli"), "inputGuiSha256": sha256(build / "dukto-gui"),
-              "buildGlibc": checked(["getconf", "GNU_LIBC_VERSION"]).strip(),
+              "buildGlibc": build_glibc, "glibcAbi": abi,
               "distribution": Path("/etc/os-release").read_text(encoding="utf-8"), "files": files,
               "dependencyFiles": provenance, "elfDependencies": dependencies, "hostSystemLibraries": sorted(system),
               "qmlImports": imports, "sourceFiles": sources, "libraryAliases": aliases,
               "guiRuntimePolicy": {"LIBGL_ALWAYS_SOFTWARE": "default 1, user override supported",
                                    "waylandDecorationPlugins": True,
                                    "hostGraphicsDriverRequired": True},
-              "hostSystemRequirements": ["glibc 2.39 or newer", "X11 or Wayland for GUI", "system fonts",
+              "hostSystemRequirements": [f"glibc {abi['minimumVersion']} or newer", "X11 or Wayland for GUI", "system fonts",
                                          "compatible Mesa/EGL and graphics driver dependencies for Wayland"],
               "openReleaseChecks": ["clean OS", "exact third-party source distribution", "complete product qualification"]}
     (stage / "package-manifest.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
