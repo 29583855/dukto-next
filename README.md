@@ -4,15 +4,11 @@
 
 项目以 `Dukto/` 内的Dukto R6为只读功能参考，使用C++14和Qt5开发Windows、macOS、Linux共用内核的GUI及独立CLI，包含局域网发现、服务器上传/下载、多通道传输及恢复功能。
 
-按用户最新要求，三平台原生编译、运行验收和依赖分目录交付已完成：[程序目录与启动说明](dist/交付程序-20261109/README.md) · [三平台验收记录](docs/三平台程序交付验收.md)。Windows保留用户已确认正常的R153，Linux（Ubuntu24.04及更新版本）与macOS两架构采用已验R158；包内含Qt/OpenSSL等依赖，C++14。
+推荐使用[局域网传输修复版：四平台运行包与对应源码](https://github.com/29583855/dukto-next/releases/tag/preview-lan-proxy-20261110)。修复Windows向Mac发送时的代理类型不支持错误；R6套接字明确直连。四平台原生编译、四种代理环境实传、完整核心及最终包运行通过，见[修复说明与验证范围](docs/局域网发送代理问题说明.md)。
 
-默认局域网自动发现已实现，需要相同可达IPv4广播域和防火墙允许。Mac已在macOS15验证，当前adhoc签名、未公证。本次交付资格以最新收窄范围为准；物理LAN现场矩阵、最终长测、完整配额/GC及正式签名等原更大范围计划继续保留，不冒称已完成。
+默认仍为原版TCP/UDP4644、头像TCP4645，同机先退出原版，不自动换端口。Windows包包含DLL，Linux面向Ubuntu24.04及更新版本，Mac含Intel/Apple Silicon且全部原生镜像最低构建目标12.0，仍为adhoc签名预览。对应[端口说明](docs/局域网发现与原版共存.md)与[macOS12安装说明](docs/macOS12兼容说明.md)。
 
-[GitHub Release：四平台运行包与对应源码](https://github.com/29583855/dukto-next/releases/tag/preview-r158-20261109)，附 SHA256SUMS、运行说明和验收回执；9个公开附件均已匿名下载核对摘要。当前保留开发预览标记。
-
-macOS 已提供 [macOS12兼容版](https://github.com/29583855/dukto-next/releases/tag/preview-macos12-20261109)，最低目标12.0，包含12.7.6；Intel和Apple Silicon包均通过原生编译、完整核心及独立包业务测试。安装、架构选择和验证范围见 [macOS12兼容说明](docs/macOS12兼容说明.md)；客户macOS12.7.6仍待现场确认，旧R158 Mac包要求15.0。
-
-默认继续使用与原版相同的4644端口，同机先退出原版；端口说明见[局域网发现与原版共存](docs/局域网发现与原版共存.md)。Windows向Mac发送时报代理类型不支持的问题已定位到发送套接字继承代理，修复及验证进度见[局域网发送代理问题说明](docs/局域网发送代理问题说明.md)。
+客户两台物理机Windows→Mac和macOS12.7.6现场复测仍待确认；原更大范围的物理LAN矩阵、长测、完整配额/GC及正式签名计划保留。旧[R158](https://github.com/29583855/dukto-next/releases/tag/preview-r158-20261109)和[macOS12兼容版](https://github.com/29583855/dukto-next/releases/tag/preview-macos12-20261109)作为历史版本保留。
 
 ## 文档入口
 
