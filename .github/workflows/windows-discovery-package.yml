@@ -39,8 +39,14 @@ jobs:
         run: cmake -S . -B build/windows-ucrt -G Ninja -DCMAKE_BUILD_TYPE=Release
       - name: Compile GUI CLI and tests
         run: cmake --build build/windows-ucrt --parallel 4
-      # 日期：2026-11-10；包含标准广播、双实例、原版占用及线路公告端口的真实TCP接收验证。
-      - name: Validate full core and discovery coexistence
+      # 日期：2026-11-10；先在非回环IPv4上复现旧代理失败，并验证生产GUI的真实文件落盘。
+      - name: Validate direct LAN transfers under proxies
+        env:
+          QT_QPA_PLATFORM: offscreen
+          QT_QUICK_BACKEND: software
+        run: build/windows-ucrt/controller-tests.exe fileTransferIgnoresProxy defaultPortConflictDoesNotSwitch customPortsHearStandardBroadcastAndEachOther -o -,txt -o build/proxy-regression.xml,junitxml
+      # 日期：2026-11-10；保留全部核心与最终包迁移测试。
+      - name: Validate full core and direct LAN transfers
         env:
           QT_QPA_PLATFORM: offscreen
           QT_QUICK_BACKEND: software
@@ -58,6 +64,7 @@ jobs:
             package-output/*.zip
             package-output/SHA256SUMS
             package-output/*.log
+            build/*.xml
             build/*.json
             build/*.log
             build/windows-ucrt/Testing/QtTest/**

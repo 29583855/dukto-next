@@ -13,6 +13,7 @@
 #include <QElapsedTimer>
 #include <QFileInfo>
 #include <QJsonArray>
+#include <QNetworkProxy>
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QStandardPaths>
@@ -31,6 +32,8 @@ class Wire final {
     // 日期：2026-11-06；先接管描述符再申请2MiB共享数据额度，拒绝时同样关闭连接；socket先于额度析构。
     Wire(std::atomic_bool &cancelled, int timeout, qintptr descriptor = -1)
         : cancelled_(cancelled), timeout_(timeout) {
+        // 日期：2026-11-10；局域网R6收发明确直连，不能继承系统HTTP缓存代理或应用代理工厂。
+        socket.setProxy(QNetworkProxy::NoProxy);
         if (descriptor >= 0 && !socket.setSocketDescriptor(descriptor))
             throw Error(ExitCode::Network, socket.errorString(), "receive");
         credit_.reset(new BufferCredit(2 * 1024 * 1024, true));

@@ -16,7 +16,7 @@ Discovery::Discovery(QObject *parent) : QObject(parent) {
         socket->setProxy(QNetworkProxy::NoProxy);
         connect(socket, &QUdpSocket::readyRead, this, [this, socket]() { read(socket); });
     }
-    // 日期：2026-11-04；每五秒发送有界Hello，支持不能共享标准UDP的原版共存并清理超时设备。
+    // 日期：2026-11-10；每五秒刷新标准发现及清理超时设备。
     connect(&timer_, &QTimer::timeout, this, [this]() {
         announce();
         expire();
@@ -103,9 +103,6 @@ QByteArray Discovery::hello(bool broadcastFlag) const {
 // 日期：2026-11-04；仅向实际启用且支持广播的 IPv4 接口发送，不依赖跨网段广播。
 void Discovery::broadcast(const QByteArray &data) {
     QSet<quint16> destinations{4644, port_};
-    // 日期：2026-11-10；两台Mac的原版均独占4644时，Next仍通过已约定的16个备用UDP端口直达对方。
-    for (quint16 candidate = 4648; candidate <= 4678; candidate += 2)
-        destinations.insert(candidate);
     for (const auto &interface : QNetworkInterface::allInterfaces()) {
         if (!(interface.flags() & QNetworkInterface::IsUp) ||
             !(interface.flags() & QNetworkInterface::CanBroadcast))

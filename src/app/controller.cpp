@@ -77,9 +77,8 @@ struct Controller::HistoryConnection final {
     }
 };
 
-// 日期：2026-11-10；初始化独立设置和历史，按实际TCP端口启动共享广播与独占回复入口。
-Controller::Controller(quint16 port, QObject *parent, const QString &storageDirectory,
-                       bool automaticPort)
+// 日期：2026-11-10；初始化独立设置和历史，严格监听指定端口，默认与原版同为4644。
+Controller::Controller(quint16 port, QObject *parent, const QString &storageDirectory)
     : QObject(parent),
       settings_(QSettings::defaultFormat(), QSettings::UserScope, "DuktoNext", "Desktop"),
       server_(QDir(storageDirectory.isEmpty()
@@ -127,41 +126,19 @@ Controller::Controller(quint16 port, QObject *parent, const QString &storageDire
                 receiving_ = false;
                 onResult(code, result);
             });
-    bool listening = listener_->listen(QHostAddress::Any, port);
-    bool discovered = false;
-    QString startupError = listener_->errorString();
-    // 日期：2026-11-10；仅桌面默认4644冲突时尝试16组备用端口，避开TLS默认4646，显式指定端口保持严格失败。
-    if (!listening && automaticPort && port == 4644 &&
-        listener_->serverError() == QAbstractSocket::AddressInUseError) {
-        for (quint16 candidate = 4648; candidate <= 4678; candidate += 2) {
-            if (!listener_->listen(QHostAddress::Any, candidate)) {
-                startupError = listener_->errorString();
-                continue;
-            }
-            discovered = discovery_.start(candidate, username());
-            if (discovered) {
-                listening = true;
-                break;
-            }
-            startupError = QStringLiteral("发现端口绑定失败：") + discovery_.errorString();
-            listener_->close();
-        }
-    }
-    if (!listening) {
-        status_ = QStringLiteral("接收端口不可用：") + startupError;
+    if (!listener_->listen(QHostAddress::Any, port)) {
+        status_ = QStringLiteral("接收端口 %1 不可用：%2；请退出占用端口的原版或其他实例后重新打开")
+                      .arg(port)
+                      .arg(listener_->errorString());
         return;
     }
     diagnosticPort_ = listener_->serverPort();
-    if (!discovered)
-        discovered = discovery_.start(diagnosticPort_, username());
+    const bool discovered = discovery_.start(diagnosticPort_, username());
     if (!discovered)
         status_ = QStringLiteral("接收端口 %1 已监听；发现端口绑定失败：").arg(diagnosticPort_) +
                   discovery_.errorString();
     else if (!QFileInfo(receiveDirectory).isDir())
         status_ = QStringLiteral("接收端口 %1 已监听；接收目录不可用，请在设置选择目录")
-                      .arg(diagnosticPort_);
-    else if (port == 4644 && diagnosticPort_ != port)
-        status_ = QStringLiteral("就绪 · 4644被占用，已使用接收端口 %1 · 自动发现已启用")
                       .arg(diagnosticPort_);
     else
         status_ = QStringLiteral("就绪 · 接收端口 %1").arg(diagnosticPort_);

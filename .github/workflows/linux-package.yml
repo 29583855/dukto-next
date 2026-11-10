@@ -38,6 +38,12 @@ jobs:
         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
       - name: Compile native application and validation targets
         run: cmake --build build --parallel 2
+      # 日期：2026-11-10；真实代理故障复现与GUI文件落盘先独立验收，再执行全部核心。
+      - name: Validate direct LAN transfers under proxies
+        env:
+          QT_QPA_PLATFORM: offscreen
+          QT_QUICK_BACKEND: software
+        run: build/controller-tests fileTransferIgnoresProxy defaultPortConflictDoesNotSwitch customPortsHearStandardBroadcastAndEachOther -o -,txt -o build/proxy-regression.xml,junitxml
       - name: Core and GUI controller tests
         env:
           QT_QPA_PLATFORM: offscreen
@@ -88,6 +94,7 @@ jobs:
             package-output/SHA256SUMS
             build/*.log
             build/*.txt
+            build/*.xml
             build/*.json
             build/*.sha256
             build/*.png

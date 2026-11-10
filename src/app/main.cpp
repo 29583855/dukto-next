@@ -97,9 +97,8 @@ int main(int argc, char **argv) {
             if (!QLocalServer::removeServer(singleName) || !singleton.listen(singleName))
                 return 3;
         }
-        // 日期：2026-11-10；默认启动允许与原版共存；显式--port绝不自动改端口。
-        Controller controller(static_cast<quint16>(port), nullptr, dataDirectory,
-                              !parser.isSet("port"));
+        // 日期：2026-11-10；与原版使用相同默认端口，不自动选择其他端口。
+        Controller controller(static_cast<quint16>(port), nullptr, dataDirectory);
         QQuickWidget window;
         window.setResizeMode(QQuickWidget::SizeRootObjectToView);
         window.setWindowTitle(QStringLiteral("Dukto Next"));

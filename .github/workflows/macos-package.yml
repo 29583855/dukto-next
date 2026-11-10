@@ -71,11 +71,11 @@ jobs:
       - name: Compile GUI, CLI and core tests
         if: ${{ !inputs.discovery_probe }}
         run: cmake --build build --parallel 3
-      - name: Validate original UDP coexistence before full core
+      - name: Validate direct LAN transfer under application and system proxies
         if: ${{ !inputs.discovery_probe }}
         env:
           QT_QPA_PLATFORM: offscreen
-        run: build/controller-tests defaultPortConflictKeepsDiscoveryAndReceivesText customPortsHearStandardBroadcastAndEachOther twoDefaultInstancesDiscoverWithOriginalUDP explicitPortConflictDoesNotAdvertise -o -,txt -o build/discovery-coexistence.xml,junitxml
+        run: build/controller-tests fileTransferIgnoresProxy defaultPortConflictDoesNotSwitch customPortsHearStandardBroadcastAndEachOther -o -,txt -o build/discovery-coexistence.xml,junitxml
       - name: Validate full native core
         if: ${{ !inputs.discovery_probe }}
         env:
