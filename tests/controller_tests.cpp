@@ -8,6 +8,8 @@
 #include <QApplication>
 #include <QDir>
 #include <QItemSelectionModel>
+#include <QNetworkDatagram>
+#include <QNetworkInterface>
 #include <QSignalSpy>
 #include <QSqlQuery>
 #include <QStandardItemModel>
@@ -21,6 +23,120 @@
 class ControllerTests final : public QObject {
     Q_OBJECT
   private slots:
+    // 日期：2026-11-10；原版占据4644和相邻备用端口时仍可公告真实端口并接收文本，不抢原连接。
+    void defaultPortConflictKeepsDiscoveryAndReceivesText() {
+        QTemporaryDir root;
+        QVERIFY(root.isValid());
+        QSettings::setDefaultFormat(QSettings::IniFormat);
+        QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, root.path());
+        dukto::TcpListener original;
+        dukto::TcpListener occupiedBackup;
+        QVERIFY2(original.listen(QHostAddress::Any, 4644), qPrintable(original.errorString()));
+        QVERIFY(occupiedBackup.listen(QHostAddress::Any, 4648));
+        QUdpSocket legacy;
+        QVERIFY(legacy.bind(QHostAddress::AnyIPv4, 4644,
+                            QUdpSocket::ShareAddress | QUdpSocket::ReuseAddressHint));
+        Controller controller(4644, nullptr, root.filePath("next"));
+        auto receiver = controller.findChild<dukto::LegacyListener *>();
+        QVERIFY(receiver && receiver->isListening());
+        QCOMPARE(receiver->serverPort(), quint16(4650));
+        QVERIFY(controller.status().contains("4650"));
+        QVERIFY(controller.status().contains(QStringLiteral("自动发现已启用")));
+        quint16 advertised = 0;
+        const auto readAnnouncement = [&]() {
+            // 日期：2026-11-10；从真实标准广播中读取端口，不能使用控制器内部预期值代替线路数据。
+            while (legacy.hasPendingDatagrams()) {
+                const auto data = legacy.receiveDatagram(1024).data();
+                if (data.size() > 3 && data[0] == '\x04') {
+                    const auto port = qFromLittleEndian<quint16>(
+                        reinterpret_cast<const uchar *>(data.constData() + 1));
+                    if (port == receiver->serverPort())
+                        advertised = port;
+                }
+            }
+            return advertised;
+        };
+        QTRY_COMPARE_WITH_TIMEOUT(readAnnouncement(), quint16(4650), 5000);
+        const auto payload = QStringLiteral("从发现端口收到的中文文本 café").toUtf8();
+        QTcpSocket sender;
+        sender.connectToHost(QHostAddress::LocalHost, advertised);
+        QVERIFY(sender.waitForConnected(3000));
+        QByteArray frame(16, '\0');
+        qToLittleEndian<qint64>(1, reinterpret_cast<uchar *>(frame.data()));
+        qToLittleEndian<qint64>(payload.size(), reinterpret_cast<uchar *>(frame.data() + 8));
+        frame.append("___DUKTO___TEXT___\0", 19);
+        QByteArray length(8, '\0');
+        qToLittleEndian<qint64>(payload.size(), reinterpret_cast<uchar *>(length.data()));
+        frame += length + payload;
+        QCOMPARE(sender.write(frame), qint64(frame.size()));
+        sender.flush();
+        QTRY_COMPARE_WITH_TIMEOUT(controller.receivedTextPage(), QString::fromUtf8(payload), 10000);
+        QVERIFY(original.isListening());
+        QVERIFY(!original.hasPendingConnections());
+        QVERIFY(occupiedBackup.isListening());
+    }
+
+    // 日期：2026-11-10；两个自定义端口实例必须接收标准4644广播、相互发现并保留原版设备的真实端口。
+    void customPortsHearStandardBroadcastAndEachOther() {
+        QTemporaryDir root;
+        QVERIFY(root.isValid());
+        QSettings::setDefaultFormat(QSettings::IniFormat);
+        QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, root.path());
+        Controller first(0, nullptr, root.filePath("first"));
+        Controller second(0, nullptr, root.filePath("second"));
+        const auto firstPort = first.findChild<dukto::LegacyListener *>()->serverPort();
+        const auto secondPort = second.findChild<dukto::LegacyListener *>()->serverPort();
+        QVERIFY(firstPort && secondPort && firstPort != secondPort);
+        const auto contains = [](const Controller &controller, quint16 port, const QString &name) {
+            // 日期：2026-11-10；只匹配本轮端口和唯一远端身份，不依赖真实局域网设备数量。
+            for (const auto &value : controller.peers()) {
+                const auto peer = value.toMap();
+                if (peer["port"].toInt() == port &&
+                    (name.isEmpty() || peer["name"].toString() == name))
+                    return true;
+            }
+            return false;
+        };
+        first.refresh();
+        second.refresh();
+        QTRY_VERIFY_WITH_TIMEOUT(contains(first, secondPort, {}), 5000);
+        QTRY_VERIFY_WITH_TIMEOUT(contains(second, firstPort, {}), 5000);
+        QUdpSocket legacy;
+        QVERIFY(legacy.bind(QHostAddress::AnyIPv4, 4644,
+                            QUdpSocket::ShareAddress | QUdpSocket::ReuseAddressHint));
+        const auto name = "coexist-legacy-" + QUuid::createUuid().toString(QUuid::WithoutBraces);
+        const auto hello = QByteArray(1, '\x01') + name.toUtf8() + " at old-device (Macintosh)";
+        int broadcasts = 0;
+        for (const auto &interface : QNetworkInterface::allInterfaces()) {
+            if (!(interface.flags() & QNetworkInterface::IsUp) ||
+                !(interface.flags() & QNetworkInterface::CanBroadcast))
+                continue;
+            for (const auto &address : interface.addressEntries())
+                if (address.ip().protocol() == QAbstractSocket::IPv4Protocol &&
+                    !address.broadcast().isNull() &&
+                    legacy.writeDatagram(hello, address.broadcast(), 4644) == hello.size())
+                    ++broadcasts;
+        }
+        QVERIFY2(broadcasts > 0, "No active IPv4 broadcast interface available for native test");
+        QTRY_VERIFY_WITH_TIMEOUT(contains(first, 4644, name), 5000);
+        QTRY_VERIFY_WITH_TIMEOUT(contains(second, 4644, name), 5000);
+        QCOMPARE(first.findChild<dukto::LegacyListener *>()->serverPort(), firstPort);
+        QCOMPARE(second.findChild<dukto::LegacyListener *>()->serverPort(), secondPort);
+    }
+
+    // 日期：2026-11-10；显式--port冲突不悄悄更换端口，也不能公告无法接收的端点。
+    void explicitPortConflictDoesNotAdvertise() {
+        QTemporaryDir root;
+        QVERIFY(root.isValid());
+        dukto::TcpListener original;
+        QVERIFY(original.listen(QHostAddress::Any, 4644));
+        Controller controller(4644, nullptr, root.path(), false);
+        QVERIFY(!controller.findChild<dukto::LegacyListener *>()->isListening());
+        QVERIFY(controller.status().contains(QStringLiteral("接收端口不可用")));
+        QVERIFY(controller.peers().isEmpty());
+        QVERIFY(original.isListening());
+    }
+
     // 日期：2026-11-09；真实生产控制器读取迁移前文本与旧接收明细路径，跨两次重启保持内容和原库摘要。
     void protectedHistoryRetainsTextAndLegacyReceiptLinks() {
         QTemporaryDir root;

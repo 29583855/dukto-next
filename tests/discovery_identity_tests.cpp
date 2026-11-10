@@ -8,6 +8,30 @@
 class DiscoveryIdentityTests final : public QObject {
     Q_OBJECT
   private slots:
+    // 日期：2026-11-10；原版R6的固定退出正文必须正常下线，任意其他正文仍由原畸形用例拒绝。
+    void originalGoodbyeRemovesPeer() {
+        dukto::Discovery discovery;
+        QUdpSocket reservation;
+        QVERIFY(reservation.bind(QHostAddress(QHostAddress::LocalHost), 0));
+        const auto port = reservation.localPort();
+        reservation.close();
+        QVERIFY(discovery.start(port, "goodbye-next"));
+        QUdpSocket sender;
+        const auto present = [&]() {
+            // 日期：2026-11-10；只检查本测试的唯一旧版签名，不依赖其他设备。
+            for (const auto &value : discovery.peers())
+                if (value.toObject()["name"] == "goodbye-original")
+                    return true;
+            return false;
+        };
+        const auto hello = QByteArray(1, '\x02') + "goodbye-original at old-mac (Macintosh)";
+        QVERIFY(sender.writeDatagram(hello, QHostAddress::LocalHost, port) > 0);
+        QTRY_VERIFY(present());
+        QVERIFY(sender.writeDatagram(QByteArray(1, '\x03') + "Bye Bye", QHostAddress::LocalHost,
+                                     port) > 0);
+        QTRY_VERIFY(!present());
+    }
+
     // 日期：2026-11-05；真实 UDP 回复必须立即反映用户改名，原端口与 R6 编码保持兼容。
     void announcedIdentityRefreshesAndIgnoresSelf() {
         QUdpSocket reservation;

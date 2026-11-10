@@ -1,0 +1,61 @@
+name: Windows discovery coexistence package
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  package:
+    runs-on: windows-2022
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-ninja
+            mingw-w64-ucrt-x86_64-qt5-base
+            mingw-w64-ucrt-x86_64-qt5-declarative
+            mingw-w64-ucrt-x86_64-qt5-quickcontrols2
+            mingw-w64-ucrt-x86_64-qt5-graphicaleffects
+            mingw-w64-ucrt-x86_64-qt5-tools
+            mingw-w64-ucrt-x86_64-openssl
+      - name: Select native toolchain
+        shell: msys2 {0}
+        run: |
+          cygpath -w /ucrt64/bin >> "$GITHUB_PATH"
+          echo "DUKTO_QT_PREFIX=$(cygpath -m /ucrt64)" >> "$GITHUB_ENV"
+      - run: python -m pip install psutil
+      - name: Configure C++14 application and tests
+        run: cmake -S . -B build/windows-ucrt -G Ninja -DCMAKE_BUILD_TYPE=Release
+      - name: Compile GUI CLI and tests
+        run: cmake --build build/windows-ucrt --parallel 4
+      # 日期：2026-11-10；包含标准广播、双实例、原版占用及线路公告端口的真实TCP接收验证。
+      - name: Validate full core and discovery coexistence
+        env:
+          QT_QPA_PLATFORM: offscreen
+          QT_QUICK_BACKEND: software
+        run: ctest --test-dir build/windows-ucrt --output-on-failure --output-log build/ctest.log
+      - name: Deploy runtime DLLs and preserve source identity
+        run: python -X utf8 scripts/package_windows.py --qt-prefix "$env:DUKTO_QT_PREFIX" --output package-output
+      - name: Validate relocated package on system PATH
+        run: python -X utf8 tests/windows_package_integration.py package-output/DuktoNext-windows-x64-preview.zip --report build/package-runtime.json
+      - name: Preserve release and original validation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-discovery-preview-X64
+          path: |
+            package-output/*.zip
+            package-output/SHA256SUMS
+            package-output/*.log
+            build/*.json
+            build/*.log
+            build/windows-ucrt/Testing/QtTest/**
+            build/windows-ucrt/Testing/Temporary/LastTest.log

@@ -45,9 +45,9 @@ class Controller final : public QObject {
     Q_PROPERTY(bool receivedTextPaged READ receivedTextPaged NOTIFY receivedTextPageChanged)
     Q_PROPERTY(int receivedTextPageCount READ receivedTextPageCount NOTIFY receivedTextPageChanged)
   public:
-    // 日期：2026-11-07；初始化独立设置/历史与发现接收入口，并读取剪贴板初始可用状态。
-    Controller(quint16 port, QObject *parent = nullptr,
-               const QString &storageDirectory = QString());
+    // 日期：2026-11-10；默认桌面端口冲突允许有限备用端口；显式端口严格绑定，公告实际接收端口。
+    Controller(quint16 port, QObject *parent = nullptr, const QString &storageDirectory = QString(),
+               bool automaticPort = true);
     // 日期：2026-11-04；等待工作线程收尾后关闭历史连接。
     ~Controller() override;
     // 日期：2026-11-04；返回有界设备列表。

@@ -4,13 +4,18 @@
 #include <QJsonObject>
 #include <QNetworkDatagram>
 #include <QNetworkInterface>
+#include <QNetworkProxy>
 #include <QRegularExpression>
 #include <QtEndian>
 
 namespace dukto {
 // 日期：2026-11-04；网络对象只在创建它的事件循环线程访问。
 Discovery::Discovery(QObject *parent) : QObject(parent) {
-    connect(&socket_, &QUdpSocket::readyRead, this, &Discovery::read);
+    // 日期：2026-11-10；局域网套接字显式直连；标准广播与自定义端口回复分别排空。
+    for (auto socket : {&socket_, &broadcastSocket_}) {
+        socket->setProxy(QNetworkProxy::NoProxy);
+        connect(socket, &QUdpSocket::readyRead, this, [this, socket]() { read(socket); });
+    }
     // 日期：2026-11-04；每分钟发送 Hello 并清理超时设备。
     connect(&timer_, &QTimer::timeout, this, [this]() {
         announce();
@@ -26,12 +31,25 @@ Discovery::~Discovery() {
         broadcast(QByteArray(1, '\x03'));
 }
 
-// 日期：2026-11-04；禁止默默共享发现端口，以便定位 GUI/CLI 重复监听冲突。
+// 日期：2026-11-10；共享标准广播端口，自定义接收端口另设独占UDP回复入口，兼容原版1/2/4/5握手。
 bool Discovery::start(quint16 port, const QString &username) {
+    if (socket_.state() == QAbstractSocket::BoundState)
+        return false;
+    bindError_.clear();
     port_ = port;
     username_ = username.left(128);
-    if (!socket_.bind(QHostAddress::AnyIPv4, port_, QUdpSocket::DontShareAddress))
+    const auto shared = QUdpSocket::ShareAddress | QUdpSocket::ReuseAddressHint;
+    if (!socket_.bind(QHostAddress::AnyIPv4, port_,
+                      port_ == 4644 ? shared : QUdpSocket::DontShareAddress)) {
+        bindError_ = socket_.errorString();
         return false;
+    }
+    port_ = socket_.localPort();
+    if (port_ != 4644 && !broadcastSocket_.bind(QHostAddress::AnyIPv4, 4644, shared)) {
+        bindError_ = broadcastSocket_.errorString();
+        socket_.close();
+        return false;
+    }
     announce();
     timer_.start();
     return true;
@@ -57,7 +75,7 @@ void Discovery::setUsername(const QString &username) {
 
 // 日期：2026-11-04；对外保留 Qt 的具体绑定失败原因。
 QString Discovery::errorString() const {
-    return socket_.errorString();
+    return bindError_.isEmpty() ? socket_.errorString() : bindError_;
 }
 
 // 日期：2026-11-05；本机名可能涉及平台系统服务；只在公告时刷新，用户名改动立即公告。
@@ -103,6 +121,8 @@ void Discovery::broadcast(const QByteArray &data) {
 
 // 日期：2026-11-04；发现请求是有限的小数据报，不包含任何文件正文。
 void Discovery::announce() {
+    if (socket_.state() != QAbstractSocket::BoundState)
+        return;
     refreshSignature();
     broadcast(hello(true));
 }
@@ -130,15 +150,15 @@ void Discovery::expire() {
 }
 
 // 日期：2026-11-06；每轮最多 64 包/5ms；可读通知至少非阻塞读取一次，恢复 Qt 的后续通知。
-void Discovery::read() {
+void Discovery::read(QUdpSocket *socket) {
     QElapsedTimer slice;
     slice.start();
     int received = 0;
     for (; received < 64 && (received == 0 || slice.elapsed() < 5) &&
-           (received == 0 || socket_.hasPendingDatagrams());
+           (received == 0 || socket->hasPendingDatagrams());
          ++received) {
         // 日期：2026-11-06；排队续读可能先排空内核队列；迟到的空通知也须读取以重置 Qt 状态。
-        const auto packet = socket_.receiveDatagram(1024);
+        const auto packet = socket->receiveDatagram(1024);
         if (!packet.isValid())
             break;
         auto data = packet.data();
@@ -147,7 +167,8 @@ void Discovery::read() {
         const auto type = static_cast<unsigned char>(data[0]);
         data.remove(0, 1);
         if (type == 3) {
-            if (!data.isEmpty())
+            // 日期：2026-11-10；原版R6退出正文固定为Bye Bye，同时保留Next空正文格式。
+            if (!data.isEmpty() && data != "Bye Bye")
                 continue;
             bool removed = false;
             for (auto iterator = peers_.begin(); iterator != peers_.end();) {
@@ -198,12 +219,12 @@ void Discovery::read() {
             emit changed();
     }
     // 日期：2026-11-06；只在仍有包时递交一条续读事件；稍后到达的包由恢复后的可读通知处理。
-    if (socket_.hasPendingDatagrams() && !readQueued_) {
-        readQueued_ = true;
-        QTimer::singleShot(0, this, [this]() {
-            // 日期：2026-11-05；同一实例最多一条后续排空事件，析构时由 Qt 自动撤销回调。
-            readQueued_ = false;
-            read();
+    if (socket->hasPendingDatagrams() && !readQueued_.contains(socket)) {
+        readQueued_.insert(socket);
+        QTimer::singleShot(0, this, [this, socket]() {
+            // 日期：2026-11-10；每个套接字最多一条续读，析构时由Qt自动撤销回调。
+            readQueued_.remove(socket);
+            read(socket);
         });
     }
 }
