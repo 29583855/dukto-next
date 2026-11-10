@@ -7,6 +7,10 @@ on:
         type: choice
         default: both
         options: [both, arm64, x86_64]
+      discovery_probe:
+        description: Only diagnose original UDP binding compatibility
+        type: boolean
+        default: false
 permissions:
   contents: read
 jobs:
@@ -58,22 +62,33 @@ jobs:
           sudo ifconfig lo0 alias 127.0.0.2
       - name: Configure C++14 application for macOS 12
         run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0
+      - name: Diagnose original Qt UDP binding
+        if: inputs.discovery_probe
+        run: |
+          cmake --build build --target discovery-binding-probe --parallel 3
+          build/discovery-binding-probe > build/discovery-binding-probe.json
+          cat build/discovery-binding-probe.json
       - name: Compile GUI, CLI and core tests
+        if: ${{ !inputs.discovery_probe }}
         run: cmake --build build --parallel 3
       - name: Validate full native core
+        if: ${{ !inputs.discovery_probe }}
         env:
           QT_QPA_PLATFORM: offscreen
           QT_QUICK_BACKEND: software
         run: ctest --test-dir build --output-on-failure
       - name: Validate Cocoa main window server navigation
+        if: ${{ !inputs.discovery_probe }}
         run: python -X utf8 tests/main_window_navigation_integration.py build/ui-tests --platform cocoa --report build/main-window-navigation.json
       - name: Deploy macOS 12 preview and audit every native image
+        if: ${{ !inputs.discovery_probe }}
         run: >-
           python -X utf8 scripts/package_macos.py --output package-output --minimum-macos 12.0
           --dependency-root "$RUNNER_TEMP/dukto-macos12/install/qt"
           --dependency-root "$RUNNER_TEMP/dukto-macos12/install/openssl"
           --dependency-manifest "$RUNNER_TEMP/dukto-macos12/install/dependency-manifest.json"
       - name: Validate relocated native preview
+        if: ${{ !inputs.discovery_probe }}
         run: python -X utf8 tests/macos_package_integration.py "package-output/DuktoNext-macos-$(uname -m)-preview.tar.gz" --report build/package-runtime.json
       - name: Preserve package, failed logs and compatibility evidence
         if: always()

@@ -196,6 +196,9 @@ if(DUKTO_BUILD_TESTS)
     # 日期：2026-11-05；单独诊断系统主机名查询成本，不注册为放宽 UDP 门槛的替代测试。
     add_executable(discovery-signature-probe tests/discovery_signature_probe.cpp)
     target_link_libraries(discovery-signature-probe PRIVATE Qt5::Core Qt5::Network)
+    # 日期：2026-11-10；独立真实Qt套接字探针记录原版默认绑定与地址族共存结果。
+    add_executable(discovery-binding-probe tests/discovery_binding_probe.cpp)
+    target_link_libraries(discovery-binding-probe PRIVATE Qt5::Core Qt5::Network)
     add_executable(discovery-identity-tests tests/discovery_identity_tests.cpp)
     target_link_libraries(discovery-identity-tests PRIVATE dukto-core Qt5::Test)
     dukto_add_qt_test(discovery-identity-tests)

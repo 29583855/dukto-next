@@ -38,7 +38,7 @@ class ControllerTests final : public QObject {
         QVERIFY(legacy.bind(QHostAddress(QHostAddress::Any), 4644));
         Controller controller(4644, nullptr, root.filePath("next"));
         auto receiver = controller.findChild<dukto::LegacyListener *>();
-        QVERIFY(receiver && receiver->isListening());
+        QVERIFY2(receiver && receiver->isListening(), qPrintable(controller.status()));
         QCOMPARE(receiver->serverPort(), quint16(4650));
         QVERIFY(controller.status().contains("4650"));
         QVERIFY(controller.status().contains(QStringLiteral("自动发现已启用")));
