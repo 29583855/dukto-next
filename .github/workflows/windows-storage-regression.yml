@@ -1,8 +1,14 @@
 name: Windows observable directory timestamp regression
 on:
   workflow_dispatch:
+    inputs:
+      discovery_package:
+        description: Build and validate the LAN discovery coexistence release
+        type: boolean
+        default: false
 jobs:
   storage:
+    if: ${{ !inputs.discovery_package }}
     runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
@@ -47,3 +53,7 @@ jobs:
             build/storage-regression/**
             build/Testing/QtTest/state-storage-tests.*
             build/CMakeCache.txt
+  # 日期：2026-11-10；从已注册入口调用同一提交的发现修复打包，保留旧专项入口。
+  discovery-package:
+    if: ${{ inputs.discovery_package }}
+    uses: ./.github/workflows/windows-discovery-package.yml
