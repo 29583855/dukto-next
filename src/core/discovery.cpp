@@ -16,12 +16,12 @@ Discovery::Discovery(QObject *parent) : QObject(parent) {
         socket->setProxy(QNetworkProxy::NoProxy);
         connect(socket, &QUdpSocket::readyRead, this, [this, socket]() { read(socket); });
     }
-    // 日期：2026-11-04；每分钟发送 Hello 并清理超时设备。
+    // 日期：2026-11-04；每五秒发送有界Hello，支持不能共享标准UDP的原版共存并清理超时设备。
     connect(&timer_, &QTimer::timeout, this, [this]() {
         announce();
         expire();
     });
-    timer_.setInterval(60000);
+    timer_.setInterval(5000);
     clock_.start();
 }
 
@@ -45,11 +45,9 @@ bool Discovery::start(quint16 port, const QString &username) {
         return false;
     }
     port_ = socket_.localPort();
-    if (port_ != 4644 && !broadcastSocket_.bind(QHostAddress::AnyIPv4, 4644, shared)) {
-        bindError_ = broadcastSocket_.errorString();
-        socket_.close();
-        return false;
-    }
+    // 日期：2026-11-10；Darwin原版默认UDP可能完全不允许复用；保留定向入口，主动广播仍可发现。
+    if (port_ != 4644)
+        broadcastSocket_.bind(QHostAddress::AnyIPv4, 4644, shared);
     announce();
     timer_.start();
     return true;
@@ -104,6 +102,10 @@ QByteArray Discovery::hello(bool broadcastFlag) const {
 
 // 日期：2026-11-04；仅向实际启用且支持广播的 IPv4 接口发送，不依赖跨网段广播。
 void Discovery::broadcast(const QByteArray &data) {
+    QSet<quint16> destinations{4644, port_};
+    // 日期：2026-11-10；两台Mac的原版均独占4644时，Next仍通过已约定的16个备用UDP端口直达对方。
+    for (quint16 candidate = 4648; candidate <= 4678; candidate += 2)
+        destinations.insert(candidate);
     for (const auto &interface : QNetworkInterface::allInterfaces()) {
         if (!(interface.flags() & QNetworkInterface::IsUp) ||
             !(interface.flags() & QNetworkInterface::CanBroadcast))
@@ -112,9 +114,8 @@ void Discovery::broadcast(const QByteArray &data) {
             if (address.ip().protocol() != QAbstractSocket::IPv4Protocol ||
                 address.broadcast().isNull())
                 continue;
-            socket_.writeDatagram(data, address.broadcast(), 4644);
-            if (port_ != 4644)
-                socket_.writeDatagram(data, address.broadcast(), port_);
+            for (const auto destination : destinations)
+                socket_.writeDatagram(data, address.broadcast(), destination);
         }
     }
 }

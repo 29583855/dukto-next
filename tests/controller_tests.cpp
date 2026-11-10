@@ -130,6 +130,35 @@ class ControllerTests final : public QObject {
         QCOMPARE(second.findChild<dukto::LegacyListener *>()->serverPort(), secondPort);
     }
 
+    // 日期：2026-11-10；两端Next均退让到不同备用端口时，即使标准UDP由原版独占也须直接相互发现。
+    void twoDefaultInstancesDiscoverWithOriginalUDP() {
+        QTemporaryDir root;
+        QVERIFY(root.isValid());
+        QSettings::setDefaultFormat(QSettings::IniFormat);
+        QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, root.path());
+        dukto::TcpListener original;
+        QVERIFY(original.listen(QHostAddress::Any, 4644));
+        QUdpSocket legacy;
+        QVERIFY(legacy.bind(QHostAddress(QHostAddress::Any), 4644));
+        Controller first(4644, nullptr, root.filePath("first"));
+        Controller second(4644, nullptr, root.filePath("second"));
+        const auto firstListener = first.findChild<dukto::LegacyListener *>();
+        const auto secondListener = second.findChild<dukto::LegacyListener *>();
+        QVERIFY2(firstListener->isListening(), qPrintable(first.status()));
+        QVERIFY2(secondListener->isListening(), qPrintable(second.status()));
+        const auto contains = [](const Controller &controller, quint16 port) {
+            // 日期：2026-11-10；按真实监听端口匹配，不能把原版4644身份当成另一Next通过。
+            for (const auto &value : controller.peers())
+                if (value.toMap()["port"].toInt() == port)
+                    return true;
+            return false;
+        };
+        QVERIFY(firstListener->serverPort() != secondListener->serverPort());
+        QTRY_VERIFY_WITH_TIMEOUT(contains(first, secondListener->serverPort()), 5000);
+        QTRY_VERIFY_WITH_TIMEOUT(contains(second, firstListener->serverPort()), 5000);
+        QVERIFY(original.isListening());
+    }
+
     // 日期：2026-11-10；显式--port冲突不悄悄更换端口，也不能公告无法接收的端点。
     void explicitPortConflictDoesNotAdvertise() {
         QTemporaryDir root;

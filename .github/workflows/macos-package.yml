@@ -71,6 +71,11 @@ jobs:
       - name: Compile GUI, CLI and core tests
         if: ${{ !inputs.discovery_probe }}
         run: cmake --build build --parallel 3
+      - name: Validate original UDP coexistence before full core
+        if: ${{ !inputs.discovery_probe }}
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: build/controller-tests defaultPortConflictKeepsDiscoveryAndReceivesText customPortsHearStandardBroadcastAndEachOther twoDefaultInstancesDiscoverWithOriginalUDP explicitPortConflictDoesNotAdvertise -o -,txt -o build/discovery-coexistence.xml,junitxml
       - name: Validate full native core
         if: ${{ !inputs.discovery_probe }}
         env:
@@ -101,6 +106,7 @@ jobs:
             package-output/*.json
             dependency-build/*.log
             build/*.json
+            build/*.xml
             build/*.log
             build/*.png
             build/main-window-navigation/**
