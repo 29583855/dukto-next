@@ -12,6 +12,8 @@
 
 macOS 已提供 [macOS12兼容版](https://github.com/29583855/dukto-next/releases/tag/preview-macos12-20261109)，最低目标12.0，包含12.7.6；Intel和Apple Silicon包均通过原生编译、完整核心及独立包业务测试。安装、架构选择和验证范围见 [macOS12兼容说明](docs/macOS12兼容说明.md)；客户macOS12.7.6仍待现场确认，旧R158 Mac包要求15.0。
 
+局域网设备发现与原版Dukto同时运行时的端口冲突修复、备用端口和联网说明见[局域网发现与原版共存](docs/局域网发现与原版共存.md)。
+
 ## 文档入口
 
 | 文档 | 用途 |

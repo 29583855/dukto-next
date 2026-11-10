@@ -82,11 +82,17 @@ class ControllerTests final : public QObject {
         QVERIFY(root.isValid());
         QSettings::setDefaultFormat(QSettings::IniFormat);
         QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, root.path());
-        Controller first(0, nullptr, root.filePath("first"));
-        Controller second(0, nullptr, root.filePath("second"));
-        const auto firstPort = first.findChild<dukto::LegacyListener *>()->serverPort();
-        const auto secondPort = second.findChild<dukto::LegacyListener *>()->serverPort();
-        QVERIFY(firstPort && secondPort && firstPort != secondPort);
+        // 日期：2026-11-10；GUI拒绝端口0，此处使用两个真实固定自定义端口，避免Darwin临时端口复用。
+        Controller first(47620, nullptr, root.filePath("first"), false);
+        Controller second(47624, nullptr, root.filePath("second"), false);
+        const auto firstListener = first.findChild<dukto::LegacyListener *>();
+        const auto secondListener = second.findChild<dukto::LegacyListener *>();
+        QVERIFY2(firstListener->isListening(), qPrintable(first.status()));
+        QVERIFY2(secondListener->isListening(), qPrintable(second.status()));
+        const auto firstPort = firstListener->serverPort();
+        const auto secondPort = secondListener->serverPort();
+        QCOMPARE(firstPort, quint16(47620));
+        QCOMPARE(secondPort, quint16(47624));
         const auto contains = [](const Controller &controller, quint16 port, const QString &name) {
             // 日期：2026-11-10；只匹配本轮端口和唯一远端身份，不依赖真实局域网设备数量。
             for (const auto &value : controller.peers()) {
