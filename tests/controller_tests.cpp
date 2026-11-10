@@ -34,8 +34,8 @@ class ControllerTests final : public QObject {
         QVERIFY2(original.listen(QHostAddress::Any, 4644), qPrintable(original.errorString()));
         QVERIFY(occupiedBackup.listen(QHostAddress::Any, 4648));
         QUdpSocket legacy;
-        QVERIFY(legacy.bind(QHostAddress::AnyIPv4, 4644,
-                            QUdpSocket::ShareAddress | QUdpSocket::ReuseAddressHint));
+        // 日期：2026-11-10；原版initialize使用Any和平台默认绑定，不能用Next共享选项替代原版行为。
+        QVERIFY(legacy.bind(QHostAddress(QHostAddress::Any), 4644));
         Controller controller(4644, nullptr, root.filePath("next"));
         auto receiver = controller.findChild<dukto::LegacyListener *>();
         QVERIFY(receiver && receiver->isListening());
