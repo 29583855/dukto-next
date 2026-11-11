@@ -145,6 +145,14 @@ def main():
     for item in imports:
         if item.get("type") != "module":
             continue
+        # 日期：2026-11-11；该模块由GUI入口注册并链接进EXE，无外部QML插件目录。
+        if item.get("name") == "Dukto.Compatibility":
+            assert item.get("version") == "1.15" and not item.get("path"), item
+            registration = "src/app/stablescrollbar.cpp"
+            item["deployment"] = "registered-in-dukto-gui"
+            item["registrationSource"] = registration
+            item["registrationSourceSha256"] = build_provenance["sourceHashes"][registration]
+            continue
         assert item.get("path"), ("Unresolved QML import", item)
         source = Path(item["path"])
         assert source.is_relative_to(qml), source
