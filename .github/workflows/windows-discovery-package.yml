@@ -81,9 +81,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
       - name: Install Qt5 sanitizer test dependencies
-        run: sudo apt-get update && sudo apt-get install -y ninja-build libssl-dev qtbase5-dev qtbase5-private-dev qtdeclarative5-dev qtquickcontrols2-5-dev libqt5sql5-sqlite
+        run: sudo apt-get update && sudo apt-get install -y ninja-build libssl-dev qtbase5-dev qtbase5-private-dev qtdeclarative5-dev qtquickcontrols2-5-dev qtquickcontrols2-5-private-dev libqt5sql5-sqlite
       # 日期：2026-11-11；地址消毒器独立证明旧析构顺序存在释放后访问，同一用例验证修复版。
       - name: Compare original and corrected chooser lifecycles
         shell: bash
@@ -94,8 +94,8 @@ jobs:
           mkdir -p evidence
           cp src/app/boundedfiledialog.cpp evidence/fixed.cpp
           cp src/app/boundedfiledialog.h evidence/fixed.h
-          git show HEAD^:src/app/boundedfiledialog.cpp > src/app/boundedfiledialog.cpp
-          git show HEAD^:src/app/boundedfiledialog.h > src/app/boundedfiledialog.h
+          git show 84765235df75a9c8731461d8d47bb65f83949104:src/app/boundedfiledialog.cpp > src/app/boundedfiledialog.cpp
+          git show 84765235df75a9c8731461d8d47bb65f83949104:src/app/boundedfiledialog.h > src/app/boundedfiledialog.h
           cmake -S . -B build-asan -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_FLAGS="-fsanitize=address -fno-omit-frame-pointer" -DCMAKE_CXX_FLAGS="-fsanitize=address -fno-omit-frame-pointer" -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address"
           cmake --build build-asan --target controller-tests --parallel 3
           set +e
