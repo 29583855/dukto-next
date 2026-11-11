@@ -4,7 +4,7 @@
 
 项目以 `Dukto/` 内的Dukto R6为只读功能参考，使用C++14和Qt5开发Windows、macOS、Linux共用内核的GUI及独立CLI，包含局域网发现、服务器上传/下载、多通道传输及恢复功能。
 
-推荐使用[服务器上传界面修复版：四平台运行包与对应源码](https://github.com/29583855/dukto-next/releases/tag/preview-upload-dialog-20261111)。修复选择上传文件后客户端因释放后访问而崩溃的问题；四平台原生选择器回归、完整核心及最终包运行检查通过，客户Windows 11至Windows Server 2012的实际GUI上传/浏览/下载逐字节校验通过，见[修复说明与实测范围](docs/服务器上传界面故障修复-20261111.md)。包含此前[局域网代理修复](docs/局域网发送代理问题说明.md)，旧[20261110修复版](https://github.com/29583855/dukto-next/releases/tag/preview-lan-proxy-20261110)保留。
+推荐使用[界面内存增长修复版：四平台运行包与对应源码](https://github.com/29583855/dukto-next/releases/tag/preview-gui-memory-20261111)。修复Qt5滚动条重复激活辅助功能导致信号连接及内存持续增长的问题；四平台完整核心及最终包检查通过，Windows最终包15分钟界面观测和客户服务器实际GUI上传/下载逐字节比较通过，见[原因、修复与验收范围](docs/界面内存增长修复-20261111.md)。同时包含此前[上传文件选择器修复](docs/服务器上传界面故障修复-20261111.md)和[局域网代理修复](docs/局域网发送代理问题说明.md)。旧[上传修复版](https://github.com/29583855/dukto-next/releases/tag/preview-upload-dialog-20261111)保留。
 
 默认仍为原版TCP/UDP4644、头像TCP4645，同机先退出原版，不自动换端口。Windows包包含DLL，Linux面向Ubuntu24.04及更新版本，Mac含Intel/Apple Silicon且全部原生镜像最低构建目标12.0，仍为adhoc签名预览。对应[端口说明](docs/局域网发现与原版共存.md)与[macOS12安装说明](docs/macOS12兼容说明.md)。
 
@@ -14,6 +14,7 @@
 
 | 文档 | 用途 |
 | --- | --- |
+| [界面内存增长修复](docs/界面内存增长修复-20261111.md) | Qt5滚动条重复连接根因、修复和实际验收范围 |
 | [服务器上传界面故障处理](docs/服务器上传界面故障修复-20261111.md) | 选择文件后崩溃的原因、修复包位置及实际GUI传输验证 |
 | [服务器上传下载使用说明](docs/服务器上传下载使用说明.md) | 图形界面配置共享、首次配对、浏览、上传、下载及常见问题 |
 | [Windows配对权限错误处理](docs/Windows配对权限错误处理.md) | Windows 11 导入配对文件，处理私有状态所有者或继承策略错误 |

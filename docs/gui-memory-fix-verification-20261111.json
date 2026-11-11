@@ -1,0 +1,280 @@
+{
+  "date": "2026-11-11",
+  "verifiedAtUtc": "2026-11-11T11:19:49.940246+00:00",
+  "builtSourceCommit": "72660edf843bd44bca028573e9bdc2fcdb8f7f77",
+  "cause": {
+    "date": "2026-11-11",
+    "status": "root-cause-confirmed-production-fix-verified",
+    "cause": "Qt5 scrollbar accessibility activation accumulates duplicate action connections",
+    "allocationTraceCount": 60,
+    "scrollbarAllocationTraceCount": 60,
+    "sameProcessDiagnostic": {
+      "guardedStartSeconds": 10.0,
+      "guardedEndSeconds": 120.0,
+      "guardedMinimumPrivateMiB": 72.26,
+      "guardedMaximumPrivateMiB": 72.93,
+      "guardRemovedAtSeconds": 120,
+      "afterRemovalFinalSeconds": 160.0,
+      "afterRemovalFinalPrivateMiB": 735.73,
+      "stoppedByDiagnosticMemoryLimit": true
+    },
+    "diagnosticIsNotDeliveredExecutable": true,
+    "productionValidationPassed": true
+  },
+  "productionFix": "Instance activation deduplication; direct detach on deactivation; unique action connections; local QML style covers explicit and implicit scrollbars",
+  "completeNativeCoreCTestTargets": 36,
+  "qtReportsPerPlatform": 35,
+  "accessibilityRegression": {
+    "productionScrollbars": 23,
+    "repeatedActivations": 5000,
+    "disableEnableCycles": 8,
+    "creationDestructionCycles": 32,
+    "testFunctions": 2,
+    "junitRowsIncludingInitAndCleanup": 4,
+    "allFourPlatformsPassed": true
+  },
+  "workflowRuns": [
+    {
+      "id": 43003855821,
+      "url": "https://github.com/29583855/dukto-next/actions/runs/43003855821"
+    },
+    {
+      "id": 43006145838,
+      "url": "https://github.com/29583855/dukto-next/actions/runs/43006145838"
+    },
+    {
+      "id": 43003865860,
+      "url": "https://github.com/29583855/dukto-next/actions/runs/43003865860"
+    }
+  ],
+  "completedPackages": {
+    "Windows-x64": {
+      "passed": true,
+      "builtSourceCommit": "72660edf843bd44bca028573e9bdc2fcdb8f7f77",
+      "archiveSha256": "69551985f8a511e777bb213b0804979dfd1492e739a06976b63284d506710eaa",
+      "runtimeReportsPassed": 1,
+      "regression": {
+        "report": "quick-controls-tests.xml",
+        "junitCases": 4,
+        "passedRows": 4,
+        "failedRows": 0,
+        "skippedRows": 0,
+        "blacklistedRows": 0,
+        "failures": [],
+        "skips": [],
+        "passed": true
+      },
+      "archive": "DuktoNext-windows-x64-preview.zip",
+      "completeCore": {
+        "reports": 35,
+        "expectedReports": 35,
+        "junitCases": 490,
+        "passedRows": 934,
+        "failedRows": 0,
+        "skippedRows": 0,
+        "blacklistedRows": 0,
+        "errors": [],
+        "passed": true
+      }
+    },
+    "Linux-x64": {
+      "passed": true,
+      "builtSourceCommit": "e105c0335385ebbe5f0d427df59208a4df5db946",
+      "archiveSha256": "64b11c111557e05d900a72f8fbc934af9feabfba42bfe7b3a7addfd38756351c",
+      "runtimeReportsPassed": 2,
+      "regression": {
+        "report": "quick-controls-tests.xml",
+        "junitCases": 4,
+        "passedRows": 4,
+        "failedRows": 0,
+        "skippedRows": 0,
+        "blacklistedRows": 0,
+        "failures": [],
+        "skips": [],
+        "passed": true
+      },
+      "archive": "DuktoNext-linux-glibc-x64-preview.tar.gz",
+      "completeCore": {
+        "reports": 35,
+        "expectedReports": 35,
+        "junitCases": 490,
+        "passedRows": 918,
+        "failedRows": 0,
+        "skippedRows": 0,
+        "blacklistedRows": 0,
+        "errors": [],
+        "passed": true
+      }
+    },
+    "macOS-AppleSilicon": {
+      "passed": true,
+      "builtSourceCommit": "72660edf843bd44bca028573e9bdc2fcdb8f7f77",
+      "archiveSha256": "46864cbedae4df8628a1fb96473a3ab6547cda2daff8c9cf00d5207093060533",
+      "runtimeReportsPassed": 1,
+      "regression": {
+        "report": "quick-controls-tests.xml",
+        "junitCases": 4,
+        "passedRows": 4,
+        "failedRows": 0,
+        "skippedRows": 0,
+        "blacklistedRows": 0,
+        "failures": [],
+        "skips": [],
+        "passed": true
+      },
+      "archive": "DuktoNext-macos-arm64-preview.tar.gz",
+      "completeCore": {
+        "reports": 35,
+        "expectedReports": 35,
+        "junitCases": 490,
+        "passedRows": 918,
+        "failedRows": 0,
+        "skippedRows": 0,
+        "blacklistedRows": 0,
+        "errors": [],
+        "passed": true
+      }
+    },
+    "macOS-Intel": {
+      "passed": true,
+      "builtSourceCommit": "72660edf843bd44bca028573e9bdc2fcdb8f7f77",
+      "archiveSha256": "eb4673015447ed51140fec085da65f0ca7d5030d15fd84b63513b9bdf61f4282",
+      "runtimeReportsPassed": 1,
+      "regression": {
+        "report": "quick-controls-tests.xml",
+        "junitCases": 4,
+        "passedRows": 4,
+        "failedRows": 0,
+        "skippedRows": 0,
+        "blacklistedRows": 0,
+        "failures": [],
+        "skips": [],
+        "passed": true
+      },
+      "archive": "DuktoNext-macos-x86_64-preview.tar.gz",
+      "completeCore": {
+        "reports": 35,
+        "expectedReports": 35,
+        "junitCases": 490,
+        "passedRows": 918,
+        "failedRows": 0,
+        "skippedRows": 0,
+        "blacklistedRows": 0,
+        "errors": [],
+        "passed": true
+      }
+    }
+  },
+  "windowsSustainedMemory": {
+    "passed": true,
+    "observedSeconds": 900.6,
+    "sampleCount": 449,
+    "intervalSeconds": 2,
+    "privateMinimumMiB": 67.65,
+    "privateMaximumMiB": 96.32,
+    "after120SecondsMinimumMiB": 70.34,
+    "after120SecondsMaximumMiB": 96.32,
+    "finalPrivateMiB": 96.02,
+    "lateMinusEarlyMeanMiB": 21.98,
+    "earlyWindowSeconds": [
+      120,
+      240
+    ],
+    "settledWindowSeconds": [
+      480,
+      600
+    ],
+    "lateWindowSeconds": [
+      780,
+      900
+    ],
+    "lateMinusSettledMeanMiB": -0.13,
+    "after480SecondsMinimumMiB": 95.98,
+    "after480SecondsMaximumMiB": 96.19,
+    "startupIncreaseIncludesFirstFileChooserCache": true,
+    "limitMiB": 600,
+    "stoppedForMemoryLimit": false,
+    "method": "Unmodified CI package with existing default data; real accessibility queries, text-field focus, server page/tab navigation, file chooser, GUI upload and download",
+    "diagnosticHooksOrResourceReplacement": false,
+    "environmentOverrides": {
+      "QML_DISABLE_DISK_CACHE": "1"
+    },
+    "twentyFourHourQualification": false
+  },
+  "customerGuiUploadAndDownload": {
+    "passed": true,
+    "finishedAtUtc": "2026-11-11T11:10:35.041105+00:00",
+    "method": "Actual final-package Windows GUI: connect existing profile, upload via file chooser, browse remote listing, select same file, download; independent byte comparison",
+    "usesOriginalDefaultDataDirectory": true,
+    "profile": "server2012-1111",
+    "share": "docs",
+    "serverPlatform": "Windows Server 2012 (identified by customer)",
+    "clientPlatform": "Windows 11",
+    "guiAuthenticationSucceeded": true,
+    "guiUploadCompleted": true,
+    "guiRemoteListingConfirmedFile": true,
+    "guiDownloadCompleted": true,
+    "downloadByteForByteEqual": true,
+    "testFile": {
+      "name": "DuktoNext-memory-fix-GUI-20261111.txt",
+      "bytes": 1048576,
+      "sha256": "c05d36d78d7a2b6a96fc817aec638728ddaf37410977120b3859637c0cfc4536",
+      "retainedInServerShare": true
+    }
+  },
+  "nativeVisualReview": {
+    "Windows-x64": {
+      "passed": true,
+      "reviewed": [
+        "native main-server-430x700.png",
+        "actual final-package connection, transfer, task and local-share pages",
+        "actual upload file chooser"
+      ],
+      "notes": "中文、服务器控件、文件选择器与完成状态可见；实际页签切换、滚动、输入框焦点及上传下载正常。"
+    },
+    "Linux-x64": {
+      "passed": true,
+      "reviewed": [
+        "native main-server-430x700.png",
+        "package-x11.png",
+        "package-wayland.png"
+      ],
+      "notes": "服务器页面及X11/Wayland最终包欢迎页文字、布局和主要操作正常。"
+    },
+    "macOS-Intel": {
+      "passed": true,
+      "reviewed": [
+        "native main-server-430x700.png",
+        "package-runtime.png"
+      ],
+      "notes": "服务器页面与最终包欢迎页中文和主要控件正常。"
+    },
+    "macOS-AppleSilicon": {
+      "passed": true,
+      "reviewed": [
+        "native main-server-430x700.png",
+        "package-runtime.png"
+      ],
+      "notes": "服务器页面与最终包欢迎页中文和主要控件正常。"
+    }
+  },
+  "windowsBuildSourceIdentity": {
+    "verifiedFiles": 140,
+    "windowsCrLfCheckoutFiles": 128
+  },
+  "sourceAudit": {
+    "files": 277,
+    "findings": 0,
+    "cxx14": true,
+    "encodingPreserved": true,
+    "changedCppFormattingPassed": true
+  },
+  "allFourNativePackagesPassed": true,
+  "allRequiredVerificationComplete": true,
+  "limits": [
+    "15-minute Windows observation is not 24-hour qualification",
+    "Exact causality of the earlier Edge exception remains unproven",
+    "Physical Windows-Mac and actual macOS 12 customer retest remain separate",
+    "macOS native CI is macOS 15 with all shipped native images targeting macOS 12; adhoc preview signing"
+  ]
+}
