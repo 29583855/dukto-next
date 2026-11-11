@@ -22,7 +22,7 @@ jobs:
           cache: true
       - name: Install Linux Qt
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y qtbase5-dev qtbase5-private-dev qtdeclarative5-dev qtquickcontrols2-5-dev qtquickcontrols2-5-private-dev libqt5sql5-sqlite libssl-dev
+        run: sudo apt-get update && sudo apt-get install -y qtbase5-dev qtbase5-private-dev qtdeclarative5-dev qtdeclarative5-private-dev qtquickcontrols2-5-dev qtquickcontrols2-5-private-dev libqt5sql5-sqlite libssl-dev
       - name: Install macOS Qt
         if: runner.os == 'macOS'
         run: |

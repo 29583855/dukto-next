@@ -23,7 +23,7 @@ jobs:
       - name: Install Qt5 native build and display dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential cmake ninja-build libssl-dev qtbase5-dev qtbase5-private-dev qtdeclarative5-dev qtquickcontrols2-5-dev qtquickcontrols2-5-private-dev libqt5sql5-sqlite qml-module-qtquick-controls2 qml-module-qtquick-layouts qml-module-qtquick-window2 qml-module-qtquick2 qml-module-qtqml qml-module-qtqml-models2 qml-module-qtqml-workerscript2 qml-module-qtgraphicaleffects qtwayland5 fonts-wqy-zenhei xvfb xauth weston libegl1 libegl-mesa0 libgl1-mesa-dri libglx-mesa0
+          sudo apt-get install -y build-essential cmake ninja-build libssl-dev qtbase5-dev qtbase5-private-dev qtdeclarative5-dev qtdeclarative5-private-dev qtquickcontrols2-5-dev qtquickcontrols2-5-private-dev libqt5sql5-sqlite qml-module-qtquick-controls2 qml-module-qtquick-layouts qml-module-qtquick-window2 qml-module-qtquick2 qml-module-qtqml qml-module-qtqml-models2 qml-module-qtqml-workerscript2 qml-module-qtgraphicaleffects qtwayland5 fonts-wqy-zenhei xvfb xauth weston libegl1 libegl-mesa0 libgl1-mesa-dri libglx-mesa0
           python -m pip install psutil
           mkdir -p build
           { uname -a; lscpu; c++ --version; cmake --version; qmake -query; openssl version -a; weston --version; } > build/linux-environment.log 2>&1

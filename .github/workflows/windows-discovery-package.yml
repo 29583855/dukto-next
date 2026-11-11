@@ -83,7 +83,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Install Qt5 sanitizer test dependencies
-        run: sudo apt-get update && sudo apt-get install -y ninja-build libssl-dev qtbase5-dev qtbase5-private-dev qtdeclarative5-dev qtquickcontrols2-5-dev qtquickcontrols2-5-private-dev libqt5sql5-sqlite
+        run: sudo apt-get update && sudo apt-get install -y ninja-build libssl-dev qtbase5-dev qtbase5-private-dev qtdeclarative5-dev qtdeclarative5-private-dev qtquickcontrols2-5-dev qtquickcontrols2-5-private-dev libqt5sql5-sqlite
       # 日期：2026-11-11；地址消毒器独立证明旧析构顺序存在释放后访问，同一用例验证修复版。
       - name: Compare original and corrected chooser lifecycles
         shell: bash
