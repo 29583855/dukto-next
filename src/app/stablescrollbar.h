@@ -13,7 +13,7 @@ class StableScrollBar : public QQuickScrollBar {
 
   protected:
 #if QT_CONFIG(accessibility)
-    // 日期：2026-11-11；仅在激活状态改变时调用Qt，避免重复连接increase/decrease操作。
+    // 日期：2026-11-11；按实例维护激活状态和唯一动作连接，停用时直接解除已有连接。
     void accessibilityActiveChanged(bool active) override;
 #endif
 
