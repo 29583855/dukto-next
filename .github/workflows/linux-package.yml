@@ -36,6 +36,13 @@ jobs:
           python -X utf8 tests/linux_package_sampling_integration.py --report build/module-sampling.json
       - name: Configure C++14 GUI CLI and validation
         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+      # 日期：2026-11-11；全量编译前先检查生产页面、隐式滚动条和辅助功能动作。
+      - name: Compile accessibility regression first
+        run: cmake --build build --target quick-controls-tests --parallel 2
+      - name: Validate production scrollbar activation and actions
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: build/quick-controls-tests -o -,txt
       - name: Compile native application and validation targets
         run: cmake --build build --parallel 2
       # 日期：2026-11-10；真实代理故障复现与GUI文件落盘先独立验收，再执行全部核心。

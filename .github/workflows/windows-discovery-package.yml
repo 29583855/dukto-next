@@ -37,6 +37,13 @@ jobs:
       - run: '& "${{ steps.python.outputs.python-path }}" -m pip install psutil'
       - name: Configure C++14 application and tests
         run: cmake -S . -B build/windows-ucrt -G Ninja -DCMAKE_BUILD_TYPE=Release
+      # 日期：2026-11-11；先加载真实页面并重复激活，QML集成失败立即停止。
+      - name: Compile accessibility regression first
+        run: cmake --build build/windows-ucrt --target quick-controls-tests --parallel 4
+      - name: Validate production scrollbar activation and actions
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: build/windows-ucrt/quick-controls-tests.exe -o -,txt
       - name: Compile GUI CLI and tests
         run: cmake --build build/windows-ucrt --parallel 4
       # 日期：2026-11-11；使用生产文件选择器确认/取消后反复重开，防止上传之前再次堆损坏。

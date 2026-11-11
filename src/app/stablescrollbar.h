@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QtQml/qqml.h>
 #include <QtQuickTemplates2/private/qquickscrollbar_p.h>
 
 // 日期：2026-11-11；限制Qt5滚动条重复激活辅助功能时的连接数量，保持原生操作语义。
@@ -20,3 +21,6 @@ class StableScrollBar : public QQuickScrollBar {
     bool activationSeen_ = false;
     bool accessibilityActive_ = false;
 };
+
+// 日期：2026-11-11；保留Qt滚动条的附加属性工厂，供ScrollView使用ScrollBar.vertical/horizontal。
+QML_DECLARE_TYPEINFO(StableScrollBar, QML_HAS_ATTACHED_PROPERTIES)

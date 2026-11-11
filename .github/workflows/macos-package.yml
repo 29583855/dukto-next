@@ -68,6 +68,15 @@ jobs:
           cmake --build build --target discovery-binding-probe --parallel 3
           build/discovery-binding-probe > build/discovery-binding-probe.json
           cat build/discovery-binding-probe.json
+      # 日期：2026-11-11；全量编译前先检查生产页面、隐式滚动条和辅助功能动作。
+      - name: Compile accessibility regression first
+        if: ${{ !inputs.discovery_probe }}
+        run: cmake --build build --target quick-controls-tests --parallel 3
+      - name: Validate production scrollbar activation and actions
+        if: ${{ !inputs.discovery_probe }}
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: build/quick-controls-tests -o -,txt
       - name: Compile GUI, CLI and core tests
         if: ${{ !inputs.discovery_probe }}
         run: cmake --build build --parallel 3
