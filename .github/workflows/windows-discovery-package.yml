@@ -39,6 +39,11 @@ jobs:
         run: cmake -S . -B build/windows-ucrt -G Ninja -DCMAKE_BUILD_TYPE=Release
       - name: Compile GUI CLI and tests
         run: cmake --build build/windows-ucrt --parallel 4
+      # 日期：2026-11-11；使用生产文件选择器确认/取消后反复重开，防止上传之前再次堆损坏。
+      - name: Validate upload file chooser lifecycle
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: build/windows-ucrt/controller-tests.exe fileDialogCanCloseAndReopen -o -,txt -o build/file-dialog-lifecycle.xml,junitxml
       # 日期：2026-11-10；先在非回环IPv4上复现旧代理失败，并验证生产GUI的真实文件落盘。
       - name: Validate direct LAN transfers under proxies
         env:
@@ -69,3 +74,44 @@ jobs:
             build/*.log
             build/windows-ucrt/Testing/QtTest/**
             build/windows-ucrt/Testing/Temporary/LastTest.log
+
+  lifecycle-sanitizer:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Install Qt5 sanitizer test dependencies
+        run: sudo apt-get update && sudo apt-get install -y ninja-build libssl-dev qtbase5-dev qtbase5-private-dev qtdeclarative5-dev qtquickcontrols2-5-dev libqt5sql5-sqlite
+      # 日期：2026-11-11；地址消毒器独立证明旧析构顺序存在释放后访问，同一用例验证修复版。
+      - name: Compare original and corrected chooser lifecycles
+        shell: bash
+        env:
+          QT_QPA_PLATFORM: offscreen
+          ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
+        run: |
+          mkdir -p evidence
+          cp src/app/boundedfiledialog.cpp evidence/fixed.cpp
+          cp src/app/boundedfiledialog.h evidence/fixed.h
+          git show HEAD^:src/app/boundedfiledialog.cpp > src/app/boundedfiledialog.cpp
+          git show HEAD^:src/app/boundedfiledialog.h > src/app/boundedfiledialog.h
+          cmake -S . -B build-asan -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_FLAGS="-fsanitize=address -fno-omit-frame-pointer" -DCMAKE_CXX_FLAGS="-fsanitize=address -fno-omit-frame-pointer" -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address"
+          cmake --build build-asan --target controller-tests --parallel 3
+          set +e
+          build-asan/controller-tests fileDialogCanCloseAndReopen > evidence/original-lifecycle.log 2>&1
+          original_code=$?
+          set -e
+          printf '%s\n' "$original_code" > evidence/original-exit-code.txt
+          test "$original_code" -ne 0
+          grep -q 'heap-use-after-free' evidence/original-lifecycle.log
+          cp evidence/fixed.cpp src/app/boundedfiledialog.cpp
+          cp evidence/fixed.h src/app/boundedfiledialog.h
+          cmake --build build-asan --target controller-tests --parallel 3
+          build-asan/controller-tests fileDialogCanCloseAndReopen -o evidence/fixed-lifecycle.log,txt -o evidence/fixed-lifecycle.xml,junitxml
+      - name: Preserve original failure and fixed sanitizer results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: file-dialog-lifecycle-sanitizer
+          path: evidence/**

@@ -19,6 +19,12 @@ BoundedFileDialog::BoundedFileDialog(QWidget *parent, const QString &title)
             [this](const QString &) { observeSelectionModels(); });
 }
 
+// 日期：2026-11-11；QFileDialog在基类析构时才删除模型，必须趁选择集合仍存活先解除其回调。
+BoundedFileDialog::~BoundedFileDialog() {
+    for (auto selection : observed_)
+        QObject::disconnect(selection, nullptr, this, nullptr);
+}
+
 // 日期：2026-11-08；范围超限在枚举选中行或构造路径字符串前撤销本次新增选择。
 bool constrainTransferSelection(QItemSelectionModel *selection, const QItemSelection &added,
                                 const QString &directory) {

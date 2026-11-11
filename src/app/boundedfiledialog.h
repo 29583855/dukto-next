@@ -15,6 +15,8 @@ class BoundedFileDialog final : public QFileDialog {
   public:
     // 日期：2026-11-08；使用 Qt 文件视图，以便在产生超量选择时即时拒绝新增项。
     explicit BoundedFileDialog(QWidget *parent, const QString &title);
+    // 日期：2026-11-11；成员销毁前断开模型回调，防止基类删除子对象时访问已释放的选择集合。
+    ~BoundedFileDialog() override;
 
   protected:
     // 日期：2026-11-08；接受前再次按核心预算核对文件列表，避免其他输入路径绕过选择信号。

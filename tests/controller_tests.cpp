@@ -5,6 +5,7 @@
 #include "core/error.h"
 #include "core/files.h"
 #include "core/sqliteruntime.h"
+#include <QAbstractItemView>
 #include <QApplication>
 #include <QDir>
 #include <QItemSelectionModel>
@@ -12,12 +13,14 @@
 #include <QNetworkInterface>
 #include <QNetworkProxy>
 #include <QNetworkProxyFactory>
+#include <QPointer>
 #include <QSignalSpy>
 #include <QSqlQuery>
 #include <QStandardItemModel>
 #include <QStandardPaths>
 #include <QTcpSocket>
 #include <QTemporaryDir>
+#include <QTimer>
 #include <QtEndian>
 #include <QtTest>
 #include <memory>
@@ -350,6 +353,49 @@ class ControllerTests final : public QObject {
         // 日期：2026-11-09；只核对当前占用归还，历史峰值按定义不会在连接关闭后回退。
         for (const auto &key : {"used", "dataUsed", "controlUsed"})
             QCOMPARE(dukto::BufferCredit::usage()[key], before[key]);
+    }
+
+    // 日期：2026-11-11；分别覆盖确认文件与取消对话框，两种关闭路径都必须安全释放Qt选择模型。
+    void fileDialogCanCloseAndReopen_data() {
+        QTest::addColumn<bool>("accepted");
+        QTest::newRow("accept") << true;
+        QTest::newRow("cancel") << false;
+    }
+
+    // 日期：2026-11-11；真实运行事件循环并重复销毁生产选择器，覆盖曾导致上传前堆损坏的子对象回调。
+    void fileDialogCanCloseAndReopen() {
+        QFETCH(bool, accepted);
+        QTemporaryDir root;
+        QVERIFY(root.isValid());
+        QFile source(root.filePath(QStringLiteral("上传选择测试.txt")));
+        QVERIFY(source.open(QIODevice::WriteOnly));
+        QCOMPARE(source.write("dialog lifecycle test"), qint64(21));
+        source.close();
+        for (int iteration = 0; iteration < 16; ++iteration) {
+            QList<QPointer<QItemSelectionModel>> models;
+            {
+                BoundedFileDialog dialog(nullptr, QStringLiteral("选择上传文件"));
+                dialog.setDirectory(root.path());
+                dialog.selectFile(source.fileName());
+                QTimer::singleShot(25, &dialog, [&dialog, accepted, &models]() {
+                    // 日期：2026-11-11；待生产观察器接入模型后再确认或取消，保留真实Qt父子析构顺序。
+                    for (auto view : dialog.findChildren<QAbstractItemView *>()) {
+                        if (view->selectionModel())
+                            models.append(view->selectionModel());
+                    }
+                    if (accepted)
+                        QMetaObject::invokeMethod(&dialog, "accept", Qt::DirectConnection);
+                    else
+                        dialog.reject();
+                });
+                QCOMPARE(dialog.exec(), accepted ? int(QDialog::Accepted) : int(QDialog::Rejected));
+                QVERIFY(!models.isEmpty());
+                if (accepted)
+                    QCOMPARE(dialog.selectedFiles(), QStringList{source.fileName()});
+            }
+            for (const auto &model : models)
+                QVERIFY(model.isNull());
+        }
     }
 
     // 日期：2026-11-08；界面路径选择在文件数或累计路径字符超预算时撤销新增项。
