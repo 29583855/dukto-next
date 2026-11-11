@@ -1,0 +1,42 @@
+{
+  "date": "2026-11-11",
+  "testedHost": "Windows 11 build 26200",
+  "clientCliSha256": "43eaed8018c33294219ea2cfa5c445b75c0af1e271a321dd94ec965376b84939",
+  "scriptSha256": "09b5a6fc49c4f0a0a119c636eecea42a08ec3b02e510a91b595b8bb166c42c92",
+  "tests": [
+    {
+      "shell": "PowerShell 7",
+      "baselineError": "私有状态所有者或继承策略不安全",
+      "baselineExitCode": 4,
+      "tlsPairing": "passed",
+      "authentication": "passed",
+      "upload": "passed",
+      "download": "passed",
+      "bytes": 200001,
+      "contentSha256": "b650ca1a50937d7930f7a9781dc3d97a7f27ae7685c8c5ae7f02b9abeede2d9e",
+      "sourceUnchanged": true
+    },
+    {
+      "shell": "Windows PowerShell 5.1",
+      "baselineError": "私有状态所有者或继承策略不安全",
+      "baselineExitCode": 4,
+      "tlsPairing": "passed",
+      "authentication": "passed",
+      "upload": "passed",
+      "download": "passed",
+      "bytes": 200001,
+      "contentSha256": "4bd886c6e118743bf2566486b10435c824db911b1860eadda25f5522c67051c4",
+      "sourceUnchanged": true
+    }
+  ],
+  "launcher": {
+    "exit": 0,
+    "chineseAndSpacePath": "passed",
+    "privateOwnerAndProtectedDaclAndOnlyCurrentAccount": "passed"
+  },
+  "failedProbesPreserved": [
+    "CLI port 0 was rejected; changed probe to an actual free port",
+    "Get-Acl module could not load in inherited PSModulePath; used .NET ACL APIs instead"
+  ],
+  "scope": "Local validation with original released binaries. Windows Server 2012 to Windows 11 physical customer environment remains unconfirmed."
+}

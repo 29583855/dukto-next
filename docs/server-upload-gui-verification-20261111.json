@@ -1,0 +1,108 @@
+{
+  "date": "2026-11-11",
+  "builtSourceCommit": "92d0317c304f54c1796cad04f645cda54bd36c6c",
+  "originalIssue": {
+    "customerWindowsGuiCrashAfterSelectingUploadFile": true,
+    "windowsExceptionCode": "0xc0000374",
+    "cause": "Selection model destruction callback used derived QSet after member destruction"
+  },
+  "fix": "Disconnect model callbacks in derived file dialog destructor before member/base destruction",
+  "independentAddressSanitizer": {
+    "originalHeapUseAfterFreeReproduced": true,
+    "fixedAcceptCycles": 16,
+    "fixedCancelCycles": 16,
+    "fixedPassed": true
+  },
+  "defaultDataStartupRecovery": {
+    "emptyHistoryOnly": true,
+    "originalDatabaseAndMarkerBackedUp": true,
+    "backupHashesVerified": true,
+    "nativeDefaultStartupPasses": 2,
+    "pairedProfilePreserved": true
+  },
+  "workflowRuns": [
+    {
+      "workflow": "macos-package.yml",
+      "id": 42981310688,
+      "url": "https://github.com/29583855/dukto-next/actions/runs/42981310688",
+      "head_sha": "92d0317c304f54c1796cad04f645cda54bd36c6c"
+    },
+    {
+      "workflow": "linux-package.yml",
+      "id": 42981321171,
+      "url": "https://github.com/29583855/dukto-next/actions/runs/42981321171",
+      "head_sha": "92d0317c304f54c1796cad04f645cda54bd36c6c"
+    },
+    {
+      "workflow": "windows-storage-regression.yml",
+      "id": 42981368285,
+      "url": "https://github.com/29583855/dukto-next/actions/runs/42981368285",
+      "head_sha": "92d0317c304f54c1796cad04f645cda54bd36c6c"
+    }
+  ],
+  "completedPackages": {
+    "macos-preview-ARM64": {
+      "passed": true,
+      "sourceCommit": "92d0317c304f54c1796cad04f645cda54bd36c6c",
+      "architecture": "arm64",
+      "minimumMacOS": "12.0",
+      "archiveSha256": "faed3202ddcd4ce9165c830710e3ea7523c78f281e6942c169fa02ee5797613b",
+      "runtimeMigrationQualified": true
+    },
+    "macos-preview-X64": {
+      "passed": true,
+      "sourceCommit": "92d0317c304f54c1796cad04f645cda54bd36c6c",
+      "architecture": "x86_64",
+      "minimumMacOS": "12.0",
+      "archiveSha256": "b857a6511dc7c8b167dc90ccc45fb61eaf3a21f28dffe3a3a570e3d147a551e7",
+      "runtimeMigrationQualified": true
+    },
+    "linux-glibc-preview-X64": {
+      "package-x11.json": {
+        "passed": true,
+        "runtimeChecksPassed": true,
+        "transferChecksPassed": true,
+        "platform": "xcb",
+        "archiveSha256": "0a0ada0023347e4dbccd2e3586e286863f149d8cdf6a67dd3e348a5099fdc794"
+      },
+      "package-wayland.json": {
+        "passed": true,
+        "runtimeChecksPassed": true,
+        "transferChecksPassed": true,
+        "platform": "wayland",
+        "archiveSha256": "0a0ada0023347e4dbccd2e3586e286863f149d8cdf6a67dd3e348a5099fdc794"
+      }
+    },
+    "windows-discovery-preview-X64": {
+      "passed": true,
+      "archiveSha256": "440d4a63ed58c217d5a7de185074b1a4a48bdf1039c96ab384028ac3b9f37afe",
+      "nativeChooserAcceptCancelPassed": true,
+      "fullCorePassed": true,
+      "runtimeDllDeploymentVerified": true
+    }
+  },
+  "customerGuiUploadAndDownload": {
+    "date": "2026-11-11",
+    "finishedAtAsiaShanghai": "2026-11-11T16:29:36.861076+08:00",
+    "passed": true,
+    "method": "Actual Windows GUI clicks for authentication, upload file chooser, remote listing, file selection and download; local bytes compared independently",
+    "usesOriginalDefaultDataDirectory": true,
+    "profile": "server2012-1111",
+    "share": "docs",
+    "serverPlatform": "Windows Server 2012 (identified by customer)",
+    "clientPlatform": "Windows 11",
+    "guiUploadCompleted": true,
+    "guiRemoteListingConfirmedFile": true,
+    "guiDownloadCompleted": true,
+    "downloadByteForByteEqual": true,
+    "testFile": {
+      "name": "DuktoNext-GUI-upload-20261111.txt",
+      "bytes": 311296,
+      "sha256": "53bc00dfdcb92958866f2c50fc12430e4aadf22959091bfddb9a3ca2aa29775d",
+      "retainedInServerShare": true
+    }
+  },
+  "allFourNativePackagesPassed": true,
+  "allRequiredVerificationComplete": true,
+  "sourceEncodingPreserved": true
+}

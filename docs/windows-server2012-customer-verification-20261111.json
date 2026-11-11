@@ -1,0 +1,34 @@
+{
+  "date": "2026-11-11",
+  "finishedAtAsiaShanghai": "2026-11-11T15:13:35.590872+08:00",
+  "clientPlatform": "Windows 11",
+  "serverPlatform": "Windows Server 2012 (identified by user)",
+  "connection": "Actual customer client to actual public server; server public identity matched screenshot",
+  "profile": "server2012-1111",
+  "usesSameStateDirectoryAsRunningGui": true,
+  "certificateName": "127.0.0.1",
+  "certificateFingerprintChecked": true,
+  "credentialContentLogged": false,
+  "tests": {
+    "pairing": true,
+    "newConnectionAuthentication": true,
+    "browse": true,
+    "upload": true,
+    "download": true,
+    "byteForByteComparison": true
+  },
+  "testFile": {
+    "name": "DuktoNext-test-20261111-9f59e4d6.txt",
+    "bytes": 1180,
+    "sha256": "fdae7f17f563f20289dc38ce426363c5df5ca5b956a886bf4dd181c860fd7574",
+    "retainedOnServer": true
+  },
+  "resolvedIssues": [
+    "private pairing directory owner/DACL/inheritance policy",
+    "actual certificate SAN contained only 127.0.0.1",
+    "earlier pairing tickets rejected after expiry; fresh ticket succeeded"
+  ],
+  "verificationMethod": "CLI shipped beside running GUI, with shared persisted GUI profiles. GUI clicks were not automated.",
+  "scope": "Actual customer service and small text file; not blanket Server 2012 or large-scale qualification.",
+  "clientExecutableSha256": "535f1bff2f6b643bbac322092e772c0e2ec6f0239bdee8aa3aa154cb42aa03db"
+}
