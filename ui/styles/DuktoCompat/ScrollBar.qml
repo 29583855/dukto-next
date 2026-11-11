@@ -1,5 +1,5 @@
 import QtQuick 2.15
-import Dukto.Compatibility 1.0
+import Dukto.Compatibility 1.15
 
 // 日期：2026-11-11；沿用Qt模板的交互和辅助功能，所有显式及隐式滚动条共用激活去重。
 StableScrollBar {

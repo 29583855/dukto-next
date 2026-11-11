@@ -40,7 +40,7 @@ def inspect_qt_report(xml_bytes, log_bytes):
 
 
 # 日期：2026-11-09；完整核心逐原件检查，缺失/不完整报告单独记录，不把旧JUnit条目数当作实际数据行数。
-def collect_qt_reports(directory, expected_reports=34):
+def collect_qt_reports(directory, expected_reports=35):
     directory = Path(directory)
     records = []
     errors = []

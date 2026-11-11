@@ -21,7 +21,11 @@ void StableScrollBar::accessibilityActiveChanged(bool active) {
 
 // 日期：2026-11-11；在QML加载前注册局部兼容样式，同时覆盖ScrollView隐式创建的滚动条。
 static void registerStableScrollBar() {
-    qmlRegisterType<StableScrollBar>("Dukto.Compatibility", 1, 0, "StableScrollBar");
+    // 日期：2026-11-11；显式保留Qt5.15继承属性版本，避免minimumSize等带修订号属性被隐藏。
+    qmlRegisterRevision<QQuickItem, 15>("Dukto.Compatibility", 1, 15);
+    qmlRegisterRevision<QQuickControl, 15>("Dukto.Compatibility", 1, 15);
+    qmlRegisterRevision<QQuickScrollBar, 15>("Dukto.Compatibility", 1, 15);
+    qmlRegisterType<StableScrollBar, 15>("Dukto.Compatibility", 1, 15, "StableScrollBar");
     QQuickStyle::addStylePath(QStringLiteral("qrc:/styles"));
     QQuickStyle::setStyle(QStringLiteral("DuktoCompat"));
     QQuickStyle::setFallbackStyle(QStringLiteral("Default"));

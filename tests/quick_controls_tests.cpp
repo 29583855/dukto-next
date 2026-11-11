@@ -124,6 +124,7 @@ class QuickControlsTests final : public QObject {
 
 // 日期：2026-11-11；回归测试与产品使用相同软件渲染及兼容样式，不依赖电脑输入法或截图工具。
 int main(int argc, char **argv) {
+    qRegisterMetaType<QList<QQmlError>>("QList<QQmlError>");
     QQuickWindow::setSceneGraphBackend(QSGRendererInterface::Software);
     QApplication application(argc, argv);
     QuickControlsTests tests;
