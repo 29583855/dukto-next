@@ -112,6 +112,11 @@ ApplicationWindow {
                 Button { text: "导入文件"; enabled: !mobileFiles.busy; onClicked: mobileFiles.importIntoDocuments(false) }
                 Button { text: "导入目录"; enabled: !mobileFiles.busy; onClicked: mobileFiles.importIntoDocuments(true) }
             }
+            Button {
+                text: "清理旧暂存"
+                enabled: !mobileFiles.busy && !controller.busy && !controller.server.busy
+                onClicked: cleanupDialog.open()
+            }
             Label { text: "每页最多512项，可继续翻页。点目录进入，点文件通过系统导出。"; textFormat: Text.PlainText; wrapMode: Text.Wrap; Layout.fillWidth: true }
             RowLayout {
                 Button { text: "上一页"; enabled: window.filePage > 0; onClicked: { window.filePage--; window.refreshFiles() } }
@@ -135,6 +140,20 @@ ApplicationWindow {
                 ScrollBar.vertical: ScrollBar {}
             }
         }
+    }
+    Dialog {
+        id: cleanupDialog
+        modal: true
+        anchors.centerIn: parent
+        width: Math.min(window.width - 32, 460)
+        title: "清理旧暂存"
+        standardButtons: Dialog.Ok | Dialog.Cancel
+        contentItem: Label {
+            text: "清理本次启动前遗留且没有上传任务引用的导入快照。用户文档、本次导入和可续传上传会保留。删除后不能撤回。"
+            textFormat: Text.PlainText
+            wrapMode: Text.Wrap
+        }
+        onAccepted: mobileFiles.cleanUnusedImports()
     }
     Dialog {
         id: newDirectoryDialog

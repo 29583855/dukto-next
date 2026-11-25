@@ -164,7 +164,7 @@ set_target_properties(dukto-core PROPERTIES POSITION_INDEPENDENT_CODE ON)
 option(DUKTO_MOBILE_HOST_CHECK "Compile mobile UI using host-only provider stubs" OFF)
 if(DUKTO_MOBILE_HOST_CHECK)
     find_package(Qt5 5.15 REQUIRED COMPONENTS Gui Qml Quick QuickControls2 QuickTemplates2)
-    add_executable(dukto-mobile-host app/main.cpp app/mobilefiles.cpp app/importstore.cpp
+    add_executable(dukto-mobile-host app/main.cpp app/mobilefiles.cpp app/importstore.cpp app/importregistry.cpp
         tests/platformfiles_stub.cpp shared/src/app/controller.cpp shared/src/app/controller.h
         shared/src/app/serverpanel.cpp shared/src/app/serverpanel.h
         shared/src/app/avatars.cpp shared/src/app/avatars.h

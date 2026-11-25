@@ -3,10 +3,10 @@ TEMPLATE = app
 TARGET = DuktoNextMobile
 CONFIG += c++14
 QT += core gui network sql qml quick quickcontrols2 quick-private quicktemplates2-private
-SOURCES += $$PWD/app/main.cpp $$PWD/app/mobilefiles.cpp $$PWD/app/importstore.cpp \
+SOURCES += $$PWD/app/main.cpp $$PWD/app/mobilefiles.cpp $$PWD/app/importstore.cpp $$PWD/app/importregistry.cpp \
     $$PWD/shared/src/app/controller.cpp $$PWD/shared/src/app/serverpanel.cpp \
     $$PWD/shared/src/app/avatars.cpp $$PWD/shared/src/app/stablescrollbar.cpp
-HEADERS += $$PWD/app/mobilefiles.h $$PWD/app/importstore.h $$PWD/app/platformfiles.h \
+HEADERS += $$PWD/app/mobilefiles.h $$PWD/app/importstore.h $$PWD/app/importregistry.h $$PWD/app/platformfiles.h \
     $$PWD/shared/src/app/controller.h $$PWD/shared/src/app/serverpanel.h \
     $$PWD/shared/src/app/avatars.h $$PWD/shared/src/app/stablescrollbar.h
 RESOURCES += $$PWD/app/mobile.qrc $$PWD/shared/resources/app.qrc

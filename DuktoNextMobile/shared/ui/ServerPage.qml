@@ -886,6 +886,8 @@ Rectangle {
                             id: resumePaths
 
                             placeholderText: "原上传文件/目录（每行一个）"
+                            visible: false
+                            // 日期：2026-11-25；移动端从请求引用恢复原沙箱路径，禁止重新选择替换。
                             textFormat: TextEdit.PlainText
                             wrapMode: TextEdit.WrapAnywhere
                         }

@@ -130,6 +130,16 @@
       "reason": "xcodebuild指定derivedDataPath时缺少scheme",
       "fix": "显式选择DuktoNextMobile scheme",
       "deviceTestsPassed": false
+    },
+    {
+      "runId": 45596756581,
+      "jobId": 139144733051,
+      "commit": "b09c0885",
+      "platform": "android",
+      "result": "deployment_passed_gradle_template_missing",
+      "reason": "androiddeployqt单传--no-build使用默认Ant布局，没有生成Gradle模板",
+      "fix": "同时指定--gradle --no-build生成模板，再升级和构建",
+      "deviceTestsPassed": false
     }
   ]
 }

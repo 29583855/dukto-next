@@ -1,4 +1,5 @@
 #include "mobilefiles.h"
+#include "importregistry.h"
 
 #include <QCoreApplication>
 #include <QDateTime>
@@ -18,6 +19,10 @@ MobileFiles *MobileFiles::instance_ = nullptr;
 // 日期：2026-11-25；同一宿主只创建一个选择协调器，公开目录与私有配置隔离。
 MobileFiles::MobileFiles(QObject *parent) : QObject(parent) {
     instance_ = this;
+    imports_ = QDir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation))
+                   .filePath(QStringLiteral("imports"));
+    if (QDir().mkpath(imports_))
+        startupBatches_ = ImportRegistry(imports_).existingBatches();
 #ifdef Q_OS_IOS
     documents_ = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
 #else
@@ -251,4 +256,18 @@ void MobileFiles::cancelOperation() {
         nativeWaiter_->quit();
     if (directoryWaiter_)
         directoryWaiter_->quit();
+}
+
+// 日期：2026-11-25；不动当前会话导入、上传引用或用户文档，损坏元数据时停止清理。
+void MobileFiles::cleanUnusedImports() {
+    if (busy_)
+        return;
+    int removed = 0;
+    QString error;
+    if (ImportRegistry(imports_).clean(startupBatches_, removed, error))
+        message_ =
+            QStringLiteral("已清理%1个旧暂存批次；本次导入和可续传任务继续保留").arg(removed);
+    else
+        message_ = error;
+    emit changed();
 }

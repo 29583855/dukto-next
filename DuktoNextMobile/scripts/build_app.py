@@ -78,7 +78,7 @@ def main():
         if len(settings) != 1:
             raise ValueError("Android部署设置数量错误")
         run([qt / "bin/androiddeployqt", "--input", settings[0], "--output", app / "android-build",
-             "--android-platform", "android-35", "--jdk", environment["JAVA_HOME"], "--no-build"], app, environment)
+             "--android-platform", "android-35", "--jdk", environment["JAVA_HOME"], "--gradle", "--no-build"], app, environment)
         modernize_android(app / "android-build")
         run(["sh", "./gradlew", "--no-daemon", "assembleDebug"], app / "android-build", environment)
         artifacts = list((app / "android-build/build/outputs/apk").rglob("*.apk"))

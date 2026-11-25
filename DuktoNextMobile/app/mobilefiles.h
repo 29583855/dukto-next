@@ -48,6 +48,8 @@ class MobileFiles final : public QObject {
     void chooseColor();
     // 日期：2026-11-25；系统退出时撤销选择器并解除目录等待。
     void cancelOperation();
+    // 日期：2026-11-25；仅清理启动前无上传引用的批次，保护本次会话文件及续传。
+    Q_INVOKABLE void cleanUnusedImports();
   signals:
     void changed();
     void directoryRequested(const QString &title);
@@ -60,6 +62,8 @@ class MobileFiles final : public QObject {
     bool insideDocuments(const QString &path) const;
     static MobileFiles *instance_;
     QString documents_;
+    QString imports_;
+    QStringList startupBatches_;
     QString message_;
     bool busy_ = false;
     QEventLoop *directoryWaiter_ = nullptr;
