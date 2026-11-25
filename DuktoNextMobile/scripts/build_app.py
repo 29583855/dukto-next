@@ -23,7 +23,10 @@ def prepare_android_package(root, qt, build):
     text, count = re.subn(r"com.android.tools.build:gradle:[0-9.]+", "com.android.tools.build:gradle:8.7.3", text)
     if count != 1 or "android {" not in text or "defaultConfig {" not in text:
         raise ValueError("Qt Gradle模板不匹配，拒绝静默部署")
+    # 日期：2026-11-25；正式APK与合同测试统一使用已验通的Central镜像，避免主站HTTP429。
+    central = "maven { url 'https://maven-central.storage-download.googleapis.com/maven2' }\n        mavenCentral()"
     text = text.replace("jcenter()", "mavenCentral()")
+    text = text.replace("mavenCentral()", central)
     text = text.replace("android {", "android {\n    namespace 'org.duktonext.mobile'\n    buildFeatures.buildConfig true", 1)
     text = text.replace("defaultConfig {", "defaultConfig {\n        applicationId 'org.duktonext.mobile'", 1)
     # 日期：2026-11-25；Qt先解析原清单的包名；Gradle启动时仅去掉部署副本的旧package属性。
