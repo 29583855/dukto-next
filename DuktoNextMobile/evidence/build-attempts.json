@@ -291,6 +291,17 @@
       "fix": "保留失败JSON；新增类型/父级分组定位，不放宽门限",
       "artifactId": 15016913069,
       "deviceTestsPassed": false
+    },
+    {
+      "runId": 45606238757,
+      "jobId": 139177709315,
+      "commit": "32359597",
+      "platform": "host-ui-stress",
+      "result": "popup_context_leak_identified",
+      "reason": "四个弹窗各增加190个直接QQmlContext；Qt createDimmer创建父对象为popup的上下文而destroyOverlay不删除",
+      "fix": "PopupContextGuard仅在closed后延迟清理动态遮罩上下文，待同220轮门限复验",
+      "artifactId": 15018815395,
+      "deviceTestsPassed": false
     }
   ]
 }

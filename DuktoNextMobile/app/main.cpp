@@ -2,6 +2,7 @@
 #include "core/error.h"
 #include "mobilefiles.h"
 #include "mobilelifecycle.h"
+#include "popupcontextguard.h"
 #ifdef DUKTO_MOBILE_HOST_TEST
 #include "uistress.h"
 #endif
@@ -43,6 +44,7 @@ int main(int argc, char *argv[]) {
         engine.load(QUrl(QStringLiteral("qrc:/mobile/MobileWindow.qml")));
         if (engine.rootObjects().isEmpty())
             return 3;
+        PopupContextGuard popupContexts(engine.rootObjects().first(), &engine);
         QTimer smokeTimer;
         int smokeStep = 0;
         if (smoke) {

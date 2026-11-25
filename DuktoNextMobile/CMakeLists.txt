@@ -165,7 +165,7 @@ option(DUKTO_MOBILE_HOST_CHECK "Compile mobile UI using host-only provider stubs
 if(DUKTO_MOBILE_HOST_CHECK)
     find_package(Qt5 5.15 REQUIRED COMPONENTS Gui Qml Quick QuickControls2 QuickTemplates2)
     add_executable(dukto-mobile-host app/mobilelifecycle.cpp app/mobilelifecycle.h app/main.cpp app/mobilefiles.cpp app/importstore.cpp app/importregistry.cpp
-        tests/platformfiles_stub.cpp tests/uistress.cpp shared/src/app/controller.cpp shared/src/app/controller.h
+        app/popupcontextguard.cpp app/popupcontextguard.h tests/platformfiles_stub.cpp tests/uistress.cpp shared/src/app/controller.cpp shared/src/app/controller.h
         shared/src/app/serverpanel.cpp shared/src/app/serverpanel.h
         shared/src/app/avatars.cpp shared/src/app/avatars.h
         shared/src/app/stablescrollbar.cpp shared/src/app/stablescrollbar.h
