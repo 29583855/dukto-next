@@ -130,13 +130,20 @@ final class MobileSendTests: XCTestCase {
         waitForExpectations(timeout: 15)
     }
 
-    // 日期：2026-11-26；仅按系统提供的实际语义节点点击，未找到时保留完整界面并失败。
+    // 日期：2026-11-26；仅点击系统File View中的文件单元，避免匹配产品后台同名标题。
     @MainActor
-    func tapDocumentNode(_ app: XCUIApplication, _ label: String) {
-        let node = app.descendants(matching: .any)
-            .matching(NSPredicate(format: "label == %@", label)).firstMatch
-        XCTAssertTrue(node.waitForExistence(timeout: 15), "系统文件界面缺少节点：" + label)
-        node.tap()
+    func documentCell(_ app: XCUIApplication, _ label: String) -> XCUIElement {
+        return app.collectionViews["File View"].cells
+            .containing(.staticText, identifier: label).firstMatch
+    }
+
+    // 日期：2026-11-26；选择实际可点击的文件单元，不能依靠自动滚动点击后台标题。
+    @MainActor
+    func tapDocumentCell(_ app: XCUIApplication, _ label: String) {
+        let cell = documentCell(app, label)
+        XCTAssertTrue(cell.waitForExistence(timeout: 15), "系统文件界面缺少文件单元：" + label)
+        XCTAssertTrue(cell.isHittable, "系统文件单元不可点击：" + label)
+        cell.tap()
     }
 
     // 日期：2026-11-26；接收样本后走真实系统文件选择器，取消重开，再由独立接收器核对发送字节。
@@ -162,18 +169,27 @@ final class MobileSendTests: XCTestCase {
                 cancel.tap()
             }
         }
-        // 日期：2026-11-26；系统Files可能从Recents开始，按实际Browse入口切到本地应用提供器。
-        let local = app.descendants(matching: .any)
-            .matching(NSPredicate(format: "label == %@", "On My iPhone")).firstMatch
-        if !local.exists {
-            tapDocumentNode(app, "Browse")
+        // 日期：2026-11-26；Files会记忆应用目录，已看到样本则直接选取；否则按系统按钮和单元导航。
+        let sampleName = "a-ios-document-probe.bin"
+        if !documentCell(app, sampleName).exists {
+            if !documentCell(app, "Dukto Next").exists {
+                let local = app.buttons["On My iPhone"]
+                if !local.exists {
+                    let browse = app.buttons["Browse"].firstMatch
+                    XCTAssertTrue(browse.waitForExistence(timeout: 15))
+                    XCTAssertTrue(browse.isHittable)
+                    browse.tap()
+                }
+                capture(app, "documents-locations")
+                XCTAssertTrue(local.waitForExistence(timeout: 15))
+                XCTAssertTrue(local.isHittable)
+                local.tap()
+            }
+            capture(app, "documents-local")
+            tapDocumentCell(app, "Dukto Next")
         }
-        capture(app, "documents-locations")
-        tapDocumentNode(app, "On My iPhone")
-        capture(app, "documents-local")
-        tapDocumentNode(app, "Dukto Next")
         capture(app, "documents-application")
-        tapDocumentNode(app, "a-ios-document-probe.bin")
+        tapDocumentCell(app, sampleName)
         let open = app.buttons["Open"]
         if open.waitForExistence(timeout: 3) && open.isHittable { open.tap() }
         let cancelled = app.buttons["Cancel"]
