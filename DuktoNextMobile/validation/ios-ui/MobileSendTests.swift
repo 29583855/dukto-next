@@ -34,10 +34,15 @@ final class MobileSendTests: XCTestCase {
         host.tap()
         // 日期：2026-11-26；新模拟器首次键盘教学会覆盖焦点，按系统实际按钮关闭并留存现场。
         let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
-        let keyboardContinue = springboard.buttons["Continue"]
-        if keyboardContinue.waitForExistence(timeout: 3) && keyboardContinue.isHittable {
+        let appKeyboardContinue = app.buttons["Continue"]
+        let systemKeyboardContinue = springboard.buttons["Continue"]
+        if appKeyboardContinue.waitForExistence(timeout: 2) && appKeyboardContinue.isHittable {
+            capture(app, "keyboard-onboarding")
+            appKeyboardContinue.tap()
+            host.tap()
+        } else if systemKeyboardContinue.waitForExistence(timeout: 2) && systemKeyboardContinue.isHittable {
             capture(springboard, "keyboard-onboarding")
-            keyboardContinue.tap()
+            systemKeyboardContinue.tap()
             host.tap()
         }
         host.typeText("127.0.0.1")
