@@ -103,18 +103,25 @@ def ui_tree(output, stage):
     return tree
 
 
-# 日期：2026-11-26；Qt5使用VirtualChild而非EditText类名，按系统editable状态等待唯一目标输入框。
+# 日期：2026-11-26；地址框紧随目标标签，端口SpinBox也可编辑，不能仅按可编辑数量定位。
 def wait_target_field(output):
     deadline = time.monotonic() + 15
     while True:
         tree = ui_tree(output, "target")
-        fields = [node for node in tree.iter("node")
-                  if node.get("editable") == "true" and node.get("enabled") == "true"
-                  and node.get("visible-to-user") == "true"]
+        fields = []
+        for parent in tree.iter("node"):
+            children = list(parent)
+            for index, label in enumerate(children[:-1]):
+                if "目标 IP 或主机名" not in (label.get("text"), label.get("content-desc")):
+                    continue
+                field = children[index + 1]
+                if (field.get("editable") == "true" and field.get("enabled") == "true"
+                        and field.get("visible-to-user") == "true"):
+                    fields.append(field)
         if len(fields) == 1:
             return fields[0]
         if time.monotonic() >= deadline:
-            raise RuntimeError("无法唯一定位目标地址输入框，实际可见可编辑数量: " + str(len(fields)))
+            raise RuntimeError("无法按目标标签唯一定位地址输入框，实际数量: " + str(len(fields)))
         time.sleep(0.3)
 
 
@@ -139,16 +146,41 @@ def find_label(tree, label):
                 nodes[0] if nodes else None)
 
 
-# 日期：2026-11-25；等待异步界面出现有明确上限，过程中不重启应用、不重发传输。
-def click_label(output, stage, label):
+# 日期：2026-11-26；从真实发送表单视口推导滑动区域，窄屏下到达底部系统分享按钮。
+def scroll_send_form(tree):
+    viewports = [parent for parent in tree.iter("node")
+                 if any("目标 IP 或主机名" in (child.get("text"), child.get("content-desc"))
+                        for child in parent)]
+    if len(viewports) != 1:
+        raise RuntimeError("无法唯一确定发送表单滚动区域")
+    match = re.fullmatch(r"\[(-?\d+),(-?\d+)\]\[(-?\d+),(-?\d+)\]",
+                         viewports[0].get("bounds", ""))
+    if not match:
+        raise RuntimeError("发送表单缺少系统矩形")
+    left, top, right, bottom = map(int, match.groups())
+    if right <= left or bottom - top < 100:
+        raise RuntimeError("发送表单滚动区域过小")
+    middle = (left + right) // 2
+    height = bottom - top
+    adb("shell", "input", "swipe", str(middle), str(top + height * 4 // 5),
+        str(middle), str(top + height // 5), "450")
+
+
+# 日期：2026-11-26；等待有界；指定发送表单按钮不可见时，按系统视口实际滚动后重新读取节点。
+def click_label(output, stage, label, scroll=False):
     deadline = time.monotonic() + 15
+    scrolls = 0
     while True:
-        node = find_label(ui_tree(output, stage), label)
+        tree = ui_tree(output, stage)
+        node = find_label(tree, label)
         if node is not None:
             tap_node(node)
             return
         if time.monotonic() >= deadline:
             raise RuntimeError("没有找到界面控件: " + label)
+        if scroll and scrolls < 6:
+            scroll_send_form(tree)
+            scrolls += 1
         time.sleep(0.3)
 
 
@@ -179,7 +211,7 @@ def verify_text_send_ui(output):
     tap_node(field)
     adb("shell", "input", "text", "10.0.2.2")
     adb("shell", "input", "keyevent", "KEYCODE_BACK")
-    click_label(output, "shared-text", "查看系统分享文字")
+    click_label(output, "shared-text", "查看系统分享文字", scroll=True)
     (output / "send-editor.png").write_bytes(adb("exec-out", "screencap", "-p", binary=True))
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as listener:
         listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -231,7 +263,7 @@ def verify_file_send(output):
         listener.bind(("0.0.0.0", 4644))
         listener.listen(1)
         listener.settimeout(40)
-        click_label(output, "submit", "发送系统分享文件（2项）")
+        click_label(output, "submit", "发送系统分享文件（2项）", scroll=True)
         connection, peer = listener.accept()
         with connection:
             connection.settimeout(30)
