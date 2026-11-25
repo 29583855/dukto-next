@@ -26,6 +26,24 @@ def wait_picker(output, stage):
         time.sleep(0.3)
 
 
+# 日期：2026-11-26；系统选择器可能记忆多级目录，逐次返回并确认产品恢复，避免误关产品窗口。
+def cancel_picker(output, stage):
+    deadline = time.monotonic() + 30
+    for attempt in range(10):
+        tree = ui_tree(output, stage + "-" + str(attempt))
+        packages = {node.get("package", "") for node in tree.iter("node")}
+        if any(package.endswith(".documentsui") for package in packages):
+            if time.monotonic() >= deadline:
+                break
+            adb("shell", "input", "keyevent", "KEYCODE_BACK")
+            time.sleep(0.3)
+        elif "org.duktonext.mobile" in packages:
+            return
+        else:
+            raise RuntimeError("取消系统文档选择器后未返回产品：" + ",".join(sorted(packages)))
+    raise RuntimeError("系统文档选择器在有界返回次数内未取消")
+
+
 # 日期：2026-11-26；等待目录内容加载后按真实节点导航，不能把空白初帧当作根目录列表。
 def open_downloads(output):
     deadline = time.monotonic() + 15
@@ -78,7 +96,7 @@ def verify_saf_file_send(output):
     click_label(output, "open-cancel", "发送文件", scroll=True)
     wait_picker(output, "cancel-picker")
     (output / "cancel-picker.png").write_bytes(adb("exec-out", "screencap", "-p", binary=True))
-    adb("shell", "input", "keyevent", "KEYCODE_BACK")
+    cancel_picker(output, "file-send-cancel")
     # 日期：2026-11-26；取消后必须可再次打开并传输，验证迟到回调和busy状态已释放。
     click_label(output, "manual-reopen", "IP 连接 · 发送到指定设备")
     enter_target(output, "10.0.2.2")
@@ -129,7 +147,8 @@ def verify_saf_file_export(output):
     click_label(output, "export-file", name)
     wait_picker(output, "export-picker")
     # 日期：2026-11-26；第一次取消后从同一文件重新打开，验证导出回调也能正确解忙。
-    adb("shell", "input", "keyevent", "KEYCODE_BACK")
+    cancel_picker(output, "file-export-cancel")
+    wait_message(output, "已取消导出")
     click_label(output, "export-reopen", name)
     open_downloads(output)
     deadline = time.monotonic() + 15
@@ -292,7 +311,7 @@ def verify_saf_directory(output):
     enter_target(output, "10.0.2.2")
     click_label(output, "directory-send-cancel", "发送文件夹", scroll=True)
     wait_picker(output, "directory-cancel")
-    adb("shell", "input", "keyevent", "KEYCODE_BACK")
+    cancel_picker(output, "directory-send-cancel")
     click_label(output, "directory-manual-reopen", "IP 连接 · 发送到指定设备")
     enter_target(output, "10.0.2.2")
     click_label(output, "directory-send-reopen", "发送文件夹", scroll=True)
@@ -328,7 +347,8 @@ def verify_saf_directory(output):
     click_label(output, "directory-export-open", "[目录] " + exported_root)
     click_label(output, "directory-export-cancel", "导出目录")
     wait_picker(output, "directory-export-cancel-picker")
-    adb("shell", "input", "keyevent", "KEYCODE_BACK")
+    cancel_picker(output, "directory-export-cancel")
+    wait_message(output, "已取消导出")
     click_label(output, "directory-export-reopen", "导出目录")
     grant_download_tree(output, target)
     wait_message(output, "已完成系统导出")
@@ -350,7 +370,7 @@ def verify_saf_directory(output):
         (output / "provider-enabled.txt").write_text(enabled, "utf-8")
     click_label(output, "directory-export-provider-restored", "导出目录")
     wait_picker(output, "directory-export-provider-recovered")
-    adb("shell", "input", "keyevent", "KEYCODE_BACK")
+    cancel_picker(output, "directory-export-provider-cancel")
     wait_message(output, "已取消导出")
     if adb("shell", "pidof", "org.duktonext.mobile").strip() != pid:
         raise RuntimeError("系统目录操作期间产品进程意外重启")
