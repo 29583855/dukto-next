@@ -9,6 +9,7 @@
 #include "core/transferoperation.h"
 #include "core/uploadmanifest.h"
 #include "importregistry.h"
+#include "mobiledatadir.h"
 #include "mobilefiles.h"
 #include <QDir>
 #include <QFileInfo>
@@ -307,8 +308,7 @@ void ServerAction::run() {
                     paths.append(options_["path"].toString());
                 // 日期：2026-11-25；重启恢复原沙箱快照，绑定身份及目标，禁止重新选文件替换原请求。
                 const auto imports =
-                    QDir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation))
-                        .filePath(QStringLiteral("imports"));
+                    QDir(mobile::applicationDataDirectory()).filePath(QStringLiteral("imports"));
                 const QJsonObject binding{{"server", profile.server.toString(QUuid::WithoutBraces)},
                                           {"client", profile.client.toString(QUuid::WithoutBraces)},
                                           {"share", share},
@@ -353,8 +353,7 @@ void ServerAction::run() {
             if (operation == "upload") {
                 // 日期：2026-11-25；只有远端完成确认返回后才解除引用，取消和异常保留原路径。
                 const auto imports =
-                    QDir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation))
-                        .filePath(QStringLiteral("imports"));
+                    QDir(mobile::applicationDataDirectory()).filePath(QStringLiteral("imports"));
                 QString ignored;
                 ImportRegistry(imports).release(request, ignored);
             }

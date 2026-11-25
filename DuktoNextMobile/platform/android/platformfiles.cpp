@@ -1,6 +1,7 @@
 #include "platformfiles.h"
 #include "core/functionthread.h"
 #include "importstore.h"
+#include "mobiledatadir.h"
 
 #include <QAndroidActivityResultReceiver>
 #include <QAndroidJniEnvironment>
@@ -67,8 +68,8 @@ void stage(const QAndroidJniObject &intent, bool folder, mobile::FileResult done
             deliver(done, {}, QStringLiteral("文档提供器没有返回有效文件列表"));
             return;
         }
-        const auto imports = QDir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation))
-                                 .filePath(QStringLiteral("imports"));
+        const auto imports =
+            QDir(mobile::applicationDataDirectory()).filePath(QStringLiteral("imports"));
         if (!QDir().mkpath(imports)) {
             deliver(done, {}, QStringLiteral("无法创建私有导入目录"));
             return;

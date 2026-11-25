@@ -1,5 +1,6 @@
 #include "controller.h"
 #include "core/error.h"
+#include "mobiledatadir.h"
 #include "mobilefiles.h"
 #include "mobilelifecycle.h"
 #include "popupcontextguard.h"
@@ -33,7 +34,7 @@ int main(int argc, char *argv[]) {
                      [] { qInfo() << "MobileStartup about-to-quit"; });
     const bool smoke = application.arguments().contains(QStringLiteral("--smoke-test"));
     try {
-        const auto storage = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+        const auto storage = mobile::applicationDataDirectory();
         if (!QDir().mkpath(storage))
             return 2;
         qInfo() << "MobileStartup storage-ready";

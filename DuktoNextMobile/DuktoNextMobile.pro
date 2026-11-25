@@ -6,7 +6,7 @@ QT += core gui network sql qml quick quickcontrols2 quick-private quicktemplates
 SOURCES += $$PWD/app/popupcontextguard.cpp $$PWD/app/mobilelifecycle.cpp $$PWD/app/main.cpp $$PWD/app/mobilefiles.cpp $$PWD/app/importstore.cpp $$PWD/app/importregistry.cpp \
     $$PWD/shared/src/app/controller.cpp $$PWD/shared/src/app/serverpanel.cpp \
     $$PWD/shared/src/app/avatars.cpp $$PWD/shared/src/app/stablescrollbar.cpp
-HEADERS += $$PWD/app/popupcontextguard.h $$PWD/app/mobilelifecycle.h $$PWD/app/mobilefiles.h $$PWD/app/importstore.h $$PWD/app/importregistry.h $$PWD/app/platformfiles.h \
+HEADERS += $$PWD/app/mobiledatadir.h $$PWD/app/popupcontextguard.h $$PWD/app/mobilelifecycle.h $$PWD/app/mobilefiles.h $$PWD/app/importstore.h $$PWD/app/importregistry.h $$PWD/app/platformfiles.h \
     $$PWD/shared/src/app/controller.h $$PWD/shared/src/app/serverpanel.h \
     $$PWD/shared/src/app/avatars.h $$PWD/shared/src/app/stablescrollbar.h
 RESOURCES += $$PWD/app/mobile.qrc $$PWD/shared/resources/app.qrc

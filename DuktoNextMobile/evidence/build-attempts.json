@@ -383,6 +383,16 @@
       "reason": "启动阶段日志表明控制器构造抛磁盘异常、QML未加载；同PID根目录read被SELinux拒绝",
       "fix": "中间目录使用O_PATH，保留末级读取权限和链接/替换检查，等待原包安装复验",
       "deviceTestsPassed": false
+    },
+    {
+      "run": 45621951447,
+      "job": 139232138784,
+      "platform": "android-emulator-api35",
+      "result": "startup_path_permission",
+      "artifact": 15024389918,
+      "reason": "O_PATH适配消除了根目录read拒绝；控制器初始化仍抛Permission4/path，QML未加载。",
+      "fix": "仅在移动入口解析QStandardPaths提供的私有沙箱根；保留所有用户路径及子目录逐层拒绝链接，等待APK复验。",
+      "deviceTestsPassed": false
     }
   ]
 }

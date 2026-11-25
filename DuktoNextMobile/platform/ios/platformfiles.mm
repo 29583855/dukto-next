@@ -1,6 +1,7 @@
 #include "platformfiles.h"
-#import "presenter.h"
 #include "importstore.h"
+#include "mobiledatadir.h"
+#import "presenter.h"
 
 #import "share/Inbox.h"
 #include <QCoreApplication>
@@ -110,8 +111,8 @@ static DuktoDocumentPicker *activePicker;
     const auto cancellation = importCancellation;
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
       @autoreleasepool {
-          const auto root = QDir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation))
-                                .filePath(QStringLiteral("imports"));
+          const auto root =
+              QDir(mobile::applicationDataDirectory()).filePath(QStringLiteral("imports"));
           QString error;
           QStringList names;
           if (!QDir().mkpath(root))
@@ -292,9 +293,7 @@ bool mobile::acceptSharedUrl(const QUrl &value) {
         return true;
     }
     const auto path = QFileInfo(value.toLocalFile()).canonicalFilePath();
-    const auto privateRoot =
-        QFileInfo(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation))
-            .canonicalFilePath();
+    const auto privateRoot = QFileInfo(mobile::applicationDataDirectory()).canonicalFilePath();
     if (path.isEmpty() ||
         (!privateRoot.isEmpty() && (path == privateRoot || path.startsWith(privateRoot + '/')))) {
         incomingError = QStringLiteral("分享文档不可访问或属于私有身份目录");

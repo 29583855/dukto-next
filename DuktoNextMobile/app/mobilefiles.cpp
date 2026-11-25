@@ -1,5 +1,6 @@
 #include "mobilefiles.h"
 #include "importregistry.h"
+#include "mobiledatadir.h"
 
 #include <QCoreApplication>
 #include <QDateTime>
@@ -19,15 +20,13 @@ MobileFiles *MobileFiles::instance_ = nullptr;
 // 日期：2026-11-25；同一宿主只创建一个选择协调器，公开目录与私有配置隔离。
 MobileFiles::MobileFiles(QObject *parent) : QObject(parent) {
     instance_ = this;
-    imports_ = QDir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation))
-                   .filePath(QStringLiteral("imports"));
+    imports_ = QDir(mobile::applicationDataDirectory()).filePath(QStringLiteral("imports"));
     if (QDir().mkpath(imports_))
         startupBatches_ = ImportRegistry(imports_).existingBatches();
 #ifdef Q_OS_IOS
     documents_ = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
 #else
-    documents_ = QDir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation))
-                     .filePath(QStringLiteral("Documents"));
+    documents_ = QDir(mobile::applicationDataDirectory()).filePath(QStringLiteral("Documents"));
 #endif
     connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit, this,
             &MobileFiles::cancelOperation);
@@ -194,8 +193,8 @@ void MobileFiles::finishDirectory(const QString &path) {
 
 // 日期：2026-11-25；诊断目录单独保存，唯一文件名避免覆盖现有报告。
 QString MobileFiles::diagnosticPath() const {
-    const auto directory = QDir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation))
-                               .filePath(QStringLiteral("exports"));
+    const auto directory =
+        QDir(mobile::applicationDataDirectory()).filePath(QStringLiteral("exports"));
     if (!QDir().mkpath(directory))
         return QString();
     return QDir(directory).filePath(QStringLiteral("Dukto-diagnostic-") +
@@ -228,8 +227,7 @@ void MobileFiles::exportPath(const QString &path) {
         return;
     const auto canonical = QFileInfo(path).canonicalFilePath();
     const auto exports =
-        QFileInfo(QDir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation))
-                      .filePath(QStringLiteral("exports")))
+        QFileInfo(QDir(mobile::applicationDataDirectory()).filePath(QStringLiteral("exports")))
             .canonicalFilePath();
     if (!insideDocuments(path) && (exports.isEmpty() || !canonical.startsWith(exports + '/'))) {
         message_ = QStringLiteral("仅支持导出已收文件和诊断报告");

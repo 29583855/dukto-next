@@ -44,6 +44,7 @@ def main():
         if "Success" not in receipt["installOutput"]:
             raise RuntimeError("APK安装未成功")
         receipt["steps"].append("install")
+        receipt["systemDirectoryAliases"] = adb("shell", "ls", "-ld", "/data/user/0", "/data/data").strip()
         adb("logcat", "-c")
         receipt["launchOutput"] = adb("shell", "am", "start", "-W", "-n",
                                       "org.duktonext.mobile/.DuktoActivity")
