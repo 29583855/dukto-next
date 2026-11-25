@@ -118,6 +118,12 @@ final class MobileSendTests: XCTestCase {
         capture(app, "editor")
         let submit = app.buttons.matching(NSPredicate(format: "label == %@", "发送")).firstMatch
         XCTAssertTrue(submit.waitForExistence(timeout: 5))
+        // 日期：2026-11-26；发送键须在键盘上方且实际可点，不能依靠测试框架滚动掩盖产品遮挡。
+        XCTAssertTrue(submit.isHittable)
+        let keyboard = app.keyboards.firstMatch
+        if keyboard.exists {
+            XCTAssertLessThanOrEqual(submit.frame.maxY, keyboard.frame.minY + 1)
+        }
         submit.tap()
         let closed = NSPredicate(format: "exists == false")
         expectation(for: closed, evaluatedWith: submit)
