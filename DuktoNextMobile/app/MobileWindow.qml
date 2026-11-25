@@ -105,6 +105,7 @@ ApplicationWindow {
                 Button { text: "上层"; enabled: window.browsing !== mobileFiles.documents; onClicked: window.goUp() }
                 Button { text: "刷新"; onClicked: window.refreshFiles() }
                 Button { text: "新建目录"; onClicked: newDirectoryDialog.open() }
+                Button { text: "导出目录"; visible: !window.directoryMode; enabled: !mobileFiles.busy; onClicked: mobileFiles.exportPath(window.browsing) }
             }
             RowLayout {
                 visible: !window.directoryMode

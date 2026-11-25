@@ -1,3 +1,4 @@
+#include "functionthread.h"
 #include "paralleltransfer.h"
 #include "error.h"
 #include "files.h"
@@ -555,7 +556,7 @@ void ParallelTransfer::startClients(const ClientProfile &profile, int timeoutMs,
     const auto value = ticket();
     for (int lane = 0; lane < state_->count; ++lane) {
         const auto state = state_;
-        auto worker = QThread::create([profile, timeoutMs, source, value, lane, state]() {
+        auto worker = new dukto::FunctionThread([profile, timeoutMs, source, value, lane, state]() {
             // 日期：2026-11-04；失败只向会话传播一次，任何通道失败都阻止批次假成功。
             try {
                 RemoteClient remote(profile, timeoutMs, &state->cancelled);

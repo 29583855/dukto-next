@@ -60,6 +60,16 @@
       "reason": "Qt5 CMake无法自动确定Android build-tools版本",
       "fix": "显式SDK路径和35.0.0版本",
       "deviceTestsPassed": false
+    },
+    {
+      "runId": 45592575109,
+      "jobId": 139130299440,
+      "commit": "c9ab9424",
+      "platform": "android",
+      "result": "failed_core_compilation",
+      "reason": "Qt5 Android构建未提供QThread::create，paralleltransfer.cpp编译失败",
+      "fix": "C++14 FunctionThread子类兼容层，平台导入线程一并替换",
+      "deviceTestsPassed": false
     }
   ]
 }

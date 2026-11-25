@@ -17,6 +17,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashSet;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public final class Documents {
     // 日期：2026-11-25；查询提供器元数据，虚拟文件需转换格式，当前明确拒绝而非读取错误内容。
@@ -122,9 +125,94 @@ public final class Documents {
         }
     }
 
+    // 日期：2026-11-25；只允许普通子项，规范路径不一致意味着符号链接或目录越界。
+    private static void validateSource(File source, String root) throws IOException {
+        String canonical = source.getCanonicalPath();
+        if (!canonical.equals(source.getAbsolutePath()) ||
+            !(canonical.equals(root) || canonical.startsWith(root + File.separator)) ||
+            (!source.isFile() && !source.isDirectory())) {
+            throw new IOException("源文件不存在、为符号链接或超出导出目录");
+        }
+    }
+
+    // 日期：2026-11-25；目标树禁止同名项，不覆盖用户已有内容，枚举与复制均有数量上限。
+    private static Uri createNew(Context context, Uri parent, String mime, String name) throws Exception {
+        Uri children = DocumentsContract.buildChildDocumentsUriUsingTree(parent,
+            DocumentsContract.getDocumentId(parent));
+        int count = 0;
+        try (Cursor cursor = context.getContentResolver().query(children,
+                new String[] {DocumentsContract.Document.COLUMN_DISPLAY_NAME}, null, null, null)) {
+            if (cursor == null) throw new IOException("无法读取导出目标目录");
+            while (cursor.moveToNext()) {
+                if (++count > 65536) throw new IOException("导出目标目录条目过多");
+                if (name.equalsIgnoreCase(cursor.getString(0)))
+                    throw new IOException("目标已存在同名条目：" + name);
+            }
+        }
+        Uri result = DocumentsContract.createDocument(context.getContentResolver(), parent, mime, name);
+        if (result == null) throw new IOException("无法创建导出目标：" + name);
+        return result;
+    }
+
+    // 日期：2026-11-25；流式枚举且最多32层/65536项，逐项核对目标名称，拒绝提供器静默改名。
+    private static void copyDirectory(Context context, File source, Uri target, String root,
+                                      int depth, int[] count) throws Exception {
+        validateSource(source, root);
+        if (depth > 32) throw new IOException("导出目录层级超限");
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(source.toPath())) {
+            HashSet<String> names = new HashSet<>();
+            for (Path childPath : stream) {
+                File child = childPath.toFile();
+                validateSource(child, root);
+                if (++count[0] > 65536) throw new IOException("导出条目超限");
+                String name = child.getName();
+                if (!names.add(java.text.Normalizer.normalize(name, java.text.Normalizer.Form.NFC)
+                        .toLowerCase(java.util.Locale.ROOT)))
+                    throw new IOException("存在跨平台同名文件：" + name);
+                Uri created = DocumentsContract.createDocument(context.getContentResolver(), target,
+                    child.isDirectory() ? DocumentsContract.Document.MIME_TYPE_DIR
+                                        : "application/octet-stream", name);
+                if (created == null || !name.equals(metadata(context, created).getString("name")))
+                    throw new IOException("提供器创建失败或修改了文件名称：" + name);
+                if (child.isDirectory()) copyDirectory(context, child, created, root, depth + 1, count);
+                else export(context, child.getPath(), created.toString());
+            }
+        }
+    }
+
+    // 日期：2026-11-25；用户授权目标树后复制完整目录，失败仅尝试回滚本次新建的根目录。
+    public static void exportTree(Context context, String path, String treeUri) throws Exception {
+        File source = new File(path);
+        String root = source.getCanonicalPath();
+        validateSource(source, root);
+        if (!source.isDirectory()) throw new IOException("请选择普通目录");
+        Uri tree = Uri.parse(treeUri);
+        Uri parent = DocumentsContract.buildDocumentUriUsingTree(tree,
+            DocumentsContract.getTreeDocumentId(tree));
+        Uri created = null;
+        try {
+            created = createNew(context, parent, DocumentsContract.Document.MIME_TYPE_DIR, source.getName());
+            copyDirectory(context, source, created, root, 0, new int[] {1});
+        } catch (Exception error) {
+            if (created != null) {
+                try {
+                    if (!DocumentsContract.deleteDocument(context.getContentResolver(), created))
+                        throw new IOException("提供器拒绝清理");
+                } catch (Exception cleanup) {
+                    throw new IOException("导出失败，目标可能留有本次创建的部分目录，请手动清理：" + source.getName(), error);
+                }
+            }
+            throw error;
+        }
+    }
+
     // 日期：2026-11-25；向ACTION_CREATE_DOCUMENT授予的目标流式导出，不申请整个外部存储权限。
     public static void export(Context context, String path, String uri) throws Exception {
-        try (InputStream input = new FileInputStream(new File(path));
+        File source = new File(path);
+        String canonical = source.getCanonicalPath();
+        validateSource(source, canonical);
+        long expected = source.length(), modified = source.lastModified(), copied = 0;
+        try (InputStream input = new FileInputStream(source);
              OutputStream output = context.getContentResolver().openOutputStream(Uri.parse(uri), "wt")) {
             if (output == null) {
                 throw new IOException("无法写入导出目标");
@@ -132,9 +220,14 @@ public final class Documents {
             byte[] buffer = new byte[65536];
             int size;
             while ((size = input.read(buffer)) != -1) {
+                if (size > expected - copied) throw new IOException("导出期间源文件增长");
                 output.write(buffer, 0, size);
+                copied += size;
             }
             output.flush();
         }
+        validateSource(source, canonical);
+        if (copied != expected || source.length() != expected || source.lastModified() != modified)
+            throw new IOException("导出期间源文件发生变化，目标可能保留部分文件");
     }
 }

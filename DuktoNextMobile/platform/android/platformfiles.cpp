@@ -1,4 +1,5 @@
 #include "platformfiles.h"
+#include "core/functionthread.h"
 #include "importstore.h"
 
 #include <QAndroidActivityResultReceiver>
@@ -48,7 +49,7 @@ void deliver(mobile::FileResult done, QStringList paths, QString error) {
 void stage(const QAndroidJniObject &intent, bool folder, mobile::FileResult done) {
     importCancellation = std::make_shared<std::atomic_bool>(false);
     const auto cancellation = importCancellation;
-    auto worker = QThread::create([intent, folder, done, cancellation] {
+    auto worker = new dukto::FunctionThread([intent, folder, done, cancellation] {
         const auto context = QtAndroid::androidContext();
         auto json = QAndroidJniObject::callStaticObjectMethod(
             "org/duktonext/mobile/Documents", "scan",
@@ -158,13 +159,14 @@ class Picker final : public QAndroidActivityResultReceiver {
         }
         const auto path = exportPath;
         exportPath.clear();
-        auto worker = QThread::create([data, path, callback] {
+        auto worker = new dukto::FunctionThread([data, path, callback] {
             const auto uri = data.callObjectMethod("getData", "()Landroid/net/Uri;")
                                  .callObjectMethod("toString", "()Ljava/lang/String;");
             const auto context = QtAndroid::androidContext();
             const auto filename = QAndroidJniObject::fromString(path);
+            const char *method = QFileInfo(path).isDir() ? "exportTree" : "export";
             QAndroidJniObject::callStaticMethod<void>(
-                "org/duktonext/mobile/Documents", "export",
+                "org/duktonext/mobile/Documents", method,
                 "(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;)V",
                 context.object(), filename.object(), uri.object());
             const auto error = javaError();
@@ -204,23 +206,27 @@ void mobile::selectDocuments(bool folder, FileResult done) {
     QtAndroid::startActivity(intent, RequestCode, &picker);
 }
 
-// 日期：2026-11-25；Android目前只导出单文件，目录需在应用文件页面选择其中的文件导出。
+// 日期：2026-11-25；文件使用创建文档，目录选择目标树后复制，明确拒绝同名根目录。
 void mobile::exportDocument(const QString &path, FileResult done) {
-    if (!QFileInfo(path).isFile() || picker.done) {
-        done({}, QStringLiteral("请选择普通文件导出，或先关闭已有选择器"));
+    if (!QFileInfo::exists(path) || QFileInfo(path).isSymLink() || picker.done) {
+        done({}, QStringLiteral("文件不存在、为符号链接或已有选择器打开"));
         return;
     }
     picker.done = done;
     picker.exportPath = path;
     QAndroidJniObject intent(
         "android/content/Intent", "(Ljava/lang/String;)V",
-        QAndroidJniObject::fromString("android.intent.action.CREATE_DOCUMENT").object());
+        QAndroidJniObject::fromString(QFileInfo(path).isDir()
+                                          ? "android.intent.action.OPEN_DOCUMENT_TREE"
+                                          : "android.intent.action.CREATE_DOCUMENT")
+            .object());
     intent.callObjectMethod("setType", "(Ljava/lang/String;)Landroid/content/Intent;",
                             QAndroidJniObject::fromString("application/octet-stream").object());
     intent.callObjectMethod("putExtra",
                             "(Ljava/lang/String;Ljava/lang/String;)Landroid/content/Intent;",
                             QAndroidJniObject::fromString("android.intent.extra.TITLE").object(),
                             QAndroidJniObject::fromString(QFileInfo(path).fileName()).object());
+    intent.callObjectMethod("addFlags", "(I)Landroid/content/Intent;", jint(3));
     QtAndroid::startActivity(intent, RequestCode, &picker);
 }
 
