@@ -110,6 +110,26 @@
       "reason": "应用so链接通过；androiddeployqt前未执行qmake install，部署目录缺应用so",
       "fix": "显式make INSTALL_ROOT=android-build install后再执行部署",
       "deviceTestsPassed": false
+    },
+    {
+      "runId": 45595799595,
+      "jobId": 139141392254,
+      "commit": "0bd1fced",
+      "platform": "android",
+      "result": "native_link_passed_gradle_resources_failed",
+      "reason": "Qt自带AGP7.0.2不能读取Android35资源表",
+      "fix": "先部署不构建，再将部署副本升级AGP8.7.3/Gradle8.9及namespace",
+      "deviceTestsPassed": false
+    },
+    {
+      "runId": 45595035295,
+      "jobId": 139138739766,
+      "commit": "e5ef9be0",
+      "platform": "ios",
+      "result": "core_passed_xcode_invocation_failed",
+      "reason": "xcodebuild指定derivedDataPath时缺少scheme",
+      "fix": "显式选择DuktoNextMobile scheme",
+      "deviceTestsPassed": false
     }
   ]
 }

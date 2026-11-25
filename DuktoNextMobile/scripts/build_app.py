@@ -2,6 +2,7 @@
 import argparse
 import json
 import os
+import re
 from pathlib import Path
 import shutil
 import subprocess
@@ -11,6 +12,29 @@ import subprocess
 def run(command, directory, environment):
     print(json.dumps([str(value) for value in command]), flush=True)
     subprocess.run([str(value) for value in command], cwd=directory, env=environment, check=True)
+
+
+# 日期：2026-11-25；保留Qt生成的部署内容，升级其过旧的Gradle工具以支持Android35资源。
+def modernize_android(directory):
+    gradle = directory / "build.gradle"
+    text = gradle.read_text("utf-8")
+    text, count = re.subn(r"com.android.tools.build:gradle:[0-9.]+", "com.android.tools.build:gradle:8.7.3", text)
+    if count != 1 or "android {" not in text:
+        raise ValueError("Qt Gradle模板不匹配，拒绝静默部署")
+    text = text.replace("jcenter()", "mavenCentral()")
+    text = text.replace("android {", "android {\n    namespace 'org.duktonext.mobile'\n    buildFeatures.buildConfig true", 1)
+    gradle.write_text(text, "utf-8")
+    wrapper = directory / "gradle/wrapper/gradle-wrapper.properties"
+    text = wrapper.read_text("utf-8")
+    text, count = re.subn(r"gradle-[0-9.]+-(bin|all)\.zip", "gradle-8.9-bin.zip", text)
+    if count != 1:
+        raise ValueError("Qt Gradle wrapper模板不匹配")
+    wrapper.write_text(text, "utf-8")
+    manifest = directory / "AndroidManifest.xml"
+    # 日期：2026-11-25；AGP8通过namespace指定R包，源清单保持Qt5兼容而仅调整部署副本。
+    text = manifest.read_text("utf-8")
+    text = text.replace(' package="org.duktonext.mobile"', "")
+    manifest.write_text(text, "utf-8")
 
 
 # 日期：2026-11-25；Android生成测试APK，iOS只生成未签名设备app，不能作为安装通过证据。
@@ -54,7 +78,9 @@ def main():
         if len(settings) != 1:
             raise ValueError("Android部署设置数量错误")
         run([qt / "bin/androiddeployqt", "--input", settings[0], "--output", app / "android-build",
-             "--android-platform", "android-35", "--jdk", environment["JAVA_HOME"], "--gradle"], app, environment)
+             "--android-platform", "android-35", "--jdk", environment["JAVA_HOME"], "--no-build"], app, environment)
+        modernize_android(app / "android-build")
+        run(["sh", "./gradlew", "--no-daemon", "assembleDebug"], app / "android-build", environment)
         artifacts = list((app / "android-build/build/outputs/apk").rglob("*.apk"))
         if not artifacts:
             raise ValueError("未生成APK")
@@ -62,7 +88,7 @@ def main():
         projects = list(app.glob("*.xcodeproj"))
         if len(projects) != 1:
             raise ValueError("iOS Xcode工程数量错误")
-        run(["xcodebuild", "-project", projects[0], "-configuration", "Release", "-sdk", "iphoneos",
+        run(["xcodebuild", "-project", projects[0], "-scheme", "DuktoNextMobile", "-configuration", "Release", "-sdk", "iphoneos",
              "-derivedDataPath", build / "DerivedData", "CODE_SIGNING_ALLOWED=NO", "CODE_SIGNING_REQUIRED=NO",
              "CODE_SIGN_IDENTITY=", "build"], app, environment)
         artifacts = list(app.rglob("DuktoNextMobile.app")) + list((build / "DerivedData").rglob("DuktoNextMobile.app"))
