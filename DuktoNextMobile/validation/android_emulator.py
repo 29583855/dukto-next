@@ -92,8 +92,19 @@ def verify_r6_receive():
         original = sandbox("cat", directory + "/" + collision_name, binary=True)
         if collision != replacement or original != payload:
             raise RuntimeError("同名冲突覆盖旧文件或副本内容错误")
+        # 日期：2026-11-25；同一进程连续接收32批，每批独立核对落盘，不重发、不重启接收器。
+        batch_hashes = [hashlib.sha256(replacement).hexdigest()]
+        for batch in range(3, 33):
+            replacement = ("collision replacement " + str(batch) + "\n").encode("utf-8")
+            send_r6(port, [(collision_name, replacement)])
+            wait_for_file(directory + "/" + root + "-中文 sample (" + str(batch) + ").bin", replacement)
+            batch_hashes.append(hashlib.sha256(replacement).hexdigest())
+        if sandbox("cat", directory + "/" + collision_name, binary=True) != payload:
+            raise RuntimeError("连续接收覆盖了最初文件")
         result.update(passed=True, emptyDirectory=True, emptyFile=True, utf8Path=True,
-                      originalPreserved=True, collisionCopy=True)
+                      originalPreserved=True, collisionCopy=True, sequentialBatches=32,
+                      perBatchContentVerified=True, replacementSha256=batch_hashes,
+                      sendRetries=0, receiverRestarts=0)
         return result
     finally:
         adb("forward", "--remove", "tcp:" + str(port))
