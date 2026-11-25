@@ -6,9 +6,11 @@ from pathlib import Path
 import platform
 
 
-REVIEWED_CURRENT = "eac5dc293da229bfcacd8b8cc4737493fb44af9c29b9f0242cfbd4e4182ba3e5"
+# 日期：2026-11-26；f20c51ab仅增加固定摘要离线归档读取；iOS编译参数及补丁与前版相同。
+REVIEWED_CURRENT = "b623c4a8c1e0a1958401d9d8978d54e6d80d48441f43d8cbe2000c40d6d323a8"
 REVIEWED_BUILDERS = {
     REVIEWED_CURRENT,
+    "eac5dc293da229bfcacd8b8cc4737493fb44af9c29b9f0242cfbd4e4182ba3e5",
     "156348002b46a68d03495194e0e756fb5d295ee4b1bf236adc9f175d9fd6fac9",
 }
 REQUIRED = (

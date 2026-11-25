@@ -1,4 +1,5 @@
 """日期：2026-11-25；缓存验证不得误用Android、缺文件、旧源码锁或未来构建器。"""
+import hashlib
 import json
 from pathlib import Path
 import tempfile
@@ -31,6 +32,11 @@ class CacheTests(unittest.TestCase):
         for builder in REVIEWED_BUILDERS:
             self.manifest["builderSha256"] = builder
             self.assertTrue(self.check_cache())
+
+    # 日期：2026-11-26；真实构建器变更必须重新审查，避免合同自洽但每次构建均拒绝缓存。
+    def test_bundled_builder_is_reviewed(self):
+        builder = Path(__file__).with_name("build_dependencies.py")
+        self.assertEqual(hashlib.sha256(builder.read_bytes()).hexdigest(), REVIEWED_CURRENT)
 
     # 日期：2026-11-25；未来脚本和未审查缓存都不能从宽兼容。
     def test_unreviewed_builders(self):
