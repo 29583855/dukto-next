@@ -1,0 +1,22 @@
+// 日期：2026-11-25；测试实际生产Java，Qt活动仅使用不加载原生库的夹具。
+plugins { id 'com.android.application' version '8.7.3' }
+android {
+    namespace 'org.duktonext.mobile'
+    compileSdk 35
+    defaultConfig { applicationId 'org.duktonext.mobile.contract'; minSdk 29; targetSdk 35 }
+    sourceSets {
+        main { java.srcDirs = ['build/production', 'fixtures']; manifest.srcFile 'AndroidManifest.xml' }
+        test { java.srcDirs = ['src'] }
+    }
+    testOptions { unitTests.includeAndroidResources = true }
+}
+tasks.register('stageProductionJava', Copy) {
+    from '../../platform/android/src'
+    include '**/IncomingShare.java', '**/TransferService.java', '**/Documents.java'
+    into 'build/production'
+}
+preBuild.dependsOn stageProductionJava
+dependencies {
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.robolectric:robolectric:4.16.1'
+}
