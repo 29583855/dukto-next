@@ -2,7 +2,7 @@ name: Mobile C++14 build gates
 on:
   push:
     branches: [codex/mobile-platforms]
-    paths: ['DuktoNextMobile/scripts/**', 'DuktoNextMobile/CMakeLists.txt', 'DuktoNextMobile/DuktoNextMobile.pro', 'DuktoNextMobile/app/**', 'DuktoNextMobile/platform/**', 'DuktoNextMobile/shared/**']
+    paths: ['DuktoNextMobile/scripts/**', 'DuktoNextMobile/CMakeLists.txt', 'DuktoNextMobile/DuktoNextMobile.pro', 'DuktoNextMobile/app/**', 'DuktoNextMobile/platform/**', 'DuktoNextMobile/shared/**', '.github/workflows/mobile-build.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -62,8 +62,14 @@ jobs:
         with:
           path: ${{ runner.temp }}/dukto-mobile/install
           key: mobile-${{ matrix.platform }}-${{ runner.arch }}-${{ hashFiles('DuktoNextMobile/scripts/dependencies.json', 'DuktoNextMobile/scripts/build_dependencies.py') }}
+          # 日期：2026-11-25；仅iOS恢复候选缓存，随后按源码锁和已审查脚本摘要严格校验。
+          restore-keys: ${{ matrix.platform == 'ios' && format('mobile-ios-{0}-', runner.arch) || '' }}
+      - name: Validate reviewed iOS dependency cache
+        id: ios-cache
+        if: matrix.platform == 'ios'
+        run: python -X utf8 DuktoNextMobile/scripts/validate_ios_cache.py --prefix "${{ runner.temp }}/dukto-mobile/install" --output "$GITHUB_OUTPUT"
       - name: Build fixed Qt5 and OpenSSL sources
-        if: steps.deps.outputs.cache-hit != 'true'
+        if: (matrix.platform == 'android' && steps.deps.outputs.cache-hit != 'true') || (matrix.platform == 'ios' && steps.ios-cache.outputs.usable != 'true')
         run: python -u -X utf8 DuktoNextMobile/scripts/build_dependencies.py --platform ${{ matrix.platform }} --prefix "${{ runner.temp }}/dukto-mobile/install" --work DuktoNextMobile/dependency-build --jobs 3
       - uses: actions/cache/save@v4
         if: success() && steps.deps.outputs.cache-hit != 'true'
