@@ -103,6 +103,21 @@ def ui_tree(output, stage):
     return tree
 
 
+# 日期：2026-11-26；Qt5使用VirtualChild而非EditText类名，按系统editable状态等待唯一目标输入框。
+def wait_target_field(output):
+    deadline = time.monotonic() + 15
+    while True:
+        tree = ui_tree(output, "target")
+        fields = [node for node in tree.iter("node")
+                  if node.get("editable") == "true" and node.get("enabled") == "true"
+                  and node.get("visible-to-user") == "true"]
+        if len(fields) == 1:
+            return fields[0]
+        if time.monotonic() >= deadline:
+            raise RuntimeError("无法唯一定位目标地址输入框，实际可见可编辑数量: " + str(len(fields)))
+        time.sleep(0.3)
+
+
 # 日期：2026-11-25；严格从控件矩形中心点击，不用固定屏幕坐标掩盖布局问题。
 def tap_node(node):
     numbers = re.fullmatch(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]", node.get("bounds", ""))
@@ -160,13 +175,8 @@ def verify_text_send_ui(output):
     if "Status: ok" not in launch:
         raise RuntimeError("系统分享Activity未正常启动")
     click_label(output, "manual", "IP 连接 · 发送到指定设备")
-    tree = ui_tree(output, "target")
-    fields = [node for node in tree.iter("node")
-              if node.get("class") == "android.widget.EditText"
-              and node.get("enabled") == "true" and node.get("text") != "4644"]
-    if len(fields) != 1:
-        raise RuntimeError("无法唯一定位目标地址输入框")
-    tap_node(fields[0])
+    field = wait_target_field(output)
+    tap_node(field)
     adb("shell", "input", "text", "10.0.2.2")
     adb("shell", "input", "keyevent", "KEYCODE_BACK")
     click_label(output, "shared-text", "查看系统分享文字")
@@ -210,14 +220,9 @@ def verify_file_send(output):
     if "Status: ok" not in launch:
         raise RuntimeError("系统文件分享来源Activity未正常启动")
     click_label(output, "manual", "IP 连接 · 发送到指定设备")
-    tree = ui_tree(output, "target")
-    fields = [node for node in tree.iter("node")
-              if node.get("class") == "android.widget.EditText"
-              and node.get("enabled") == "true" and node.get("text") != "4644"]
-    if len(fields) != 1:
-        raise RuntimeError("无法唯一定位文件发送目标地址输入框")
-    if fields[0].get("text") != "10.0.2.2":
-        tap_node(fields[0])
+    field = wait_target_field(output)
+    if "10.0.2.2" not in (field.get("text"), field.get("content-desc")):
+        tap_node(field)
         adb("shell", "input", "keycombination", "113", "29")
         adb("shell", "input", "text", "10.0.2.2")
         adb("shell", "input", "keyevent", "KEYCODE_BACK")

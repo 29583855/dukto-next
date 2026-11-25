@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Rect;
+import android.os.Build;
 import android.util.Log;
 import android.util.Xml;
 import android.view.accessibility.AccessibilityEvent;
@@ -35,13 +36,17 @@ public final class ValidationAccessibility extends AccessibilityService {
     protected void onServiceConnected() {
         super.onServiceConnected();
         AccessibilityServiceInfo info = getServiceInfo();
-        info.flags |= AccessibilityServiceInfo.FLAG_REPORT_VIEW_IDS
-                | AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS;
+        info.flags |= AccessibilityServiceInfo.FLAG_REPORT_VIEW_IDS |
+                      AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS;
         setServiceInfo(info);
+        // 日期：2026-11-26；读取实时Qt虚拟树，避免系统缓存保留弹窗打开前的旧页面。
+        if (Build.VERSION.SDK_INT >= 33) {
+            setCacheEnabled(false);
+        }
         if (!registered) {
             registerReceiver(snapshotReceiver,
-                    new IntentFilter("org.duktonext.validation.SNAPSHOT"),
-                    "android.permission.DUMP", null, Context.RECEIVER_EXPORTED);
+                             new IntentFilter("org.duktonext.validation.SNAPSHOT"),
+                             "android.permission.DUMP", null, Context.RECEIVER_EXPORTED);
             registered = true;
         }
         Log.i("DuktoValidation", "accessibility-bound");
@@ -78,7 +83,7 @@ public final class ValidationAccessibility extends AccessibilityService {
 
     /** 日期：2026-11-26；导出系统给出的文字、控件状态和屏幕矩形，不伪造产品节点。 */
     private void writeNode(XmlSerializer xml, AccessibilityNodeInfo node, int index, int depth)
-            throws java.io.IOException {
+        throws java.io.IOException {
         if (depth > 100) {
             throw new java.io.IOException("Accessibility tree exceeds depth limit");
         }
@@ -92,11 +97,13 @@ public final class ValidationAccessibility extends AccessibilityService {
         xml.attribute(null, "class", value(node.getClassName()));
         xml.attribute(null, "package", value(node.getPackageName()));
         xml.attribute(null, "enabled", Boolean.toString(node.isEnabled()));
+        xml.attribute(null, "editable", Boolean.toString(node.isEditable()));
         xml.attribute(null, "clickable", Boolean.toString(node.isClickable()));
         xml.attribute(null, "scrollable", Boolean.toString(node.isScrollable()));
         xml.attribute(null, "visible-to-user", Boolean.toString(node.isVisibleToUser()));
-        xml.attribute(null, "bounds", "[" + bounds.left + "," + bounds.top + "]["
-                + bounds.right + "," + bounds.bottom + "]");
+        xml.attribute(null, "bounds",
+                      "[" + bounds.left + "," + bounds.top + "][" + bounds.right + "," +
+                          bounds.bottom + "]");
         for (int childIndex = 0; childIndex < node.getChildCount(); childIndex++) {
             AccessibilityNodeInfo child = node.getChild(childIndex);
             if (child != null) {
@@ -117,11 +124,13 @@ public final class ValidationAccessibility extends AccessibilityService {
 
     /** 日期：2026-11-26；事件由系统维护，产品操作仍从可见节点矩形执行。 */
     @Override
-    public void onAccessibilityEvent(AccessibilityEvent event) {}
+    public void onAccessibilityEvent(AccessibilityEvent event) {
+    }
 
     /** 日期：2026-11-26；中断不触发产品操作。 */
     @Override
-    public void onInterrupt() {}
+    public void onInterrupt() {
+    }
 
     /** 日期：2026-11-26；卸载辅助包前清除临时系统广播接收器。 */
     @Override
