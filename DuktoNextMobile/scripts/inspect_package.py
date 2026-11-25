@@ -83,7 +83,21 @@ def inspect_ios(app):
     dependencies = [line.strip().split(" (", 1)[0] for line in links.splitlines()[1:] if line.strip()]
     if any(path in link for link in dependencies for path in ["/Users/", "/home/", "/private/tmp/", "/opt/homebrew/"]):
         raise ValueError("iOS链接包含构建机路径")
-    return {"kind": "unsigned-device-app", "bundleId": info["CFBundleIdentifier"],
+    extension = app / "PlugIns/DuktoShare.appex"
+    extension_info = None
+    if extension.exists():
+        with (extension / "Info.plist").open("rb") as source:
+            extension_info = plistlib.load(source)
+        if (extension_info.get("CFBundleIdentifier") != "org.duktonext.mobile.share" or
+                extension_info.get("NSExtension", {}).get("NSExtensionPointIdentifier") != "com.apple.share-services"):
+            raise ValueError("iOS分享扩展标识不匹配")
+        executable = extension / extension_info["CFBundleExecutable"]
+        with executable.open("rb") as source:
+            ext_header = source.read(8)
+        if ext_header != b"\xcf\xfa\xed\xfe\x0c\x00\x00\x01" or not os.access(executable, os.X_OK):
+            raise ValueError("iOS分享扩展架构或执行位错误")
+        extension_info = {"bundleId": extension_info["CFBundleIdentifier"], "executableSha256": digest(executable)}
+    return {"shareExtension": extension_info, "kind": "unsigned-device-app", "bundleId": info["CFBundleIdentifier"],
             "minimumOS": info["MinimumOSVersion"], "architecture": "arm64",
             "executableSha256": digest(binary), "executableBytes": binary.stat().st_size,
             "signed": (app / "_CodeSignature").exists(), "linkedLibraries": links}

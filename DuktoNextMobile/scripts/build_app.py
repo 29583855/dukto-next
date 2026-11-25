@@ -103,6 +103,18 @@ def main():
         artifacts = list(app.rglob("DuktoNextMobile.app")) + list((build / "DerivedData").rglob("DuktoNextMobile.app"))
         if not artifacts:
             raise ValueError("未生成iOS app")
+    if args.platform == "ios":
+        extension = build / "share-extension"
+        run(["cmake", "-S", root / "platform/ios/share", "-B", extension, "-G", "Xcode",
+             "-DCMAKE_SYSTEM_NAME=iOS", "-DCMAKE_OSX_SYSROOT=iphoneos", "-DCMAKE_OSX_ARCHITECTURES=arm64",
+             "-DCMAKE_OSX_DEPLOYMENT_TARGET=15.0", "-DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO",
+             "-DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED=NO"], build, environment)
+        run(["cmake", "--build", extension, "--config", "Release"], build, environment)
+        extensions = list(extension.rglob("DuktoShare.appex"))
+        if len(extensions) != 1:
+            raise ValueError("iOS分享扩展产物数量错误")
+        for application in artifacts:
+            shutil.copytree(extensions[0], application / "PlugIns/DuktoShare.appex", dirs_exist_ok=True)
     inspection = package(args.platform, artifacts, build / "packages" / args.platform, environment)
     package_dir = build / "packages" / args.platform
     shutil.copytree(prefix / "licenses", package_dir / "licenses", dirs_exist_ok=True)

@@ -1,6 +1,7 @@
 #include "platformfiles.h"
 #include "importstore.h"
 
+#import "share/Inbox.h"
 #include <QCoreApplication>
 #include <QDateTime>
 #include <QDir>
@@ -280,11 +281,32 @@ void mobile::endBackgroundCleanup() {
 namespace {
 NSMutableArray<NSURL *> *incomingURLs;
 QString incomingError;
+QString incomingText;
+NSString *groupIdentifier;
+bool importingGroup = false;
+// 日期：2026-11-25；单槽UUID绑定当前预览，消费失败保留原快照并显示错误。
+bool consumeGroup(bool files, bool text) {
+    if (!groupIdentifier)
+        return true;
+    NSError *error = nil;
+    if (![DNShareInbox.sharedInbox consume:groupIdentifier files:files text:text error:&error]) {
+        incomingError = QString::fromUtf8(error.localizedDescription.UTF8String);
+        return false;
+    }
+    NSDictionary *remaining = [DNShareInbox.sharedInbox snapshot:&error];
+    if (!remaining.count && !error)
+        groupIdentifier = nil;
+    return true;
+}
 } // namespace
 // 日期：2026-11-25；Qt文件打开事件只保留文档范围，不允许选择私有身份状态。
 bool mobile::acceptSharedUrl(const QUrl &value) {
     if (!value.isLocalFile())
         return false;
+    if (groupIdentifier || importingGroup) {
+        incomingError = QStringLiteral("请先处理分享扩展中的内容，再重新打开文档");
+        return true;
+    }
     const auto path = QFileInfo(value.toLocalFile()).canonicalFilePath();
     const auto privateRoot =
         QFileInfo(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation))
@@ -310,7 +332,18 @@ bool mobile::acceptSharedUrl(const QUrl &value) {
 }
 // 日期：2026-11-25；只公开数量和错误，源URL不进入QML或日志。
 QVariantMap mobile::sharedDocuments() {
-    return {{"files", int(incomingURLs.count)}, {"text", QString()}, {"error", incomingError}};
+    if (!incomingURLs.count && incomingText.isEmpty() && !importingGroup) {
+        NSError *error = nil;
+        NSDictionary *snapshot = [DNShareInbox.sharedInbox snapshot:&error];
+        if (snapshot.count) {
+            groupIdentifier = snapshot[@"id"];
+            incomingURLs = [snapshot[@"urls"] mutableCopy];
+            incomingText = QString::fromUtf8([snapshot[@"text"] UTF8String]);
+        } else if (error) {
+            incomingError = QString::fromUtf8(error.localizedDescription.UTF8String);
+        }
+    }
+    return {{"files", int(incomingURLs.count)}, {"text", incomingText}, {"error", incomingError}};
 }
 // 日期：2026-11-25；用户确认发送后复用协调读取事务，完成或失败均归还外部授权。
 void mobile::importSharedDocuments(FileResult done) {
@@ -319,13 +352,18 @@ void mobile::importSharedDocuments(FileResult done) {
         return;
     }
     NSArray<NSURL *> *urls = [incomingURLs copy];
+    const bool group = groupIdentifier != nil;
+    importingGroup = group;
     [incomingURLs removeAllObjects];
     incomingError.clear();
     DuktoDocumentPicker *importer = [[DuktoDocumentPicker alloc] init];
     importer->exporting = false;
     importer->folder = false;
     importer->sharedImport = true;
-    importer->result = [done, urls](QStringList paths, QString error) {
+    importer->result = [done, urls, group](QStringList paths, QString error) {
+        importingGroup = false;
+        if (group && error.isEmpty())
+            consumeGroup(true, false);
         for (NSURL *url in urls)
             [url stopAccessingSecurityScopedResource];
         done(paths, error);
@@ -334,8 +372,14 @@ void mobile::importSharedDocuments(FileResult done) {
 }
 // 日期：2026-11-25；仅释放安全作用域引用，不删除系统文档。
 void mobile::discardSharedDocuments(bool textOnly) {
-    if (textOnly)
+    if (textOnly) {
+        if (consumeGroup(false, true))
+            incomingText.clear();
         return;
+    }
+    if (!consumeGroup(true, true))
+        return;
+    incomingText.clear();
     for (NSURL *url in incomingURLs)
         [url stopAccessingSecurityScopedResource];
     [incomingURLs removeAllObjects];

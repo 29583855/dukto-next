@@ -2,7 +2,7 @@ name: Mobile storage regression
 on:
   push:
     branches: [codex/mobile-platforms]
-    paths: ['DuktoNextMobile/tests/**', 'DuktoNextMobile/app/**', 'DuktoNextMobile/shared/**', 'DuktoNextMobile/tools/**', 'DuktoNextMobile/scripts/**', 'DuktoNextMobile/platform/android/**', 'DuktoNextMobile/CMakeLists.txt', '.github/workflows/mobile-storage.yml']
+    paths: ['DuktoNextMobile/tests/**', 'DuktoNextMobile/app/**', 'DuktoNextMobile/shared/**', 'DuktoNextMobile/tools/**', 'DuktoNextMobile/scripts/**', 'DuktoNextMobile/platform/android/**', 'DuktoNextMobile/platform/ios/**', 'DuktoNextMobile/CMakeLists.txt', '.github/workflows/mobile-storage.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -81,3 +81,14 @@ jobs:
             DuktoNextMobile/tests/android/build/test-results/**/*.xml
             DuktoNextMobile/tests/android/build/reports/tests/**
           if-no-files-found: warn
+
+  ios-inbox-contract:
+    runs-on: macos-15
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Exercise real native iOS share inbox on macOS
+        run: |
+          mkdir -p DuktoNextMobile/build-inbox
+          clang++ -std=c++14 -fobjc-arc -framework Foundation -I DuktoNextMobile/platform/ios/share DuktoNextMobile/platform/ios/share/Inbox.mm DuktoNextMobile/tests/ios/inbox_tests.mm -o DuktoNextMobile/build-inbox/inbox-tests
+          DuktoNextMobile/build-inbox/inbox-tests
