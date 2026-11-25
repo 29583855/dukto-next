@@ -160,7 +160,8 @@ def create(repository, reference, output, cache):
     root = "DuktoNextMobile-source-" + commit[:12]
     paths = ["DuktoNextMobile", "docs/iOS与Android开发计划与进度.md",
              ".github/workflows/mobile-build.yml", ".github/workflows/mobile-storage.yml",
-             ".github/workflows/mobile-extended.yml", ".github/workflows/mobile-source.yml"]
+             ".github/workflows/mobile-extended.yml", ".github/workflows/mobile-source.yml",
+             ".github/workflows/mobile-ios-simulator.yml"]
     sources = tracked_files(repository, commit, paths)
     lock = json.loads(next(data for path, data, _ in sources
                            if path == "DuktoNextMobile/scripts/dependencies.json"))

@@ -274,11 +274,13 @@ def verify_file_send(output):
     original_pid = adb("shell", "pidof", "org.duktonext.mobile").strip()
     if not original_pid:
         raise RuntimeError("文件发送前应用没有运行")
-    launch = adb("shell", "am", "start", "-W", "-n",
+    # 日期：2026-11-26；来源Activity立即转交并finish，不能用等待它绘制首帧的-W判定分享失败。
+    launch = adb("shell", "am", "start", "-n",
                  "org.duktonext.validation/.ValidationShareActivity")
     (output / "share-launch.txt").write_text(launch, "utf-8")
-    if "Status: ok" not in launch:
-        raise RuntimeError("系统文件分享来源Activity未正常启动")
+    if "Error:" in launch or "Exception" in launch:
+        raise RuntimeError("系统文件分享来源Activity启动被拒绝: " + launch)
+    # 日期：2026-11-26；以产品实际收到两份文件的系统可访问摘要确认完成，不以启动命令返回当成功。
     wait_share_ready(output, "系统分享：2项文件。请选择设备发送，或在服务器页上传。")
     click_label(output, "manual", "IP 连接 · 发送到指定设备")
     enter_target(output, "10.0.2.2")
