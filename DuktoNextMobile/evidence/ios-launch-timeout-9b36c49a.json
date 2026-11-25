@@ -1,0 +1,40 @@
+{
+  "date": "2026-11-26",
+  "runId": 45714019603,
+  "runAttempt": 1,
+  "jobId": 139555357647,
+  "artifactId": 15070061460,
+  "sourceCommit": "9b36c49ae2965cf1b5af29ce3efa1def623f63e4",
+  "passed": false,
+  "productCauseEstablished": false,
+  "failedStage": "simctl launch timed out after 120s before product runtime markers or any UI test",
+  "directoryTestReached": false,
+  "result": {
+    "passed": false,
+    "deviceTest": false,
+    "completeQtApp": true,
+    "shareExtensionTest": false,
+    "signedForDistribution": false,
+    "sourceCommit": "9b36c49ae2965cf1b5af29ce3efa1def623f63e4",
+    "binarySha256": "e162ce8616d85bc25024cb168c866b1b7409fb3ce7c31c3c8b25e1b7492ea639",
+    "steps": [
+      "installCompleteProductionSourceApp"
+    ],
+    "sdkVersion": "18.5",
+    "requestedRuntimeMajor": 18,
+    "error": "Command '['xcrun', 'simctl', 'launch', 'FC69FD0D-15E6-443B-B6AD-BA0A01DD4DD0', 'org.duktonext.mobile']' timed out after 120 seconds"
+  },
+  "rawEvidence": "DuktoNextMobile/release/development/test-evidence/ios-launch-timeout-9b36c49a",
+  "files": {
+    "dukto-next/dukto-next/DuktoNextMobile/build-ios-simulator/application-info.json": "741f7df48268717558338d585f1de72b8a64b5548e3fe90d46622cfadf4cd8d1",
+    "dukto-next/dukto-next/DuktoNextMobile/build-ios-simulator/application-path.txt": "66d8e4f6faaff7aa7efb834ba6164f6c0debfd977d247c9bb3b30e59da5f1443",
+    "dukto-next/dukto-next/DuktoNextMobile/build-ios-simulator/application.log": "e2e61664331e96c42ce7c89c5760d315c7f93b49dc4963a58ca97f09b13b03d0",
+    "dukto-next/dukto-next/DuktoNextMobile/build-ios-simulator/failure.png": "c2f8bd6392c91614c33da5513a9b0e404863d1cf44551ba422dae3bb51be3c21",
+    "dukto-next/dukto-next/DuktoNextMobile/build-ios-simulator/ios-complete-app.json": "4dda5fbe6a6e5d3bd21d784d7f6777cbb64c0f9478734d2bf2b65c4a6ce0d1fc",
+    "dukto-next/dukto-next/DuktoNextMobile/build-ios-simulator/phase-receipt.json": "2e83eded2ef2afdb9fcf141f1ef5816078ce44480316789f435671aabd7aae6f",
+    "dukto-next/dukto-next/DuktoNextMobile/build-ios-simulator/runtime.log": "51c909a0836cb74c0a72ea2e4974105efb687c83b9ea39c3422b250c4e9c0c3e",
+    "dukto-next/dukto-next/DuktoNextMobile/build-ios-simulator/system-launch.log": "b3e86c4ab874368d82edb2e27dba7444df77860df0bbc01d2a34c6124e9ae438",
+    "dukto-next/dukto-next/DuktoNextMobile/build-ios-simulator/toolchain.txt": "291a1ce5bc2d95ed2fe49308c679c6ef463591bbfea4ee64f603d1150a3ca84f"
+  },
+  "interpretation": "完整应用编译安装通过；系统LaunchServices/安装及快照日志存在，但没有产品启动日志，不据此判目录发送失败或通过。保留本轮，另启第二次整轮，不在应用内增加重试。"
+}
