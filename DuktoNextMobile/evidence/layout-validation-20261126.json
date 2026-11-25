@@ -1,0 +1,33 @@
+{
+  "date": "2026-11-26",
+  "sourceBeforeFix": "c2415cd1808fa58b12b87bb940e9704003ce4831",
+  "attempts": [
+    {
+      "run": 45673168988,
+      "job": 139413602642,
+      "scope": "host-ui-check with layout-warning gate",
+      "passed": false,
+      "message": "qrc:/mobile/MobileWindow.qml:166:5: QML Dialog: Binding loop detected for property implicitHeight",
+      "networkAndTenViewsPassed": true,
+      "stressPassed": false
+    },
+    {
+      "scope": "Windows PyQt5 isolated original cleanup dialog, resized window and 1.5x font",
+      "passed": false,
+      "layoutWarnings": 1
+    },
+    {
+      "scope": "Windows PyQt5 isolated cleanup dialog with width on Label only",
+      "passed": false,
+      "layoutWarnings": 1
+    },
+    {
+      "scope": "Windows PyQt5 isolated cleanup dialog with explicit-width Column wrapper",
+      "passed": true,
+      "layoutWarnings": 0
+    }
+  ],
+  "fullHostRegressionAfterFix": "pending",
+  "androidAppAfterFix": "pending",
+  "physicalDevicePassed": false
+}

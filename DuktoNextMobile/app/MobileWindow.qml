@@ -170,10 +170,15 @@ ApplicationWindow {
         width: Math.min(window.width - 32, 460)
         title: "清理旧暂存"
         standardButtons: Dialog.Ok | Dialog.Cancel
-        contentItem: Label {
-            text: "清理本次启动前遗留且没有上传任务引用的导入快照。用户文档、本次导入和可续传上传会保留。删除后不能撤回。"
-            textFormat: Text.PlainText
-            wrapMode: Text.Wrap
+        // 日期：2026-11-26；用固定可用宽度的列计算自然高度，避免换行正文与弹窗高度循环依赖。
+        contentItem: Column {
+            width: cleanupDialog.availableWidth
+            Label {
+                width: parent.width
+                text: "清理本次启动前遗留且没有上传任务引用的导入快照。用户文档、本次导入和可续传上传会保留。删除后不能撤回。"
+                textFormat: Text.PlainText
+                wrapMode: Text.Wrap
+            }
         }
         onAccepted: mobileFiles.cleanUnusedImports()
     }
