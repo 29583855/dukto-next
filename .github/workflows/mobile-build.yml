@@ -1,0 +1,84 @@
+name: Mobile C++14 build gates
+on:
+  push:
+    branches: [codex/mobile-platforms]
+    paths: ['DuktoNextMobile/**', '.github/workflows/mobile-build.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: android
+            os: ubuntu-24.04
+          - platform: ios
+            os: macos-15
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-java@v4
+        if: matrix.platform == 'android'
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        if: matrix.platform == 'android'
+      - name: Install Android build dependencies
+        if: matrix.platform == 'android'
+        shell: bash
+        run: |
+          sdkmanager 'platforms;android-35' 'build-tools;35.0.0' 'ndk;27.2.12479018'
+          echo "ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/27.2.12479018" >> "$GITHUB_ENV"
+          sudo apt-get update -qq
+          sudo apt-get install -y ninja-build libgl1-mesa-dev libxkbcommon-dev libxcb-xinerama0-dev
+      - name: Record tool versions
+        shell: bash
+        run: |
+          mkdir -p DuktoNextMobile/build
+          python --version > DuktoNextMobile/build/toolchain.txt
+          cmake --version >> DuktoNextMobile/build/toolchain.txt
+          if [ "${{ matrix.platform }}" = ios ]; then
+            xcodebuild -version >> DuktoNextMobile/build/toolchain.txt
+            xcrun --sdk iphoneos --show-sdk-version >> DuktoNextMobile/build/toolchain.txt
+          else
+            java -version 2>> DuktoNextMobile/build/toolchain.txt
+            cat "$ANDROID_NDK_ROOT/source.properties" >> DuktoNextMobile/build/toolchain.txt
+          fi
+      - uses: actions/cache/restore@v4
+        id: deps
+        with:
+          path: ${{ runner.temp }}/dukto-mobile/install
+          key: mobile-${{ matrix.platform }}-${{ runner.arch }}-${{ hashFiles('DuktoNextMobile/scripts/dependencies.json', 'DuktoNextMobile/scripts/build_dependencies.py') }}
+      - name: Build fixed Qt5 and OpenSSL sources
+        if: steps.deps.outputs.cache-hit != 'true'
+        run: python -u -X utf8 DuktoNextMobile/scripts/build_dependencies.py --platform ${{ matrix.platform }} --prefix "${{ runner.temp }}/dukto-mobile/install" --work DuktoNextMobile/dependency-build --jobs 3
+      - uses: actions/cache/save@v4
+        if: success() && steps.deps.outputs.cache-hit != 'true'
+        with:
+          path: ${{ runner.temp }}/dukto-mobile/install
+          key: ${{ steps.deps.outputs.cache-primary-key }}
+      - name: Build mobile application
+        run: python -u -X utf8 DuktoNextMobile/scripts/build_app.py --platform ${{ matrix.platform }} --prefix "${{ runner.temp }}/dukto-mobile/install" --build DuktoNextMobile/build
+      - name: Preserve logs and actual build outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-${{ matrix.platform }}-${{ github.run_id }}
+          if-no-files-found: warn
+          path: |
+            DuktoNextMobile/dependency-build/*.log
+            DuktoNextMobile/build/toolchain.txt
+            DuktoNextMobile/build/build-receipt.json
+            DuktoNextMobile/build/core/CMakeFiles/CMakeConfigureLog.yaml
+            DuktoNextMobile/build/app/android-build/build/outputs/apk/**/*.apk
+            DuktoNextMobile/build/app/**/*.app/**
+            DuktoNextMobile/build/DerivedData/Build/Products/Release-iphoneos/**
+            ${{ runner.temp }}/dukto-mobile/install/dependency-manifest.json
+            ${{ runner.temp }}/dukto-mobile/install/licenses/**

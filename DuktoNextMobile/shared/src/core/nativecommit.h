@@ -1,0 +1,154 @@
+#pragma once
+
+#include <QByteArray>
+#include <QLockFile>
+#include <QString>
+#include <QtGlobal>
+#include <array>
+#include <functional>
+#include <memory>
+#ifdef Q_OS_WIN
+#include <vector>
+#else
+#include <sys/stat.h>
+#endif
+
+namespace dukto {
+struct NativeDirectoryEntry {
+    enum class Kind { Regular, Directory, Link, Other };
+    QString name;
+    Kind kind = Kind::Other;
+    qint64 bytes = 0;
+    quint64 links = 0;
+    // 日期：2026-11-08；普通文件的瞬时观察，平台1为POSIX、2为Windows；身份格式与SQLite观察一致。
+    int identityPlatform = 0;
+    quint64 volume = 0;
+    std::array<unsigned char, 16> identity{};
+    qint64 allocatedBytes = 0;
+};
+#ifdef Q_OS_WIN
+class NativeDirectoryLock final {
+  public:
+    // 日期：2026-11-04；逐层打开并固定 Windows 目录，拒绝重解析点和删除/替换竞争。
+    NativeDirectoryLock(const QString &directory, bool createMissing);
+    // 日期：2026-11-04；按子目录到根目录的顺序释放原生目录句柄。
+    ~NativeDirectoryLock();
+    // 日期：2026-11-04；返回原生目录身份和修改时间，分页快照用它检测目录变化。
+    QByteArray stamp() const;
+    // 日期：2026-11-07；逐项原生属性枚举，不跟随链接、不递归、不累积目录列表；目录变化即拒绝。
+    void visitEntries(const std::function<void(const NativeDirectoryEntry &)> &visitor) const;
+    // 日期：2026-11-04；只返回卷/文件 ID，不含会随目录内容变化的时间戳，供持久目录预约。
+    QByteArray identity() const;
+    NativeDirectoryLock(const NativeDirectoryLock &) = delete;
+    NativeDirectoryLock &operator=(const NativeDirectoryLock &) = delete;
+
+  private:
+    // 日期：2026-11-04；构造异常与正常析构共用清理，避免部分父目录句柄泄漏。
+    void release();
+    std::vector<void *> handles_;
+};
+#else
+class PosixDirectory final {
+  public:
+    // 日期：2026-11-04；逐层以 O_NOFOLLOW 打开目录，后续创建/提交仅使用固定的目录描述符。
+    PosixDirectory(const QString &directory, bool createMissing);
+    // 日期：2026-11-04；关闭当前任务独占的目录描述符。
+    ~PosixDirectory();
+    PosixDirectory(const PosixDirectory &) = delete;
+    PosixDirectory &operator=(const PosixDirectory &) = delete;
+    // 日期：2026-11-04；重新安全遍历原路径并核对 inode，已被移动/替换时拒绝发布完成名称。
+    void verify() const;
+    // 日期：2026-11-04；以固定描述符读取 dev/inode 和纳秒修改/状态时间，不重新跟随路径。
+    QByteArray stamp() const;
+    // 日期：2026-11-07；逐项原生属性枚举，不跟随链接、不递归、不累积目录列表；目录变化即拒绝。
+    void visitEntries(const std::function<void(const NativeDirectoryEntry &)> &visitor) const;
+    // 日期：2026-11-04；只返回设备/inode，供恢复时核对本任务已创建的目录对象。
+    QByteArray identity() const;
+    // 日期：2026-11-04；相对固定父目录打开普通源文件，不跟随最后分量链接，也不阻塞在 FIFO。
+    int openRead(const QString &name) const;
+    // 日期：2026-11-06；相对固定父目录核验普通文件元数据，不跟随链接、不额外打开数据文件。
+    struct stat fileInformation(const QString &name) const;
+    // 日期：2026-11-04；持久接收以独占创建或不跟随链接方式重开普通文件，不隐式截断已有数据。
+    int openUpdate(const QString &name, bool create) const;
+    // 日期：2026-11-04；发布名称后同步固定父目录，失败报告提交持久性未知。
+    void synchronize() const;
+    // 日期：2026-11-04；私有状态根必须属于当前有效用户且禁止其他用户读取/写入/遍历。
+    void verifyPrivate() const;
+    // 日期：2026-11-04；私有状态更新使用同目录原子替换，随后同步目录；不用于普通接收的同名策略。
+    void replaceTemporary(const QString &name, const QString &destination) const;
+    // 日期：2026-11-04；生成不可预测名称并以独占、禁止跟随链接的方式创建 0600 临时文件。
+    int createTemporary(QString &name) const;
+    // 日期：2026-11-04；在同一固定目录内不覆盖提交，目标存在返回 false，不允许复制回退。
+    bool commitTemporary(const QString &name, const QString &destination) const;
+    // 日期：2026-11-05；普通接收的同目录原子替换，拒绝目录/链接/特殊项，不允许复制回退。
+    void replaceReceived(const QString &name, const QString &destination) const;
+    // 日期：2026-11-04；异常或取消只删除固定目录中的本任务临时项，不通过被替换的路径清理。
+    void removeTemporary(const QString &name) const;
+    // 日期：2026-11-07；显式移除自建临时文件并检查unlinkat结果，失败不能当作探测成功。
+    void discardTemporary(const QString &name) const;
+    // 日期：2026-11-04；显式状态清理检查 unlinkat 结果，除不存在外的错误必须报告。
+    void removeEntry(const QString &name) const;
+    // 日期：2026-11-09；固定父目录核对原生身份；不可变文件可额外核对换代指纹，目录不递归。
+    void removeOwnedTemporary(const QString &name, const QByteArray &identity, bool directory,
+                              const QByteArray &revision = {}) const;
+    // 日期：2026-11-07；固定父描述符查询子目录身份，仅真正ENOENT返回空，链接/类型错误明确拒绝。
+    QByteArray childDirectoryIdentity(const QString &name) const;
+    // 日期：2026-11-04；独占创建单层子目录，已有同名项返回 false，其余错误明确失败。
+    bool createChild(const QString &name) const;
+
+  private:
+    QString path_;
+    int descriptor_ = -1;
+};
+#endif
+#ifdef Q_OS_WIN
+// 日期：2026-11-04；Qt5 的 isSymLink 不覆盖所有 junction，使用原生属性拒绝任何重解析点。
+bool isNativeReparsePoint(const QString &path);
+// 日期：2026-11-04；Windows 同文件系统独占提交；目标已存在返回 false，其余失败抛错。
+bool renameNoReplace(const QString &source, const QString &destination, bool durable = false);
+#endif
+
+#ifdef Q_OS_WIN
+// 日期：2026-11-06；固定源身份与父目录；共享占用最多重试500ms，持续检查取消及目标类型。
+void replaceReceivedFile(const QString &source, const QString &destination,
+                         const QByteArray &expectedIdentity,
+                         const std::function<void()> &check = {});
+#endif
+
+// 日期：2026-11-09；不可变文件的换代指纹包含身份、大小和原生修改/状态时间；不包含最后访问时间。
+QByteArray nativeFileRevision(int descriptor);
+#ifndef Q_OS_WIN
+// 日期：2026-11-09；固定父目录取得的属性与已打开句柄使用相同格式，删除前重验同一观察。
+QByteArray nativeFileRevision(const struct stat &information);
+#endif
+
+// 日期：2026-11-09；固定父目录及对象身份；可选换代指纹在实际删除使用的句柄/属性上再次核对。
+void removeReceivedTemporary(const QString &path, const QByteArray &identity, bool directory,
+                             const QByteArray &parentIdentity = {},
+                             const QByteArray &revision = {});
+
+// 日期：2026-11-07；以原生不跟随链接方式查询目录身份，仅明确不存在时返回空值。
+QByteArray receivedDirectoryIdentity(const QString &path, const QByteArray &parentIdentity = {});
+
+// 预约文件位于目标父目录；仅协调本程序的新执行者，不宣称文件系统具有路径 CAS。
+class TargetReservation final {
+  public:
+    // 日期：2026-11-06；固定父目录；活动锁不等待；Windows短暂创建权限错误最多重试100ms。
+    explicit TargetReservation(const QString &destination);
+    // 日期：2026-11-05；先移除本任务锁文件，再释放父目录；死进程由 QLockFile 身份检测接管。
+    ~TargetReservation();
+    // 日期：2026-11-05；返回是否成功预约，调用者按 rename/fail/overwrite 分别裁决。
+    bool acquired() const;
+    TargetReservation(const TargetReservation &) = delete;
+    TargetReservation &operator=(const TargetReservation &) = delete;
+
+  private:
+#ifdef Q_OS_WIN
+    std::unique_ptr<NativeDirectoryLock> parent_;
+#else
+    std::unique_ptr<PosixDirectory> parent_;
+#endif
+    std::unique_ptr<QLockFile> lock_;
+    bool acquired_ = false;
+};
+} // namespace dukto
