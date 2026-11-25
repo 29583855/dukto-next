@@ -10,7 +10,6 @@ import uuid
 import xml.etree.ElementTree as ET
 
 from android_emulator import adb
-from android_accessibility import accessibility_session
 
 
 # 日期：2026-11-25；只接受完整有界字节，截断和超时不能算作发送完成。
@@ -147,7 +146,6 @@ def verify_text_send_ui(output):
     return result
 
 
-# 日期：2026-11-25；独立系统无障碍服务仅辅助获取真实控件，结束时清理，不注入应用业务。
+# 日期：2026-11-25；服务由安装验收在首次启动前统一管理，此处只操作真实界面。
 def verify_text_send(output):
-    with accessibility_session(Path(output)):
-        return verify_text_send_ui(output)
+    return verify_text_send_ui(output)

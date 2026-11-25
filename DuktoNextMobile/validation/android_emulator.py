@@ -1,5 +1,6 @@
 """日期：2026-11-25；验收原始arm64 APK安装、首屏与可选R6接收，不代替真机验收。"""
 import argparse
+from contextlib import ExitStack
 import hashlib
 import json
 from pathlib import Path
@@ -123,6 +124,7 @@ def main():
     args.output.mkdir(parents=True, exist_ok=True)
     receipt = {"passed": False, "deviceTest": False, "scope": "Android模拟器安装启动原始arm64开发APK",
                "sourceCommit": args.source, "steps": []}
+    services = ExitStack()
     try:
         digest = hashlib.sha256(args.apk.read_bytes()).hexdigest()
         receipt["apkSha256"] = digest
@@ -138,6 +140,11 @@ def main():
         if "Success" not in receipt["installOutput"]:
             raise RuntimeError("APK安装未成功")
         receipt["steps"].append("install")
+        # 日期：2026-11-25；首次创建Qt控件前启用服务，用同一APK区分晚激活与控件缺失。
+        if args.r6_send:
+            from android_accessibility import accessibility_session
+            services.enter_context(accessibility_session(args.output))
+            receipt["accessibilityEnabledBeforeLaunch"] = True
         receipt["systemDirectoryAliases"] = adb("shell", "ls", "-ld", "/data/user/0", "/data/data").strip()
         adb("logcat", "-c")
         receipt["launchOutput"] = adb("shell", "am", "start", "-W", "-n",
@@ -210,6 +217,7 @@ def main():
     finally:
         (args.output / "android-startup.json").write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", "utf-8")
         print(json.dumps(receipt, ensure_ascii=False, indent=2))
+        services.close()
 
 
 if __name__ == "__main__":
