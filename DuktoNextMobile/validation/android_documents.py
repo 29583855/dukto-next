@@ -263,9 +263,16 @@ def verify_tree_content(fixtures, external=False, output=None):
 
 
 # 日期：2026-11-26；等待真实产品完成状态，保留系统节点快照以区分授权失败与产品复制失败。
-def wait_message(output, text):
+def wait_message(output, text, prefix=False):
     deadline = time.monotonic() + 30
-    while find_label(ui_tree(output, "tree-product-completed"), text) is None:
+    while True:
+        tree = ui_tree(output, "tree-product-completed")
+        if find_label(tree, text) is not None:
+            return
+        if prefix and any((node.get("text", "").startswith(text)
+                           or node.get("content-desc", "").startswith(text))
+                          for node in tree.iter("node")):
+            return
         if time.monotonic() >= deadline:
             raise RuntimeError("产品目录操作未完成: " + text)
         time.sleep(0.3)
@@ -327,6 +334,24 @@ def verify_saf_directory(output):
     wait_message(output, "已完成系统导出")
     verify_tree_content([(target + "/" + name, data) for name, data in received],
                         external=True, output=output)
+    # 日期：2026-11-26；实际禁用系统提供器，验证启动失败可读、进程存活，恢复后可以重新打开。
+    provider = "com.google.android.documentsui"
+    try:
+        disabled = adb("shell", "pm", "disable-user", "--user", "0", provider)
+        (output / "provider-disabled.txt").write_text(disabled, "utf-8")
+        if "package:" + provider not in adb("shell", "pm", "list", "packages", "-d"):
+            raise RuntimeError("验收环境未禁用系统DocumentsUI，不能验证缺失提供器恢复")
+        click_label(output, "directory-export-unavailable", "导出目录")
+        wait_message(output, "无法打开系统文档选择器：", prefix=True)
+        if adb("shell", "pidof", "org.duktonext.mobile").strip() != pid:
+            raise RuntimeError("系统文档提供器不可用时产品进程退出")
+    finally:
+        enabled = adb("shell", "pm", "enable", "--user", "0", provider)
+        (output / "provider-enabled.txt").write_text(enabled, "utf-8")
+    click_label(output, "directory-export-provider-restored", "导出目录")
+    wait_picker(output, "directory-export-provider-recovered")
+    adb("shell", "input", "keyevent", "KEYCODE_BACK")
+    wait_message(output, "已取消导出")
     if adb("shell", "pidof", "org.duktonext.mobile").strip() != pid:
         raise RuntimeError("系统目录操作期间产品进程意外重启")
     log = adb("logcat", "-d", "--pid=" + pid)
@@ -339,5 +364,6 @@ def verify_saf_directory(output):
                 receiveBeforeExport=True, exportContentVerified=True,
                 emptyDirectory=True, emptyFile=True, utf8Path=True,
                 sendCancelAndReopen=True, exportCancelAndReopen=True,
+                unavailableProviderRecovery=True,
                 processRestarts=0, sendRetries=0, deviceTest=False,
                 wifiDiscoveryTest=False, cloudProviderTest=False)

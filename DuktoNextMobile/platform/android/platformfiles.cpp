@@ -178,6 +178,23 @@ class Picker final : public QAndroidActivityResultReceiver {
     }
 };
 Picker picker;
+
+// 日期：2026-11-26；系统提供器缺失或拒绝启动时立即清除JNI异常并释放选择状态，允许用户重试。
+void startPicker(const QAndroidJniObject &intent) {
+    auto error = javaError();
+    if (error.isEmpty()) {
+        QtAndroid::startActivity(intent, RequestCode, &picker);
+        error = javaError();
+    }
+    if (error.isEmpty())
+        return;
+    auto callback = picker.done;
+    picker.done = {};
+    picker.exportPath.clear();
+    picker.folder = false;
+    if (callback)
+        callback({}, QStringLiteral("无法打开系统文档选择器：") + error);
+}
 } // namespace
 
 // 日期：2026-11-25；ACTION_OPEN_DOCUMENT/TREE由系统授予所选范围，无需READ_EXTERNAL_STORAGE。
@@ -204,7 +221,7 @@ void mobile::selectDocuments(bool folder, FileResult done) {
             QAndroidJniObject::fromString("android.intent.category.OPENABLE").object());
     }
     intent.callObjectMethod("addFlags", "(I)Landroid/content/Intent;", jint(1));
-    QtAndroid::startActivity(intent, RequestCode, &picker);
+    startPicker(intent);
 }
 
 // 日期：2026-11-25；文件使用创建文档，目录选择目标树后复制，明确拒绝同名根目录。
@@ -215,20 +232,23 @@ void mobile::exportDocument(const QString &path, FileResult done) {
     }
     picker.done = done;
     picker.exportPath = path;
+    const bool folder = QFileInfo(path).isDir();
     QAndroidJniObject intent(
         "android/content/Intent", "(Ljava/lang/String;)V",
-        QAndroidJniObject::fromString(QFileInfo(path).isDir()
-                                          ? "android.intent.action.OPEN_DOCUMENT_TREE"
-                                          : "android.intent.action.CREATE_DOCUMENT")
+        QAndroidJniObject::fromString(folder ? "android.intent.action.OPEN_DOCUMENT_TREE"
+                                            : "android.intent.action.CREATE_DOCUMENT")
             .object());
-    intent.callObjectMethod("setType", "(Ljava/lang/String;)Landroid/content/Intent;",
-                            QAndroidJniObject::fromString("application/octet-stream").object());
-    intent.callObjectMethod("putExtra",
-                            "(Ljava/lang/String;Ljava/lang/String;)Landroid/content/Intent;",
-                            QAndroidJniObject::fromString("android.intent.extra.TITLE").object(),
-                            QAndroidJniObject::fromString(QFileInfo(path).fileName()).object());
+    // 日期：2026-11-26；目录树动作不接受文件MIME类型，否则系统无法匹配DocumentsUI处理程序。
+    if (!folder) {
+        intent.callObjectMethod("setType", "(Ljava/lang/String;)Landroid/content/Intent;",
+                                QAndroidJniObject::fromString("application/octet-stream").object());
+        intent.callObjectMethod("putExtra",
+                                "(Ljava/lang/String;Ljava/lang/String;)Landroid/content/Intent;",
+                                QAndroidJniObject::fromString("android.intent.extra.TITLE").object(),
+                                QAndroidJniObject::fromString(QFileInfo(path).fileName()).object());
+    }
     intent.callObjectMethod("addFlags", "(I)Landroid/content/Intent;", jint(3));
-    QtAndroid::startActivity(intent, RequestCode, &picker);
+    startPicker(intent);
 }
 
 // 日期：2026-11-25；关闭选择器并丢弃其迟到结果，复制线程由调用方等候完成。

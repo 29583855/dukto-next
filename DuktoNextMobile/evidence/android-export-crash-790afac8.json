@@ -1,0 +1,30 @@
+{
+  "date": "2026-11-26",
+  "sourceCommit": "a1991266",
+  "apkSource": "790afac87a5bf58d625c9432b5a4b75aa2cacc04",
+  "run": 45704468824,
+  "job": 139522747253,
+  "artifact": 15064667388,
+  "passed": false,
+  "passedSubsteps": [
+    "32SequentialR6Receive",
+    "textSend",
+    "coldAndWarmContentUriSend",
+    "systemFileSendCancelReopen",
+    "systemFileExportCancelReopenReadback",
+    "externalTreeSeedReadback",
+    "systemDirectorySendIndependentWireCheck",
+    "systemDirectoryImportAndReadback"
+  ],
+  "failureStage": "First directory export opens invalid system intent and aborts process",
+  "exception": "ActivityNotFoundException: OPEN_DOCUMENT_TREE typ=application/octet-stream; JNI GetStaticMethodID called with pending exception",
+  "finding": "产品错误：导出目录无条件设置文件MIME，系统处理器不匹配。Qt启动调用后没有立即清除异常，触发CheckJNI SIGABRT。",
+  "change": [
+    "目录树Intent不设置文件MIME和文件名TITLE",
+    "统一启动封装立即读取清除JNI异常、释放回调及选择状态、显示可重试错误",
+    "新增系统DocumentsUI禁用/恢复真实UI验收"
+  ],
+  "verificationPending": true,
+  "deviceTest": false,
+  "rawEvidence": "DuktoNextMobile/release/development/test-evidence/android-tree-export-790afac8"
+}
