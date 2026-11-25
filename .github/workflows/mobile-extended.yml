@@ -5,6 +5,9 @@ on:
       apk_run:
         description: 原生APK成功构建run
         required: true
+      apk_artifact:
+        description: APK所在artifact名称；留空使用常规构建名称
+        required: false
       apk_sha256:
         description: 已核对APK的SHA256
         required: true
@@ -33,10 +36,22 @@ jobs:
           java-version: '17'
       - uses: actions/download-artifact@v4
         with:
-          name: mobile-android-${{ inputs.apk_run }}
+          name: ${{ inputs.apk_artifact || format('mobile-android-{0}', inputs.apk_run) }}
           run-id: ${{ inputs.apk_run }}
           github-token: ${{ github.token }}
           path: ${{ runner.temp }}/mobile-original-apk
+      - name: Locate the single original APK in the downloaded build artifact
+        shell: python
+        run: |
+          # 日期：2026-11-25；兼容常规和源码重建目录，拒绝零个或多个APK。
+          import os
+          from pathlib import Path
+          root = Path(os.environ['RUNNER_TEMP']) / 'mobile-original-apk'
+          candidates = list(root.rglob('DuktoNextMobile-android-arm64-debug.apk'))
+          if len(candidates) != 1 or candidates[0].is_symlink() or not candidates[0].is_file():
+              raise SystemExit('Expected one regular original APK')
+          with open(os.environ['GITHUB_ENV'], 'a') as output:
+              output.write('ORIGINAL_APK=' + str(candidates[0]) + '\n')
       - name: Enable hardware acceleration
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
@@ -54,7 +69,7 @@ jobs:
           profile: pixel_2
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
-          script: python -X utf8 DuktoNextMobile/validation/android_emulator.py --apk "$RUNNER_TEMP/mobile-original-apk/DuktoNextMobile-android-arm64-debug.apk" --output DuktoNextMobile/build-emulator --sha256 "$APK_SHA256" --source "$APK_SOURCE"
+          script: python -X utf8 DuktoNextMobile/validation/android_emulator.py --apk "$ORIGINAL_APK" --output DuktoNextMobile/build-emulator --sha256 "$APK_SHA256" --source "$APK_SOURCE"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
