@@ -35,7 +35,9 @@ ios {
     QMAKE_IOS_DEPLOYMENT_TARGET = 15.0
     QMAKE_APPLE_DEVICE_ARCHS = arm64
     QMAKE_INFO_PLIST = $$PWD/platform/ios/Info.plist
-    QMAKE_BUNDLE = org.duktonext.mobile
+    # 日期：2026-11-26；Qt将前缀与bundle后缀拼接，必须与Info.plist及分享扩展保持一致。
+    QMAKE_TARGET_BUNDLE_PREFIX = org.duktonext
+    QMAKE_BUNDLE = mobile
     QMAKE_IOS_TARGETED_DEVICE_FAMILY = 1,2
     QMAKE_LFLAGS += -Wl,-dead_strip
 }

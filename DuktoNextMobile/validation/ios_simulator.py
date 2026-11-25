@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 import plistlib
 import re
+import shutil
 import subprocess
 import time
 import uuid
@@ -61,6 +62,7 @@ def receive_batches(documents):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--build", required=True, type=Path)
+    parser.add_argument("--runtime-major", type=int)
     args = parser.parse_args()
     build = args.build.resolve()
     application = Path((build / "application-path.txt").read_text("utf-8").strip())
@@ -70,12 +72,19 @@ def main():
                "shareExtensionTest": False, "signedForDistribution": False,
                "sourceCommit": run("git", "rev-parse", "HEAD"),
                "binarySha256": hashlib.sha256(binary.read_bytes()).hexdigest(), "steps": []}
+    (build / "application-info.json").write_text(json.dumps(info, ensure_ascii=False, indent=2) + "\n", "utf-8")
     device, logger, log_file = None, None, None
     try:
+        sdk_version = run("xcrun", "--sdk", "iphonesimulator", "--show-sdk-version")
+        runtime_major = args.runtime_major or int(sdk_version.split(".")[0])
+        receipt["sdkVersion"] = sdk_version
+        receipt["requestedRuntimeMajor"] = runtime_major
+        # 日期：2026-11-26；默认使用当前Xcode同代运行时，其他代际须显式指定并单独记录。
         runtime_list = json.loads(run("xcrun", "simctl", "list", "runtimes", "-j"))["runtimes"]
-        runtimes = [item for item in runtime_list if item.get("isAvailable") and ".iOS-" in item["identifier"]]
+        runtimes = [item for item in runtime_list if item.get("isAvailable") and ".iOS-" in item["identifier"]
+                    and int(item["version"].split(".")[0]) == runtime_major]
         if not runtimes:
-            raise RuntimeError("没有可用iOS模拟器运行时")
+            raise RuntimeError("没有要求代际的iOS模拟器运行时: " + str(runtime_major))
         runtime = max(runtimes, key=lambda item: tuple(map(int, item["version"].split("."))))
         types = json.loads(run("xcrun", "simctl", "list", "devicetypes", "-j"))["devicetypes"]
         phone = next(item for item in types if item["name"] == "iPhone 16")
@@ -123,7 +132,23 @@ def main():
         receipt["visualReviewPending"] = True
     except Exception as error:
         receipt["error"] = str(error)
+        # 日期：2026-11-26；启动失败保留系统进程日志与崩溃报告，不能仅靠产品日志为空猜原因。
         if device:
+            try:
+                system_log = run("xcrun", "simctl", "spawn", device, "log", "show", "--last", "5m",
+                                 "--style", "compact", "--predicate",
+                                 'process == "SpringBoard" OR process == "runningboardd" OR process == "DuktoNextMobile"',
+                                 timeout=30)
+                (build / "system-launch.log").write_text(system_log, "utf-8")
+            except Exception as diagnostics_error:
+                receipt["diagnosticsError"] = str(diagnostics_error)
+            try:
+                reports = Path.home() / "Library/Logs/DiagnosticReports"
+                for crash in reports.glob("DuktoNextMobile*"):
+                    if crash.is_file():
+                        shutil.copy2(crash, build / ("crash-" + crash.name))
+            except Exception as crash_error:
+                receipt["crashCollectionError"] = str(crash_error)
             try:
                 run("xcrun", "simctl", "io", device, "screenshot", build / "failure.png")
             except Exception as capture_error:

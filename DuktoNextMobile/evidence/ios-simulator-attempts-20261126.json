@@ -14,7 +14,8 @@
       "installed": false,
       "deviceTest": false,
       "fix": "Use qmake QMAKE_MAC_SDK=iphonesimulator; save completed dependency cache before application stage",
-      "fixValidatedInCI": false
+      "fixValidatedInCI": true,
+      "fixValidationRun": 45666106081
     },
     {
       "run": 45666106081,
@@ -29,7 +30,7 @@
       "deviceTest": false,
       "error": "xcodebuild返回成功，但DerivedData预期目录没有DuktoNextMobile.app",
       "fix": "显式CONFIGURATION_BUILD_DIR并在该目录查找.app",
-      "fixValidatedInCI": false,
+      "fixValidatedInCI": true,
       "files": {
         "_temp/dukto-ios-simulator/dependencies/openssl.log": "e400f84e4398c57c06d3cb0df5f7d735d2f822d212d2ba79be34c38cd262f1c1",
         "_temp/dukto-ios-simulator/dependencies/phase-receipt.json": "9c8b96ddda682e970d568aed5676fc03ec6ff40f45382a2c59fdcaca8163edcc",
@@ -40,6 +41,45 @@
         "dukto-next/dukto-next/DuktoNextMobile/build-ios-simulator/application.log": "def9d8070283ad60d0e51a82de73c573cf87635a0422c3376c5e472aef45788a",
         "dukto-next/dukto-next/DuktoNextMobile/build-ios-simulator/phase-receipt.json": "51f927f2020eebc721c867d616a3d35e30fe6d3d4e6eb578fad8be5586ef3c1d",
         "dukto-next/dukto-next/DuktoNextMobile/build-ios-simulator/toolchain.txt": "291a1ce5bc2d95ed2fe49308c679c6ef463591bbfea4ee64f603d1150a3ca84f"
+      },
+      "fixValidationRun": 45672548228
+    },
+    {
+      "run": 45672548228,
+      "job": 139411400636,
+      "artifact": 15051613815,
+      "source": "1eaf84d9577418d5af2a9c115dcde94b838662f8",
+      "passed": false,
+      "stage": "simctl launch",
+      "dependenciesBuildPassed": true,
+      "coreBuildPassed": true,
+      "appBuildPassed": true,
+      "installed": true,
+      "deviceTest": false,
+      "xcode": "16.4",
+      "sdk": "18.5",
+      "runtime": "26.2",
+      "error": "simctl launch timed out after 120 seconds; failure screenshot shows SpringBoard, not the app",
+      "bundleIdentifierWarning": {
+        "requested": "org.duktonext.mobile",
+        "generated": "com.yourcompany.org.duktonext.mobile"
+      },
+      "fix": "Align qmake bundle prefix/suffix with plist; default simulator runtime to selected SDK major; collect system launch and crash logs",
+      "fixValidatedInCI": false,
+      "files": {
+        "dukto-next/dukto-next/DuktoNextMobile/build-ios-simulator/application-path.txt": "66d8e4f6faaff7aa7efb834ba6164f6c0debfd977d247c9bb3b30e59da5f1443",
+        "dukto-next/dukto-next/DuktoNextMobile/build-ios-simulator/application.log": "f015535deb17750fc0e2205c2c6a652d217a5a3099051561fd66bd5ee445795b",
+        "dukto-next/dukto-next/DuktoNextMobile/build-ios-simulator/failure.png": "c562006b59d4bd59a93d1c65962889a8b68b30d346f670fb303ba789f4381e24",
+        "dukto-next/dukto-next/DuktoNextMobile/build-ios-simulator/ios-complete-app.json": "2257d9d178ecd403f78ad751afaa940d95e803a9ab7c86d9259cba2443e910ee",
+        "dukto-next/dukto-next/DuktoNextMobile/build-ios-simulator/phase-receipt.json": "2e83eded2ef2afdb9fcf141f1ef5816078ce44480316789f435671aabd7aae6f",
+        "dukto-next/dukto-next/DuktoNextMobile/build-ios-simulator/runtime.log": "51c909a0836cb74c0a72ea2e4974105efb687c83b9ea39c3422b250c4e9c0c3e",
+        "dukto-next/dukto-next/DuktoNextMobile/build-ios-simulator/toolchain.txt": "291a1ce5bc2d95ed2fe49308c679c6ef463591bbfea4ee64f603d1150a3ca84f",
+        "_temp/dukto-ios-simulator/dependencies/openssl.log": "fd5c6cc42e3784f60a04a815bac5d441de4337977da17587d32f9c43e023d3c7",
+        "_temp/dukto-ios-simulator/dependencies/phase-receipt.json": "9c8b96ddda682e970d568aed5676fc03ec6ff40f45382a2c59fdcaca8163edcc",
+        "_temp/dukto-ios-simulator/dependencies/qtbase.log": "7431463847a970b29a90b85b094b3547416688cbebc51ab1050ac12c694e15e8",
+        "_temp/dukto-ios-simulator/dependencies/qtdeclarative.log": "11ad5d602a533febeafe9a72bb0acb438b2828aa471f93905fbba072da9a38c1",
+        "_temp/dukto-ios-simulator/dependencies/qtgraphicaleffects.log": "4a74a7edf68b581adddcd22f0d5a13f59ebcb62076d2d1508b6f78c2bd02c878",
+        "_temp/dukto-ios-simulator/dependencies/qtquickcontrols2.log": "c2a4cf8f7c7be07b5577a352c4eee34c808a8922612de9465bba26d639003169"
       }
     }
   ]
