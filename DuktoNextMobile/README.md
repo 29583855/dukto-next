@@ -15,3 +15,5 @@
 iOS签名、组播能力与真机验收需要有效Apple开发团队配置；未签名.app不能直接提供客户安装。
 
 使用和验收步骤见`docs/移动端使用与验收说明.md`；工具链、源码来源及分发约束见`docs/构建与许可证说明.md`。
+
+2026-11-25：Android完整调试APK及iOS含分享扩展的未签名设备归档已在GitHub编译、验包并下载复核；位于`release/development/android/`和`release/development/ios/`。包摘要与实际测试范围见`docs/开发包与验收交接-20261125.md`及`evidence/`。这些包尚无真机安装和互通验收；iOS归档不能直接安装。
