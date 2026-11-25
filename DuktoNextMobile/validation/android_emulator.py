@@ -11,7 +11,6 @@ import struct
 import uuid
 import subprocess
 import time
-from PIL import Image, ImageStat
 
 
 # 日期：2026-11-25；ADB命令全部设定超时，保存失败输出并拒绝无响应的设备。
@@ -113,6 +112,9 @@ def verify_r6_receive():
 
 # 日期：2026-11-25；只对指定构建哈希的原始APK测试，禁止用替换ABI或宿主假实现冒充。
 def main():
+    # 日期：2026-11-26；仅屏幕验收需要Pillow，独立协议测试导入时不依赖图像或SDK环境。
+    from PIL import Image, ImageStat
+
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--apk", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
