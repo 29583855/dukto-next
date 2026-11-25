@@ -25,7 +25,7 @@ android {
     ANDROID_TARGET_SDK_VERSION = 35
     ANDROID_ABIS = arm64-v8a
     QMAKE_LFLAGS += -Wl,-z,max-page-size=16384
-    ANDROID_PACKAGE_SOURCE_DIR = $$PWD/platform/android
+    isEmpty(ANDROID_PACKAGE_SOURCE_DIR): ANDROID_PACKAGE_SOURCE_DIR = $$PWD/platform/android
 }
 ios {
     OBJECTIVE_SOURCES += $$PWD/platform/ios/platformfiles.mm

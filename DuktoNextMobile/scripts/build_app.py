@@ -14,27 +14,33 @@ def run(command, directory, environment):
     subprocess.run([str(value) for value in command], cwd=directory, env=environment, check=True)
 
 
-# 日期：2026-11-25；保留Qt生成的部署内容，升级其过旧的Gradle工具以支持Android35资源。
-def modernize_android(directory):
-    gradle = directory / "build.gradle"
-    text = gradle.read_text("utf-8")
+# 日期：2026-11-25；生成项目私有的现代Gradle模板，交给Qt完整部署以生成资源及属性。
+def prepare_android_package(root, qt, build):
+    directory = build / "android-package"
+    shutil.copytree(root / "platform/android", directory, dirs_exist_ok=True)
+    text = (qt / "src/android/templates/build.gradle").read_text("utf-8")
     text, count = re.subn(r"com.android.tools.build:gradle:[0-9.]+", "com.android.tools.build:gradle:8.7.3", text)
-    if count != 1 or "android {" not in text:
+    if count != 1 or "android {" not in text or "defaultConfig {" not in text:
         raise ValueError("Qt Gradle模板不匹配，拒绝静默部署")
     text = text.replace("jcenter()", "mavenCentral()")
     text = text.replace("android {", "android {\n    namespace 'org.duktonext.mobile'\n    buildFeatures.buildConfig true", 1)
-    gradle.write_text(text, "utf-8")
-    wrapper = directory / "gradle/wrapper/gradle-wrapper.properties"
-    text = wrapper.read_text("utf-8")
-    text, count = re.subn(r"gradle-[0-9.]+-(bin|all)\.zip", "gradle-8.9-bin.zip", text)
+    text = text.replace("defaultConfig {", "defaultConfig {\n        applicationId 'org.duktonext.mobile'", 1)
+    # 日期：2026-11-25；Qt先解析原清单的包名；Gradle启动时仅去掉部署副本的旧package属性。
+    preamble = """// 日期：2026-11-25；AGP8由namespace指定R包，保留Qt部署前的包名解析。
+def duktoManifest = file('AndroidManifest.xml')
+def duktoManifestText = duktoManifest.getText('UTF-8')
+duktoManifest.setText(duktoManifestText.replace(' package="org.duktonext.mobile"', ''), 'UTF-8')
+"""
+    text = text.replace("apply plugin:", preamble + "\napply plugin:", 1)
+    (directory / "build.gradle").write_bytes(text.encode("utf-8"))
+    source = qt / "src/3rdparty/gradle/gradle/wrapper/gradle-wrapper.properties"
+    text, count = re.subn(r"gradle-[0-9.]+-(bin|all)\.zip", "gradle-8.9-bin.zip", source.read_text("utf-8"))
     if count != 1:
         raise ValueError("Qt Gradle wrapper模板不匹配")
-    wrapper.write_text(text, "utf-8")
-    manifest = directory / "AndroidManifest.xml"
-    # 日期：2026-11-25；AGP8通过namespace指定R包，源清单保持Qt5兼容而仅调整部署副本。
-    text = manifest.read_text("utf-8")
-    text = text.replace(' package="org.duktonext.mobile"', "")
-    manifest.write_text(text, "utf-8")
+    wrapper = directory / "gradle/wrapper/gradle-wrapper.properties"
+    wrapper.parent.mkdir(parents=True, exist_ok=True)
+    wrapper.write_bytes(text.encode("utf-8"))
+    return directory
 
 
 # 日期：2026-11-25；Android生成测试APK，iOS只生成未签名设备app，不能作为安装通过证据。
@@ -68,8 +74,12 @@ def main():
                     "-DCMAKE_OSX_ARCHITECTURES=arm64", "-DCMAKE_OSX_DEPLOYMENT_TARGET=15.0"]
     run(command, root, environment)
     run(["cmake", "--build", core, "--parallel", "3"], root, environment)
-    run([qt / "bin/qmake", root / "DuktoNextMobile.pro", "CORE_BUILD=" + str(core),
-         "OPENSSL_PREFIX=" + str(prefix / "openssl"), "CONFIG+=release"], app, environment)
+    qmake = [qt / "bin/qmake", root / "DuktoNextMobile.pro", "CORE_BUILD=" + str(core),
+             "OPENSSL_PREFIX=" + str(prefix / "openssl"), "CONFIG+=release"]
+    if args.platform == "android":
+        package = prepare_android_package(root, qt, build)
+        qmake.append("ANDROID_PACKAGE_SOURCE_DIR=" + str(package))
+    run(qmake, app, environment)
     if args.platform == "android":
         run(["make", "-j3"], app, environment)
         # 日期：2026-11-25；先执行qmake安装目标，将应用so放入部署目录的libs/ABI。
@@ -78,9 +88,7 @@ def main():
         if len(settings) != 1:
             raise ValueError("Android部署设置数量错误")
         run([qt / "bin/androiddeployqt", "--input", settings[0], "--output", app / "android-build",
-             "--android-platform", "android-35", "--jdk", environment["JAVA_HOME"], "--gradle", "--no-build"], app, environment)
-        modernize_android(app / "android-build")
-        run(["sh", "./gradlew", "--no-daemon", "assembleDebug"], app / "android-build", environment)
+             "--android-platform", "android-35", "--jdk", environment["JAVA_HOME"], "--gradle"], app, environment)
         artifacts = list((app / "android-build/build/outputs/apk").rglob("*.apk"))
         if not artifacts:
             raise ValueError("未生成APK")

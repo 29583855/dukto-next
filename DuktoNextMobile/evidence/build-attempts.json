@@ -140,6 +140,16 @@
       "reason": "androiddeployqt单传--no-build使用默认Ant布局，没有生成Gradle模板",
       "fix": "同时指定--gradle --no-build生成模板，再升级和构建",
       "deviceTestsPassed": false
+    },
+    {
+      "runId": 45597875821,
+      "jobId": 139148659962,
+      "commit": "98ee98cb",
+      "platform": "android",
+      "result": "native_passed_deployment_templates_missing",
+      "reason": "--gradle --no-build仍不生成模板；核对Qt源码确认--no-build跳过模板、自定义源码、资源及属性准备，先前Ant布局诊断不完整",
+      "fix": "构建项目私有Gradle8.9/AGP8.7.3模板，由完整androiddeployqt负责复制模板和生成资源，移除--no-build",
+      "deviceTestsPassed": false
     }
   ]
 }
