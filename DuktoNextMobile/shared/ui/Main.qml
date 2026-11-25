@@ -175,7 +175,7 @@ Rectangle {
                                 root.targetHost = modelData.address;
                                 root.targetPort = modelData.port;
                                 hostInput.text = modelData.address;
-                                portInput.value = modelData.port;
+                                portInput.text = String(modelData.port);
                                 sendDialog.open();
                             }
 
@@ -529,10 +529,10 @@ Rectangle {
         DropArea {
             objectName: "sendDropArea"
             anchors.fill: parent
-            enabled: !controller.busy && hostInput.text.trim().length > 0
+            enabled: !controller.busy && portInput.acceptableInput && hostInput.text.trim().length > 0
             onEntered: drag.accepted = drag.hasUrls
             onDropped: {
-                if (controller.sendDropped(hostInput.text.trim(), portInput.value, drop.urls)) {
+                if (controller.sendDropped(hostInput.text.trim(), Number(portInput.text), drop.urls)) {
                     drop.acceptProposedAction();
                     sendDialog.close();
                 } else {
@@ -566,6 +566,7 @@ Rectangle {
                     id: hostInput
 
                     objectName: "hostInput"
+                    Accessible.name: "目标 IP 或主机名"
                     width: parent.width
                     placeholderText: "192.168.1.10"
                     selectByMouse: true
@@ -578,13 +579,19 @@ Rectangle {
                         text: "端口"
                     }
 
-                    SpinBox {
+                    // 日期：2026-11-26；数字输入框向两平台读屏暴露端口，并拒绝空值及越界端口。
+                    TextField {
                         id: portInput
 
-                        from: 1
-                        to: 65535
-                        value: 4644
-                        editable: true
+                        objectName: "portInput"
+                        Accessible.name: "目标端口"
+                        text: "4644"
+                        inputMethodHints: Qt.ImhDigitsOnly
+                        selectByMouse: true
+                        validator: IntValidator {
+                            bottom: 1
+                            top: 65535
+                        }
                     }
 
                 }
@@ -596,10 +603,10 @@ Rectangle {
                         objectName: "sendAction" + index
                         width: parent.width
                         text: modelData
-                        enabled: !controller.busy && hostInput.text.trim().length > 0 && (index !== 1 || controller.clipboardAvailable)
+                        enabled: !controller.busy && portInput.acceptableInput && hostInput.text.trim().length > 0 && (index !== 1 || controller.clipboardAvailable)
                         onClicked: {
                             root.targetHost = hostInput.text.trim();
-                            root.targetPort = portInput.value;
+                            root.targetPort = Number(portInput.text);
                             if (index === 0) {
                                 textEditor.readOnly = false;
                                 textEditor.text = "";
@@ -626,9 +633,9 @@ Rectangle {
                     width: parent.width
                     visible: Number(mobileFiles.incoming.files || 0) > 0
                     text: "发送系统分享文件（" + (mobileFiles.incoming.files || 0) + "项）"
-                    enabled: !controller.busy && !mobileFiles.busy && hostInput.text.trim().length > 0
+                    enabled: !controller.busy && !mobileFiles.busy && portInput.acceptableInput && hostInput.text.trim().length > 0
                     onClicked: {
-                        if (controller.sendSharedFiles(hostInput.text.trim(), portInput.value))
+                        if (controller.sendSharedFiles(hostInput.text.trim(), Number(portInput.text)))
                             sendDialog.close();
                     }
                 }
@@ -638,10 +645,10 @@ Rectangle {
                     width: parent.width
                     visible: String(mobileFiles.incoming.text || "").length > 0
                     text: "查看系统分享文字"
-                    enabled: !controller.busy && !mobileFiles.busy && hostInput.text.trim().length > 0
+                    enabled: !controller.busy && !mobileFiles.busy && portInput.acceptableInput && hostInput.text.trim().length > 0
                     onClicked: {
                         root.targetHost = hostInput.text.trim();
-                        root.targetPort = portInput.value;
+                        root.targetPort = Number(portInput.text);
                         textEditor.readOnly = false;
                         textEditor.text = String(mobileFiles.incoming.text || "");
                         textDialog.sharedDraft = true;

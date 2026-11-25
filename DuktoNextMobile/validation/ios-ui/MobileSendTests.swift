@@ -29,15 +29,18 @@ final class MobileSendTests: XCTestCase {
         XCTAssertTrue(manual.waitForExistence(timeout: 15))
         manual.tap()
         capture(app, "target")
-        let fields = app.textFields
-        XCTAssertTrue(fields.element(boundBy: 1).waitForExistence(timeout: 10))
-        let host = fields.element(boundBy: 0)
+        let host = app.textFields["目标 IP 或主机名"]
+        XCTAssertTrue(host.waitForExistence(timeout: 10))
         host.tap()
         host.typeText("127.0.0.1")
-        let port = fields.element(boundBy: 1)
+        let port = app.textFields["目标端口"]
+        XCTAssertTrue(port.waitForExistence(timeout: 10))
         port.tap()
         port.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 10))
-        port.typeText("49231\n")
+        port.typeText("49231")
+        // 日期：2026-11-26；从实际字段读取目标值，避免键盘删除失败后误向其他端口发送。
+        XCTAssertEqual(host.value as? String, "127.0.0.1")
+        XCTAssertEqual(port.value as? String, "49231")
         let textAction = app.buttons["发送文字"]
         XCTAssertTrue(textAction.waitForExistence(timeout: 5))
         textAction.tap()
