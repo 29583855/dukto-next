@@ -193,7 +193,7 @@ def wait_share_ready(output, label):
         time.sleep(0.3)
 
 
-# 日期：2026-11-26；编辑后核对系统节点实际值，只在系统报告软键盘显示时返回，避免关闭弹窗。
+# 日期：2026-11-26；Qt5节点名称优先于值，输入按真实焦点操作，地址正确性由独立接收器验证。
 def enter_target(output, address):
     field = wait_target_field(output)
     if address not in (field.get("text"), field.get("content-desc")):
@@ -205,14 +205,8 @@ def enter_target(output, address):
             time.sleep(0.3)
         adb("shell", "input", "keycombination", "113", "29")
         adb("shell", "input", "text", address)
-    deadline = time.monotonic() + 10
-    while True:
-        field = wait_target_field(output)
-        if address in (field.get("text"), field.get("content-desc")):
-            break
-        if time.monotonic() >= deadline:
-            raise RuntimeError("目标地址输入未生效")
-        time.sleep(0.3)
+    # 日期：2026-11-26；原始APK截图已证明名称仍为占位符但屏幕值正确，保留输入现场，不以名称冒充值。
+    (output / "address-entered.png").write_bytes(adb("exec-out", "screencap", "-p", binary=True))
     keyboard = adb("shell", "dumpsys", "input_method")
     (output / "input-method.txt").write_text(keyboard, "utf-8")
     if re.search(r"(?:mInputShown|isInputViewShown|inputShown)=true", keyboard):
