@@ -1,11 +1,12 @@
 """日期：2026-11-26；经真实Android系统文档选择器取消、重选和发送，独立核对文件。"""
 from pathlib import Path
+import hashlib
 import re
 import socket
 import time
 import uuid
 
-from android_emulator import adb
+from android_emulator import adb, sandbox, send_r6, wait_for_file
 from android_send import (click_label, enter_target, find_label, receive_files,
                           ui_tree)
 
@@ -78,3 +79,62 @@ def verify_saf_file_send(output):
                   processRestarts=0, sendRetries=0, deviceTest=False,
                   wifiDiscoveryTest=False, utf8Path=False, emptyFile=False)
     return result
+
+
+# 日期：2026-11-26；通过实际接收器建立样本，再从产品文件浏览器调用系统导出并逐字节读回。
+def verify_saf_file_export(output):
+    output = Path(output) / "saf-file-export"
+    output.mkdir(parents=True, exist_ok=True)
+    pid = adb("shell", "pidof", "org.duktonext.mobile").strip()
+    directories = sandbox("find", ".", "-type", "d", "-name", "Documents").splitlines()
+    if len(directories) != 1 or not directories[0].startswith("./"):
+        raise RuntimeError("无法唯一定位接收目录")
+    name = "a-export-probe-" + uuid.uuid4().hex + ".bin"
+    payload = "系统文件导出真实写回 / SAF\n".encode("utf-8") + bytes(range(256)) * 257
+    port = int(adb("forward", "tcp:0", "tcp:4644").strip())
+    try:
+        send_r6(port, [(name, payload)])
+        wait_for_file(directories[0] + "/" + name, payload)
+    finally:
+        adb("forward", "--remove", "tcp:" + str(port))
+    click_label(output, "application-files", "应用文件")
+    click_label(output, "export-file", name)
+    wait_picker(output, "export-picker")
+    # 日期：2026-11-26；第一次取消后从同一文件重新打开，验证导出回调也能正确解忙。
+    adb("shell", "input", "keyevent", "KEYCODE_BACK")
+    click_label(output, "export-reopen", name)
+    open_downloads(output)
+    deadline = time.monotonic() + 15
+    while True:
+        tree = ui_tree(output, "export-save")
+        labels = [label for label in ("Save", "SAVE") if find_label(tree, label) is not None]
+        if labels:
+            click_label(output, "export-confirm", labels[0])
+            break
+        if time.monotonic() >= deadline:
+            raise RuntimeError("系统导出选择器缺少可用保存按钮")
+        time.sleep(0.3)
+    deadline = time.monotonic() + 30
+    while True:
+        try:
+            actual = adb("exec-out", "cat", "/sdcard/Download/" + name, binary=True)
+        except RuntimeError as error:
+            if "No such file" not in str(error):
+                raise
+            actual = None
+        tree = ui_tree(output, "export-completed")
+        if actual == payload and find_label(tree, "已完成系统导出") is not None:
+            break
+        if time.monotonic() >= deadline:
+            raise RuntimeError("导出文件内容或产品完成状态核对失败")
+        time.sleep(0.3)
+    if adb("shell", "pidof", "org.duktonext.mobile").strip() != pid:
+        raise RuntimeError("导出期间产品进程重启")
+    (output / "export-completed.png").write_bytes(adb("exec-out", "screencap", "-p", binary=True))
+    (output / "export-logcat.txt").write_text(adb("logcat", "-d", "--pid=" + pid), "utf-8")
+    return dict(passed=True, systemDocumentPicker=True, realUiActions=True,
+                receiveBeforeExport=True, pickerCancelAndReopen=True,
+                exportedFileReadBack=True, bytes=len(payload),
+                sha256=hashlib.sha256(payload).hexdigest(), fileName=name,
+                processRestarts=0, deviceTest=False, wifiDiscoveryTest=False,
+                directoryExportTest=False, cloudProviderTest=False)

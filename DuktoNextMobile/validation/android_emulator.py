@@ -123,11 +123,12 @@ def main():
     parser.add_argument("--r6-file-send", action="store_true")
     parser.add_argument("--r6-cold-file-send", action="store_true")
     parser.add_argument("--saf-file-send", action="store_true")
+    parser.add_argument("--saf-file-export", action="store_true")
     args = parser.parse_args()
     if args.r6_file_send and not args.r6_send:
         parser.error("--r6-file-send requires --r6-send for the same onboarding and helper session")
-    if args.saf_file_send and not args.r6_send:
-        parser.error("--saf-file-send requires the text-send onboarding and helper session")
+    if (args.saf_file_send or args.saf_file_export) and not args.r6_send:
+        parser.error("SAF gates require the text-send onboarding and helper session")
     if args.r6_cold_file_send and not args.r6_file_send:
         parser.error("--r6-cold-file-send requires the warm file-send gate")
     args.output.mkdir(parents=True, exist_ok=True)
@@ -213,6 +214,10 @@ def main():
             from android_documents import verify_saf_file_send
             receipt["safFileSend"] = verify_saf_file_send(args.output)
             receipt["steps"].append("productionApkSafSelectCancelReopenSendAndHash")
+        if args.saf_file_export:
+            from android_documents import verify_saf_file_export
+            receipt["safFileExport"] = verify_saf_file_export(args.output)
+            receipt["steps"].append("productionApkSafExportCancelReopenAndReadBack")
         receipt["passed"] = True
         receipt["visualReviewPending"] = True
     except Exception as error:

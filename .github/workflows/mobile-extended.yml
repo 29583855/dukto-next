@@ -69,7 +69,7 @@ jobs:
           profile: pixel_2
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
-          script: python -X utf8 DuktoNextMobile/validation/android_emulator.py --apk "$ORIGINAL_APK" --output DuktoNextMobile/build-emulator --sha256 "$APK_SHA256" --source "$APK_SOURCE" --r6-receive --r6-send --r6-file-send --r6-cold-file-send --saf-file-send
+          script: python -X utf8 DuktoNextMobile/validation/android_emulator.py --apk "$ORIGINAL_APK" --output DuktoNextMobile/build-emulator --sha256 "$APK_SHA256" --source "$APK_SOURCE" --r6-receive --r6-send --r6-file-send --r6-cold-file-send --saf-file-send --saf-file-export
       - uses: actions/upload-artifact@v4
         if: always()
         with:
