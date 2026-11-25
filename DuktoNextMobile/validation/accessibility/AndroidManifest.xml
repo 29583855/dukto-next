@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 日期：2026-11-25；仅模拟器验收使用的系统无障碍服务，不进入产品APK。 -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="org.duktonext.validation">
+    <uses-sdk android:minSdkVersion="29" android:targetSdkVersion="35" />
+    <application android:label="Dukto validation accessibility" android:hasCode="true">
+        <service android:name=".ValidationAccessibility" android:exported="true"
+                 android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter><action android:name="android.accessibilityservice.AccessibilityService" /></intent-filter>
+            <meta-data android:name="android.accessibilityservice" android:resource="@xml/service" />
+        </service>
+    </application>
+</manifest>

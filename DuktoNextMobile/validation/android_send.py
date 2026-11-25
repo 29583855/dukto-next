@@ -10,6 +10,7 @@ import uuid
 import xml.etree.ElementTree as ET
 
 from android_emulator import adb
+from android_accessibility import accessibility_session
 
 
 # 日期：2026-11-25；只接受完整有界字节，截断和超时不能算作发送完成。
@@ -92,16 +93,19 @@ def click_label(output, stage, label):
 
 
 # 日期：2026-11-25；系统分享→指定目标→发送均经真实Activity和QML控件，不注入测试控制器。
-def verify_text_send(output):
+def verify_text_send_ui(output):
     output = Path(output) / "r6-send"
     output.mkdir(parents=True, exist_ok=True)
     original_pid = adb("shell", "pidof", "org.duktonext.mobile").strip()
+    # 日期：2026-11-25；先通过系统真实授权按钮关闭首次通知弹窗，再操作产品欢迎页。
     tree = ui_tree(output, "initial")
-    welcome = find_label(tree, "开始使用")
-    if welcome is not None:
-        tap_node(welcome)
-    # 日期：2026-11-25；本项验证允许通知后的正常发送，拒绝授权场景另行验收。
-    adb("shell", "pm", "grant", "org.duktonext.mobile", "android.permission.POST_NOTIFICATIONS")
+    permission = next((node for node in tree.iter("node")
+                       if node.get("resource-id", "").endswith(":id/permission_allow_button")), None)
+    if permission is not None:
+        tap_node(permission)
+    else:
+        adb("shell", "pm", "grant", "org.duktonext.mobile", "android.permission.POST_NOTIFICATIONS")
+    click_label(output, "welcome", "开始使用")
     text = "原始APK真实界面发送：中文与空格 / UTF-8 " + uuid.uuid4().hex
     command = ["am", "start", "-W", "-n", "org.duktonext.mobile/.DuktoActivity",
                "-a", "android.intent.action.SEND", "-t", "text/plain",
@@ -137,6 +141,13 @@ def verify_text_send(output):
     (output / "send-completed.png").write_bytes(adb("exec-out", "screencap", "-p", binary=True))
     result.update(passed=True, transport="Android emulator 10.0.2.2 TCP4644 to independent host receiver",
                   systemShareText=True, realUiActions=True, notificationGranted=True,
+                  validationAccessibilityService=True,
                   sendRetries=0, processRestarts=0, deviceTest=False, fileSendTest=False,
                   wifiDiscoveryTest=False)
     return result
+
+
+# 日期：2026-11-25；独立系统无障碍服务仅辅助获取真实控件，结束时清理，不注入应用业务。
+def verify_text_send(output):
+    with accessibility_session(Path(output)):
+        return verify_text_send_ui(output)

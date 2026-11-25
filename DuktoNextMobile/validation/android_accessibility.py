@@ -1,0 +1,67 @@
+"""日期：2026-11-25；为模拟器启用独立无障碍服务，产品APK及业务状态保持原样。"""
+from contextlib import contextmanager
+import os
+from pathlib import Path
+import subprocess
+import time
+import zipfile
+
+from android_emulator import adb
+
+
+# 日期：2026-11-25；工具失败立即中止，SDK路径和构建文件仅来自本次验收目录。
+def run(*command):
+    subprocess.run([str(value) for value in command], check=True, capture_output=True, timeout=90)
+
+
+# 日期：2026-11-25；使用SDK构建无网络权限的辅助APK，不重签或修改待验产品APK。
+def build_helper(output):
+    source = Path(__file__).resolve().parent / "accessibility"
+    sdk = Path(os.environ["ANDROID_SDK_ROOT"])
+    tools = sdk / "build-tools/35.0.0"
+    android = sdk / "platforms/android-35/android.jar"
+    build = output / "accessibility-helper"
+    classes, dex = build / "classes", build / "dex"
+    classes.mkdir(parents=True, exist_ok=True)
+    dex.mkdir(exist_ok=True)
+    run("javac", "-source", "8", "-target", "8", "-bootclasspath", android,
+        "-d", classes, source / "ValidationAccessibility.java")
+    run(tools / "d8", "--lib", android, "--output", dex, *classes.rglob("*.class"))
+    unsigned, aligned, signed = [build / name for name in ["unsigned.apk", "aligned.apk", "helper.apk"]]
+    run(tools / "aapt", "package", "-f", "-M", source / "AndroidManifest.xml",
+        "-I", android, "-S", source / "res", "-F", unsigned)
+    with zipfile.ZipFile(unsigned, "a", zipfile.ZIP_DEFLATED) as bundle:
+        bundle.write(dex / "classes.dex", "classes.dex")
+    key = build / "validation.jks"
+    run("keytool", "-genkeypair", "-keystore", key, "-storepass", "android",
+        "-keypass", "android", "-alias", "validation", "-keyalg", "RSA",
+        "-validity", "2", "-dname", "CN=Dukto Emulator Validation")
+    run(tools / "zipalign", "-f", "4", unsigned, aligned)
+    run(tools / "apksigner", "sign", "--ks", key, "--ks-pass", "pass:android",
+        "--out", signed, aligned)
+    return signed
+
+
+# 日期：2026-11-25；持续启用系统服务避免单次dump退出时Qt撤下虚拟控件树，最终还原设置。
+@contextmanager
+def accessibility_session(output):
+    original = adb("shell", "settings", "get", "secure", "enabled_accessibility_services").strip()
+    enabled = adb("shell", "settings", "get", "secure", "accessibility_enabled").strip()
+    component = "org.duktonext.validation/.ValidationAccessibility"
+    apk = build_helper(output)
+    adb("install", "-r", str(apk), timeout=90)
+    try:
+        services = component if original in ("null", "") else original + ":" + component
+        adb("shell", "settings", "put", "secure", "enabled_accessibility_services", services)
+        adb("shell", "settings", "put", "secure", "accessibility_enabled", "1")
+        time.sleep(1)
+        (output / "accessibility-services.txt").write_text(
+            adb("shell", "dumpsys", "accessibility"), "utf-8")
+        yield
+    finally:
+        for name, value in [("enabled_accessibility_services", original), ("accessibility_enabled", enabled)]:
+            if value == "null":
+                adb("shell", "settings", "delete", "secure", name)
+            else:
+                adb("shell", "settings", "put", "secure", name, value)
+        adb("uninstall", "org.duktonext.validation")
