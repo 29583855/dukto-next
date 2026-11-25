@@ -61,8 +61,10 @@ def receive_files(connection, fixtures):
     if len(expected) != len(fixtures):
         raise ValueError("验收样本名称重复")
     count, total = struct.unpack("<qq", receive_exact(connection, 16))
-    if count != len(fixtures) or total != sum(len(data) for data in expected.values() if data is not None):
-        raise RuntimeError("APK文件批次条目数或总长错误")
+    expected_total = sum(len(data) for data in expected.values() if data is not None)
+    if count != len(fixtures) or total != expected_total:
+        raise RuntimeError("APK文件批次条目数或总长错误: actual=" + str((count, total)) +
+                           "; expected=" + str((len(fixtures), expected_total)))
     files = []
     for _ in range(count):
         name = bytearray()

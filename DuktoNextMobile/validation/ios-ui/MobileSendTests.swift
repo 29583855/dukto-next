@@ -15,28 +15,23 @@ final class MobileSendTests: XCTestCase {
         print("MOBILE_UI_TREE " + name + "\n" + app.debugDescription)
     }
 
-    // 日期：2026-11-26；首次滑行教学遮住键盘，按真实Preview节点和失败截图中的Continue关闭。
+    // 日期：2026-11-26；教学正文消失才表示关闭，Preview是普通键盘也保留的内部节点。
     @MainActor
     func dismissKeyboardTeaching(_ app: XCUIApplication) {
-        let preview = app.descendants(matching: .any)
-            .matching(identifier: "UIKeyboardLayoutStar Preview").firstMatch
-        let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
-        let appContinue = app.buttons["Continue"]
-        let systemContinue = springboard.buttons["Continue"]
-        if preview.waitForExistence(timeout: 3) {
+        let teaching = app.staticTexts[
+            "Speed up your typing by sliding your finger across the letters to compose a word."
+        ]
+        if teaching.waitForExistence(timeout: 3) {
             capture(app, "keyboard-teaching-preview")
-            capture(springboard, "keyboard-teaching-system")
-            if appContinue.exists && appContinue.isHittable {
-                appContinue.tap()
-            } else if systemContinue.exists && systemContinue.isHittable {
-                systemContinue.tap()
-            } else {
-                // 日期：2026-11-26；run45696801627真屏幕的Continue位于中下方，教学未导出按钮节点。
-                app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.948)).tap()
-            }
+            let proceed = app.buttons["Continue"]
+            XCTAssertTrue(proceed.waitForExistence(timeout: 5))
+            XCTAssertTrue(proceed.isHittable)
+            proceed.tap()
             let closed = NSPredicate(format: "exists == false")
-            expectation(for: closed, evaluatedWith: preview)
+            expectation(for: closed, evaluatedWith: teaching)
             waitForExpectations(timeout: 10)
+            XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5))
+            capture(app, "keyboard-teaching-dismissed")
         }
     }
 

@@ -171,8 +171,18 @@ def seed_external_tree(output, root):
         else:
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(data)
-    adb("shell", "mkdir", "-p", "/sdcard/Download")
-    adb("push", str(seed / root), "/sdcard/Download/" + root)
+    # 日期：2026-11-26；逐项播种并读回，避免ADB递归推送遗漏空目录或媒体提供器未同步。
+    for name, data in fixtures:
+        destination = "/sdcard/Download/" + name
+        if data is None:
+            adb("shell", shlex.join(["mkdir", "-p", destination]))
+        else:
+            adb("push", str(seed / name), destination)
+            adb("shell", "am", "broadcast", "-a", "android.intent.action.MEDIA_SCANNER_SCAN_FILE",
+                "-d", "file://" + destination)
+    verify_tree_content(fixtures, external=True)
+    (output / "external-seed-verified.txt").write_text(
+        adb("shell", shlex.join(["find", "/sdcard/Download/" + root])), "utf-8")
     return fixtures
 
 

@@ -1,0 +1,21 @@
+{
+  "date": "2026-11-26",
+  "passed": false,
+  "run": 45699534221,
+  "sourceCommit": "d2bad14d",
+  "apkSourceCommit": "659a2b44f1cec05e45ea56b9ec18b6a28ab19c22",
+  "job": 139505676518,
+  "artifact": 15061674974,
+  "previousStagesPassed": [
+    "32批接收",
+    "文字发送",
+    "冷热content文件分享",
+    "SAF单文件取消重开发送",
+    "SAF单文件取消重开导出"
+  ],
+  "failure": "目录实际连接的批次头与5条33047字节样本不符；旧解析器未输出实际数值",
+  "causeConfirmed": false,
+  "observations": "系统授权成功；提供器列表只有nested和zero.bin，没有空目录；私有导入仅记录zero.bin文件",
+  "fix": "逐项mkdir/push并逐字节读回外部样本后再开始产品操作；失败输出实际/预期条目数和字节数",
+  "retestPassed": false
+}
