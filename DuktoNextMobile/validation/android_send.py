@@ -184,6 +184,42 @@ def click_label(output, stage, label, scroll=False):
         time.sleep(0.3)
 
 
+# 日期：2026-11-26；先等待异步分享摘要，避免顶栏插入后按旧控件坐标点击。
+def wait_share_ready(output, label):
+    deadline = time.monotonic() + 15
+    while find_label(ui_tree(output, "share-ready"), label) is None:
+        if time.monotonic() >= deadline:
+            raise RuntimeError("系统分享摘要未就绪: " + label)
+        time.sleep(0.3)
+
+
+# 日期：2026-11-26；编辑后核对系统节点实际值，只在系统报告软键盘显示时返回，避免关闭弹窗。
+def enter_target(output, address):
+    field = wait_target_field(output)
+    if address not in (field.get("text"), field.get("content-desc")):
+        tap_node(field)
+        focus_deadline = time.monotonic() + 10
+        while wait_target_field(output).get("focused") != "true":
+            if time.monotonic() >= focus_deadline:
+                raise RuntimeError("目标地址框未获得系统焦点")
+            time.sleep(0.3)
+        adb("shell", "input", "keycombination", "113", "29")
+        adb("shell", "input", "text", address)
+    deadline = time.monotonic() + 10
+    while True:
+        field = wait_target_field(output)
+        if address in (field.get("text"), field.get("content-desc")):
+            break
+        if time.monotonic() >= deadline:
+            raise RuntimeError("目标地址输入未生效")
+        time.sleep(0.3)
+    keyboard = adb("shell", "dumpsys", "input_method")
+    (output / "input-method.txt").write_text(keyboard, "utf-8")
+    if re.search(r"(?:mInputShown|isInputViewShown|inputShown)=true", keyboard):
+        adb("shell", "input", "keyevent", "KEYCODE_BACK")
+    wait_target_field(output)
+
+
 # 日期：2026-11-25；系统分享→指定目标→发送均经真实Activity和QML控件，不注入测试控制器。
 def verify_text_send_ui(output):
     output = Path(output) / "r6-send"
@@ -206,11 +242,9 @@ def verify_text_send_ui(output):
     (output / "share-launch.txt").write_text(launch, "utf-8")
     if "Status: ok" not in launch:
         raise RuntimeError("系统分享Activity未正常启动")
+    wait_share_ready(output, "系统分享：0项文件，含文字。请选择设备发送，或在服务器页上传。")
     click_label(output, "manual", "IP 连接 · 发送到指定设备")
-    field = wait_target_field(output)
-    tap_node(field)
-    adb("shell", "input", "text", "10.0.2.2")
-    adb("shell", "input", "keyevent", "KEYCODE_BACK")
+    enter_target(output, "10.0.2.2")
     click_label(output, "shared-text", "查看系统分享文字", scroll=True)
     (output / "send-editor.png").write_bytes(adb("exec-out", "screencap", "-p", binary=True))
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as listener:
@@ -251,13 +285,9 @@ def verify_file_send(output):
     (output / "share-launch.txt").write_text(launch, "utf-8")
     if "Status: ok" not in launch:
         raise RuntimeError("系统文件分享来源Activity未正常启动")
+    wait_share_ready(output, "系统分享：2项文件。请选择设备发送，或在服务器页上传。")
     click_label(output, "manual", "IP 连接 · 发送到指定设备")
-    field = wait_target_field(output)
-    if "10.0.2.2" not in (field.get("text"), field.get("content-desc")):
-        tap_node(field)
-        adb("shell", "input", "keycombination", "113", "29")
-        adb("shell", "input", "text", "10.0.2.2")
-        adb("shell", "input", "keyevent", "KEYCODE_BACK")
+    enter_target(output, "10.0.2.2")
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as listener:
         listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         listener.bind(("0.0.0.0", 4644))

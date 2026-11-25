@@ -98,6 +98,7 @@ public final class ValidationAccessibility extends AccessibilityService {
         xml.attribute(null, "package", value(node.getPackageName()));
         xml.attribute(null, "enabled", Boolean.toString(node.isEnabled()));
         xml.attribute(null, "editable", Boolean.toString(node.isEditable()));
+        xml.attribute(null, "focused", Boolean.toString(node.isFocused()));
         xml.attribute(null, "clickable", Boolean.toString(node.isClickable()));
         xml.attribute(null, "scrollable", Boolean.toString(node.isScrollable()));
         xml.attribute(null, "visible-to-user", Boolean.toString(node.isVisibleToUser()));
