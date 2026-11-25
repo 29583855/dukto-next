@@ -2,7 +2,7 @@ name: Mobile complete Qt iOS simulator validation
 on:
   push:
     branches: [codex/mobile-platforms]
-    paths: ['DuktoNextMobile/validation/build_ios_simulator.py', 'DuktoNextMobile/validation/ios_simulator.py', 'DuktoNextMobile/validation/ios_send.py', 'DuktoNextMobile/validation/ios-ui/**', '.github/workflows/mobile-ios-simulator.yml']
+    paths: ['DuktoNextMobile/validation/build_ios_simulator.py', 'DuktoNextMobile/validation/ios_simulator.py', 'DuktoNextMobile/validation/ios_send.py', 'DuktoNextMobile/validation/ios_storage.py', 'DuktoNextMobile/validation/ios-ui/**', '.github/workflows/mobile-ios-simulator.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -55,5 +55,6 @@ jobs:
             DuktoNextMobile/build-ios-simulator/ios-ui.xcresult/**
             DuktoNextMobile/build-ios-simulator/ios-documents.xcresult/**
             DuktoNextMobile/build-ios-simulator/ios-directory.xcresult/**
+            DuktoNextMobile/build-ios-simulator/ios-storage-*.xcresult/**
             ${{ runner.temp }}/dukto-ios-simulator/dependencies/*.log
             ${{ runner.temp }}/dukto-ios-simulator/dependencies/phase-receipt.json
