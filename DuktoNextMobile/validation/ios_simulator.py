@@ -11,7 +11,7 @@ import time
 import uuid
 from PIL import Image, ImageStat
 from android_emulator import send_r6
-from ios_send import verify_text_send
+from ios_send import verify_file_send, verify_text_send
 
 
 # 日期：2026-11-25；Xcode调用有界超时，失败输出直接写入CI日志，不接受静默成功。
@@ -127,6 +127,8 @@ def main():
         run("xcrun", "simctl", "io", device, "screenshot", build / "after-receive.png")
         receipt["r6UiTextSend"] = verify_text_send(device, build)
         receipt["steps"].append("productionUiTextSendAndIndependentWireHash")
+        receipt["systemFileSend"] = verify_file_send(device, build, container / "Documents")
+        receipt["steps"].append("systemFilesCancelReopenAndIndependentWireHash")
         run("kill", "-0", str(pid))
         receipt["passed"] = True
         receipt["visualReviewPending"] = True

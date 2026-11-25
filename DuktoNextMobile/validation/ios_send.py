@@ -7,7 +7,8 @@ import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 
-from android_send import receive_text
+from android_send import receive_files, receive_text
+from android_emulator import send_r6
 
 TEXT = b"Dukto iOS production UI send / ASCII 20261126"
 
@@ -61,6 +62,7 @@ def verify_text_send(device, build):
                 received = executor.submit(receive_one, listener, cancelled)
                 try:
                     command(log, *arguments, "-resultBundlePath", build / "ios-ui.xcresult",
+                            "-only-testing:MobileSendTests/MobileSendTests/testSendTextFromProductionUI",
                             "test-without-building", timeout=480)
                     report.update(received.result(timeout=35))
                 finally:
@@ -73,3 +75,65 @@ def verify_text_send(device, build):
         raise
     finally:
         (build / "ios-ui-send.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", "utf-8")
+
+
+# 日期：2026-11-26；系统文件选择与取消重开必须实际发送接收样本，严格核对正文、条目及EOF。
+def verify_file_send(device, build, documents):
+    sample_name = "a-ios-document-probe.bin"
+    payload = "iOS系统文档选择器真实文件\n".encode("utf-8") + bytes(range(256)) * 257
+    report = {"passed": False, "deviceTest": False, "realUiActions": True,
+              "systemDocumentPicker": True, "pickerCancelAndReopen": False,
+              "wifiDiscoveryTest": False, "cloudProviderTest": False}
+    log = build / "ios-documents-ui.log"
+    try:
+        send_r6(4644, [(sample_name, payload)])
+        deadline = time.monotonic() + 20
+        sample = documents / sample_name
+        while not sample.is_file() or sample.read_bytes() != payload:
+            if time.monotonic() >= deadline:
+                raise RuntimeError("系统选择器样本未由真实R6接收器正确提交")
+            time.sleep(0.1)
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as listener:
+            listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            listener.bind(("127.0.0.1", 49231))
+            listener.listen(1)
+            listener.settimeout(0.25)
+            cancelled = threading.Event()
+
+            # 日期：2026-11-26；独立接收器只等待产品连接，不注入发送数据、不重发。
+            def receive_document():
+                deadline = time.monotonic() + 360
+                while not cancelled.is_set() and time.monotonic() < deadline:
+                    try:
+                        connection, _ = listener.accept()
+                    except socket.timeout:
+                        continue
+                    with connection:
+                        connection.settimeout(30)
+                        return receive_files(connection, [(sample_name, payload)])
+                raise RuntimeError("系统文档选择未产生真实文件发送连接")
+
+            with ThreadPoolExecutor(max_workers=1) as executor:
+                received = executor.submit(receive_document)
+                try:
+                    command(log, "xcodebuild", "-project", build / "ui" / "MobileSendTests.xcodeproj",
+                            "-scheme", "MobileSendTests", "-configuration", "Debug",
+                            "-destination", "platform=iOS Simulator,id=" + device,
+                            "-derivedDataPath", build / "ui-derived", "CODE_SIGNING_ALLOWED=NO",
+                            "CODE_SIGNING_REQUIRED=NO", "-parallel-testing-enabled", "NO",
+                            "-only-testing:MobileSendTests/MobileSendTests/testSendFileFromSystemDocuments",
+                            "-resultBundlePath", build / "ios-documents.xcresult",
+                            "test-without-building", timeout=480)
+                    report.update(received.result(timeout=35))
+                finally:
+                    cancelled.set()
+        report.update(passed=True, pickerCancelAndReopen=True, receiveBeforeSelecting=True,
+                      sendRetries=0, processRestarts=0,
+                      transport="iOS simulator system Files provider to production Qt R6 sender")
+        return report
+    except Exception as error:
+        report["error"] = str(error)
+        raise
+    finally:
+        (build / "ios-documents-send.json").write_text(
+            json.dumps(report, ensure_ascii=False, indent=2) + "\n", "utf-8")

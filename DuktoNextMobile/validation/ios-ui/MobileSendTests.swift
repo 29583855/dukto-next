@@ -128,4 +128,56 @@ final class MobileSendTests: XCTestCase {
         expectation(for: closed, evaluatedWith: submit)
         waitForExpectations(timeout: 15)
     }
+
+    // 日期：2026-11-26；仅按系统提供的实际语义节点点击，未找到时保留完整界面并失败。
+    @MainActor
+    func tapDocumentNode(_ app: XCUIApplication, _ label: String) {
+        let node = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "label == %@", label)).firstMatch
+        XCTAssertTrue(node.waitForExistence(timeout: 15), "系统文件界面缺少节点：" + label)
+        node.tap()
+    }
+
+    // 日期：2026-11-26；接收样本后走真实系统文件选择器，取消重开，再由独立接收器核对发送字节。
+    @MainActor
+    func testSendFileFromSystemDocuments() throws {
+        continueAfterFailure = false
+        let app = XCUIApplication(bundleIdentifier: "org.duktonext.mobile")
+        app.activate()
+        defer { capture(app, "documents-final") }
+        for attempt in 0..<2 {
+            let manual = app.buttons["IP 连接 · 发送到指定设备"]
+            XCTAssertTrue(manual.waitForExistence(timeout: 15))
+            manual.tap()
+            XCTAssertEqual(app.textFields["目标 IP 或主机名"].value as? String, "127.0.0.1")
+            XCTAssertEqual(app.textFields["目标端口"].value as? String, "49231")
+            let files = app.buttons["发送文件"]
+            XCTAssertTrue(files.waitForExistence(timeout: 10))
+            files.tap()
+            capture(app, "documents-picker-" + String(attempt))
+            let cancel = app.buttons["Cancel"]
+            XCTAssertTrue(cancel.waitForExistence(timeout: 15), "系统文档选择器未出现")
+            if attempt == 0 {
+                cancel.tap()
+            }
+        }
+        // 日期：2026-11-26；系统Files可能从Recents开始，按实际Browse入口切到本地应用提供器。
+        let local = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "label == %@", "On My iPhone")).firstMatch
+        if !local.exists {
+            tapDocumentNode(app, "Browse")
+        }
+        capture(app, "documents-locations")
+        tapDocumentNode(app, "On My iPhone")
+        capture(app, "documents-local")
+        tapDocumentNode(app, "Dukto Next")
+        capture(app, "documents-application")
+        tapDocumentNode(app, "a-ios-document-probe.bin")
+        let open = app.buttons["Open"]
+        if open.waitForExistence(timeout: 3) && open.isHittable { open.tap() }
+        let cancelled = app.buttons["Cancel"]
+        let closed = NSPredicate(format: "exists == false")
+        expectation(for: closed, evaluatedWith: cancelled)
+        waitForExpectations(timeout: 20)
+    }
 }
