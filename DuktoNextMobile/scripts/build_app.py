@@ -36,6 +36,8 @@ def main():
     if args.platform == "android":
         ndk = Path(environment["ANDROID_NDK_ROOT"])
         command += ["-DCMAKE_TOOLCHAIN_FILE=" + str(ndk / "build/cmake/android.toolchain.cmake"),
+                    "-DANDROID_SDK_ROOT=" + environment["ANDROID_SDK_ROOT"],
+                    "-DANDROID_SDK_BUILD_TOOLS_REVISION=35.0.0",
                     "-DANDROID_ABI=arm64-v8a", "-DANDROID_PLATFORM=android-29", "-DANDROID_STL=c++_shared"]
     else:
         command += ["-DCMAKE_SYSTEM_NAME=iOS", "-DCMAKE_OSX_SYSROOT=iphoneos",

@@ -63,6 +63,8 @@ int main(int argc, char *argv[]) {
                 // 日期：2026-11-25；切换真实界面并留图，缺少控件或QML告警均使门禁失败。
                 const auto invoke = [root](const char *name, const char *method) {
                     const auto item = root->findChild<QObject *>(QString::fromLatin1(name));
+                    if (!item)
+                        QTextStream(stderr) << "Smoke control missing: " << name << "\n";
                     return item && QMetaObject::invokeMethod(item, method);
                 };
                 bool ok = true;

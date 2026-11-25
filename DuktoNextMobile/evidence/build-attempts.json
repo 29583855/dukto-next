@@ -40,6 +40,26 @@
       "fix": "明确传入Qt5_DIR及CMAKE_FIND_ROOT_PATH，复用已成功的依赖缓存继续应用编译",
       "artifactId": 15010841201,
       "deviceTestsPassed": false
+    },
+    {
+      "runId": 45591036120,
+      "jobId": 139124991288,
+      "commit": "473cc5ec",
+      "platform": "linux-host-ui",
+      "result": "failed_smoke_exit_5",
+      "reason": "第二帧后切换标签失败，QML缺少mainTabs对象名",
+      "fix": "补控件对象名并增加诊断",
+      "deviceTestsPassed": false
+    },
+    {
+      "runId": 45591568583,
+      "jobId": 139126825314,
+      "commit": "da0e6721",
+      "platform": "android",
+      "result": "failed_android_cmake_build_tools",
+      "reason": "Qt5 CMake无法自动确定Android build-tools版本",
+      "fix": "显式SDK路径和35.0.0版本",
+      "deviceTestsPassed": false
     }
   ]
 }

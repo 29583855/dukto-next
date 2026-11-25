@@ -33,6 +33,7 @@ Rectangle {
 
         TabBar {
             id: tabs
+            objectName: "mainTabs"
 
             implicitWidth: 360
             Layout.fillWidth: true
