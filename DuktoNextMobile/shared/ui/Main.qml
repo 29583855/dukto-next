@@ -309,6 +309,9 @@ Rectangle {
             }
 
             Flickable {
+                objectName: "aboutScroll"
+                boundsBehavior: Flickable.StopAtBounds
+                ScrollBar.vertical: ScrollBar {}
                 clip: true
                 contentHeight: about.height + 48
 
@@ -336,7 +339,7 @@ Rectangle {
 
                     Label {
                         textFormat: Text.PlainText
-                        text: "以 Emanuele Colombo 的 Dukto R6 为功能与交互参考。\n新工程采用共用传输核心与独立命令行。"
+                        text: "以 Emanuele Colombo 的 Dukto R6 为功能与交互参考。\n移动端采用与桌面相同的传输核心。"
                         wrapMode: Text.WordWrap
                         Layout.fillWidth: true
                         color: "#777"
@@ -360,7 +363,7 @@ Rectangle {
 
                     Label {
                         textFormat: Text.PlainText
-                        text: "CLI：dukto-cli --help"
+                        text: "手机操作入口：设备、服务器、应用文件与设置"
                         // 日期：2026-11-05；macOS 使用随系统提供的 Menlo，避免不存在的字体别名警告。
                         font.family: Qt.platform.os === "osx" ? "Menlo" : "monospace"
                         color: "#777"
@@ -611,7 +614,7 @@ Rectangle {
 
                 Label {
                     textFormat: Text.PlainText
-                    text: "也可以拖入本地文件或文件夹发送。"
+                    text: "文件与目录通过系统文档选择器导入。截图请先用系统截图，再选择图片文件。"
                     color: "#888"
                     wrapMode: Text.WordWrap
                     Layout.fillWidth: true
@@ -965,7 +968,7 @@ Rectangle {
             spacing: 12
             Label {
                 textFormat: Text.PlainText
-                text: "本项目参考 Dukto R6，并保留跨平台桌面与命令行入口。\n\nR6 兼容传输用于可信局域网；接收目录可在设置中修改。文件默认保留同名原文件。\n\n本程序不向原版旧站点发送匿名统计。"
+                text: "本项目参考 Dukto R6，复用桌面传输核心并适配手机文件授权。\n\nR6 兼容传输用于可信局域网；接收目录可在设置中修改。文件默认保留同名原文件。\n\n本程序不向原版旧站点发送匿名统计。"
                 wrapMode: Text.WordWrap
                 width: parent.width
                 color: "#666"

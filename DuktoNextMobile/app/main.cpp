@@ -52,8 +52,8 @@ int main(int argc, char *argv[]) {
             QObject::connect(&smokeTimer, &QTimer::timeout, &application, [&] {
                 auto root = engine.rootObjects().first();
                 auto window = qobject_cast<QQuickWindow *>(root);
-                const QStringList names{"welcome", "devices", "history", "about",
-                                        "server",  "send",    "files",   "landscape"};
+                const QStringList names{"welcome", "devices", "history",   "about",        "server",
+                                        "send",    "files",   "landscape", "landscape-end"};
                 const auto frame = window ? window->grabWindow() : QImage();
                 if (qmlFailed || frame.isNull() ||
                     !frame.save(QStringLiteral("mobile-smoke-%1.png").arg(names.at(smokeStep)))) {
@@ -83,8 +83,14 @@ int main(int argc, char *argv[]) {
                 } else if (smokeStep == 6) {
                     ok = invoke("mobileFilesDialog", "close");
                     window->resize(820, 430);
+                } else if (smokeStep == 7) {
+                    auto about = root->findChild<QObject *>(QStringLiteral("aboutScroll"));
+                    ok = about &&
+                         about->setProperty("contentY",
+                                            qMax(0.0, about->property("contentHeight").toDouble() -
+                                                          about->property("height").toDouble()));
                 } else {
-                    QTextStream(stdout) << "Mobile QML loaded and eight real views rendered\n";
+                    QTextStream(stdout) << "Mobile QML loaded and nine real views rendered\n";
                     application.exit(0);
                     return;
                 }

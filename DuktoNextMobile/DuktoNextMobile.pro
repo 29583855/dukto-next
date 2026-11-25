@@ -15,7 +15,8 @@ isEmpty(CORE_BUILD): error("Pass CORE_BUILD=/absolute/core-build")
 isEmpty(OPENSSL_PREFIX): error("Pass OPENSSL_PREFIX=/absolute/openssl")
 LIBS += -L$$CORE_BUILD -ldukto-core -ldukto-sql-driver -ldukto-sqlite
 LIBS += -L$$OPENSSL_PREFIX/lib -lssl -lcrypto
-unix:!ios: LIBS += -ldl -lpthread
+unix:!ios:!android: LIBS += -ldl -lpthread
+android: LIBS += -ldl
 android {
     QT += androidextras
     SOURCES += $$PWD/platform/android/platformfiles.cpp

@@ -2,7 +2,7 @@ name: Mobile storage regression
 on:
   push:
     branches: [codex/mobile-platforms]
-    paths: ['DuktoNextMobile/tests/**', 'DuktoNextMobile/app/**', 'DuktoNextMobile/shared/**', 'DuktoNextMobile/CMakeLists.txt', '.github/workflows/mobile-storage.yml']
+    paths: ['DuktoNextMobile/tests/**', 'DuktoNextMobile/app/**', 'DuktoNextMobile/shared/**', 'DuktoNextMobile/tools/**', 'DuktoNextMobile/CMakeLists.txt', '.github/workflows/mobile-storage.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -31,6 +31,13 @@ jobs:
         run: |
           cmake -S DuktoNextMobile -B DuktoNextMobile/build-host -G Ninja -DDUKTO_MOBILE_HOST_CHECK=ON -DCMAKE_BUILD_TYPE=Release
           cmake --build DuktoNextMobile/build-host --parallel 3
+      - name: Exercise real mobile core over loopback sockets
+        run: |
+          python DuktoNextMobile/tests/interop/legacy_integration.py DuktoNextMobile/build-host/dukto-mobile-probe --report mobile-legacy.json
+          python DuktoNextMobile/tests/interop/service_integration.py DuktoNextMobile/build-host/dukto-mobile-probe --report mobile-service.json
+          for lanes in 1 4 16; do
+            python DuktoNextMobile/tests/interop/transfer_integration.py DuktoNextMobile/build-host/dukto-mobile-probe --threads "$lanes" --report "mobile-next-${lanes}.json"
+          done
       - name: Render actual QML with isolated user data
         env:
           QT_QUICK_BACKEND: software
@@ -41,5 +48,7 @@ jobs:
         if: always()
         with:
           name: mobile-host-render-${{ github.run_id }}
-          path: mobile-smoke-*.png
+          path: |
+            mobile-smoke-*.png
+            mobile-*.json
           if-no-files-found: ignore

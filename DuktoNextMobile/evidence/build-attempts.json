@@ -70,6 +70,26 @@
       "reason": "Qt5 Android构建未提供QThread::create，paralleltransfer.cpp编译失败",
       "fix": "C++14 FunctionThread子类兼容层，平台导入线程一并替换",
       "deviceTestsPassed": false
+    },
+    {
+      "runId": 45593476242,
+      "jobId": 139133392465,
+      "commit": "148be142",
+      "platform": "android",
+      "result": "failed_application_link",
+      "reason": "核心和应用C++编译通过；最终链接找不到独立libpthread",
+      "fix": "Android使用Bionic内置线程，排除-lpthread",
+      "deviceTestsPassed": false
+    },
+    {
+      "runId": 45587770613,
+      "jobId": 139113671778,
+      "commit": "941bac24",
+      "platform": "ios",
+      "result": "dependencies_passed_app_cmake_failed",
+      "reason": "Qt和OpenSSL源码依赖安装缓存通过；CMake未找到Qt5配置",
+      "fix": "当前脚本显式Qt5_DIR及CMAKE_FIND_ROOT_PATH，等待复验",
+      "deviceTestsPassed": false
     }
   ]
 }

@@ -174,3 +174,10 @@ if(DUKTO_MOBILE_HOST_CHECK)
     target_link_libraries(dukto-mobile-host PRIVATE dukto-core Qt5::Gui Qt5::Qml Qt5::Quick
         Qt5::QuickControls2 Qt5::QuickTemplates2 Qt5::QuickPrivate Qt5::QuickTemplates2Private)
 endif()
+
+# 日期：2026-11-25；测试专用命令行探针与同一移动核心链接，验证真实多进程网络与磁盘结果。
+if(DUKTO_MOBILE_HOST_CHECK)
+    add_executable(dukto-mobile-probe tools/main.cpp tools/input.cpp
+        tools/servicecommands.cpp tools/statecommands.cpp)
+    target_link_libraries(dukto-mobile-probe PRIVATE dukto-core)
+endif()
