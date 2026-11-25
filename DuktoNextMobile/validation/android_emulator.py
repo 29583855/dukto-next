@@ -167,6 +167,13 @@ def main():
         receipt["visualReviewPending"] = True
     except Exception as error:
         receipt["error"] = str(error)
+        # 日期：2026-11-25；保留应用错误界面及真实接收账本，区分连接拒绝与落盘失败。
+        try:
+            (args.output / "failure-screen.png").write_bytes(adb("exec-out", "screencap", "-p", binary=True))
+            (args.output / "failure-receipts.sqlite").write_bytes(
+                sandbox("cat", "./files/history/receipts.sqlite", binary=True))
+        except Exception as capture_error:
+            receipt["receiptCaptureError"] = str(capture_error)
         try:
             (args.output / "failure-sandbox.txt").write_text(
                 sandbox("find", ".", "-maxdepth", "5", "-type", "f"), "utf-8")
