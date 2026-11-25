@@ -44,7 +44,7 @@
         return;
     self.exercised = YES;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC / 2), dispatch_get_main_queue(), ^{
-      if (self.window.windowScene || DuktoActivePresenter() != self.window.rootViewController) {
+      if (DuktoActivePresenter() != self.window.rootViewController) {
           [self record:NO reason:@"传统窗口未找到根展示控制器"];
           return;
       }

@@ -333,6 +333,17 @@
       "fix": "对固定Qt源码的唯一QMAKE_LFLAGS重置点注入16KiB max/common参数，记录前后SHA256，再完整重建；不改写ELF或放宽门禁",
       "artifactId": 15018347373,
       "deviceTestsPassed": false
+    },
+    {
+      "runId": 45611552369,
+      "jobId": 139196094656,
+      "commit": "d609c0a1",
+      "platform": "ios-simulator",
+      "result": "runtime26_automatic_scene_assumption",
+      "reason": "iOS26.2将initWithFrame窗口自动关联Scene；测试误将windowScene非空直接判为失败，未执行控制器比较；真实收据保留，未标记通过",
+      "fix": "分别运行iOS18与26；按实际展示控制器、模态、恢复和隐藏拒绝结果判定，收据保留实际Scene/传统窗口模式",
+      "artifactId": 15019969299,
+      "deviceTestsPassed": false
     }
   ]
 }
