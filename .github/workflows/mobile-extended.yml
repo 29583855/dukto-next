@@ -1,9 +1,23 @@
 name: Mobile installed app and modern SDK validation
 on:
-  push:
-    branches: [codex/mobile-platforms]
-    paths: ['DuktoNextMobile/validation/**', '.github/workflows/mobile-extended.yml']
   workflow_dispatch:
+    inputs:
+      apk_run:
+        description: 原生APK成功构建run
+        required: true
+        default: '45613109226'
+      apk_sha256:
+        description: 已核对APK的SHA256
+        required: true
+        default: '750908dbf8d4b5698b7550966cab251f17a4f81fe932533f12df0e4a03c7c9e6'
+      apk_source:
+        description: APK源码提交
+        required: true
+        default: '45647c484f818ad7b16f10b1b3b03d72b7145f30'
+      ios:
+        description: 同时验证完整iOS26构建
+        type: boolean
+        default: true
 permissions:
   contents: read
   actions: read
@@ -22,8 +36,8 @@ jobs:
           java-version: '17'
       - uses: actions/download-artifact@v4
         with:
-          name: mobile-android-45613109226
-          run-id: 45613109226
+          name: mobile-android-${{ inputs.apk_run }}
+          run-id: ${{ inputs.apk_run }}
           github-token: ${{ github.token }}
           path: ${{ runner.temp }}/mobile-original-apk
       - name: Enable hardware acceleration
@@ -33,6 +47,9 @@ jobs:
           sudo udevadm trigger --name-match=kvm
           python -m pip install Pillow==11.3.0
       - uses: reactivecircus/android-emulator-runner@v2
+        env:
+          APK_SHA256: ${{ inputs.apk_sha256 }}
+          APK_SOURCE: ${{ inputs.apk_source }}
         with:
           api-level: 35
           target: google_apis
@@ -40,7 +57,7 @@ jobs:
           profile: pixel_2
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
-          script: python -X utf8 DuktoNextMobile/validation/android_emulator.py --apk "$RUNNER_TEMP/mobile-original-apk/DuktoNextMobile-android-arm64-debug.apk" --output DuktoNextMobile/build-emulator
+          script: python -X utf8 DuktoNextMobile/validation/android_emulator.py --apk "$RUNNER_TEMP/mobile-original-apk/DuktoNextMobile-android-arm64-debug.apk" --output DuktoNextMobile/build-emulator --sha256 "$APK_SHA256" --source "$APK_SOURCE"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -48,6 +65,7 @@ jobs:
           path: DuktoNextMobile/build-emulator/**
           if-no-files-found: warn
   ios-modern-sdk:
+    if: inputs.ios
     runs-on: macos-15
     timeout-minutes: 35
     steps:
