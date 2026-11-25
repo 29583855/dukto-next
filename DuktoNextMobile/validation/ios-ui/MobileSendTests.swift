@@ -147,6 +147,48 @@ final class MobileSendTests: XCTestCase {
         cell.tap()
     }
 
+    // 日期：2026-11-26；以真实Files导航栏判断选择器出现，目录深层页面可能没有Cancel按钮。
+    @MainActor
+    func documentNavigation(_ app: XCUIApplication) -> XCUIElement {
+        return app.navigationBars["FullDocumentManagerViewControllerNavigationBar"]
+    }
+
+    // 日期：2026-11-26；首次系统Files冷启动限定等待60秒，不依赖仅在部分页面出现的Cancel。
+    @MainActor
+    func waitForDocumentPicker(_ app: XCUIApplication) {
+        XCTAssertTrue(documentNavigation(app).waitForExistence(timeout: 60), "系统Files导航栏未出现")
+    }
+
+    // 日期：2026-11-26；按系统返回按钮逐级回到取消入口，不能把后台Cancel元素或More当成取消。
+    @MainActor
+    func cancelSystemDocuments(_ app: XCUIApplication) {
+        let navigation = documentNavigation(app)
+        for level in 0..<6 {
+            let cancel = navigation.buttons["Cancel"]
+            if cancel.exists && cancel.isHittable {
+                cancel.tap()
+                waitForDocumentPickerClosed(app)
+                return
+            }
+            capture(app, "picker-cancel-navigation-" + String(level))
+            let back = navigation.buttons.matching(NSPredicate(
+                format: "label IN %@", ["On My iPhone", "Browse", "Back", "Dukto Next",
+                                        "a-ios-io-source", "a-ios-io-export", "a-ios-directory-probe"]
+            )).firstMatch
+            XCTAssertTrue(back.waitForExistence(timeout: 5), "系统Files缺少可验证的返回或取消按钮")
+            XCTAssertTrue(back.isHittable)
+            back.tap()
+        }
+        XCTFail("系统Files返回六级后仍缺少取消入口")
+    }
+
+    // 日期：2026-11-26；关闭必须由系统Files导航栏整体消失确认，不能以当前目录没有Cancel误判成功。
+    @MainActor
+    func waitForDocumentPickerClosed(_ app: XCUIApplication) {
+        expectation(for: NSPredicate(format: "exists == false"), evaluatedWith: documentNavigation(app))
+        waitForExpectations(timeout: 30)
+    }
+
     // 日期：2026-11-26；Files冷启动实测约25秒，等待限定60秒；不重发或重启产品以掩盖失败。
     // 日期：2026-11-26；接收样本后走真实系统文件选择器，取消重开，再由独立接收器核对发送字节。
     @MainActor
@@ -165,11 +207,8 @@ final class MobileSendTests: XCTestCase {
             XCTAssertTrue(files.waitForExistence(timeout: 10))
             files.tap()
             capture(app, "documents-picker-" + String(attempt))
-            let cancel = app.buttons["Cancel"]
-            XCTAssertTrue(cancel.waitForExistence(timeout: 60), "系统文档选择器未出现")
-            if attempt == 0 {
-                cancel.tap()
-            }
+            waitForDocumentPicker(app)
+            if attempt == 0 { cancelSystemDocuments(app) }
         }
         // 日期：2026-11-26；Files会记忆应用目录，已看到样本则直接选取；否则按系统按钮和单元导航。
         let sampleName = "a-ios-document-probe.bin"
@@ -194,10 +233,7 @@ final class MobileSendTests: XCTestCase {
         tapDocumentCell(app, sampleName)
         let open = app.buttons["Open"]
         if open.waitForExistence(timeout: 3) && open.isHittable { open.tap() }
-        let cancelled = app.buttons["Cancel"]
-        let closed = NSPredicate(format: "exists == false")
-        expectation(for: closed, evaluatedWith: cancelled)
-        waitForExpectations(timeout: 20)
+        waitForDocumentPickerClosed(app)
     }
 
     // 日期：2026-11-26；真实Files目录选择必须取消后重开，进入授权目录再确认，由独立接收器核对结构。
@@ -217,9 +253,8 @@ final class MobileSendTests: XCTestCase {
             XCTAssertTrue(folder.waitForExistence(timeout: 10))
             folder.tap()
             capture(app, "directory-picker-" + String(attempt))
-            let cancel = app.buttons["Cancel"]
-            XCTAssertTrue(cancel.waitForExistence(timeout: 60))
-            if attempt == 0 { cancel.tap() }
+            waitForDocumentPicker(app)
+            if attempt == 0 { cancelSystemDocuments(app) }
         }
         let folderName = "a-ios-directory-probe"
         if !documentCell(app, folderName).exists {
@@ -244,9 +279,7 @@ final class MobileSendTests: XCTestCase {
         XCTAssertTrue(open.waitForExistence(timeout: 10))
         XCTAssertTrue(open.isHittable)
         open.tap()
-        let cancelled = app.buttons["Cancel"]
-        expectation(for: NSPredicate(format: "exists == false"), evaluatedWith: cancelled)
-        waitForExpectations(timeout: 20)
+        waitForDocumentPickerClosed(app)
     }
 
     // 日期：2026-11-26；只沿系统导航按钮返回应用Files根，不点击后台同名Qt文字。
@@ -289,10 +322,9 @@ final class MobileSendTests: XCTestCase {
             XCTAssertTrue(action.waitForExistence(timeout: 15))
             XCTAssertTrue(action.isEnabled && action.isHittable)
             action.tap()
-            let cancel = app.buttons["Cancel"]
-            XCTAssertTrue(cancel.waitForExistence(timeout: 60))
+            waitForDocumentPicker(app)
             capture(app, "storage-import-picker-" + String(attempt))
-            if attempt == 0 { cancel.tap() }
+            if attempt == 0 { cancelSystemDocuments(app) }
         }
         openApplicationDocuments(app, "a-ios-io-source")
         tapDocumentCell(app, "a-ios-io-source")
@@ -305,8 +337,7 @@ final class MobileSendTests: XCTestCase {
         } else if open.waitForExistence(timeout: 3) && open.isHittable {
             open.tap()
         }
-        expectation(for: NSPredicate(format: "exists == false"), evaluatedWith: app.buttons["Cancel"])
-        waitForExpectations(timeout: 20)
+        waitForDocumentPickerClosed(app)
         expectation(for: NSPredicate(format: "enabled == true"), evaluatedWith: action)
         waitForExpectations(timeout: 20)
     }
@@ -342,10 +373,9 @@ final class MobileSendTests: XCTestCase {
             XCTAssertTrue(action.waitForExistence(timeout: 15))
             XCTAssertTrue(action.isEnabled && action.isHittable)
             action.tap()
-            let cancel = app.buttons["Cancel"]
-            XCTAssertTrue(cancel.waitForExistence(timeout: 60))
+            waitForDocumentPicker(app)
             capture(app, "storage-export-picker-" + String(attempt))
-            if attempt == 0 { cancel.tap() }
+            if attempt == 0 { cancelSystemDocuments(app) }
         }
         openApplicationDocuments(app, "a-ios-io-export")
         tapDocumentCell(app, "a-ios-io-export")
@@ -356,8 +386,7 @@ final class MobileSendTests: XCTestCase {
         XCTAssertTrue(confirm.waitForExistence(timeout: 10), "系统导出缺少完成按钮")
         XCTAssertTrue(confirm.isEnabled && confirm.isHittable)
         confirm.tap()
-        expectation(for: NSPredicate(format: "exists == false"), evaluatedWith: app.buttons["Cancel"])
-        waitForExpectations(timeout: 30)
+        waitForDocumentPickerClosed(app)
         let available = app.buttons["导入文件"]
         expectation(for: NSPredicate(format: "enabled == true"), evaluatedWith: available)
         waitForExpectations(timeout: 15)
