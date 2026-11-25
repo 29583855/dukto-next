@@ -624,6 +624,8 @@ void ServerPanel::setServing(bool enabled, const QString &address, int port) {
                                    QStringLiteral("本机服务端口无法监听"));
             const auto info = listener->publicInfo();
             listener_ = listener.release();
+            servingAddress_ = address;
+            servingPort_ = port;
             identity_ = info;
             connect(listener_, &dukto::ServiceListener::event, this,
                     [this](const QJsonObject &event) {
@@ -669,4 +671,21 @@ QString ServerPanel::chooseCredential() {
 void ServerPanel::disconnectTransfer() {
     if (action_)
         action_->cancel();
+}
+
+// 日期：2026-11-25；后台不保留无限监听，客户端取消保存核心支持的检查点而非伪报成功。
+void ServerPanel::setForeground(bool active) {
+    if (active == foreground_)
+        return;
+    foreground_ = active;
+    if (!active) {
+        disconnectTransfer();
+        if (control_)
+            control_->cancel();
+        restoreServing_ = serving();
+        setServing(false, QString(), 0);
+    } else if (restoreServing_) {
+        restoreServing_ = false;
+        setServing(true, servingAddress_, servingPort_);
+    }
 }

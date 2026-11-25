@@ -17,6 +17,8 @@ class Avatars final : public QObject {
     ~Avatars() override;
     // 日期：2026-11-04；只监听 R6 约定的传输端口加一，65535 不会溢出成零。
     bool listen(quint16 transferPort);
+    // 日期：2026-11-25；后台关闭头像服务并取消请求，避免后台继续建立连接。
+    void stop();
     // 日期：2026-11-04；按当前设备集合维护最多 256 个缓存，至多四个并发请求。
     void synchronize(const QJsonArray &peers, bool refresh = false);
     // 日期：2026-11-04；返回经过尺寸检查和重新编码的数据 URL，失败时为空。

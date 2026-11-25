@@ -25,10 +25,25 @@ Discovery::Discovery(QObject *parent) : QObject(parent) {
     clock_.start();
 }
 
-// 日期：2026-11-04；仅已绑定实例发送退出广播。
+// 日期：2026-11-25；析构只发送退出及关闭套接字，避免成员销毁时重新通知宿主。
 Discovery::~Discovery() {
     if (socket_.state() == QAbstractSocket::BoundState)
         broadcast(QByteArray(1, '\x03'));
+    timer_.stop();
+    socket_.close();
+    broadcastSocket_.close();
+}
+
+// 日期：2026-11-25；清空在线快照并关闭两个UDP入口，不让后台应用继续宣称可接收。
+void Discovery::stop() {
+    if (socket_.state() == QAbstractSocket::BoundState)
+        broadcast(QByteArray(1, '\x03'));
+    timer_.stop();
+    socket_.close();
+    broadcastSocket_.close();
+    readQueued_.clear();
+    peers_.clear();
+    emit changed();
 }
 
 // 日期：2026-11-10；共享标准广播端口，自定义接收端口另设独占UDP回复入口，兼容原版1/2/4/5握手。

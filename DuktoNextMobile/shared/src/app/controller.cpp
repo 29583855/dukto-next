@@ -11,6 +11,7 @@
 #include "mobilefiles.h"
 
 #include <QClipboard>
+#include <QColor>
 #include <QDateTime>
 #include <QDesktopServices>
 #include <QDir>
@@ -859,4 +860,36 @@ void Controller::changeBatchPage(int page) {
         status_ = error.message;
         emit stateChanged();
     }
+}
+
+// 日期：2026-11-25；原生选择器短暂Inactive不在此暂停，Hidden/Suspended才关闭前台服务。
+void Controller::setForeground(bool active) {
+    if (active == foreground_)
+        return;
+    foreground_ = active;
+    if (!active) {
+        cancel();
+        discovery_.stop();
+        avatars_.stop();
+        listener_->close();
+        server_.setForeground(false);
+        status_ =
+            QStringLiteral("应用已进入后台，前台收发已停止；回到前台后可重试或恢复支持的Next任务");
+    } else {
+        server_.setForeground(true);
+        if (!listener_->listen(QHostAddress::Any, diagnosticPort_)) {
+            status_ = QStringLiteral("返回前台后端口%1监听失败：%2")
+                          .arg(diagnosticPort_)
+                          .arg(listener_->errorString());
+        } else {
+            const bool discovered = discovery_.start(diagnosticPort_, username());
+            const bool avatar = avatars_.listen(diagnosticPort_);
+            status_ = QStringLiteral("已返回前台，接收端口%1").arg(diagnosticPort_);
+            if (!discovered)
+                status_ += QStringLiteral("；发现失败：") + discovery_.errorString();
+            if (!avatar)
+                status_ += QStringLiteral("；头像端口不可用");
+        }
+    }
+    emit stateChanged();
 }

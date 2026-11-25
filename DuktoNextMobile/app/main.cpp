@@ -26,6 +26,14 @@ int main(int argc, char *argv[]) {
             return 2;
         MobileFiles files;
         Controller controller(4644, nullptr, storage);
+        QObject::connect(&application, &QGuiApplication::applicationStateChanged, &controller,
+                         [&controller](Qt::ApplicationState state) {
+                             if (state == Qt::ApplicationActive)
+                                 controller.setForeground(true);
+                             else if (state == Qt::ApplicationHidden ||
+                                      state == Qt::ApplicationSuspended)
+                                 controller.setForeground(false);
+                         });
         QQmlApplicationEngine engine;
         engine.rootContext()->setContextProperty(QStringLiteral("controller"), &controller);
         engine.rootContext()->setContextProperty(QStringLiteral("mobileFiles"), &files);

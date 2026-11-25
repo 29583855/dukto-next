@@ -2,13 +2,16 @@ name: Mobile C++14 build gates
 on:
   push:
     branches: [codex/mobile-platforms]
-    paths: ['DuktoNextMobile/scripts/**', 'DuktoNextMobile/CMakeLists.txt', 'DuktoNextMobile/DuktoNextMobile.pro', 'DuktoNextMobile/app/main.cpp', 'DuktoNextMobile/app/mobile.qrc', 'DuktoNextMobile/platform/**', 'DuktoNextMobile/shared/**']
+    paths: ['DuktoNextMobile/scripts/**', 'DuktoNextMobile/CMakeLists.txt', 'DuktoNextMobile/DuktoNextMobile.pro', 'DuktoNextMobile/app/**', 'DuktoNextMobile/platform/**', 'DuktoNextMobile/shared/**']
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
   build:
     timeout-minutes: 180
+    concurrency:
+      group: mobile-cpp14-${{ matrix.platform }}
+      cancel-in-progress: false
     strategy:
       fail-fast: false
       matrix:

@@ -52,6 +52,8 @@ class Controller final : public QObject {
     ~Controller() override;
     // 日期：2026-11-04；返回有界设备列表。
     QVariantList peers() const;
+    // 日期：2026-11-25；系统隐藏/挂起时停止前台网络，活动状态恢复原端口并显示绑定失败。
+    void setForeground(bool active);
     // 日期：2026-11-04；独立服务器页面使用共用生产核心，保留旧版设备页排版与状态。
     QObject *server() const;
     // 日期：2026-11-04；仅加载最近 100 条记录，历史数据存磁盘。
@@ -205,6 +207,7 @@ class Controller final : public QObject {
     QString status_;
     double progress_ = 0;
     bool receiving_ = false;
+    bool foreground_ = true;
     bool capturePending_ = false;
     bool clipboardAvailable_ = false;
     std::unique_ptr<QTemporaryDir> captureDirectory_;

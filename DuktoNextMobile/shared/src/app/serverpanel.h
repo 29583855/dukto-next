@@ -121,6 +121,8 @@ class ServerPanel final : public QObject {
     Q_INVOKABLE QString chooseCredential();
     // 日期：2026-11-04；主动断开当前操作保留可恢复检查点，不等同于服务任务取消。
     Q_INVOKABLE void disconnectTransfer();
+    // 日期：2026-11-25；后台断开客户端动作并关闭服务，只恢复原先用户已开启的监听。
+    void setForeground(bool active);
   signals:
     void changed();
 
@@ -148,4 +150,8 @@ class ServerPanel final : public QObject {
     ServerAction *control_ = nullptr;
     dukto::ServiceListener *listener_ = nullptr;
     QTimer timer_;
+    bool foreground_ = true;
+    bool restoreServing_ = false;
+    QString servingAddress_;
+    int servingPort_ = 4646;
 };

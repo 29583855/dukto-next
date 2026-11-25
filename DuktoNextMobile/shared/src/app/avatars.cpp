@@ -274,3 +274,15 @@ void Avatars::accept() {
         });
     }
 }
+
+// 日期：2026-11-25；先清队列再中止连接，结束回调不会重新补充后台请求。
+void Avatars::stop() {
+    queue_.clear();
+    entries_.clear();
+    server_.close();
+    for (auto reply : network_.findChildren<QNetworkReply *>())
+        reply->abort();
+    for (auto client : server_.findChildren<QTcpSocket *>())
+        client->abort();
+    emit changed();
+}

@@ -19,6 +19,8 @@ class Discovery final : public QObject {
     ~Discovery() override;
     // 日期：2026-11-10；标准4644共享广播，自定义端口保留独占回复入口；失败提供具体原因。
     bool start(quint16 port, const QString &username);
+    // 日期：2026-11-25；移动端退到后台时发离线公告并释放发现套接字，可在前台重新启动。
+    void stop();
     // 日期：2026-11-04；生成当前有界设备快照，供 GUI 和 CLI 共同使用。
     QJsonArray peers() const;
     // 日期：2026-11-04；更新用户名后广播新签名。
