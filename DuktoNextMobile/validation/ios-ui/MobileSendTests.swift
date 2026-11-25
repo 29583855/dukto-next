@@ -146,6 +146,7 @@ final class MobileSendTests: XCTestCase {
         cell.tap()
     }
 
+    // 日期：2026-11-26；Files冷启动实测约25秒，等待限定60秒；不重发或重启产品以掩盖失败。
     // 日期：2026-11-26；接收样本后走真实系统文件选择器，取消重开，再由独立接收器核对发送字节。
     @MainActor
     func testSendFileFromSystemDocuments() throws {
@@ -164,7 +165,7 @@ final class MobileSendTests: XCTestCase {
             files.tap()
             capture(app, "documents-picker-" + String(attempt))
             let cancel = app.buttons["Cancel"]
-            XCTAssertTrue(cancel.waitForExistence(timeout: 15), "系统文档选择器未出现")
+            XCTAssertTrue(cancel.waitForExistence(timeout: 60), "系统文档选择器未出现")
             if attempt == 0 {
                 cancel.tap()
             }
@@ -216,7 +217,7 @@ final class MobileSendTests: XCTestCase {
             folder.tap()
             capture(app, "directory-picker-" + String(attempt))
             let cancel = app.buttons["Cancel"]
-            XCTAssertTrue(cancel.waitForExistence(timeout: 15))
+            XCTAssertTrue(cancel.waitForExistence(timeout: 60))
             if attempt == 0 { cancel.tap() }
         }
         let folderName = "a-ios-directory-probe"
@@ -288,7 +289,7 @@ final class MobileSendTests: XCTestCase {
             XCTAssertTrue(action.isEnabled && action.isHittable)
             action.tap()
             let cancel = app.buttons["Cancel"]
-            XCTAssertTrue(cancel.waitForExistence(timeout: 15))
+            XCTAssertTrue(cancel.waitForExistence(timeout: 60))
             capture(app, "storage-import-picker-" + String(attempt))
             if attempt == 0 { cancel.tap() }
         }
@@ -341,7 +342,7 @@ final class MobileSendTests: XCTestCase {
             XCTAssertTrue(action.isEnabled && action.isHittable)
             action.tap()
             let cancel = app.buttons["Cancel"]
-            XCTAssertTrue(cancel.waitForExistence(timeout: 15))
+            XCTAssertTrue(cancel.waitForExistence(timeout: 60))
             capture(app, "storage-export-picker-" + String(attempt))
             if attempt == 0 { cancel.tap() }
         }
