@@ -3,7 +3,7 @@
 创建日期：2026-11-25  
 最后更新：2026-11-25  
 文档版本：v0.1  
-当前阶段：独立移动项目已接入主要桌面能力；主机C++14、网络与存储已有通过证据，两平台依赖完成，iOS未签名app与Android APK曾生成，最新验包门禁在复验；尚无签名安装及真机验收证据。
+当前阶段：独立移动项目已完成主要能力编码，两平台完整开发包及多轮主机/原生合同门禁通过。Android15目录修复包已启动进入QML，首屏系统栏遮挡已修复并通过新APK模拟器截图复验；iOS未签名，手机完整验收和客户发行尚未完成。
 桌面基线：本地提交 `a548b6ca`；Windows、macOS、Linux 的既有能力见 [功能说明](README-GitHub.md)。
 
 ## 1. 目标与完成口径
@@ -230,3 +230,20 @@ F01–F18表格状态表示当前子项进展；没有任何一行被标为手�
 - [ ] 手机安装、真实提供器/跨设备/Server2012、后台/长时与辅助功能验收仍未完成。
 
 详细结果、历史失败、包摘要和继续验收入口见`../DuktoNextMobile/docs/开发包与验收交接-20261125.md`、`../DuktoNextMobile/docs/实施进度.md`及`../DuktoNextMobile/evidence/`。
+
+### 2026-11-25 新SDK与安装测试补充
+
+- [x] 完整Qt主应用/分享扩展在Xcode26.3/iPhoneOS26.2构建、验包及下载复核通过；run45617975751/job139218244804，独立包目录DuktoNextMobile/release/development/ios-xcode26。固定源码依赖缓存复用，不表述为依赖也在Xcode26重编。
+- [ ] Android原始APK前台启动验收：Android11/15转译模拟器均安装成功但未保持运行；API35诊断显示控制器构造抛磁盘异常且根目录read被SELinux拒绝。已实施中间目录搜索权限适配，保持链接拒绝与身份检查，待复验后更新。
+- 手机矩阵、Apple签名/IPA和正式分发仍未验收；最新状态见DuktoNextMobile/docs/当前验收状态.md，历史失败收据保留。
+
+### 2026-11-25 启动修复实际复验
+
+- [x] 4417b21f Android/iOS完整构建、验包、下载后逐文件复核通过；独立保存在DuktoNextMobile/release/development/android-storage-4417b21f及ios-storage-4417b21f。
+- [x] Android15原始arm64 APK安装、QML首屏、20秒前台存活通过；run45624012656。此前失败保留。
+- [x] 人工截图检查发现系统栏遮挡，90e8f8fe已实现安全边距并通过新增三项Android JVM测试。
+- [x] 修复后新APK在Android15安装、首屏/20秒存活、竖屏实际截图通过；run45626309940，标题与底部导航完整。
+- [x] 最新完整六项回归全部通过，run45625417200；Android23项JVM、实际主机网络/QML/存储、iOS收件箱及18.6/26.2窗口合同；220轮对象+0/RSS+140KiB。
+- [ ] 手机完整矩阵、Apple签名/IPA及客户发行；当前外部条件未就绪。最新状态以DuktoNextMobile/docs/当前验收状态.md为准。
+
+- [x] 90e8f8fe最新两平台开发包均已下载、核对SHA256/结构/原生架构/声明文件与引用，按平台另存于DuktoNextMobile/release/development/android-insets-90e8f8fe和ios-insets-90e8f8fe；不覆盖历史失败包。完整验收收据见两平台package-90e8f8fe.json。

@@ -1,0 +1,107 @@
+{
+  "date": "2026-11-25",
+  "sourceCommit": "90e8f8feb7d9734761a7bec3733edf636cdb1d25",
+  "run": 45625417200,
+  "job": 139244183962,
+  "artifact": 15027487704,
+  "hostChecksPassed": true,
+  "deviceTestsPassed": false,
+  "receipts": {
+    "mobile-legacy.json": {
+      "sha256": "8bcf4324f3b308efeef438e57bf9221da22eebc141118afd8c99a9e79e78481b",
+      "result": {
+        "records": 5
+      }
+    },
+    "mobile-next-1.json": {
+      "sha256": "b1c6566c0c27a36d012a4b61bd6e972762894f98f2e3c831308f506a7e67f39b",
+      "result": {
+        "date": "2026-11-04",
+        "passed": true,
+        "payloadSha256": "c7fd926e5662e22d94004a95c01fb3cca72733824145d2bca8df1573d58895e7",
+        "channelsRequested": 1,
+        "scope": "authenticated CLI with selected channels; GUI, restart/fault and full platform matrix require separate validation"
+      }
+    },
+    "mobile-next-16.json": {
+      "sha256": "837192e5f005cf3c89055986ef227abdf192996214618603edabdfbcf89b23a8",
+      "result": {
+        "date": "2026-11-04",
+        "passed": true,
+        "payloadSha256": "c7fd926e5662e22d94004a95c01fb3cca72733824145d2bca8df1573d58895e7",
+        "channelsRequested": 16,
+        "scope": "authenticated CLI with selected channels; GUI, restart/fault and full platform matrix require separate validation"
+      }
+    },
+    "mobile-next-2.json": {
+      "sha256": "be4b75cee02e25fdb7fd8a4b3824d554525ccc272431d18ea38c746db0181324",
+      "result": {
+        "date": "2026-11-04",
+        "passed": true,
+        "payloadSha256": "c7fd926e5662e22d94004a95c01fb3cca72733824145d2bca8df1573d58895e7",
+        "channelsRequested": 2,
+        "scope": "authenticated CLI with selected channels; GUI, restart/fault and full platform matrix require separate validation"
+      }
+    },
+    "mobile-next-4.json": {
+      "sha256": "3374e18efffe30a8408898dd8fc0daf3172e0736187f2679e78134083b3b1a1f",
+      "result": {
+        "date": "2026-11-04",
+        "passed": true,
+        "payloadSha256": "c7fd926e5662e22d94004a95c01fb3cca72733824145d2bca8df1573d58895e7",
+        "channelsRequested": 4,
+        "scope": "authenticated CLI with selected channels; GUI, restart/fault and full platform matrix require separate validation"
+      }
+    },
+    "mobile-next-8.json": {
+      "sha256": "8e75426f4d7dfde3dcd0ffb4708d7ee5c25fbd142dabeca79040415c6dd18c76",
+      "result": {
+        "date": "2026-11-04",
+        "passed": true,
+        "payloadSha256": "c7fd926e5662e22d94004a95c01fb3cca72733824145d2bca8df1573d58895e7",
+        "channelsRequested": 8,
+        "scope": "authenticated CLI with selected channels; GUI, restart/fault and full platform matrix require separate validation"
+      }
+    },
+    "mobile-path-traversal.json": {
+      "sha256": "e86a4f4d060fa2467122ee85349fecfeb018997222e27c5f8f6da9f67f452478",
+      "result": {
+        "descriptorGrowth": 0,
+        "deviceTest": false,
+        "iterations": 128,
+        "passed": true,
+        "pinnedChildOperations": true,
+        "replacementRefused": true,
+        "searchOnlyAncestor": true,
+        "symlinkRefused": true
+      }
+    },
+    "mobile-service.json": {
+      "sha256": "097323f5683f9f265683f5cc7ca8437b7b7bb55e4ee7a03b3149fd44c931f730",
+      "result": {
+        "date": "2026-11-04",
+        "passed": true,
+        "scope": "pair/auth/share-management/browse CLI; transfer commands tested separately"
+      }
+    },
+    "mobile-ui-stress.json": {
+      "sha256": "8f0f5d60f597b9344ff5878979b118969101261170ba23baced0b0d0c55c0e59",
+      "result": {
+        "cycles": 220,
+        "date": "2026-11-25",
+        "deviceTestsPassed": false,
+        "objectBudget": 32,
+        "objectGrowth": 0,
+        "passed": true,
+        "rssBudgetKiB": 16384,
+        "rssGrowthKiB": 140,
+        "warmupCycles": 30
+      }
+    }
+  },
+  "qmlFrames": 10,
+  "limitations": [
+    "仅真实主机控制器、回环网络和QML；不能代替实际手机或Server2012互通。",
+    "私有目录入口经过XDG_DATA_HOME系统别名启动；用户共享路径仍逐级拒绝链接。"
+  ]
+}

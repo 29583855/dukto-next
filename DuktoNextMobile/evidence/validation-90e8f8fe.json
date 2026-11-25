@@ -1,0 +1,96 @@
+{
+  "date": "2026-11-25",
+  "sourceCommit": "90e8f8feb7d9734761a7bec3733edf636cdb1d25",
+  "run": 45625417200,
+  "allSixJobsPassed": true,
+  "deviceTestsPassed": false,
+  "jobs": [
+    {
+      "id": 139244182978,
+      "name": "android-java-contract",
+      "conclusion": "success"
+    },
+    {
+      "id": 139244183352,
+      "name": "ios-presenter-simulator (26)",
+      "conclusion": "success"
+    },
+    {
+      "id": 139244183494,
+      "name": "ios-presenter-simulator (18)",
+      "conclusion": "success"
+    },
+    {
+      "id": 139244183516,
+      "name": "ios-inbox-contract",
+      "conclusion": "success"
+    },
+    {
+      "id": 139244183717,
+      "name": "storage-tests",
+      "conclusion": "success"
+    },
+    {
+      "id": 139244183962,
+      "name": "host-ui-check",
+      "conclusion": "success"
+    }
+  ],
+  "androidContractReceipt": "android-contract-90e8f8fe.json",
+  "hostReceipt": "host-validation-90e8f8fe.json",
+  "androidInstalledAppReceipt": "android-startup-90e8f8fe.json",
+  "logChecks": [
+    {
+      "job": 139244183516,
+      "logSha256": "76d59f43d5938bfdbfbdc5621b62f9bcfb85f3305a3562bff221d845e5273b79",
+      "lines": [
+        "2026-11-25T13:42:25.2077850Z iOS inbox native contracts passed: atomic mixed/text slot, restart, locks, consumption, UUID, quotas, metadata corruption and symlink rejection"
+      ]
+    },
+    {
+      "job": 139244183717,
+      "logSha256": "2fb0d8f9e2c0ef60050c887c9d1d2daf27585a2abb18159ac1c020ea43fe59da",
+      "lines": [
+        "2026-11-25T13:39:01.4617573Z 1: QINFO  : ImportStoreTests::contentAboveFourGiB() large-import bytes= 4294967313 sha256= ef61599a77cb5a0f3c5cfc042bd2c2f579a25f2d56141f77c056b68a77de1145",
+        "2026-11-25T13:39:01.6451514Z 1: Totals: 16 passed, 0 failed, 0 skipped, 0 blacklisted, 55927ms",
+        "2026-11-25T13:39:01.6460605Z 1/3 Test #1: mobile-storage ...................   Passed   55.97 sec",
+        "2026-11-25T13:39:01.6759479Z 2: Totals: 5 passed, 0 failed, 0 skipped, 0 blacklisted, 24ms",
+        "2026-11-25T13:39:01.6760914Z 2/3 Test #2: mobile-files .....................   Passed    0.03 sec",
+        "2026-11-25T13:39:01.6890703Z 3: Totals: 6 passed, 0 failed, 0 skipped, 0 blacklisted, 10ms",
+        "2026-11-25T13:39:01.6893909Z 3/3 Test #3: mobile-import-registry ...........   Passed    0.01 sec",
+        "2026-11-25T13:39:01.6896307Z 100% tests passed, 0 tests failed out of 3"
+      ]
+    }
+  ],
+  "iosPresenter": [
+    {
+      "artifact": 15027784341,
+      "sha256": "102e10560c43fb39ecebd93cacf0a3c096d2eac85751b042e8928cc3c6a86a8a",
+      "result": {
+        "systemVersion": "26.2",
+        "passed": true,
+        "sceneCount": 1,
+        "reason": "传统窗口/模态/恢复/隐藏拒绝通过",
+        "deviceTest": false,
+        "legacyWindow": false
+      }
+    },
+    {
+      "artifact": 15026489434,
+      "sha256": "9162a5217e23d7ebd99c3a47416e66b7d2a5c2a107314e00572f605660d0f4a6",
+      "result": {
+        "systemVersion": "18.6",
+        "passed": true,
+        "sceneCount": 1,
+        "reason": "传统窗口/模态/恢复/隐藏拒绝通过",
+        "deviceTest": false,
+        "legacyWindow": false
+      }
+    }
+  ],
+  "limitations": [
+    "UIKit模拟器使用真实生产窗口定位函数，但没有运行完整Qt iOS设备应用。",
+    "iOS18.6/26.2测试窗口均自动关联Scene（legacyWindow=false），不证明无Scene回退已实际执行。",
+    "主机网络与存储、Android JVM和转译模拟器，不代替手机提供器、手机局域网/Server2012、后台锁屏或发行签名。"
+  ]
+}

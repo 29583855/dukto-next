@@ -23,8 +23,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--apk", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--sha256", default="750908dbf8d4b5698b7550966cab251f17a4f81fe932533f12df0e4a03c7c9e6")
-    parser.add_argument("--source", default="45647c484f818ad7b16f10b1b3b03d72b7145f30")
+    parser.add_argument("--sha256", required=True)
+    parser.add_argument("--source", required=True)
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
     receipt = {"passed": False, "deviceTest": False, "scope": "Android模拟器安装启动原始arm64开发APK",

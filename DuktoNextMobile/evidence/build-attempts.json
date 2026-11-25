@@ -403,6 +403,23 @@
       "fix": "仅给该真实协调器测试目标补齐../shared/src包含路径和core/error.cpp；不使用替身绕过错误。",
       "deviceTestsPassed": false,
       "logSha256": "4ec4e407b264cb51976bbeb2d9c452cea3e492d7648584b76458d1083a995d7c"
+    },
+    {
+      "run": 45623396580,
+      "job": 139237160414,
+      "platform": "ios26-uikit-simulator",
+      "result": "simctl_launch_timeout",
+      "reason": "iOS26.2已选中并完成安装，simctl launch 120秒超时；没有测试收据，不能标记通过。",
+      "fix": "保留失败日志；后续既有回归任务继续复验，不调整判定门限。",
+      "deviceTestsPassed": false,
+      "logSha256": "7eb06066b80a2b70004554787593d5c935a1a9748306c56717f89c689c8b49a0"
+    },
+    {
+      "run": 45623867798,
+      "platform": "mobile-regression",
+      "result": "cancelled_superseded",
+      "reason": "由90e8f8fe的run45625417200完整六项回归取代；本次已通过存储、主机UI/网络、Android旧20项和iOS收件箱，两项UIKit尚未完成时取消。",
+      "deviceTestsPassed": false
     }
   ]
 }
