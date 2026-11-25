@@ -28,7 +28,7 @@ android {
     isEmpty(ANDROID_PACKAGE_SOURCE_DIR): ANDROID_PACKAGE_SOURCE_DIR = $$PWD/platform/android
 }
 ios {
-    OBJECTIVE_SOURCES += $$PWD/platform/ios/platformfiles.mm $$PWD/platform/ios/share/Inbox.mm
+    OBJECTIVE_SOURCES += $$PWD/platform/ios/presenter.mm $$PWD/platform/ios/platformfiles.mm $$PWD/platform/ios/share/Inbox.mm
     QMAKE_OBJECTIVE_CXXFLAGS += -fobjc-arc
     LIBS += -framework UIKit -framework UniformTypeIdentifiers
     QMAKE_ENTITLEMENTS = $$PWD/platform/ios/DuktoNextMobile.entitlements

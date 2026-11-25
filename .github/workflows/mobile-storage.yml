@@ -105,3 +105,17 @@ jobs:
           name: mobile-ios-share-${{ github.run_id }}
           path: DuktoNextMobile/build-share/Release-iphoneos/DuktoShare.appex/**
           if-no-files-found: warn
+
+  ios-presenter-simulator:
+    runs-on: macos-15
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Exercise real UIKit legacy window and modal presentation
+        run: python3 -u -X utf8 DuktoNextMobile/tests/ios/run_presenter_tests.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mobile-ios-presenter-${{ github.run_id }}
+          path: DuktoNextMobile/build-presenter/presenter-test.json
+          if-no-files-found: warn

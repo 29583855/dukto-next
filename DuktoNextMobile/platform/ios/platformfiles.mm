@@ -1,4 +1,5 @@
 #include "platformfiles.h"
+#import "presenter.h"
 #include "importstore.h"
 
 #import "share/Inbox.h"
@@ -62,23 +63,6 @@ bool copyTree(ImportStore &store, const QString &path, const QString &relative, 
     return true;
 }
 
-// 日期：2026-11-25；从活动窗口找到展示控制器，避免使用旧keyWindow接口及后台窗口。
-UIViewController *presenter() {
-    for (UIScene *scene in UIApplication.sharedApplication.connectedScenes) {
-        if (![scene isKindOfClass:UIWindowScene.class] ||
-            scene.activationState != UISceneActivationStateForegroundActive)
-            continue;
-        for (UIWindow *window in ((UIWindowScene *)scene).windows) {
-            if (!window.isKeyWindow)
-                continue;
-            UIViewController *controller = window.rootViewController;
-            while (controller.presentedViewController)
-                controller = controller.presentedViewController;
-            return controller;
-        }
-    }
-    return nil;
-}
 } // namespace
 
 @interface DuktoDocumentPicker : NSObject <UIDocumentPickerDelegate> {
@@ -187,7 +171,7 @@ static DuktoDocumentPicker *activePicker;
 
 // 日期：2026-11-25；iOS原生文档选择器授予选中范围，云端下载及授权错误由协调器报告。
 void mobile::selectDocuments(bool folder, FileResult done) {
-    UIViewController *host = presenter();
+    UIViewController *host = DuktoActivePresenter();
     if (!host || activePicker) {
         done({}, QStringLiteral("请回到前台并关闭其他文件选择器"));
         return;
@@ -206,7 +190,7 @@ void mobile::selectDocuments(bool folder, FileResult done) {
 
 // 日期：2026-11-25；系统导出在完成回调后才显示成功，不把沙箱路径当作客户可见位置。
 void mobile::exportDocument(const QString &path, FileResult done) {
-    UIViewController *host = presenter();
+    UIViewController *host = DuktoActivePresenter();
     if (!host || activePicker || !QFileInfo::exists(path)) {
         done({}, QStringLiteral("文件不存在或无法显示系统导出界面"));
         return;
