@@ -7,6 +7,7 @@ from pathlib import Path
 import shutil
 import subprocess
 from inspect_package import package
+from collect_licenses import refresh
 
 
 # 日期：2026-11-25；命令失败立即返回非零，编译和安装证据分开记录。
@@ -121,6 +122,8 @@ def main():
     inspection = package(args.platform, artifacts, build / "packages" / args.platform, environment,
                          require_share_extension=args.platform == "ios")
     package_dir = build / "packages" / args.platform
+    # 日期：2026-11-25；缓存编译产物不代表旧许可清单完整，按锁定源码补齐再随包分发。
+    refresh(prefix, build / "license-sources", args.platform)
     shutil.copytree(prefix / "licenses", package_dir / "licenses", dirs_exist_ok=True)
     shutil.copy2(prefix / "dependency-manifest.json", package_dir / "dependency-manifest.json")
     shutil.copy2(root / "LICENSE", package_dir / "LICENSE")
