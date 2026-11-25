@@ -121,9 +121,12 @@ def main():
     parser.add_argument("--r6-receive", action="store_true")
     parser.add_argument("--r6-send", action="store_true")
     parser.add_argument("--r6-file-send", action="store_true")
+    parser.add_argument("--r6-cold-file-send", action="store_true")
     args = parser.parse_args()
     if args.r6_file_send and not args.r6_send:
         parser.error("--r6-file-send requires --r6-send for the same onboarding and helper session")
+    if args.r6_cold_file_send and not args.r6_file_send:
+        parser.error("--r6-cold-file-send requires the warm file-send gate")
     args.output.mkdir(parents=True, exist_ok=True)
     receipt = {"passed": False, "deviceTest": False, "scope": "Android模拟器安装启动原始arm64开发APK",
                "sourceCommit": args.source, "steps": []}
@@ -200,6 +203,9 @@ def main():
             r"FATAL EXCEPTION|Fatal signal|QQmlApplicationEngine failed|module .+ is not installed|Cannot load library", line)]
         if receipt["runtimeErrors"]:
             raise RuntimeError("应用传输期间出现运行错误")
+        if args.r6_cold_file_send:
+            receipt["r6ColdFileSend"] = verify_file_send(args.output, cold_start=True)
+            receipt["steps"].append("productionApkColdContentUriFilesUiSendAndHash")
         receipt["passed"] = True
         receipt["visualReviewPending"] = True
     except Exception as error:

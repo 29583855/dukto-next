@@ -268,12 +268,18 @@ def verify_text_send(output):
 
 
 # 日期：2026-11-26；来源应用通过系统只读授权分享两份文件，真实QML按钮发送给独立接收器。
-def verify_file_send(output):
-    output = Path(output) / "r6-file-send"
+def verify_file_send(output, cold_start=False):
+    output = Path(output) / ("r6-cold-file-send" if cold_start else "r6-file-send")
     output.mkdir(parents=True, exist_ok=True)
     original_pid = adb("shell", "pidof", "org.duktonext.mobile").strip()
     if not original_pid:
         raise RuntimeError("文件发送前应用没有运行")
+    # 日期：2026-11-26；冷启动同样由外部来源触发，显式记录停进程，不能冒充零重启热分享。
+    if cold_start:
+        adb("shell", "am", "force-stop", "org.duktonext.mobile")
+        stopped = adb("shell", "sh", "-c", "'pidof org.duktonext.mobile || true'").strip()
+        if stopped:
+            raise RuntimeError("冷启动分享前产品进程尚未停止")
     # 日期：2026-11-26；来源Activity立即转交并finish，不能用等待它绘制首帧的-W判定分享失败。
     launch = adb("shell", "am", "start", "-n",
                  "org.duktonext.validation/.ValidationShareActivity")
@@ -282,6 +288,18 @@ def verify_file_send(output):
         raise RuntimeError("系统文件分享来源Activity启动被拒绝: " + launch)
     # 日期：2026-11-26；以产品实际收到两份文件的系统可访问摘要确认完成，不以启动命令返回当成功。
     wait_share_ready(output, "系统分享：2项文件。请选择设备发送，或在服务器页上传。")
+    share_pid = adb("shell", "pidof", "org.duktonext.mobile").strip()
+    if not share_pid or (cold_start and share_pid == original_pid):
+        raise RuntimeError("冷启动分享没有生成新的产品进程")
+    if not cold_start and share_pid != original_pid:
+        raise RuntimeError("热分享意外重建了产品进程")
+    # 日期：2026-11-26；系统任务表按ActivityRecord身份去重，确认没有第二个Qt窗口。
+    activities = adb("shell", "dumpsys", "activity", "activities")
+    (output / "share-activities.txt").write_text(activities, "utf-8")
+    records = set(re.findall(
+        r"ActivityRecord\{([0-9a-f]+) [^\n]*org\.duktonext\.mobile/\.DuktoActivity\b", activities))
+    if len(records) != 1:
+        raise RuntimeError("分享后Qt Activity实例数量错误: " + str(len(records)))
     click_label(output, "manual", "IP 连接 · 发送到指定设备")
     enter_target(output, "10.0.2.2")
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as listener:
@@ -294,10 +312,16 @@ def verify_file_send(output):
         with connection:
             connection.settimeout(30)
             result = receive_files(connection, file_fixtures())
-    if adb("shell", "pidof", "org.duktonext.mobile").strip() != original_pid:
+    if adb("shell", "pidof", "org.duktonext.mobile").strip() != share_pid:
         raise RuntimeError("文件发送期间应用进程被替换")
+    log = adb("logcat", "-d", "--pid=" + share_pid, timeout=60)
+    (output / "send-logcat.txt").write_text(log, "utf-8")
+    if re.search(r"FATAL EXCEPTION|Fatal signal|OutOfMemoryError|ForegroundServiceDidNotStartInTimeException", log):
+        raise RuntimeError("文件分享发送期间出现进程或前台服务错误")
     (output / "send-completed.png").write_bytes(adb("exec-out", "screencap", "-p", binary=True))
     result.update(passed=True, systemContentUriShare=True, realUiActions=True,
                   transport="Android emulator 10.0.2.2 TCP4644 to independent host receiver",
-                  sendRetries=0, processRestarts=0, deviceTest=False, wifiDiscoveryTest=False)
+                  sendRetries=0, processRestarts=0, intentionalColdStarts=int(cold_start),
+                  coldStart=cold_start, activityInstances=len(records), pid=share_pid,
+                  deviceTest=False, wifiDiscoveryTest=False)
     return result
