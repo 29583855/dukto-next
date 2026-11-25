@@ -48,6 +48,10 @@ jobs:
           XDG_DATA_HOME: ${{ runner.temp }}/mobile-host-data
           XDG_CONFIG_HOME: ${{ runner.temp }}/mobile-host-config
         run: |
+          # 日期：2026-11-25；真实Qt入口从系统返回的别名根启动，业务路径的链接拒绝由path-tests另行验证。
+          mkdir -p "$RUNNER_TEMP/mobile-host-data-real"
+          ln -s "$RUNNER_TEMP/mobile-host-data-real" "$XDG_DATA_HOME"
+          test -L "$XDG_DATA_HOME"
           timeout 60s xvfb-run -a DuktoNextMobile/build-host/dukto-mobile-host --smoke-test
           timeout 180s xvfb-run -a DuktoNextMobile/build-host/dukto-mobile-host --stress-test
       - uses: actions/upload-artifact@v4
