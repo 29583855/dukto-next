@@ -14,6 +14,10 @@ class MobileLifecycle final : public QObject {
     QString message() const;
     // 日期：2026-11-25；退出时解除服务、系统任务和所有网络活动。
     ~MobileLifecycle() override;
+
+  protected:
+    // 日期：2026-11-25；接收iOS系统文档打开事件，不从任意命令行路径导入。
+    bool eventFilter(QObject *object, QEvent *event) override;
   signals:
     void changed();
 

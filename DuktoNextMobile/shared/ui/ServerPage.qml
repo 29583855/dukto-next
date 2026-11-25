@@ -20,6 +20,8 @@ Rectangle {
         y: Math.max(12, (page.height - height) / 2)
         standardButtons: Dialog.Ok | Dialog.Cancel
         contentItem: Label {
+            implicitWidth: 440
+            implicitHeight: contentHeight
             text: "请求：" + discardDialog.selectedRequest + "\n确认释放此请求的本地快照引用？之后可能无法继续原上传。远端任务不会自动取消；请先在任务页取消并查询。实际文件须再点击清理旧暂存。"
             textFormat: Text.PlainText
             wrapMode: Text.WrapAnywhere
@@ -653,6 +655,15 @@ Rectangle {
                             onClicked: panel.execute("download", page.remoteOptions())
                         }
 
+                    }
+
+                    Button {
+                        objectName: "serverSharedUploadButton"
+                        Layout.fillWidth: true
+                        visible: Number(mobileFiles.incoming.files || 0) > 0
+                        text: "上传系统分享文件（" + (mobileFiles.incoming.files || 0) + "项）"
+                        enabled: !panel.busy && !panel.controlBusy && !controller.busy && !mobileFiles.busy
+                        onClicked: panel.chooseSharedUpload(page.remoteOptions())
                     }
 
                     Label {

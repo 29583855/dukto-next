@@ -85,6 +85,7 @@ UIViewController *presenter() {
     mobile::FileResult result;
     bool exporting;
     bool folder;
+    bool sharedImport;
     QString exportPath;
 }
 @property(nonatomic, strong) UIDocumentPickerViewController *controller;
@@ -111,6 +112,7 @@ static DuktoDocumentPicker *activePicker;
     result = {};
     const bool wasExporting = exporting;
     const bool wantFolder = folder;
+    const bool allowMixed = sharedImport;
     const auto exportedPath = exportPath;
     activePicker = nil;
     if (!callback)
@@ -150,7 +152,7 @@ static DuktoDocumentPicker *activePicker;
                                                  QString::fromUtf8(coordinatedURL.path.UTF8String);
                                              const QFileInfo info(path);
                                              name = info.fileName();
-                                             if (info.isDir() != wantFolder)
+                                             if (!allowMixed && info.isDir() != wantFolder)
                                                  copyError =
                                                      QStringLiteral("请选择对应类型的文件或文件夹");
                                              else
@@ -273,4 +275,69 @@ void mobile::endBackgroundCleanup() {
         end();
     else
         dispatch_async(dispatch_get_main_queue(), end);
+}
+
+namespace {
+NSMutableArray<NSURL *> *incomingURLs;
+QString incomingError;
+} // namespace
+// 日期：2026-11-25；Qt文件打开事件只保留文档范围，不允许选择私有身份状态。
+bool mobile::acceptSharedUrl(const QUrl &value) {
+    if (!value.isLocalFile())
+        return false;
+    const auto path = QFileInfo(value.toLocalFile()).canonicalFilePath();
+    const auto privateRoot =
+        QFileInfo(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation))
+            .canonicalFilePath();
+    if (path.isEmpty() ||
+        (!privateRoot.isEmpty() && (path == privateRoot || path.startsWith(privateRoot + '/')))) {
+        incomingError = QStringLiteral("分享文档不可访问或属于私有身份目录");
+        return true;
+    }
+    NSURL *url = [NSURL
+        fileURLWithPath:[NSString stringWithUTF8String:value.toLocalFile().toUtf8().constData()]];
+    if (!incomingURLs)
+        incomingURLs = [NSMutableArray array];
+    if (incomingURLs.count >= 512) {
+        incomingError = QStringLiteral("待处理分享已达512项，请先处理");
+        return true;
+    }
+    if (![incomingURLs containsObject:url]) {
+        [url startAccessingSecurityScopedResource];
+        [incomingURLs addObject:url];
+    }
+    return true;
+}
+// 日期：2026-11-25；只公开数量和错误，源URL不进入QML或日志。
+QVariantMap mobile::sharedDocuments() {
+    return {{"files", int(incomingURLs.count)}, {"text", QString()}, {"error", incomingError}};
+}
+// 日期：2026-11-25；用户确认发送后复用协调读取事务，完成或失败均归还外部授权。
+void mobile::importSharedDocuments(FileResult done) {
+    if (!incomingURLs.count) {
+        done({}, QStringLiteral("没有待处理的系统文档"));
+        return;
+    }
+    NSArray<NSURL *> *urls = [incomingURLs copy];
+    [incomingURLs removeAllObjects];
+    incomingError.clear();
+    DuktoDocumentPicker *importer = [[DuktoDocumentPicker alloc] init];
+    importer->exporting = false;
+    importer->folder = false;
+    importer->sharedImport = true;
+    importer->result = [done, urls](QStringList paths, QString error) {
+        for (NSURL *url in urls)
+            [url stopAccessingSecurityScopedResource];
+        done(paths, error);
+    };
+    [importer documentPicker:nil didPickDocumentsAtURLs:urls];
+}
+// 日期：2026-11-25；仅释放安全作用域引用，不删除系统文档。
+void mobile::discardSharedDocuments(bool textOnly) {
+    if (textOnly)
+        return;
+    for (NSURL *url in incomingURLs)
+        [url stopAccessingSecurityScopedResource];
+    [incomingURLs removeAllObjects];
+    incomingError.clear();
 }

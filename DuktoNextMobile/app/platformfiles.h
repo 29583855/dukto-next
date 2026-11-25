@@ -1,6 +1,8 @@
 #pragma once
 
 #include <QStringList>
+#include <QUrl>
+#include <QVariantMap>
 #include <functional>
 
 namespace mobile {
@@ -21,4 +23,12 @@ bool takeBackgroundStop();
 void beginBackgroundCleanup();
 // 日期：2026-11-25；收尾完成或回到前台后归还iOS后台时间。
 void endBackgroundCleanup();
+// 日期：2026-11-25；返回待处理系统分享的计数、有界文本及错误，不自动发送。
+QVariantMap sharedDocuments();
+// 日期：2026-11-25；明确发送时导入授权文件，复用同一配额与流式事务。
+void importSharedDocuments(FileResult done);
+// 日期：2026-11-25；显式清除文本或整份分享，不删除提供器原文件。
+void discardSharedDocuments(bool textOnly);
+// 日期：2026-11-25；iOS接收系统打开文档事件，保存安全作用域至导入完成。
+bool acceptSharedUrl(const QUrl &url);
 } // namespace mobile

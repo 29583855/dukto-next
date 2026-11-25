@@ -160,6 +160,36 @@
       "reason": "现代Gradle完整部署已成功准备资源；应用清单引用Qt5.15已移除的bundled_in_lib/bundled_in_assets数组，aapt明确拒绝",
       "fix": "与Qt5.15官方模板对齐移除旧数组，补bundle_local_qt_libs、部署工具生成的jar及静态初始化类，禁用旧Qt不兼容堆指针标记",
       "deviceTestsPassed": false
+    },
+    {
+      "runId": 45599991432,
+      "jobId": 139156064847,
+      "commit": "69995cdc",
+      "platform": "ios",
+      "result": "native_passed_packaging_call_failed",
+      "reason": "xcodebuild BUILD SUCCEEDED；打包函数package被Android局部变量遮蔽，抛UnboundLocalError",
+      "fix": "Android目录局部变量改名package_source",
+      "deviceTestsPassed": false
+    },
+    {
+      "runId": 45599991446,
+      "jobId": 139156065166,
+      "commit": "69995cdc",
+      "platform": "host",
+      "result": "qml_dialog_binding_loop",
+      "reason": "新增确认弹窗Label的隐含高度随父项高度循环，冒烟门禁退出4",
+      "fix": "内容显式implicitWidth及基于contentHeight的implicitHeight，重新运行QML警告门禁",
+      "deviceTestsPassed": false
+    },
+    {
+      "runId": 45600141480,
+      "jobId": 139156611241,
+      "commit": "7a2c2fc1",
+      "platform": "android",
+      "result": "apk_built_packaging_call_failed",
+      "reason": "现代Gradle BUILD SUCCESSFUL并生成APK；打包函数被Path局部变量遮蔽抛TypeError",
+      "fix": "修复package_source命名后继续真实验包",
+      "deviceTestsPassed": false
     }
   ]
 }

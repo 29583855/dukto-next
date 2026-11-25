@@ -13,6 +13,16 @@
         <service android:name="org.duktonext.mobile.TransferService" android:exported="false" android:foregroundServiceType="dataSync" android:stopWithTask="true" />
         <activity android:name="org.duktonext.mobile.DuktoActivity" android:label="Dukto Next" android:exported="true" android:launchMode="singleTop" android:configChanges="orientation|uiMode|screenLayout|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|keyboard|keyboardHidden|navigation|density" android:screenOrientation="unspecified">
             <intent-filter><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.LAUNCHER" /></intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="*/*" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="*/*" />
+            </intent-filter>
             <meta-data android:name="android.app.lib_name" android:value="DuktoNextMobile" />
             <meta-data android:name="android.app.qt_sources_resource_id" android:resource="@array/qt_sources" />
             <meta-data android:name="android.app.repository" android:value="default" />

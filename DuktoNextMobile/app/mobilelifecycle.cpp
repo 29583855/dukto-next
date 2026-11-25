@@ -2,6 +2,7 @@
 #include "controller.h"
 #include "platformfiles.h"
 #include "serverpanel.h"
+#include <QFileOpenEvent>
 #include <QGuiApplication>
 #include <QScopedValueRollback>
 
@@ -19,6 +20,7 @@ MobileLifecycle::MobileLifecycle(Controller &controller, QObject *parent)
             });
     connect(&controller_, &Controller::stateChanged, this, &MobileLifecycle::update);
     connect(server_, &ServerPanel::changed, this, &MobileLifecycle::update);
+    qGuiApp->installEventFilter(this);
     timer_.setInterval(250);
     connect(&timer_, &QTimer::timeout, this, &MobileLifecycle::update);
     timer_.start();
@@ -49,7 +51,7 @@ void MobileLifecycle::update() {
         message_ = QStringLiteral("后台传输服务已停止；Next任务请查询后恢复，R6请重试");
         if (foreground_)
             controller_.setForeground(true);
-        working = false;
+        working = controller_.busy() || (server_ && server_->networkBusy());
     }
     if (!working)
         serviceSuppressed_ = false;
@@ -85,4 +87,16 @@ void MobileLifecycle::update() {
 #endif
     if (old != message_)
         emit changed();
+}
+
+// 日期：2026-11-25；文档授权先进入待处理区，由用户明确选择设备和发送。
+bool MobileLifecycle::eventFilter(QObject *object, QEvent *event) {
+#ifdef Q_OS_IOS
+    if (event->type() == QEvent::FileOpen) {
+        const auto open = static_cast<QFileOpenEvent *>(event);
+        if (mobile::acceptSharedUrl(open->url()))
+            return true;
+    }
+#endif
+    return QObject::eventFilter(object, event);
 }

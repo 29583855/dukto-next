@@ -104,6 +104,8 @@ class Controller final : public QObject {
     Q_INVOKABLE void acceptTerms();
     // 日期：2026-11-04；弹出原生文件选择器并发送用户选定文件。
     Q_INVOKABLE void sendFiles(const QString &host, int port);
+    // 日期：2026-11-25；系统分享仅在用户确认目标后暂存并发送，不隐式传输。
+    Q_INVOKABLE bool sendSharedFiles(const QString &host, int port);
     // 日期：2026-11-04；弹出目录选择器并流式发送文件夹。
     Q_INVOKABLE void sendFolder(const QString &host, int port);
     // 日期：2026-11-07；转换前核对UTF-8上限及临时授信，返回是否实际启动，失败保留编辑草稿。

@@ -24,6 +24,18 @@ import java.nio.file.Path;
 public final class Documents {
     // 日期：2026-11-25；查询提供器元数据，虚拟文件需转换格式，当前明确拒绝而非读取错误内容。
     private static JSONObject metadata(Context context, Uri uri) throws Exception {
+        if (uri == null || !"content".equals(uri.getScheme())) throw new IOException("拒绝未授权的非content文档");
+        // 日期：2026-11-25；系统分享提供器未必实现DocumentsContract，按OpenableColumns查询。
+        if (!DocumentsContract.isDocumentUri(context, uri)) {
+            try (Cursor cursor = context.getContentResolver().query(uri,
+                new String[] {OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE}, null, null, null)) {
+                if (cursor == null || !cursor.moveToFirst()) throw new IOException("分享提供器未返回文件信息");
+                String name = cursor.getString(0);
+                if (name == null || name.isEmpty() || name.contains("/") || name.contains("\\")) throw new IOException("分享文件名不安全");
+                return new JSONObject().put("uri", uri.toString()).put("name", name)
+                    .put("size", cursor.isNull(1) ? -1 : cursor.getLong(1)).put("modified", -1).put("directory", false);
+            }
+        }
         String[] columns = {DocumentsContract.Document.COLUMN_DISPLAY_NAME,
             DocumentsContract.Document.COLUMN_SIZE, DocumentsContract.Document.COLUMN_LAST_MODIFIED,
             DocumentsContract.Document.COLUMN_MIME_TYPE, DocumentsContract.Document.COLUMN_FLAGS};

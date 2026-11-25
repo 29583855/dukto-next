@@ -269,3 +269,34 @@ void mobile::beginBackgroundCleanup() {
 // 日期：2026-11-25；Android收尾由传输服务状态负责。
 void mobile::endBackgroundCleanup() {
 }
+
+// 日期：2026-11-25；JNI只读取有限JSON，不将content URI交给QML。
+QVariantMap mobile::sharedDocuments() {
+    const auto json = QAndroidJniObject::callStaticObjectMethod(
+        "org/duktonext/mobile/IncomingShare", "info", "()Ljava/lang/String;");
+    const auto error = javaError();
+    return error.isEmpty()
+               ? QJsonDocument::fromJson(json.toString().toUtf8()).object().toVariantMap()
+               : QVariantMap{{"error", error}};
+}
+// 日期：2026-11-25；系统授予的流在用户明确发送后才导入，失败不会发送空任务。
+void mobile::importSharedDocuments(FileResult done) {
+    const auto intent = QAndroidJniObject::callStaticObjectMethod(
+        "org/duktonext/mobile/IncomingShare", "takeFiles", "()Landroid/content/Intent;");
+    const auto error = javaError();
+    if (!error.isEmpty() || !intent.isValid()) {
+        done({}, error.isEmpty() ? QStringLiteral("没有待处理分享文件，请重新从系统分享") : error);
+        return;
+    }
+    stage(intent, false, done);
+}
+// 日期：2026-11-25；释放单槽待处理分享，文件原件完全由系统提供器管理。
+void mobile::discardSharedDocuments(bool textOnly) {
+    QAndroidJniObject::callStaticMethod<void>("org/duktonext/mobile/IncomingShare",
+                                              textOnly ? "clearText" : "clear", "()V");
+    javaError();
+}
+// 日期：2026-11-25；Android由受限ACTION_SEND入口接收，拒绝另行传入file URL。
+bool mobile::acceptSharedUrl(const QUrl &) {
+    return false;
+}

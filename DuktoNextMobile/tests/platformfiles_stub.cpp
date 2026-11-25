@@ -30,3 +30,19 @@ void mobile::beginBackgroundCleanup() {
 // 日期：2026-11-25；主机没有系统后台任务。
 void mobile::endBackgroundCleanup() {
 }
+
+// 日期：2026-11-25；主机测试无系统分享入口。
+QVariantMap mobile::sharedDocuments() {
+    return {};
+}
+// 日期：2026-11-25；测试替身明确拒绝系统分享导入。
+void mobile::importSharedDocuments(FileResult done) {
+    done({}, QStringLiteral("主机没有系统分享"));
+}
+// 日期：2026-11-25；主机没有需要释放的分享授权。
+void mobile::discardSharedDocuments(bool) {
+}
+// 日期：2026-11-25；主机不把任意本地URL冒充iOS系统授权。
+bool mobile::acceptSharedUrl(const QUrl &) {
+    return false;
+}

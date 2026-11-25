@@ -3,6 +3,7 @@
 #include "platformfiles.h"
 #include <QEventLoop>
 #include <QObject>
+#include <QTimer>
 #include <QVariantList>
 #include <QVariantMap>
 
@@ -12,6 +13,7 @@ class MobileFiles final : public QObject {
     Q_PROPERTY(bool busy READ busy NOTIFY changed)
     Q_PROPERTY(QString message READ message NOTIFY changed)
     Q_PROPERTY(QString documents READ documents CONSTANT)
+    Q_PROPERTY(QVariantMap incoming READ incoming NOTIFY changed)
   public:
     // 日期：2026-11-25；创建应用可见文件目录，认证与状态数据库仍留私有AppData目录。
     explicit MobileFiles(QObject *parent = nullptr);
@@ -23,6 +25,12 @@ class MobileFiles final : public QObject {
     QString message() const;
     // 日期：2026-11-25；仅公开用户文件目录，不向QML公开认证资料目录。
     QString documents() const;
+    // 日期：2026-11-25；仅展示系统待处理分享，不自动发送也不泄露源URI。
+    QVariantMap incoming() const;
+    // 日期：2026-11-25；目标明确后导入系统分享快照，失败返回空列表。
+    QStringList importSharedFiles();
+    // 日期：2026-11-25；用户显式丢弃，或文本发送任务成功启动后释放待处理内容。
+    Q_INVOKABLE void discardIncoming(bool textOnly = false);
     // 日期：2026-11-25；导入文件返回独立沙箱副本，调用方在传输完成前持有路径。
     QStringList importFiles();
     // 日期：2026-11-25；目录通过系统授权后复制，当前共享的是该次快照。
@@ -59,7 +67,7 @@ class MobileFiles final : public QObject {
 
   private:
     // 日期：2026-11-25；单次选择操作的事件循环允许界面刷新，禁止再次打开选择器。
-    QStringList select(bool folder);
+    QStringList select(bool folder, bool shared = false);
     // 日期：2026-11-25；校验用户可见路径的真实归属，拒绝符号链接逃逸。
     bool insideDocuments(const QString &path) const;
     static MobileFiles *instance_;
@@ -71,4 +79,6 @@ class MobileFiles final : public QObject {
     QEventLoop *directoryWaiter_ = nullptr;
     QEventLoop *nativeWaiter_ = nullptr;
     QString selectedDirectory_;
+    QTimer shareTimer_;
+    QVariantMap incoming_;
 };

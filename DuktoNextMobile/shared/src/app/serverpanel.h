@@ -117,6 +117,8 @@ class ServerPanel final : public QObject {
     Q_INVOKABLE void setServing(bool enabled, const QString &address, int port);
     // 日期：2026-11-04；打开原生选择器，GUI 操作取消时不启动传输。
     Q_INVOKABLE void chooseUpload(const QVariantMap &options, bool folder);
+    // 日期：2026-11-25；分享快照使用原服务器上传路径与持久绑定校验。
+    Q_INVOKABLE void chooseSharedUpload(const QVariantMap &options);
     // 日期：2026-11-04；返回用户显式选择的目录，取消返回空字符串。
     Q_INVOKABLE QString chooseDirectory();
     // 日期：2026-11-04；选择受保护配对文件，仅把文件路径展示给用户。

@@ -893,3 +893,15 @@ void Controller::setForeground(bool active) {
     }
     emit stateChanged();
 }
+
+// 日期：2026-11-25；先验证目标与忙状态，导入事务完成后才启动R6传输。
+bool Controller::sendSharedFiles(const QString &host, int port) {
+    dukto::LegacyRequest request;
+    if (!prepareRequest(request, host, port))
+        return false;
+    request.paths = MobileFiles::instance()->importSharedFiles();
+    if (request.paths.isEmpty())
+        return false;
+    start(request);
+    return sender_ != nullptr;
+}

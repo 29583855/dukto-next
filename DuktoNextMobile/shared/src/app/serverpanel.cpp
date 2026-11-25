@@ -716,3 +716,15 @@ void ServerPanel::setForeground(bool active) {
 bool ServerPanel::networkBusy() const {
     return busy() || controlBusy() || (listener_ && listener_->activeConnections() > 0);
 }
+
+// 日期：2026-11-25；保留系统分享的私有快照，仍由核心执行认证和传输。
+void ServerPanel::chooseSharedUpload(const QVariantMap &options) {
+    if (busy() || controlBusy())
+        return;
+    const auto paths = MobileFiles::instance()->importSharedFiles();
+    if (paths.isEmpty())
+        return;
+    auto values = options;
+    values["paths"] = paths;
+    execute(QStringLiteral("upload"), values);
+}

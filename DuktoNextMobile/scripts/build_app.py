@@ -78,8 +78,8 @@ def main():
     qmake = [qt / "bin/qmake", root / "DuktoNextMobile.pro", "CORE_BUILD=" + str(core),
              "OPENSSL_PREFIX=" + str(prefix / "openssl"), "CONFIG+=release"]
     if args.platform == "android":
-        package = prepare_android_package(root, qt, build)
-        qmake.append("ANDROID_PACKAGE_SOURCE_DIR=" + str(package))
+        package_source = prepare_android_package(root, qt, build)
+        qmake.append("ANDROID_PACKAGE_SOURCE_DIR=" + str(package_source))
     run(qmake, app, environment)
     if args.platform == "android":
         run(["make", "-j3"], app, environment)

@@ -31,6 +31,17 @@ MobileFiles::MobileFiles(QObject *parent) : QObject(parent) {
 #endif
     connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit, this,
             &MobileFiles::cancelOperation);
+    shareTimer_.setInterval(500);
+    connect(&shareTimer_, &QTimer::timeout, this, [this] {
+        if (busy_)
+            return;
+        const auto value = mobile::sharedDocuments();
+        if (value != incoming_) {
+            incoming_ = value;
+            emit changed();
+        }
+    });
+    shareTimer_.start();
     if (!QDir().mkpath(documents_))
         message_ = QStringLiteral("无法创建应用文件目录");
 }
@@ -56,7 +67,7 @@ QString MobileFiles::documents() const {
 }
 
 // 日期：2026-11-25；原生调用可能同步失败，用排队启动保证等待循环已准备。
-QStringList MobileFiles::select(bool folder) {
+QStringList MobileFiles::select(bool folder, bool shared) {
     if (busy_) {
         message_ = QStringLiteral("请等待文件操作结束");
         emit changed();
@@ -70,11 +81,10 @@ QStringList MobileFiles::select(bool folder) {
     auto paths = std::make_shared<QStringList>();
     QPointer<QEventLoop> waiter(&loop);
     QPointer<MobileFiles> guard(this);
-    QTimer::singleShot(0, this, [guard, folder, paths, waiter] {
+    QTimer::singleShot(0, this, [guard, folder, shared, paths, waiter] {
         if (!guard || !waiter)
             return;
-        mobile::selectDocuments(folder, [guard, paths, waiter](QStringList selected,
-                                                               QString error) {
+        auto completed = [guard, paths, waiter](QStringList selected, QString error) {
             if (!guard || !waiter)
                 return;
             *paths = selected;
@@ -82,7 +92,11 @@ QStringList MobileFiles::select(bool folder) {
                                                                   : QStringLiteral("文件导入完成"))
                                               : error;
             waiter->quit();
-        });
+        };
+        if (shared)
+            mobile::importSharedDocuments(completed);
+        else
+            mobile::selectDocuments(folder, completed);
     });
     loop.exec();
     nativeWaiter_ = nullptr;
@@ -284,5 +298,22 @@ void MobileFiles::discardUpload(const QString &request) {
         message_ = error;
     else
         message_ = QStringLiteral("已放弃该请求的本地续传；如需终止远端任务，请另行取消并查询状态");
+    emit changed();
+}
+
+// 日期：2026-11-25；返回有限待处理信息，不合并到长期历史模型。
+QVariantMap MobileFiles::incoming() const {
+    return incoming_;
+}
+// 日期：2026-11-25；复用单次选择器互斥和取消行为，分享文件同样受16GiB配额约束。
+QStringList MobileFiles::importSharedFiles() {
+    return select(false, true);
+}
+// 日期：2026-11-25；显式丢弃待处理授权；活动复制期间不能改换输入。
+void MobileFiles::discardIncoming(bool textOnly) {
+    if (busy_)
+        return;
+    mobile::discardSharedDocuments(textOnly);
+    incoming_ = mobile::sharedDocuments();
     emit changed();
 }

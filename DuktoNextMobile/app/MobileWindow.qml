@@ -53,6 +53,20 @@ ApplicationWindow {
             wrapMode: Text.WordWrap
             padding: 6
         }
+        Label {
+            Layout.fillWidth: true
+            visible: Number(mobileFiles.incoming.files || 0) > 0 || String(mobileFiles.incoming.text || "").length > 0 || String(mobileFiles.incoming.error || "").length > 0
+            text: "系统分享：" + (mobileFiles.incoming.files || 0) + "项文件" + (String(mobileFiles.incoming.text || "").length ? "，含文字" : "") + "。请选择设备发送，或在服务器页上传。" + (mobileFiles.incoming.error ? "\n" + mobileFiles.incoming.error : "")
+            textFormat: Text.PlainText
+            wrapMode: Text.WordWrap
+            padding: 6
+        }
+        Button {
+            text: "丢弃待处理系统分享"
+            visible: Number(mobileFiles.incoming.files || 0) > 0 || String(mobileFiles.incoming.text || "").length > 0 || String(mobileFiles.incoming.error || "").length > 0
+            enabled: !mobileFiles.busy
+            onClicked: mobileFiles.discardIncoming()
+        }
         spacing: 0
         ToolBar {
             Layout.fillWidth: true

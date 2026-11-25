@@ -612,6 +612,35 @@ Rectangle {
 
                 }
 
+                Button {
+                    objectName: "sendSharedFilesButton"
+                    Layout.fillWidth: true
+                    visible: Number(mobileFiles.incoming.files || 0) > 0
+                    text: "发送系统分享文件（" + (mobileFiles.incoming.files || 0) + "项）"
+                    enabled: !controller.busy && !mobileFiles.busy && hostInput.text.trim().length > 0
+                    onClicked: {
+                        if (controller.sendSharedFiles(hostInput.text.trim(), portInput.value))
+                            sendDialog.close();
+                    }
+                }
+
+                Button {
+                    objectName: "sendSharedTextButton"
+                    Layout.fillWidth: true
+                    visible: String(mobileFiles.incoming.text || "").length > 0
+                    text: "查看系统分享文字"
+                    enabled: !controller.busy && !mobileFiles.busy && hostInput.text.trim().length > 0
+                    onClicked: {
+                        root.targetHost = hostInput.text.trim();
+                        root.targetPort = portInput.value;
+                        textEditor.readOnly = false;
+                        textEditor.text = String(mobileFiles.incoming.text || "");
+                        textDialog.sharedDraft = true;
+                        textDialog.sendError = "";
+                        textDialog.open();
+                    }
+                }
+
                 Label {
                     textFormat: Text.PlainText
                     text: "文件与目录通过系统文档选择器导入。截图请先用系统截图，再选择图片文件。"
@@ -631,9 +660,11 @@ Rectangle {
 
         objectName: "textDialog"
         property string sendError: ""
+        property bool sharedDraft: false
         // 日期：2026-11-07；关闭后先清正文；只读页随后归还授信，成功发送和主动关闭也不缓存草稿。
         onClosed: {
             textEditor.text = "";
+            sharedDraft = false;
             if (textEditor.readOnly)
                 controller.releaseReceivedText();
         }
@@ -715,6 +746,8 @@ Rectangle {
                     onClicked: {
                         // 日期：2026-11-07；仅实际启动后关闭，超限/授信/地址错误显示在编辑器内并允许原稿重试。
                         if (controller.sendText(root.targetHost, root.targetPort, textEditor.text)) {
+                            if (textDialog.sharedDraft)
+                                mobileFiles.discardIncoming(true);
                             textDialog.sendError = "";
                             textDialog.close();
                             sendDialog.close();

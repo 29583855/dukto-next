@@ -18,6 +18,17 @@ public class DuktoActivity extends QtActivity {
         }
     }
 
+    // 日期：2026-11-25；冷启动保留系统分享，等待用户选择发送目标。
+    @Override public void onCreate(android.os.Bundle state) {
+        super.onCreate(state);
+        if (state == null) IncomingShare.accept(getIntent());
+    }
+    // 日期：2026-11-25；已运行应用接受新分享，单槽保护未处理的旧内容。
+    @Override public void onNewIntent(android.content.Intent intent) {
+        super.onNewIntent(intent);
+        IncomingShare.accept(intent);
+    }
+
     // 日期：2026-11-25；只在可见期间持锁，系统拒绝时记录具体原因供局域网诊断。
     @Override public void onResume() {
         super.onResume();
