@@ -687,11 +687,11 @@ Rectangle {
         title: textEditor.readOnly ? "收到的文本" : "发送文字"
         // 日期：2026-11-26；按窗口内键盘顶边避让，Android窗口已缩小时取较小边界，避免重复扣减。
         readonly property real keyboardTop: Qt.inputMethod.visible && Qt.inputMethod.keyboardRectangle.height > 0 ? root.mapFromItem(null, Qt.inputMethod.keyboardRectangle.x, Qt.inputMethod.keyboardRectangle.y).y : root.height
-        readonly property real availableHeight: Math.max(0, Math.min(root.height, keyboardTop))
+        readonly property real keyboardViewportHeight: Math.max(0, Math.min(root.height, keyboardTop))
         x: (parent.width - width) / 2
-        y: (availableHeight - height) / 2
+        y: (keyboardViewportHeight - height) / 2
         width: root.width - 24
-        height: Math.max(0, availableHeight - 80)
+        height: Math.max(0, keyboardViewportHeight - 80)
         modal: true
         standardButtons: Dialog.Close
 
