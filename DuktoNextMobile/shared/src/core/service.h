@@ -147,6 +147,8 @@ class ServiceListener final : public TcpListener {
     void stop();
     // 日期：2026-11-04；提供可公开核对的服务 ID、指纹和证书有效期，不输出私钥。
     QJsonObject publicInfo() const;
+    // 日期：2026-11-25；主线程查询现有连接数，用于移动端活动任务后台资格。
+    int activeConnections() const;
   signals:
     void event(const QJsonObject &event);
 

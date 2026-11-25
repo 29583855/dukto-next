@@ -6,6 +6,7 @@ import re
 from pathlib import Path
 import shutil
 import subprocess
+from inspect_package import package
 
 
 # 日期：2026-11-25；命令失败立即返回非零，编译和安装证据分开记录。
@@ -102,7 +103,8 @@ def main():
         artifacts = list(app.rglob("DuktoNextMobile.app")) + list((build / "DerivedData").rglob("DuktoNextMobile.app"))
         if not artifacts:
             raise ValueError("未生成iOS app")
-    receipt = {"platform": args.platform, "buildPassed": True, "deviceTestsPassed": False,
+    inspection = package(args.platform, artifacts, build / "packages" / args.platform, environment)
+    receipt = {"packageInspection": inspection, "platform": args.platform, "buildPassed": True, "deviceTestsPassed": False,
                "signedForDistribution": False, "artifacts": [str(path) for path in artifacts]}
     (build / "build-receipt.json").write_text(json.dumps(receipt, indent=2) + "\n", "utf-8")
 

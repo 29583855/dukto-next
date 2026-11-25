@@ -229,3 +229,48 @@ void mobile::cancelDocumentPicker() {
         activePicker = nil;
     }
 }
+
+namespace {
+UIBackgroundTaskIdentifier cleanupTask = UIBackgroundTaskInvalid;
+}
+// 日期：2026-11-25；iOS不提供Android式后台传输服务。
+bool mobile::setBackgroundTransfer(bool) {
+    return false;
+}
+// 日期：2026-11-25；iOS不宣称持续后台监听资格。
+bool mobile::backgroundTransferAlive() {
+    return false;
+}
+// 日期：2026-11-25；iOS任务取消由宿主切入后台触发。
+bool mobile::takeBackgroundStop() {
+    return false;
+}
+// 日期：2026-11-25；在取消及检查点落盘前申请有限系统时间，过期立即归还。
+void mobile::beginBackgroundCleanup() {
+    void (^begin)(void) = ^{
+      if (cleanupTask != UIBackgroundTaskInvalid)
+          return;
+      cleanupTask = [UIApplication.sharedApplication beginBackgroundTaskWithName:@"DuktoCheckpoint"
+                                                               expirationHandler:^{
+                                                                 mobile::endBackgroundCleanup();
+                                                               }];
+    };
+    if (NSThread.isMainThread)
+        begin();
+    else
+        dispatch_sync(dispatch_get_main_queue(), begin);
+}
+// 日期：2026-11-25；所有UIKit后台任务操作在主线程，重复归还无副作用。
+void mobile::endBackgroundCleanup() {
+    void (^end)(void) = ^{
+      if (cleanupTask == UIBackgroundTaskInvalid)
+          return;
+      const auto task = cleanupTask;
+      cleanupTask = UIBackgroundTaskInvalid;
+      [UIApplication.sharedApplication endBackgroundTask:task];
+    };
+    if (NSThread.isMainThread)
+        end();
+    else
+        dispatch_async(dispatch_get_main_queue(), end);
+}

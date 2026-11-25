@@ -73,6 +73,8 @@ class ServerPanel final : public QObject {
     bool busy() const;
     // 日期：2026-11-04；暂停/取消/查询使用独立有界槽位，数据忙时仍可操作。
     bool controlBusy() const;
+    // 日期：2026-11-25；覆盖客户端动作及本机服务既有连接，空闲监听不算后台任务。
+    bool networkBusy() const;
     // 日期：2026-11-04；返回当前本地 TLS 监听器是否正在监听。
     bool serving() const;
     // 日期：2026-11-04；显示最后实际操作事件或错误，不根据按钮点击推断完成。

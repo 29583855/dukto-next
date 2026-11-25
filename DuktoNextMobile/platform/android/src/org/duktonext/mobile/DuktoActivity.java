@@ -7,6 +7,16 @@ import org.qtproject.qt5.android.bindings.QtActivity;
 
 public class DuktoActivity extends QtActivity {
     private WifiManager.MulticastLock discoveryLock;
+    private boolean notificationAsked;
+
+    // 日期：2026-11-25；首次实际传输才请求通知；拒绝后仍按系统前台服务规则处理。
+    public void requestTransferNotifications() {
+        if (android.os.Build.VERSION.SDK_INT >= 33 && !notificationAsked &&
+            checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            notificationAsked = true;
+            requestPermissions(new String[] {android.Manifest.permission.POST_NOTIFICATIONS}, 4645);
+        }
+    }
 
     // 日期：2026-11-25；只在可见期间持锁，系统拒绝时记录具体原因供局域网诊断。
     @Override public void onResume() {

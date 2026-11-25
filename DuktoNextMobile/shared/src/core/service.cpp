@@ -853,3 +853,6 @@ void ServiceListener::incomingConnection(qintptr descriptor) {
     worker->start();
 }
 } // namespace dukto
+
+// 日期：2026-11-25；连接集合只在监听器所属主线程维护。
+int dukto::ServiceListener::activeConnections() const { return workers_.size(); }

@@ -271,3 +271,18 @@ void MobileFiles::cleanUnusedImports() {
         message_ = error;
     emit changed();
 }
+
+// 日期：2026-11-25；仅解除私有引用，实际文件由无引用旧批次清理另行回收。
+void MobileFiles::discardUpload(const QString &request) {
+    if (busy_)
+        return;
+    const QUuid id(request);
+    QString error;
+    if (id.isNull() || request.size() != 36)
+        message_ = QStringLiteral("请填写有效的原上传请求UUID");
+    else if (!ImportRegistry(imports_).release(id, error))
+        message_ = error;
+    else
+        message_ = QStringLiteral("已放弃该请求的本地续传；如需终止远端任务，请另行取消并查询状态");
+    emit changed();
+}

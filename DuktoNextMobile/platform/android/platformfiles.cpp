@@ -237,3 +237,35 @@ void mobile::cancelDocumentPicker() {
     picker.done = {};
     QtAndroid::androidActivity().callMethod<void>("finishActivity", "(I)V", jint(RequestCode));
 }
+
+// 日期：2026-11-25；只在活动传输期间申请Android前台资格，捕获JNI错误供策略回退。
+bool mobile::setBackgroundTransfer(bool active) {
+    const auto context = QtAndroid::androidContext();
+    const auto result = QAndroidJniObject::callStaticMethod<jboolean>(
+        "org/duktonext/mobile/TransferService", "setActive", "(Landroid/content/Context;Z)Z",
+        context.object(), jboolean(active));
+    const auto error = javaError();
+    if (active && result && error.isEmpty())
+        QtAndroid::runOnAndroidThread([] {
+            QtAndroid::androidActivity().callMethod<void>("requestTransferNotifications", "()V");
+        });
+    return active && result && error.isEmpty();
+}
+// 日期：2026-11-25；系统终止服务时不得继续假定后台网络可用。
+bool mobile::backgroundTransferAlive() {
+    const bool result = QAndroidJniObject::callStaticMethod<jboolean>(
+        "org/duktonext/mobile/TransferService", "alive", "()Z");
+    return javaError().isEmpty() && result;
+}
+// 日期：2026-11-25；通知取消、额度超时和意外服务销毁统一为Qt取消请求。
+bool mobile::takeBackgroundStop() {
+    const bool result = QAndroidJniObject::callStaticMethod<jboolean>(
+        "org/duktonext/mobile/TransferService", "takeStop", "()Z");
+    return !javaError().isEmpty() || result;
+}
+// 日期：2026-11-25；Android使用前台服务，不使用iOS收尾接口。
+void mobile::beginBackgroundCleanup() {
+}
+// 日期：2026-11-25；Android收尾由传输服务状态负责。
+void mobile::endBackgroundCleanup() {
+}

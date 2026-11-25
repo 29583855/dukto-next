@@ -50,6 +50,8 @@ class MobileFiles final : public QObject {
     void cancelOperation();
     // 日期：2026-11-25；仅清理启动前无上传引用的批次，保护本次会话文件及续传。
     Q_INVOKABLE void cleanUnusedImports();
+    // 日期：2026-11-25；用户二次确认后释放指定请求的本地续传引用，不取消远端任务。
+    Q_INVOKABLE void discardUpload(const QString &request);
   signals:
     void changed();
     void directoryRequested(const QString &title);

@@ -10,6 +10,26 @@ Rectangle {
 
     signal closeRequested()
 
+    Dialog {
+        id: discardDialog
+        property string selectedRequest: ""
+        title: "放弃本地续传"
+        modal: true
+        width: Math.min(page.width - 24, 480)
+        x: (page.width - width) / 2
+        y: Math.max(12, (page.height - height) / 2)
+        standardButtons: Dialog.Ok | Dialog.Cancel
+        contentItem: Label {
+            text: "请求：" + discardDialog.selectedRequest + "\n确认释放此请求的本地快照引用？之后可能无法继续原上传。远端任务不会自动取消；请先在任务页取消并查询。实际文件须再点击清理旧暂存。"
+            textFormat: Text.PlainText
+            wrapMode: Text.WrapAnywhere
+        }
+        onAccepted: {
+            if (!panel.busy && !panel.controlBusy && !controller.busy && !mobileFiles.busy)
+                mobileFiles.discardUpload(selectedRequest)
+        }
+    }
+
     // 日期：2026-11-05；区分磁盘与运行证书并显示核对错误，文案可在窄窗口自动换行。
     function certificateText() {
         const identity = panel.identity;
@@ -871,7 +891,7 @@ Rectangle {
                     }
 
                     Label {
-                        text: "继续上传提供原路径（每行一个）；继续下载使用“连接与文件”的原保存目录。"
+                        text: "继续上传自动恢复原请求的私有快照；继续下载使用“连接与文件”的原保存目录。"
                         textFormat: Text.PlainText
                         wrapMode: Text.WordWrap
                         Layout.fillWidth: true
@@ -879,8 +899,9 @@ Rectangle {
                     }
 
                     ScrollView {
+                        visible: false
                         Layout.fillWidth: true
-                        Layout.preferredHeight: 100
+                        Layout.preferredHeight: 0
 
                         TextArea {
                             id: resumePaths
@@ -899,6 +920,15 @@ Rectangle {
                         text: "继续原任务"
                         enabled: !panel.busy && !panel.controlBusy
                         onClicked: panel.execute("resume", page.remoteOptions())
+                    }
+
+                    Button {
+                        text: "放弃指定请求的本地续传"
+                        enabled: request.text.length === 36 && !panel.busy && !panel.controlBusy && !controller.busy && !mobileFiles.busy
+                        onClicked: {
+                            discardDialog.selectedRequest = request.text
+                            discardDialog.open()
+                        }
                     }
 
                     Button {

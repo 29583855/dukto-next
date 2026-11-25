@@ -45,6 +45,14 @@ ApplicationWindow {
         }
     }
     header: ColumnLayout {
+        Label {
+            Layout.fillWidth: true
+            visible: mobileLifecycle.message.length > 0
+            text: mobileLifecycle.message
+            textFormat: Text.PlainText
+            wrapMode: Text.WordWrap
+            padding: 6
+        }
         spacing: 0
         ToolBar {
             Layout.fillWidth: true

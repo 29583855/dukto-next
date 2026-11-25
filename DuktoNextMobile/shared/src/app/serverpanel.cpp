@@ -711,3 +711,8 @@ void ServerPanel::setForeground(bool active) {
         setServing(true, servingAddress_, servingPort_);
     }
 }
+
+// 日期：2026-11-25；同一主线程读取工作槽及监听器连接计数。
+bool ServerPanel::networkBusy() const {
+    return busy() || controlBusy() || (listener_ && listener_->activeConnections() > 0);
+}
