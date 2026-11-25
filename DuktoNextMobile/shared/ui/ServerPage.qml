@@ -18,13 +18,16 @@ Rectangle {
         width: Math.min(page.width - 24, 480)
         x: (page.width - width) / 2
         y: Math.max(12, (page.height - height) / 2)
+        height: Math.min(page.height - 24, 300)
         standardButtons: Dialog.Ok | Dialog.Cancel
-        contentItem: Label {
-            implicitWidth: 440
-            implicitHeight: contentHeight
-            text: "请求：" + discardDialog.selectedRequest + "\n确认释放此请求的本地快照引用？之后可能无法继续原上传。远端任务不会自动取消；请先在任务页取消并查询。实际文件须再点击清理旧暂存。"
-            textFormat: Text.PlainText
-            wrapMode: Text.WrapAnywhere
+        contentItem: ScrollView {
+            clip: true
+            Label {
+                width: discardDialog.availableWidth
+                text: "请求：" + discardDialog.selectedRequest + "\n确认释放此请求的本地快照引用？之后可能无法继续原上传。远端任务不会自动取消；请先在任务页取消并查询。实际文件须再点击清理旧暂存。"
+                textFormat: Text.PlainText
+                wrapMode: Text.WrapAnywhere
+            }
         }
         onAccepted: {
             if (!panel.busy && !panel.controlBusy && !controller.busy && !mobileFiles.busy)

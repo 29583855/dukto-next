@@ -79,7 +79,9 @@ def inspect_ios(app):
     if not os.access(binary, os.X_OK):
         raise ValueError("iOS可执行位缺失")
     links = subprocess.check_output(["xcrun", "otool", "-L", binary], text=True)
-    if any(path in links for path in ["/Users/", "/home/", "/private/tmp/", "/opt/homebrew/"]):
+    # 日期：2026-11-25；otool首行是被检查文件自身的绝对路径，只检查后续动态依赖条目。
+    dependencies = [line.strip().split(" (", 1)[0] for line in links.splitlines()[1:] if line.strip()]
+    if any(path in link for link in dependencies for path in ["/Users/", "/home/", "/private/tmp/", "/opt/homebrew/"]):
         raise ValueError("iOS链接包含构建机路径")
     return {"kind": "unsigned-device-app", "bundleId": info["CFBundleIdentifier"],
             "minimumOS": info["MinimumOSVersion"], "architecture": "arm64",

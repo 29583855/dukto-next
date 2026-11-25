@@ -56,7 +56,11 @@ public final class IncomingShare {
             }
             if (clip == null && body.isEmpty()) throw new IllegalArgumentException("分享内容为空");
             files = clip == null ? 0 : clip.getItemCount();
-            pending = clip == null ? null : new Intent().setClipData(clip).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            pending = null;
+            if (clip != null) {
+                pending = new Intent().addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                pending.setClipData(clip);
+            }
             text = body;
             error = "";
         } catch (RuntimeException failure) {

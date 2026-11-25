@@ -64,7 +64,9 @@ public class IncomingShareTest {
     @Test public void unsafeUriRejectsWholeBatch() throws Exception {
         ClipData clip = ClipData.newRawUri("test", Uri.parse("content://provider/good"));
         clip.addItem(new ClipData.Item(Uri.parse("file:///data/private")));
-        IncomingShare.accept(new Intent(Intent.ACTION_SEND_MULTIPLE).setClipData(clip));
+        Intent source = new Intent(Intent.ACTION_SEND_MULTIPLE);
+        source.setClipData(clip);
+        IncomingShare.accept(source);
         assertEquals(0, info().getInt("files"));
         assertNull(IncomingShare.takeFiles());
         assertFalse(info().getString("error").isEmpty());
