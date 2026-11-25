@@ -364,6 +364,25 @@
       "reason": "原始arm64 APK安装成功；Android11 libndk_translation.so不支持指令0x5ee1b801，SIGILL退出；非手机原生arm64失败证据",
       "fix": "保留失败收据，继续在API35镜像测试同一APK；不修改业务代码或关闭指令检查",
       "deviceTestsPassed": false
+    },
+    {
+      "run": 45617975751,
+      "job": 139218245411,
+      "platform": "android-emulator-api35",
+      "result": "failure",
+      "artifact": 15023672098,
+      "reason": "原始APK安装/调起成功，Qt退出后HWUI出现destroyed mutex；当时根因未知",
+      "deviceTestsPassed": false
+    },
+    {
+      "run": 45619867182,
+      "job": 139224834247,
+      "platform": "android-emulator-api35",
+      "result": "startup_controller_disk_exception",
+      "artifact": 15024725269,
+      "reason": "启动阶段日志表明控制器构造抛磁盘异常、QML未加载；同PID根目录read被SELinux拒绝",
+      "fix": "中间目录使用O_PATH，保留末级读取权限和链接/替换检查，等待原包安装复验",
+      "deviceTestsPassed": false
     }
   ]
 }

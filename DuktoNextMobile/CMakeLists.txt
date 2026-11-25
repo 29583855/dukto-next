@@ -182,3 +182,9 @@ if(DUKTO_MOBILE_HOST_CHECK)
         tools/servicecommands.cpp tools/statecommands.cpp)
     target_link_libraries(dukto-mobile-probe PRIVATE dukto-core)
 endif()
+
+# 日期：2026-11-25；Linux搜索目录权限回归使用真实移动核心，验证沙箱祖先目录及链接拒绝。
+if(DUKTO_MOBILE_HOST_CHECK AND CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    add_executable(dukto-mobile-path-tests tests/traversal_tests.cpp)
+    target_link_libraries(dukto-mobile-path-tests PRIVATE dukto-core)
+endif()

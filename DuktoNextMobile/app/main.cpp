@@ -128,7 +128,8 @@ int main(int argc, char *argv[]) {
         qInfo() << "MobileStartup event-loop-end" << result;
         return result;
     } catch (const dukto::Error &error) {
-        qCritical() << "MobileStartup core-exception" << static_cast<int>(error.code);
+        qCritical() << "MobileStartup core-exception" << static_cast<int>(error.code)
+                    << error.stage;
         QTextStream(stderr) << error.what() << '\n';
         return static_cast<int>(error.code);
     } catch (const std::exception &error) {

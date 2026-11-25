@@ -35,6 +35,8 @@ jobs:
           cmake --build DuktoNextMobile/build-host --parallel 3
       - name: Exercise real mobile core over loopback sockets
         run: |
+          DuktoNextMobile/build-host/dukto-mobile-path-tests > mobile-path-traversal.json
+          cat mobile-path-traversal.json
           python DuktoNextMobile/tests/interop/legacy_integration.py DuktoNextMobile/build-host/dukto-mobile-probe --report mobile-legacy.json
           python DuktoNextMobile/tests/interop/service_integration.py DuktoNextMobile/build-host/dukto-mobile-probe --report mobile-service.json
           for lanes in 1 2 4 8 16; do

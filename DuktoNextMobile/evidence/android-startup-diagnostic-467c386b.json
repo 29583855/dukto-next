@@ -1,0 +1,32 @@
+{
+  "passed": false,
+  "deviceTest": false,
+  "scope": "Android模拟器安装启动原始arm64开发APK",
+  "sourceCommit": "467c386b5f7fc524bd53502b3913e7aa73d2c62c",
+  "steps": [
+    "originalApkHashAndAbi",
+    "install"
+  ],
+  "apkSha256": "ac19c8e6f846d1784fbff5f4bc4933e78313cb644f2eed2ea845ad3c8d558002",
+  "abiList": "x86_64,arm64-v8a",
+  "systemVersion": "15",
+  "nativeBridge": "libndk_translation.so",
+  "installOutput": "Performing Streamed Install\nSuccess",
+  "launchOutput": "Starting: Intent { cmp=org.duktonext.mobile/.DuktoActivity }\nStatus: ok\nLaunchState: COLD\nActivity: org.duktonext.mobile/.DuktoActivity\nTotalTime: 5134\nWaitTime: 5164\nComplete\n",
+  "error": "ADB命令失败: shell pidof org.duktonext.mobile: ",
+  "date": "2026-11-25",
+  "run": 45619867182,
+  "job": 139224834247,
+  "artifact": 15024725269,
+  "validationCommit": "0b411311a1131e42af5c6f99a98215a1e1bea0a5",
+  "stagesObserved": [
+    "application-created",
+    "storage-ready",
+    "files-ready",
+    "core-exception 5"
+  ],
+  "controllerCreated": false,
+  "qmlLoaded": false,
+  "observedFailure": "控制器构造期间磁盘异常，退出前未加载QML；日志同时记录根目录read被SELinux拒绝。目录遍历以O_RDONLY打开根和每级祖先，搜索权限适配待实际复验。",
+  "fixPending": "Linux/Android祖先改O_PATH，末级保留O_RDONLY，逐层O_NOFOLLOW及身份复验；增非root权限/链接/替换/FD回归。"
+}

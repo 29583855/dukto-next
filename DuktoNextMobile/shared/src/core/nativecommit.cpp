@@ -182,19 +182,25 @@ QString expandSystemDirectoryAlias(const QString &path) {
     return path;
 }
 #endif
-// 日期：2026-11-04；路径每次只保留前后两个描述符，目录深度不会增加常驻句柄数量。
+// 日期：2026-11-25；Linux/Android中间目录仅申请搜索句柄，末级保留可枚举/同步句柄；逐层拒绝链接且只持有两个描述符。
 int openDirectoryPath(const QString &path, bool createMissing) {
-    int descriptor = ::open("/", O_RDONLY | O_DIRECTORY | O_CLOEXEC);
+    const auto parts = path.split('/', Qt::SkipEmptyParts);
+#if defined(Q_OS_LINUX) && defined(O_PATH)
+    const int search = O_PATH;
+#else
+    const int search = O_RDONLY;
+#endif
+    int descriptor = ::open("/", (parts.isEmpty() ? O_RDONLY : search) | O_DIRECTORY | O_CLOEXEC);
     if (descriptor < 0)
         throw Error(ExitCode::Disk, QString::fromLocal8Bit(std::strerror(errno)), "path");
-    for (const auto &part : path.split('/', Qt::SkipEmptyParts)) {
-        const auto name = QFile::encodeName(part);
-        int next =
-            ::openat(descriptor, name.constData(), O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+    for (int index = 0; index < parts.size(); ++index) {
+        const auto name = QFile::encodeName(parts.at(index));
+        const int flags =
+            (index + 1 == parts.size() ? O_RDONLY : search) | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC;
+        int next = ::openat(descriptor, name.constData(), flags);
         if (next < 0 && errno == ENOENT && createMissing) {
             if (::mkdirat(descriptor, name.constData(), 0700) == 0 || errno == EEXIST)
-                next = ::openat(descriptor, name.constData(),
-                                O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+                next = ::openat(descriptor, name.constData(), flags);
         }
         const auto code = errno;
         ::close(descriptor);
