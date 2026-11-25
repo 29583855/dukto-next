@@ -1,5 +1,8 @@
 name: Mobile complete Qt iOS simulator validation
 on:
+  push:
+    branches: [codex/mobile-platforms]
+    paths: ['DuktoNextMobile/validation/build_ios_simulator.py', 'DuktoNextMobile/validation/ios_simulator.py', '.github/workflows/mobile-ios-simulator.yml']
   workflow_dispatch:
 permissions:
   contents: read
