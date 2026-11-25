@@ -1,0 +1,22 @@
+{
+  "passed": false,
+  "deviceTest": false,
+  "scope": "Android模拟器安装启动原始arm64开发APK",
+  "sourceCommit": "45647c484f818ad7b16f10b1b3b03d72b7145f30",
+  "steps": [
+    "originalApkHashAndAbi",
+    "install"
+  ],
+  "apkSha256": "750908dbf8d4b5698b7550966cab251f17a4f81fe932533f12df0e4a03c7c9e6",
+  "abiList": "x86_64,arm64-v8a",
+  "systemVersion": "15",
+  "nativeBridge": "libndk_translation.so",
+  "installOutput": "Performing Streamed Install\nSuccess",
+  "launchOutput": "Starting: Intent { cmp=org.duktonext.mobile/.DuktoActivity }\nStatus: ok\nLaunchState: COLD\nActivity: org.duktonext.mobile/.DuktoActivity\nTotalTime: 3115\nWaitTime: 3117\nComplete\n",
+  "error": "ADB命令失败: shell pidof org.duktonext.mobile: ",
+  "run": 45617975751,
+  "job": 139218245411,
+  "artifact": 15023672098,
+  "validationCommit": "46d61b9c984913266ef97be757588b12d0fd7f9c",
+  "observedFailure": "APK安装及Activity调起成功；Qt在数秒后输出exit app 0，随后hwuiTask1发生destroyed mutex/SIGABRT，未生成有效首屏；根因待启动阶段诊断确认"
+}

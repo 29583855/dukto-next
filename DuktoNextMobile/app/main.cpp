@@ -7,6 +7,7 @@
 #include "uistress.h"
 #endif
 
+#include <QDebug>
 #include <QDir>
 #include <QGuiApplication>
 #include <QImage>
@@ -24,13 +25,22 @@ int main(int argc, char *argv[]) {
     QCoreApplication::setOrganizationName(QStringLiteral("DuktoNext"));
     QCoreApplication::setApplicationName(QStringLiteral("Mobile"));
     QCoreApplication::setApplicationVersion(QStringLiteral("0.1.0"));
+    // 日期：2026-11-25；启动日志只含阶段和状态，不记录用户路径、文件内容或服务器凭据。
+    qInfo() << "MobileStartup application-created";
+    QObject::connect(&application, &QGuiApplication::lastWindowClosed, &application,
+                     [] { qInfo() << "MobileStartup last-window-closed"; });
+    QObject::connect(&application, &QCoreApplication::aboutToQuit, &application,
+                     [] { qInfo() << "MobileStartup about-to-quit"; });
     const bool smoke = application.arguments().contains(QStringLiteral("--smoke-test"));
     try {
         const auto storage = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
         if (!QDir().mkpath(storage))
             return 2;
+        qInfo() << "MobileStartup storage-ready";
         MobileFiles files;
+        qInfo() << "MobileStartup files-ready";
         Controller controller(4644, nullptr, storage);
+        qInfo() << "MobileStartup controller-ready";
         MobileLifecycle lifecycle(controller);
         QQmlApplicationEngine engine;
         engine.rootContext()->setContextProperty(QStringLiteral("controller"), &controller);
@@ -42,8 +52,11 @@ int main(int argc, char *argv[]) {
         QObject::connect(&engine, &QQmlEngine::warnings, &application,
                          [&qmlFailed](const QList<QQmlError> &) { qmlFailed = true; });
         engine.load(QUrl(QStringLiteral("qrc:/mobile/MobileWindow.qml")));
-        if (engine.rootObjects().isEmpty())
+        if (engine.rootObjects().isEmpty()) {
+            qCritical() << "MobileStartup qml-root-missing";
             return 3;
+        }
+        qInfo() << "MobileStartup qml-ready";
         PopupContextGuard popupContexts(engine.rootObjects().first(), &engine);
         QTimer smokeTimer;
         int smokeStep = 0;
@@ -110,11 +123,16 @@ int main(int argc, char *argv[]) {
         if (application.arguments().contains(QStringLiteral("--stress-test")))
             startUiStress(engine, controller, qmlFailed);
 #endif
-        return application.exec();
+        qInfo() << "MobileStartup event-loop-start";
+        const int result = application.exec();
+        qInfo() << "MobileStartup event-loop-end" << result;
+        return result;
     } catch (const dukto::Error &error) {
+        qCritical() << "MobileStartup core-exception" << static_cast<int>(error.code);
         QTextStream(stderr) << error.what() << '\n';
         return static_cast<int>(error.code);
     } catch (const std::exception &error) {
+        qCritical() << "MobileStartup standard-exception";
         QTextStream(stderr) << error.what() << '\n';
         return 1;
     }
