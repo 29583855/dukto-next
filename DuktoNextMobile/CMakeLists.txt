@@ -188,3 +188,9 @@ if(DUKTO_MOBILE_HOST_CHECK AND CMAKE_SYSTEM_NAME STREQUAL "Linux")
     add_executable(dukto-mobile-path-tests tests/traversal_tests.cpp)
     target_link_libraries(dukto-mobile-path-tests PRIVATE dukto-core)
 endif()
+
+# 日期：2026-11-25；线程交接回归直接链接移动核心并强制EOF/线程退出重叠。
+if(DUKTO_MOBILE_HOST_CHECK)
+    add_executable(dukto-mobile-listener-tests tests/legacy_listener_tests.cpp)
+    target_link_libraries(dukto-mobile-listener-tests PRIVATE dukto-core)
+endif()
