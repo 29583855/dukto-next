@@ -29,7 +29,8 @@ QByteArray fileIdentity(const struct stat &info, bool contents) {
     if (!contents)
         return result;
     result += QByteArray::number(static_cast<qlonglong>(info.st_size)) + ':';
-#ifdef Q_OS_MACOS
+// 日期：2026-11-25；iOS与macOS共享Darwin原生时间字段。
+#ifdef Q_OS_DARWIN
     for (const auto &time : {info.st_mtimespec, info.st_ctimespec})
 #else
     for (const auto &time : {info.st_mtim, info.st_ctim})

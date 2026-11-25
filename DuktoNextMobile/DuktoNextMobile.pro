@@ -15,6 +15,7 @@ isEmpty(CORE_BUILD): error("Pass CORE_BUILD=/absolute/core-build")
 isEmpty(OPENSSL_PREFIX): error("Pass OPENSSL_PREFIX=/absolute/openssl")
 LIBS += -L$$CORE_BUILD -ldukto-core -ldukto-sql-driver -ldukto-sqlite
 LIBS += -L$$OPENSSL_PREFIX/lib -lssl -lcrypto
+# 日期：2026-11-25；Android线程符号由Bionic提供，不链接独立pthread库。
 unix:!ios:!android: LIBS += -ldl -lpthread
 android: LIBS += -ldl
 android {

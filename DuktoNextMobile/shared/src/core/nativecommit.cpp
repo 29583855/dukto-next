@@ -25,7 +25,7 @@
 #ifdef Q_OS_LINUX
 #include <sys/syscall.h>
 #endif
-#ifdef Q_OS_MACOS
+#ifdef Q_OS_DARWIN
 #include <stdio.h>
 #endif
 #endif
@@ -246,7 +246,8 @@ QByteArray PosixDirectory::stamp() const {
         throw Error(ExitCode::Disk, QStringLiteral("无法读取目录快照身份"), "browse");
     auto result = QByteArray::number(static_cast<qulonglong>(info.st_dev)) + ':' +
                   QByteArray::number(static_cast<qulonglong>(info.st_ino)) + ':';
-#ifdef Q_OS_MACOS
+// 日期：2026-11-25；iOS与macOS共享Darwin原生时间字段。
+#ifdef Q_OS_DARWIN
     for (const auto &time : {info.st_mtimespec, info.st_ctimespec})
 #else
     for (const auto &time : {info.st_mtim, info.st_ctim})
@@ -391,7 +392,7 @@ bool PosixDirectory::commitTemporary(const QString &name, const QString &destina
         return false;
     if (errno != ENOSYS && errno != EINVAL && errno != EOPNOTSUPP)
         throw Error(ExitCode::Disk, QString::fromLocal8Bit(std::strerror(errno)), "commit");
-#elif defined(Q_OS_MACOS)
+#elif defined(Q_OS_DARWIN)
     if (renameatx_np(descriptor_, from.constData(), descriptor_, to.constData(), RENAME_EXCL) == 0)
         return true;
     if (errno == EEXIST || errno == ENOTEMPTY)
@@ -649,7 +650,8 @@ QByteArray nativeFileRevision(const struct stat &info) {
     auto result = QByteArray::number(static_cast<qulonglong>(info.st_dev)) + ':' +
                   QByteArray::number(static_cast<qulonglong>(info.st_ino)) + ':' +
                   QByteArray::number(static_cast<qlonglong>(info.st_size)) + ':';
-#ifdef Q_OS_MACOS
+// 日期：2026-11-25；iOS与macOS共享Darwin原生时间字段。
+#ifdef Q_OS_DARWIN
     for (const auto &time : {info.st_mtimespec, info.st_ctimespec, info.st_birthtimespec})
 #else
     for (const auto &time : {info.st_mtim, info.st_ctim})

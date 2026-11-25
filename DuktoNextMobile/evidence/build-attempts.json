@@ -90,6 +90,16 @@
       "reason": "Qt和OpenSSL源码依赖安装缓存通过；CMake未找到Qt5配置",
       "fix": "当前脚本显式Qt5_DIR及CMAKE_FIND_ROOT_PATH，等待复验",
       "deviceTestsPassed": false
+    },
+    {
+      "runId": 45593476242,
+      "jobId": 139133391943,
+      "commit": "148be142",
+      "platform": "ios",
+      "result": "failed_core_compile",
+      "reason": "Qt路径已修复；iOS误入Linux stat时间字段分支",
+      "fix": "时间字段与原子提交使用Q_OS_DARWIN区分Apple平台",
+      "deviceTestsPassed": false
     }
   ]
 }
