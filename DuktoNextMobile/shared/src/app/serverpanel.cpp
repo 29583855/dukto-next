@@ -1,5 +1,4 @@
 #include "serverpanel.h"
-#include "boundedfiledialog.h"
 #include "core/endpoint.h"
 #include "core/error.h"
 #include "core/paralleltransfer.h"
@@ -9,8 +8,8 @@
 #include "core/strongmanifest.h"
 #include "core/transferoperation.h"
 #include "core/uploadmanifest.h"
+#include "mobilefiles.h"
 #include <QDir>
-#include <QFileDialog>
 #include <QFileInfo>
 #include <QJsonArray>
 #include <QRegularExpression>
@@ -643,12 +642,11 @@ void ServerPanel::setServing(bool enabled, const QString &address, int port) {
 void ServerPanel::chooseUpload(const QVariantMap &options, bool folder) {
     QStringList paths;
     if (folder) {
-        const auto path =
-            QFileDialog::getExistingDirectory(nullptr, QStringLiteral("选择上传目录"));
+        const auto path = MobileFiles::instance()->importFolder();
         if (!path.isEmpty())
             paths.append(path);
     } else {
-        paths = chooseFilesBounded(nullptr, QStringLiteral("选择上传文件"));
+        paths = MobileFiles::instance()->importFiles();
     }
     if (paths.isEmpty())
         return;
@@ -659,13 +657,12 @@ void ServerPanel::chooseUpload(const QVariantMap &options, bool folder) {
 
 // 日期：2026-11-04；主线程原生目录对话框，调用者决定用于共享或下载。
 QString ServerPanel::chooseDirectory() {
-    return QFileDialog::getExistingDirectory(nullptr, QStringLiteral("选择目录"));
+    return MobileFiles::instance()->chooseDirectory(QStringLiteral("选择应用文件目录"));
 }
 
 // 日期：2026-11-04；仅返回路径，权限与秘密格式由生产核心后台核验。
 QString ServerPanel::chooseCredential() {
-    return QFileDialog::getOpenFileName(nullptr, QStringLiteral("选择配对文件"), QString(),
-                                        QStringLiteral("JSON (*.json)"));
+    return MobileFiles::instance()->importSingle();
 }
 
 // 日期：2026-11-04；断开不同于取消终态，保留原 task/request 供继续。

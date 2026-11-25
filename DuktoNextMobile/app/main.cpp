@@ -1,28 +1,62 @@
-#include "core/discovery.h"
+#include "controller.h"
 #include "core/error.h"
+#include "mobilefiles.h"
+
+#include <QDir>
 #include <QGuiApplication>
+#include <QImage>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
+#include <QQuickWindow>
 #include <QStandardPaths>
-#include <QDir>
-#include <QSslSocket>
-#include <openssl/crypto.h>
+#include <QTextStream>
+#include <QTimer>
 
-// 日期：2026-11-25；最小移动宿主先验证QML、网络和原生加密运行库，完整控制器随后接入。
+// 日期：2026-11-25；移动宿主复用传输与服务器控制器，用户文件与身份资料分开保存。
 int main(int argc, char *argv[]) {
+    QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QGuiApplication application(argc, argv);
     QCoreApplication::setOrganizationName(QStringLiteral("DuktoNext"));
     QCoreApplication::setApplicationName(QStringLiteral("Mobile"));
-    const auto storage = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    if (!QDir().mkpath(storage))
-        return 2;
-    QQmlApplicationEngine engine;
-    engine.rootContext()->setContextProperty(QStringLiteral("buildStatus"),
-        QStringLiteral("C++14 / Qt %1 / %2 / TLS %3")
-            .arg(QString::fromLatin1(qVersion()), QString::fromLatin1(OpenSSL_version(OPENSSL_VERSION)),
-                 QSslSocket::supportsSsl() ? QStringLiteral("可用") : QStringLiteral("不可用")));
-    engine.load(QUrl(QStringLiteral("qrc:/mobile/Bootstrap.qml")));
-    if (engine.rootObjects().isEmpty())
-        return 3;
-    return application.exec();
+    QCoreApplication::setApplicationVersion(QStringLiteral("0.1.0"));
+    const bool smoke = application.arguments().contains(QStringLiteral("--smoke-test"));
+    try {
+        const auto storage = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+        if (!QDir().mkpath(storage))
+            return 2;
+        MobileFiles files;
+        Controller controller(4644, nullptr, storage);
+        QQmlApplicationEngine engine;
+        engine.rootContext()->setContextProperty(QStringLiteral("controller"), &controller);
+        engine.rootContext()->setContextProperty(QStringLiteral("mobileFiles"), &files);
+        engine.rootContext()->setContextProperty(QStringLiteral("applicationVersion"),
+                                                 application.applicationVersion());
+        bool qmlFailed = false;
+        QObject::connect(&engine, &QQmlEngine::warnings, &application,
+                         [&qmlFailed](const QList<QQmlError> &) { qmlFailed = true; });
+        engine.load(QUrl(QStringLiteral("qrc:/mobile/MobileWindow.qml")));
+        if (engine.rootObjects().isEmpty())
+            return 3;
+        if (smoke) {
+            QTimer::singleShot(1500, &application, [&] {
+                auto window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+                const auto frame = window ? window->grabWindow() : QImage();
+                if (qmlFailed || frame.isNull() ||
+                    !frame.save(QStringLiteral("mobile-smoke.png"))) {
+                    application.exit(4);
+                    return;
+                }
+                QTextStream(stdout)
+                    << "Mobile QML loaded, controller initialized, frame rendered\n";
+                application.exit(0);
+            });
+        }
+        return application.exec();
+    } catch (const dukto::Error &error) {
+        QTextStream(stderr) << error.what() << '\n';
+        return static_cast<int>(error.code);
+    } catch (const std::exception &error) {
+        QTextStream(stderr) << error.what() << '\n';
+        return 1;
+    }
 }

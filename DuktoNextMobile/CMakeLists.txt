@@ -159,3 +159,18 @@ target_compile_definitions(dukto-core PUBLIC DUKTO_VERSION="${PROJECT_VERSION}")
 
 
 set_target_properties(dukto-core PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
+# 日期：2026-11-25；主机门禁编译完整移动控制器并实际加载QML，不替代手机设备验收。
+option(DUKTO_MOBILE_HOST_CHECK "Compile mobile UI using host-only provider stubs" OFF)
+if(DUKTO_MOBILE_HOST_CHECK)
+    find_package(Qt5 5.15 REQUIRED COMPONENTS Gui Qml Quick QuickControls2 QuickTemplates2)
+    add_executable(dukto-mobile-host app/main.cpp app/mobilefiles.cpp app/importstore.cpp
+        tests/platformfiles_stub.cpp shared/src/app/controller.cpp shared/src/app/controller.h
+        shared/src/app/serverpanel.cpp shared/src/app/serverpanel.h
+        shared/src/app/avatars.cpp shared/src/app/avatars.h
+        shared/src/app/stablescrollbar.cpp shared/src/app/stablescrollbar.h
+        app/mobilefiles.h app/mobile.qrc shared/resources/app.qrc)
+    target_include_directories(dukto-mobile-host PRIVATE app shared/src/app)
+    target_link_libraries(dukto-mobile-host PRIVATE dukto-core Qt5::Gui Qt5::Qml Qt5::Quick
+        Qt5::QuickControls2 Qt5::QuickTemplates2 Qt5::QuickPrivate Qt5::QuickTemplates2Private)
+endif()

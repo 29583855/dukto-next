@@ -1,5 +1,4 @@
 #include "controller.h"
-#include "boundedfiledialog.h"
 #include "core/buffercredit.h"
 #include "core/catalog.h"
 #include "core/diagnostics.h"
@@ -9,14 +8,13 @@
 #include "core/historystate.h"
 #include "core/sqlitecache.h"
 #include "core/sqliteruntime.h"
+#include "mobilefiles.h"
 
-#include <QApplication>
 #include <QClipboard>
-#include <QColorDialog>
 #include <QDateTime>
 #include <QDesktopServices>
 #include <QDir>
-#include <QFileDialog>
+#include <QGuiApplication>
 #include <QJsonDocument>
 #include <QNetworkInterface>
 #include <QScreen>
@@ -80,7 +78,7 @@ struct Controller::HistoryConnection final {
 // 日期：2026-11-10；初始化独立设置和历史，严格监听指定端口，默认与原版同为4644。
 Controller::Controller(quint16 port, QObject *parent, const QString &storageDirectory)
     : QObject(parent),
-      settings_(QSettings::defaultFormat(), QSettings::UserScope, "DuktoNext", "Desktop"),
+      settings_(QSettings::defaultFormat(), QSettings::UserScope, "DuktoNext", "Mobile"),
       server_(QDir(storageDirectory.isEmpty()
                        ? QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation)
                        : storageDirectory)
@@ -96,7 +94,7 @@ Controller::Controller(quint16 port, QObject *parent, const QString &storageDire
         throw dukto::Error(dukto::ExitCode::Disk, QStringLiteral("无法创建应用数据目录"));
     historyConnection_.reset(new HistoryConnection(dataDirectory));
     loadHistory();
-    connect(QApplication::clipboard(), &QClipboard::dataChanged, this,
+    connect(QGuiApplication::clipboard(), &QClipboard::dataChanged, this,
             &Controller::refreshClipboardAvailability);
     refreshClipboardAvailability();
     // 日期：2026-11-04；版本检查状态独立于传输状态，失败不干扰局域网收发。
@@ -187,16 +185,11 @@ bool Controller::exportDiagnosticsTo(const QUrl &destination) {
     }
 }
 
-// 日期：2026-11-07；跨平台原生保存选择器只选择目标，已有文件由核心再次严格拒绝覆盖。
+// 日期：2026-11-25；移动端使用系统授权与沙箱适配，不调用桌面对话框。
 void Controller::chooseDiagnosticReport() {
-    const auto destination = QFileDialog::getSaveFileName(
-        nullptr, QStringLiteral("导出本地诊断"),
-        QDir(outputDirectory())
-            .filePath("Dukto-diagnostic-" +
-                      QDateTime::currentDateTimeUtc().toString("yyyyMMdd-HHmmss") + ".json"),
-        QStringLiteral("JSON诊断报告 (*.json)"), nullptr, QFileDialog::DontConfirmOverwrite);
-    if (!destination.isEmpty())
-        exportDiagnosticsTo(QUrl::fromLocalFile(destination));
+    const auto destination = MobileFiles::instance()->diagnosticPath();
+    if (!destination.isEmpty() && exportDiagnosticsTo(QUrl::fromLocalFile(destination)))
+        MobileFiles::instance()->exportPath(destination);
 }
 
 // 日期：2026-11-04；明确等待发送与接收线程，避免退出后继续写文件。
@@ -235,9 +228,7 @@ QString Controller::status() const {
 }
 // 日期：2026-11-04；平台默认目录通过 Qt 标准路径获取。
 QString Controller::outputDirectory() const {
-    return settings_
-        .value("output", QStandardPaths::writableLocation(QStandardPaths::DownloadLocation))
-        .toString();
+    return settings_.value("output", MobileFiles::instance()->documents()).toString();
 }
 // 日期：2026-11-04；默认绿色接近参考程序主题。
 QString Controller::themeColor() const {
@@ -257,8 +248,7 @@ QString Controller::localAvatar() const {
 
 // 日期：2026-11-04；仅显式选择的 PNG/JPEG 进入配置，失败保留旧头像。
 void Controller::chooseAvatar() {
-    const auto path = QFileDialog::getOpenFileName(nullptr, QStringLiteral("选择头像"), QString(),
-                                                   QStringLiteral("图片 (*.png *.jpg *.jpeg)"));
+    const auto path = MobileFiles::instance()->importSingle();
     if (path.isEmpty())
         return;
     QFile file(path);
@@ -313,7 +303,7 @@ bool Controller::clipboardAvailable() const {
 
 // 日期：2026-11-07；仅实际变化时读取一次正文；只保存布尔值，显式发送仍重新读取最新文本。
 void Controller::refreshClipboardAvailability() {
-    const bool available = !QApplication::clipboard()->text().isEmpty();
+    const bool available = !QGuiApplication::clipboard()->text().isEmpty();
     if (available == clipboardAvailable_)
         return;
     clipboardAvailable_ = available;
@@ -358,7 +348,7 @@ void Controller::sendFiles(const QString &host, int port) {
     dukto::LegacyRequest request;
     if (!prepareRequest(request, host, port))
         return;
-    const auto files = chooseFilesBounded(nullptr, QStringLiteral("选择发送文件"));
+    const auto files = MobileFiles::instance()->importFiles();
     if (files.isEmpty())
         return;
     request.paths = files;
@@ -370,8 +360,7 @@ void Controller::sendFolder(const QString &host, int port) {
     dukto::LegacyRequest request;
     if (!prepareRequest(request, host, port))
         return;
-    const auto folder =
-        QFileDialog::getExistingDirectory(nullptr, QStringLiteral("选择发送文件夹"));
+    const auto folder = MobileFiles::instance()->importFolder();
     if (folder.isEmpty())
         return;
     request.paths = QStringList{folder};
@@ -426,42 +415,23 @@ bool Controller::sendText(const QString &host, int port, const QString &text) {
 
 // 日期：2026-11-07；显式发送只读取一次系统剪贴板，复用转换前字节检查；系统读取本身另行验收。
 void Controller::sendClipboard(const QString &host, int port) {
-    const auto text = QApplication::clipboard()->text();
+    const auto text = QGuiApplication::clipboard()->text();
     if (!text.isEmpty())
         sendText(host, port, text);
 }
 
 // 日期：2026-11-04；复制操作仅影响用户明确选择的文本。
 void Controller::copyText(const QString &text) {
-    QApplication::clipboard()->setText(text);
+    QGuiApplication::clipboard()->setText(text);
 }
 
-// 日期：2026-11-04；等待窗口隐藏生效后捕获主屏，权限失败时明确报告。
+// 日期：2026-11-25；移动端使用系统授权与沙箱适配，不调用桌面对话框。
 void Controller::sendScreenshot(const QString &host, int port) {
-    dukto::LegacyRequest request;
-    if (!prepareRequest(request, host, port))
-        return;
-    capturePending_ = true;
-    emit captureVisibility(false);
-    // 日期：2026-11-04；临时 JPEG 保留至发送线程结束，取消或失败也会清理。
-    QTimer::singleShot(300, this, [this, request]() mutable {
-        capturePending_ = false;
-        captureDirectory_.reset(new QTemporaryDir);
-        const auto file = captureDirectory_->filePath("Screenshot.jpg");
-        auto screen = QGuiApplication::primaryScreen();
-        const auto capture = screen ? screen->grabWindow(0) : QPixmap();
-        emit captureVisibility(true);
-        if (!captureDirectory_->isValid() || capture.isNull() || !capture.save(file, "JPG", 90)) {
-            status_ = QStringLiteral("截图不可用，请检查系统屏幕录制权限或显示环境");
-            captureDirectory_.reset();
-            emit stateChanged();
-            return;
-        }
-        request.paths = QStringList{file};
-        start(request);
-        if (!sender_)
-            captureDirectory_.reset();
-    });
+    Q_UNUSED(host);
+    Q_UNUSED(port);
+    status_ = QStringLiteral(
+        "请使用系统截图，然后通过发送文件选择截图；系统不允许应用任意捕获其他应用画面");
+    emit stateChanged();
 }
 
 // 日期：2026-11-04；拖放仅接受本机 URL，远程链接不隐式下载。
@@ -490,8 +460,7 @@ void Controller::chooseOutputDirectory() {
         emit stateChanged();
         return;
     }
-    const auto path = QFileDialog::getExistingDirectory(nullptr, QStringLiteral("选择接收目录"),
-                                                        outputDirectory());
+    const auto path = MobileFiles::instance()->chooseDirectory(QStringLiteral("选择接收目录"));
     if (path.isEmpty())
         return;
     QTemporaryFile test(QDir(path).filePath(".dukto-write-XXXXXX"));
@@ -512,12 +481,9 @@ void Controller::chooseOutputDirectory() {
     emit stateChanged();
 }
 
-// 日期：2026-11-04；不可访问的历史路径不伪装打开成功。
+// 日期：2026-11-25；移动端使用系统授权与沙箱适配，不调用桌面对话框。
 void Controller::openPath(const QString &path) {
-    if (!QFileInfo::exists(path) || !QDesktopServices::openUrl(QUrl::fromLocalFile(path))) {
-        status_ = QStringLiteral("无法打开，文件可能已移动或删除：") + path;
-        emit stateChanged();
-    }
+    MobileFiles::instance()->exportPath(path);
 }
 
 // 日期：2026-11-04；只保存有效 RGB 颜色。
@@ -529,12 +495,9 @@ void Controller::setThemeColor(const QString &color) {
     emit stateChanged();
 }
 
-// 日期：2026-11-04；原生颜色选择器取消时保留原设置。
+// 日期：2026-11-25；移动端使用系统授权与沙箱适配，不调用桌面对话框。
 void Controller::chooseThemeColor() {
-    const auto color =
-        QColorDialog::getColor(QColor(themeColor()), nullptr, QStringLiteral("主题颜色"));
-    if (color.isValid())
-        setThemeColor(color.name());
+    MobileFiles::instance()->chooseColor();
 }
 
 // 日期：2026-11-04；避免签名含换行或分隔符歧义，保存后立即公告。

@@ -11,7 +11,7 @@
 class ImportStore final {
   public:
     struct Limits {
-        qint64 bytes = 1024LL * 1024 * 1024;
+        qint64 bytes = 16LL * 1024 * 1024 * 1024;
         qint64 reserve = 64LL * 1024 * 1024;
         int entries = 512;
         int depth = 32;

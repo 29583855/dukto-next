@@ -80,6 +80,10 @@ QString Discovery::errorString() const {
 void Discovery::refreshSignature() {
 #ifdef Q_OS_WIN
     const QString platform = "Windows";
+#elif defined(Q_OS_IOS)
+    const QString platform = "iOS";
+#elif defined(Q_OS_ANDROID)
+    const QString platform = "Android";
 #elif defined(Q_OS_MACOS)
     const QString platform = "Macintosh";
 #else
