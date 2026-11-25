@@ -12,6 +12,7 @@ Rectangle {
 
     Dialog {
         id: discardDialog
+        objectName: "discardUploadDialog"
         property string selectedRequest: ""
         title: "放弃本地续传"
         modal: true

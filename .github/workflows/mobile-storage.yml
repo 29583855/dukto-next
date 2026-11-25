@@ -2,7 +2,7 @@ name: Mobile storage regression
 on:
   push:
     branches: [codex/mobile-platforms]
-    paths: ['DuktoNextMobile/tests/**', 'DuktoNextMobile/app/**', 'DuktoNextMobile/shared/**', 'DuktoNextMobile/tools/**', 'DuktoNextMobile/platform/android/**', 'DuktoNextMobile/CMakeLists.txt', '.github/workflows/mobile-storage.yml']
+    paths: ['DuktoNextMobile/tests/**', 'DuktoNextMobile/app/**', 'DuktoNextMobile/shared/**', 'DuktoNextMobile/tools/**', 'DuktoNextMobile/scripts/**', 'DuktoNextMobile/platform/android/**', 'DuktoNextMobile/CMakeLists.txt', '.github/workflows/mobile-storage.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -13,6 +13,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install Qt test dependencies
         run: sudo apt-get update -qq && sudo apt-get install -y qtbase5-dev ninja-build
+      - name: Test package inspection boundaries
+        run: python -m unittest discover -s DuktoNextMobile/scripts -p '*_tests.py' -v
       - name: Compile and exercise import transactions
         run: |
           cmake -S DuktoNextMobile/tests -B DuktoNextMobile/build-storage -G Ninja -DCMAKE_BUILD_TYPE=Release
@@ -35,7 +37,7 @@ jobs:
         run: |
           python DuktoNextMobile/tests/interop/legacy_integration.py DuktoNextMobile/build-host/dukto-mobile-probe --report mobile-legacy.json
           python DuktoNextMobile/tests/interop/service_integration.py DuktoNextMobile/build-host/dukto-mobile-probe --report mobile-service.json
-          for lanes in 1 4 16; do
+          for lanes in 1 2 4 8 16; do
             python DuktoNextMobile/tests/interop/transfer_integration.py DuktoNextMobile/build-host/dukto-mobile-probe --threads "$lanes" --report "mobile-next-${lanes}.json"
           done
       - name: Render actual QML with isolated user data

@@ -47,15 +47,16 @@ int main(int argc, char *argv[]) {
             QObject::connect(&smokeTimer, &QTimer::timeout, &application, [&] {
                 auto root = engine.rootObjects().first();
                 auto window = qobject_cast<QQuickWindow *>(root);
-                const QStringList names{"welcome", "devices", "history",   "about",        "server",
-                                        "send",    "files",   "landscape", "landscape-end"};
+                const QStringList names{"welcome",   "devices",      "history", "about",
+                                        "server",    "discard",      "send",    "files",
+                                        "landscape", "landscape-end"};
                 const auto frame = window ? window->grabWindow() : QImage();
                 if (qmlFailed || frame.isNull() ||
                     !frame.save(QStringLiteral("mobile-smoke-%1.png").arg(names.at(smokeStep)))) {
                     application.exit(4);
                     return;
                 }
-                // 日期：2026-11-25；切换真实界面并留图，缺少控件或QML告警均使门禁失败。
+                // 日期：2026-11-25；十画面包含续传确认弹窗，缺少控件或QML告警均使门禁失败。
                 const auto invoke = [root](const char *name, const char *method) {
                     const auto item = root->findChild<QObject *>(QString::fromLatin1(name));
                     if (!item)
@@ -72,20 +73,23 @@ int main(int argc, char *argv[]) {
                 } else if (smokeStep == 3) {
                     ok = invoke("serverDialog", "open");
                 } else if (smokeStep == 4) {
-                    ok = invoke("serverDialog", "close") && invoke("sendDialog", "open");
+                    ok = invoke("discardUploadDialog", "open");
                 } else if (smokeStep == 5) {
-                    ok = invoke("sendDialog", "close") && invoke("mobileFilesDialog", "open");
+                    ok = invoke("discardUploadDialog", "close") &&
+                         invoke("serverDialog", "close") && invoke("sendDialog", "open");
                 } else if (smokeStep == 6) {
+                    ok = invoke("sendDialog", "close") && invoke("mobileFilesDialog", "open");
+                } else if (smokeStep == 7) {
                     ok = invoke("mobileFilesDialog", "close");
                     window->resize(820, 430);
-                } else if (smokeStep == 7) {
+                } else if (smokeStep == 8) {
                     auto about = root->findChild<QObject *>(QStringLiteral("aboutScroll"));
                     ok = about &&
                          about->setProperty("contentY",
                                             qMax(0.0, about->property("contentHeight").toDouble() -
                                                           about->property("height").toDouble()));
                 } else {
-                    QTextStream(stdout) << "Mobile QML loaded and nine real views rendered\n";
+                    QTextStream(stdout) << "Mobile QML loaded and ten real views rendered\n";
                     application.exit(0);
                     return;
                 }
