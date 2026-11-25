@@ -78,20 +78,41 @@ jobs:
           key: ${{ steps.deps.outputs.cache-primary-key }}
       - name: Build mobile application
         run: python -u -X utf8 DuktoNextMobile/scripts/build_app.py --platform ${{ matrix.platform }} --prefix "${{ runner.temp }}/dukto-mobile/install" --build DuktoNextMobile/build
-      - name: Preserve logs and actual build outputs
+      - name: Preserve packaged development outputs
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: mobile-${{ matrix.platform }}-${{ github.run_id }}
           if-no-files-found: warn
+          path: DuktoNextMobile/build/packages/${{ matrix.platform }}/**
+      - name: Preserve compact verification receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-${{ matrix.platform }}-verification-${{ github.run_id }}
+          if-no-files-found: warn
           path: |
-            DuktoNextMobile/dependency-build/*.log
-            DuktoNextMobile/build/packages/**
             DuktoNextMobile/build/toolchain.txt
             DuktoNextMobile/build/build-receipt.json
+            DuktoNextMobile/build/packages/${{ matrix.platform }}/package-inspection.json
+            DuktoNextMobile/build/packages/${{ matrix.platform }}/dependency-manifest.json
+            DuktoNextMobile/build/packages/${{ matrix.platform }}/licenses/**
+      - name: Preserve dependency and configuration logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-${{ matrix.platform }}-logs-${{ github.run_id }}
+          if-no-files-found: ignore
+          path: |
+            DuktoNextMobile/dependency-build/*.log
             DuktoNextMobile/build/core/CMakeFiles/CMakeConfigureLog.yaml
+      - name: Preserve failed native deployment for diagnosis
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-${{ matrix.platform }}-failed-native-${{ github.run_id }}
+          if-no-files-found: ignore
+          path: |
             DuktoNextMobile/build/app/android-build/build/outputs/apk/**/*.apk
             DuktoNextMobile/build/app/**/*.app/**
             DuktoNextMobile/build/DerivedData/Build/Products/Release-iphoneos/**
-            ${{ runner.temp }}/dukto-mobile/install/dependency-manifest.json
-            ${{ runner.temp }}/dukto-mobile/install/licenses/**
