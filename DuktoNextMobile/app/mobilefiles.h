@@ -4,6 +4,7 @@
 #include <QEventLoop>
 #include <QObject>
 #include <QVariantList>
+#include <QVariantMap>
 
 // 日期：2026-11-25；协调原生提供器与应用沙箱选择器，复用控制器时阻止重入。
 class MobileFiles final : public QObject {
@@ -32,8 +33,9 @@ class MobileFiles final : public QObject {
     QString chooseDirectory(const QString &title);
     // 日期：2026-11-25；诊断先写入沙箱，再使用系统导出选择器。
     QString diagnosticPath() const;
-    // 日期：2026-11-25；只列出用户文件目录下的普通文件与目录，忽略符号链接。
-    Q_INVOKABLE QVariantList entries(const QString &directory) const;
+    // 日期：2026-11-25；按名称游标分页，最多保留513个候选，目录规模不决定内存用量。
+    Q_INVOKABLE QVariantMap entries(const QString &directory,
+                                    const QString &after = QString()) const;
     // 日期：2026-11-25；目录选择完成后验证规范路径，再解除调用者等待。
     Q_INVOKABLE void finishDirectory(const QString &path);
     // 日期：2026-11-25；将系统文件导入用户目录，冲突失败而不覆盖原件。

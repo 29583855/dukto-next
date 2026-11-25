@@ -12,8 +12,31 @@ ApplicationWindow {
     property bool directoryMode: false
     property var fileRows: []
 
-    // 日期：2026-11-25；单页最多512项，先清模型再重载，界面不累积旧条目。
-    function refreshFiles() { fileRows = mobileFiles.entries(browsing) }
+    property string listedDirectory: ""
+    property var fileCursors: [""]
+    property int filePage: 0
+    property string nextCursor: ""
+
+    // 日期：2026-11-25；切换目录重置名称游标，每页模型最多512项。
+    function refreshFiles() {
+        if (listedDirectory !== browsing) {
+            listedDirectory = browsing
+            fileCursors = [""]
+            filePage = 0
+        }
+        var result = mobileFiles.entries(browsing, fileCursors[filePage])
+        fileRows = result.rows
+        nextCursor = result.next
+    }
+    // 日期：2026-11-25；仅保存各页游标，刷新不累加文件对象。
+    function nextFiles() {
+        if (!nextCursor.length) return
+        var cursors = fileCursors.slice(0, filePage + 1)
+        cursors.push(nextCursor)
+        fileCursors = cursors
+        filePage++
+        refreshFiles()
+    }
     // 日期：2026-11-25；返回上层仅允许应用文档目录范围。
     function goUp() {
         if (browsing !== mobileFiles.documents) {
@@ -87,7 +110,12 @@ ApplicationWindow {
                 Button { text: "导入文件"; enabled: !mobileFiles.busy; onClicked: mobileFiles.importIntoDocuments(false) }
                 Button { text: "导入目录"; enabled: !mobileFiles.busy; onClicked: mobileFiles.importIntoDocuments(true) }
             }
-            Label { text: "每页最多显示512项。点目录进入，点文件通过系统导出。"; textFormat: Text.PlainText; wrapMode: Text.Wrap; Layout.fillWidth: true }
+            Label { text: "每页最多512项，可继续翻页。点目录进入，点文件通过系统导出。"; textFormat: Text.PlainText; wrapMode: Text.Wrap; Layout.fillWidth: true }
+            RowLayout {
+                Button { text: "上一页"; enabled: window.filePage > 0; onClicked: { window.filePage--; window.refreshFiles() } }
+                Label { text: "第" + (window.filePage + 1) + "页 / 本页" + window.fileRows.length + "项" }
+                Button { text: "下一页"; enabled: window.nextCursor.length > 0; onClicked: window.nextFiles() }
+            }
             ListView {
                 clip: true
                 Layout.fillWidth: true

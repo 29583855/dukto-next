@@ -5,10 +5,12 @@
 #include <QDir>
 #include <QDirIterator>
 #include <QFileInfo>
+#include <QMap>
 #include <QPointer>
 #include <QStandardPaths>
 #include <QTimer>
 #include <QUuid>
+#include <iterator>
 #include <memory>
 
 MobileFiles *MobileFiles::instance_ = nullptr;
@@ -112,21 +114,31 @@ bool MobileFiles::insideDocuments(const QString &path) const {
            (canonical == root || canonical.startsWith(root + '/'));
 }
 
-// 日期：2026-11-25；仅浏览用户文件，目录项有数量上限以控制QML模型内存。
-QVariantList MobileFiles::entries(const QString &directory) const {
-    QVariantList result;
+// 日期：2026-11-25；有界名称排序加游标覆盖全部条目，翻页不累计旧页面模型。
+QVariantMap MobileFiles::entries(const QString &directory, const QString &after) const {
+    QVariantList rows;
     if (!insideDocuments(directory))
-        return result;
+        return {{"rows", rows}, {"next", QString()}};
+    QMap<QString, QFileInfo> candidates;
     QDirIterator values(directory,
                         QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::NoSymLinks);
-    while (values.hasNext() && result.size() < 512) {
+    while (values.hasNext()) {
         values.next();
         const auto info = values.fileInfo();
-        result.append(QVariantMap{{"name", info.fileName()},
-                                  {"path", info.absoluteFilePath()},
-                                  {"directory", info.isDir()}});
+        if (info.fileName() <= after)
+            continue;
+        candidates.insert(info.fileName(), info);
+        if (candidates.size() > 513)
+            candidates.erase(std::prev(candidates.end()));
     }
-    return result;
+    const bool more = candidates.size() > 512;
+    if (more)
+        candidates.erase(std::prev(candidates.end()));
+    for (const auto &info : candidates)
+        rows.append(QVariantMap{{"name", info.fileName()},
+                                {"path", info.absoluteFilePath()},
+                                {"directory", info.isDir()}});
+    return {{"rows", rows}, {"next", more ? candidates.lastKey() : QString()}};
 }
 
 // 日期：2026-11-25；目录对话框异步出现，仍与既有控制器的同步入口兼容。

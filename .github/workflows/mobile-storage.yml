@@ -15,9 +15,9 @@ jobs:
         run: sudo apt-get update -qq && sudo apt-get install -y qtbase5-dev ninja-build
       - name: Compile and exercise import transactions
         run: |
-          cmake -S DuktoNextMobile/tests -B DuktoNextMobile/build-storage -G Ninja
+          cmake -S DuktoNextMobile/tests -B DuktoNextMobile/build-storage -G Ninja -DCMAKE_BUILD_TYPE=Release
           cmake --build DuktoNextMobile/build-storage
-          ctest --test-dir DuktoNextMobile/build-storage --output-on-failure
+          DUKTO_TEST_LARGE_IMPORT=1 ctest --test-dir DuktoNextMobile/build-storage --verbose
 
   host-ui-check:
     runs-on: ubuntu-24.04
