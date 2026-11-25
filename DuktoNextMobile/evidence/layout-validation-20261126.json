@@ -25,9 +25,33 @@
       "scope": "Windows PyQt5 isolated cleanup dialog with explicit-width Column wrapper",
       "passed": true,
       "layoutWarnings": 0
+    },
+    {
+      "run": 45673771655,
+      "job": 139415725771,
+      "artifact": 15050288616,
+      "scope": "Original Android arm64 APK, system share after 32 verified R6 receive batches",
+      "source": "1eaf84d9577418d5af2a9c115dcde94b838662f8",
+      "apkSha256": "df465e1664ef617d6fcc6989a9c92406bdcc29c4f568797c9045f2346cfb2e91",
+      "passed": false,
+      "receiveBatchesPassed": 32,
+      "uiSendStarted": false,
+      "recursiveRearrangeWarnings": 37020,
+      "polishWarnings": 9255,
+      "crash": "Java heap exhausted at 192MiB in QtNative.notifyAccessibilityLocationChange, pending OutOfMemoryError followed by JNI SIGABRT"
+    },
+    {
+      "scope": "Windows PyQt5 extracted production header with dynamic share and narrow window",
+      "passed": false,
+      "message": "Original ColumnLayout loops and process exits before 2 second completion"
+    },
+    {
+      "scope": "Windows PyQt5 extracted production header using fixed-width Column, dynamic share and 1.5x font",
+      "passed": true,
+      "layoutWarnings": 0
     }
   ],
-  "fullHostRegressionAfterFix": "pending",
-  "androidAppAfterFix": "pending",
+  "fullHostRegressionAfterFix": "pending dynamic share header regression",
+  "androidAppAfterFix": "pending rebuilt APK; old APK still fails",
   "physicalDevicePassed": false
 }

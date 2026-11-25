@@ -44,9 +44,14 @@ ApplicationWindow {
             refreshFiles()
         }
     }
-    header: ColumnLayout {
+    // 日期：2026-11-26；窗口固定横向尺寸，分享提示换行只决定高度，避免布局反向重排。
+    header: Column {
+        id: mobileHeader
+        objectName: "mobileHeader"
+        width: window.width
+        property var incomingShare: mobileFiles.incoming
         Label {
-            Layout.fillWidth: true
+            width: parent.width
             visible: mobileLifecycle.message.length > 0
             text: mobileLifecycle.message
             textFormat: Text.PlainText
@@ -54,22 +59,22 @@ ApplicationWindow {
             padding: 6
         }
         Label {
-            Layout.fillWidth: true
-            visible: Number(mobileFiles.incoming.files || 0) > 0 || String(mobileFiles.incoming.text || "").length > 0 || String(mobileFiles.incoming.error || "").length > 0
-            text: "系统分享：" + (mobileFiles.incoming.files || 0) + "项文件" + (String(mobileFiles.incoming.text || "").length ? "，含文字" : "") + "。请选择设备发送，或在服务器页上传。" + (mobileFiles.incoming.error ? "\n" + mobileFiles.incoming.error : "")
+            width: parent.width
+            visible: Number(mobileHeader.incomingShare.files || 0) > 0 || String(mobileHeader.incomingShare.text || "").length > 0 || String(mobileHeader.incomingShare.error || "").length > 0
+            text: "系统分享：" + (mobileHeader.incomingShare.files || 0) + "项文件" + (String(mobileHeader.incomingShare.text || "").length ? "，含文字" : "") + "。请选择设备发送，或在服务器页上传。" + (mobileHeader.incomingShare.error ? "\n" + mobileHeader.incomingShare.error : "")
             textFormat: Text.PlainText
             wrapMode: Text.WordWrap
             padding: 6
         }
         Button {
             text: "丢弃待处理系统分享"
-            visible: Number(mobileFiles.incoming.files || 0) > 0 || String(mobileFiles.incoming.text || "").length > 0 || String(mobileFiles.incoming.error || "").length > 0
+            visible: Number(mobileHeader.incomingShare.files || 0) > 0 || String(mobileHeader.incomingShare.text || "").length > 0 || String(mobileHeader.incomingShare.error || "").length > 0
             enabled: !mobileFiles.busy
             onClicked: mobileFiles.discardIncoming()
         }
         spacing: 0
         ToolBar {
-            Layout.fillWidth: true
+            width: parent.width
             RowLayout {
                 anchors.fill: parent
                 Label { text: "Dukto Next"; textFormat: Text.PlainText; Layout.fillWidth: true; leftPadding: 12 }
@@ -86,14 +91,14 @@ ApplicationWindow {
             }
         }
         Label {
-            Layout.fillWidth: true
+            width: parent.width
             text: mobileFiles.message.length ? mobileFiles.message : "请保持应用在前台；默认端口4644，与原版互通"
             textFormat: Text.PlainText
             wrapMode: Text.Wrap
             font.pixelSize: 12
             padding: 6
         }
-        BusyIndicator { running: mobileFiles.busy; visible: running; Layout.alignment: Qt.AlignHCenter; implicitHeight: 32 }
+        BusyIndicator { running: mobileFiles.busy; visible: running; anchors.horizontalCenter: parent.horizontalCenter; implicitHeight: 32 }
     }
     Loader { anchors.fill: parent; source: "qrc:/ui/Main.qml" }
     Connections {

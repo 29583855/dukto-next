@@ -112,6 +112,12 @@ void startUiStress(QQmlApplicationEngine &engine, Controller &controller, bool &
             else if (state->step == 7) {
                 // 日期：2026-11-26；发送表单覆盖窄屏、横屏与放大字体，主动触发真实尺寸重排。
                 const bool narrow = state->cycles % 2 == 0;
+                // 日期：2026-11-26；注入与系统分享同形的视图快照，覆盖动态横幅和丢弃按钮。
+                auto header = root->findChild<QObject *>(QStringLiteral("mobileHeader"));
+                const QVariantMap incoming =
+                    narrow ? QVariantMap{{"files", 2}, {"text", QString(2048, QChar(0x6587))}}
+                           : QVariantMap{};
+                ok = ok && header && header->setProperty("incomingShare", incoming);
                 window->resize(narrow ? 360 : 820, narrow ? 640 : 430);
                 auto font = originalFont;
                 if (font.pointSizeF() > 0)
@@ -163,6 +169,7 @@ void startUiStress(QQmlApplicationEngine &engine, Controller &controller, bool &
                         {"cycles", state->cycles},
                         {"layoutWarnings", layoutWarnings.load()},
                         {"sendFormResizeAndScroll", true},
+                        {"dynamicShareHeader", true},
                         {"warmupCycles", 30},
                         {"rssGrowthKiB", double(state->lastKiB - state->baselineKiB)},
                         {"objectGrowth", state->lastObjects - state->baselineObjects},
