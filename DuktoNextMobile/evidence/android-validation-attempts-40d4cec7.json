@@ -126,6 +126,28 @@
         "failure-sandbox.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "failure-screen.png": "1a0c09e43a2fa386abe382eed2e0a16bcb867493276ddd631459010e8da5d029"
       }
+    },
+    {
+      "run": 45667935199,
+      "job": 139395080851,
+      "artifact": 15047738613,
+      "wholeRunPassed": false,
+      "r6ReceivePassed": false,
+      "sequentialBatches": 0,
+      "textSendPassed": false,
+      "fileSendPassed": false,
+      "error": "辅助服务实际绑定成功；脚本错误假定Bound services包含包名，误判未绑定，产品未启动",
+      "files": {
+        "accessibility-appops.txt": "9c1ba6e22851a4d338b02a4f2865dfe287d44589076a18c9763bba245901978b",
+        "accessibility-helper-log.txt": "e3b9d0adc5b352a654301b871ed0f42e678dfe38b7a6b081d34e8b3cdc37f949",
+        "accessibility-package.txt": "a29f93b88bd7723ba1ed95e20c43524768a11bb2895cae041a0befcee26e823d",
+        "accessibility-services.txt": "beb596ff1f6311464e9cec86f30baea780bc67af8641834e1d046bd24a27cba0",
+        "accessibility-settings.json": "7eaef24268d453c3630fd2617f2fc0f49d4a6ab6c338a3e7decb4027ba53529c",
+        "android-startup.json": "e0052baface85093e16ee4791560905a06c7aeb232440a92dd4fe6ab752f72a1",
+        "failure-logcat.txt": "af9f0d870f4289138f588aea9d2a48cd70fb1766a58621daa5db96e57a6209fa",
+        "failure-sandbox.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "failure-screen.png": "0947d10b162c865aa9ec74a150def87a0a0bbe967e0ddd58fb48808a580ae25d"
+      }
     }
   ],
   "accessibilityFailure": {
@@ -137,7 +159,7 @@
   },
   "pendingFix": {
     "date": "2026-11-26",
-    "description": "Persistent AccessibilityService exports actual Android node tree with nonce; wait for real bound-service state and reapply settings only if installation resets them",
+    "description": "Recognize actual Android Bound-service label instead of absent package name; additionally require fresh nonce snapshot from live service before launching product",
     "validatedInCI": false,
     "productApkModified": false
   }

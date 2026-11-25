@@ -84,7 +84,10 @@ def accessibility_session(output):
             bound_services = state.split("Bound services:", 1)[-1].split("Enabled services:", 1)[0]
             if ("accessibility-bound" in logs
                     and component in snapshot["enabled_accessibility_services"]
-                    and "org.duktonext.validation" in bound_services):
+                    and "label=Dukto validation accessibility," in bound_services):
+                # 日期：2026-11-26；系统Bound列表仅给标签，额外以新随机快照证明服务可响应。
+                from android_send import ui_tree
+                ui_tree(output, "accessibility-bound")
                 break
             # 日期：2026-11-26；安装异步广播可能重置设置，按实际读回结果恢复，不能冒充绑定成功。
             if snapshot["enabled_accessibility_services"] != services:
