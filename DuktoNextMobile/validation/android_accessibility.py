@@ -55,6 +55,12 @@ def accessibility_session(output):
         # 日期：2026-11-26；显式启动辅助包，等待系统完成安装注册和服务绑定后才创建产品控件。
         adb("shell", "am", "start", "--user", "0", "-W", "-n",
             "org.duktonext.validation/.ValidationActivity")
+        # 日期：2026-11-26；Android 15限制侧载服务，授权仅限本次无网络权限的验收辅助包。
+        adb("shell", "appops", "set", "--user", "0", "org.duktonext.validation",
+            "ACCESS_RESTRICTED_SETTINGS", "allow")
+        (output / "accessibility-appops.txt").write_text(
+            adb("shell", "appops", "get", "org.duktonext.validation",
+                "ACCESS_RESTRICTED_SETTINGS"), "utf-8")
         services = component if original in ("null", "") else original + ":" + component
         adb("shell", "settings", "put", "secure", "enabled_accessibility_services", services)
         adb("shell", "settings", "put", "secure", "accessibility_enabled", "1")
