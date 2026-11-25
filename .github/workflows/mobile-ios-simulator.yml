@@ -1,0 +1,45 @@
+name: Mobile complete Qt iOS simulator validation
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  complete-app:
+    runs-on: macos-15
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Record simulator toolchain
+        run: |
+          mkdir -p DuktoNextMobile/build-ios-simulator
+          xcodebuild -version > DuktoNextMobile/build-ios-simulator/toolchain.txt
+          xcrun --sdk iphonesimulator --show-sdk-version >> DuktoNextMobile/build-ios-simulator/toolchain.txt
+          uname -m >> DuktoNextMobile/build-ios-simulator/toolchain.txt
+          python -m pip install Pillow==11.3.0
+      - uses: actions/cache@v4
+        id: simulator-cache
+        with:
+          path: ${{ runner.temp }}/dukto-ios-simulator/install
+          key: mobile-ios-simulator-${{ runner.arch }}-${{ hashFiles('DuktoNextMobile/scripts/dependencies.json', 'DuktoNextMobile/validation/build_ios_simulator.py') }}
+      - name: Build locked Qt and OpenSSL specifically for simulator
+        if: steps.simulator-cache.outputs.cache-hit != 'true'
+        run: python -u -X utf8 DuktoNextMobile/validation/build_ios_simulator.py --phase dependencies --prefix "${{ runner.temp }}/dukto-ios-simulator/install" --work "${{ runner.temp }}/dukto-ios-simulator/dependencies"
+      - name: Build complete production source app for simulator
+        run: python -u -X utf8 DuktoNextMobile/validation/build_ios_simulator.py --phase application --prefix "${{ runner.temp }}/dukto-ios-simulator/install" --work DuktoNextMobile/build-ios-simulator
+      - name: Install launch and receive using complete Qt app
+        run: python -u -X utf8 DuktoNextMobile/validation/ios_simulator.py --build DuktoNextMobile/build-ios-simulator
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mobile-complete-ios-simulator-${{ github.run_id }}
+          if-no-files-found: warn
+          path: |
+            DuktoNextMobile/build-ios-simulator/*.json
+            DuktoNextMobile/build-ios-simulator/*.txt
+            DuktoNextMobile/build-ios-simulator/*.png
+            DuktoNextMobile/build-ios-simulator/*.log
+            ${{ runner.temp }}/dukto-ios-simulator/dependencies/*.log
+            ${{ runner.temp }}/dukto-ios-simulator/dependencies/phase-receipt.json
