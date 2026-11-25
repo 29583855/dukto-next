@@ -48,6 +48,8 @@ def main():
          "OPENSSL_PREFIX=" + str(prefix / "openssl"), "CONFIG+=release"], app, environment)
     if args.platform == "android":
         run(["make", "-j3"], app, environment)
+        # 日期：2026-11-25；先执行qmake安装目标，将应用so放入部署目录的libs/ABI。
+        run(["make", "INSTALL_ROOT=" + str(app / "android-build"), "install"], app, environment)
         settings = list(app.glob("android-*-deployment-settings.json"))
         if len(settings) != 1:
             raise ValueError("Android部署设置数量错误")

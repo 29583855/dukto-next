@@ -100,6 +100,16 @@
       "reason": "Qt路径已修复；iOS误入Linux stat时间字段分支",
       "fix": "时间字段与原子提交使用Q_OS_DARWIN区分Apple平台",
       "deviceTestsPassed": false
+    },
+    {
+      "runId": 45594952127,
+      "jobId": 139138455082,
+      "commit": "0a3fa42e",
+      "platform": "android",
+      "result": "native_link_passed_deployment_staging_failed",
+      "reason": "应用so链接通过；androiddeployqt前未执行qmake install，部署目录缺应用so",
+      "fix": "显式make INSTALL_ROOT=android-build install后再执行部署",
+      "deviceTestsPassed": false
     }
   ]
 }
