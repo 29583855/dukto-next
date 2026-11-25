@@ -700,6 +700,8 @@ Rectangle {
                     id: textEditor
 
                     objectName: "textEditor"
+                    // 日期：2026-11-26；正文提供明确读屏名称，移动系统可按语义定位实际编辑控件。
+                    Accessible.name: textEditor.readOnly ? "接收的文字正文" : "发送文字正文"
                     textFormat: TextEdit.PlainText
                     selectByMouse: true
                     selectByKeyboard: true

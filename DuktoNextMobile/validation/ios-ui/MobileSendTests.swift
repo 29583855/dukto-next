@@ -98,7 +98,10 @@ final class MobileSendTests: XCTestCase {
         let textAction = app.buttons["发送文字"]
         XCTAssertTrue(textAction.waitForExistence(timeout: 5))
         textAction.tap()
-        let editor = app.textViews.firstMatch
+        capture(app, "text-dialog")
+        // 日期：2026-11-26；Qt多行编辑器的系统类型随版本变化，按产品读屏名称定位正文。
+        let editor = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "label == %@", "发送文字正文")).firstMatch
         XCTAssertTrue(editor.waitForExistence(timeout: 5))
         editor.tap()
         let body = "Dukto iOS production UI send / ASCII 20261126"

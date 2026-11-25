@@ -61,7 +61,7 @@ def receive_files(connection, fixtures):
     if len(expected) != len(fixtures):
         raise ValueError("验收样本名称重复")
     count, total = struct.unpack("<qq", receive_exact(connection, 16))
-    if count != len(fixtures) or total != sum(len(data) for data in expected.values()):
+    if count != len(fixtures) or total != sum(len(data) for data in expected.values() if data is not None):
         raise RuntimeError("APK文件批次条目数或总长错误")
     files = []
     for _ in range(count):
@@ -81,13 +81,22 @@ def receive_files(connection, fixtures):
             raise RuntimeError("APK文件名称错误或重复: " + name)
         data = expected.pop(name)
         size, = struct.unpack("<q", receive_exact(connection, 8))
-        if size != len(data) or receive_exact(connection, size) != data:
-            raise RuntimeError("APK文件长度或内容不一致: " + name)
-        files.append({"name": name, "bytes": size, "sha256": hashlib.sha256(data).hexdigest()})
+        # 日期：2026-11-26；目录仅接受R6的-1哨兵，不读取正文，普通文件仍逐字节核对。
+        if data is None:
+            if size != -1:
+                raise RuntimeError("APK目录哨兵错误: " + name)
+            files.append({"name": name, "directory": True})
+        else:
+            if size != len(data) or receive_exact(connection, size) != data:
+                raise RuntimeError("APK文件长度或内容不一致: " + name)
+            files.append({"name": name, "bytes": size, "sha256": hashlib.sha256(data).hexdigest()})
     if expected or connection.recv(1) != b"":
         raise RuntimeError("APK文件批次缺少条目或包含额外数据")
     return {"bytes": total, "files": files, "independentWireParser": True,
-            "utf8Path": True, "emptyFile": True, "perFileContentVerified": True}
+            "utf8Path": any(not name.isascii() for name, _ in fixtures),
+            "emptyFile": any(data == b"" for _, data in fixtures),
+            "directories": sum(data is None for _, data in fixtures),
+            "perFileContentVerified": True}
 
 
 # 日期：2026-11-26；从持久系统服务读取真实控件树，拒绝旧快照且不创建临时UiAutomation。

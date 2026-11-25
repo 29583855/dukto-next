@@ -124,10 +124,11 @@ def main():
     parser.add_argument("--r6-cold-file-send", action="store_true")
     parser.add_argument("--saf-file-send", action="store_true")
     parser.add_argument("--saf-file-export", action="store_true")
+    parser.add_argument("--saf-directory", action="store_true")
     args = parser.parse_args()
     if args.r6_file_send and not args.r6_send:
         parser.error("--r6-file-send requires --r6-send for the same onboarding and helper session")
-    if (args.saf_file_send or args.saf_file_export) and not args.r6_send:
+    if (args.saf_file_send or args.saf_file_export or args.saf_directory) and not args.r6_send:
         parser.error("SAF gates require the text-send onboarding and helper session")
     if args.r6_cold_file_send and not args.r6_file_send:
         parser.error("--r6-cold-file-send requires the warm file-send gate")
@@ -218,6 +219,10 @@ def main():
             from android_documents import verify_saf_file_export
             receipt["safFileExport"] = verify_saf_file_export(args.output)
             receipt["steps"].append("productionApkSafExportCancelReopenAndReadBack")
+        if args.saf_directory:
+            from android_documents import verify_saf_directory
+            receipt["safDirectory"] = verify_saf_directory(args.output)
+            receipt["steps"].append("productionApkSafDirectorySendImportExportAndReadBack")
         receipt["passed"] = True
         receipt["visualReviewPending"] = True
     except Exception as error:

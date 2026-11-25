@@ -48,8 +48,8 @@ class IndependentReceiverTests(unittest.TestCase):
 
     # 日期：2026-11-26；独立组装文件帧，避免调用被测应用的序列化器。
     def file_wire(self, fixtures):
-        return (struct.pack("<qq", len(fixtures), sum(len(data) for _, data in fixtures)) +
-                b"".join(name.encode("utf-8") + b"\0" + struct.pack("<q", len(data)) + data
+        return (struct.pack("<qq", len(fixtures), sum(len(data) for _, data in fixtures if data is not None)) +
+                b"".join(name.encode("utf-8") + b"\0" + struct.pack("<q", -1 if data is None else len(data)) + (b"" if data is None else data)
                          for name, data in fixtures))
 
     # 日期：2026-11-26；真实大小样本任意分片下核对中文名称、全部二进制和空文件。
@@ -74,7 +74,7 @@ class IndependentReceiverTests(unittest.TestCase):
         try:
             with receiver:
                 result = receive_files(receiver, fixtures)
-            self.assertEqual(result["bytes"], sum(len(data) for _, data in fixtures))
+            self.assertEqual(result["bytes"], sum(len(data) for _, data in fixtures if data is not None))
             self.assertEqual({item["name"] for item in result["files"]}, {name for name, _ in fixtures})
             self.assertTrue(result["emptyFile"])
         finally:
@@ -105,6 +105,31 @@ class IndependentReceiverTests(unittest.TestCase):
                         receive_files(receiver, fixtures)
         with self.assertRaises(ValueError):
             receive_files(None, [("same", b"x"), ("same", b"y")])
+
+    # 日期：2026-11-26；目录与空文件必须区分，根和嵌套空目录逐项核对，拒绝其他负数哨兵。
+    def test_directory_sentinels(self):
+        fixtures = [("root", None), ("root/空目录", None),
+                    ("root/中文.bin", b"abc"), ("root/empty", b"")]
+        valid = self.file_wire(list(reversed(fixtures)))
+        receiver, sender = socket.socketpair()
+        with receiver, sender:
+            receiver.settimeout(3)
+            sender.sendall(valid)
+            sender.shutdown(socket.SHUT_WR)
+            result = receive_files(receiver, fixtures)
+            self.assertEqual(result["directories"], 2)
+            self.assertEqual(result["bytes"], 3)
+            self.assertTrue(result["emptyFile"])
+        for bad in [-2, 0, 1]:
+            with self.subTest(sentinel=bad):
+                wire = valid.replace(struct.pack("<q", -1), struct.pack("<q", bad), 1)
+                receiver, sender = socket.socketpair()
+                with receiver, sender:
+                    receiver.settimeout(3)
+                    sender.sendall(wire)
+                    sender.shutdown(socket.SHUT_WR)
+                    with self.assertRaises(RuntimeError):
+                        receive_files(receiver, fixtures)
 
     # 日期：2026-11-25；验收工具自身同样有内存上限，拒绝负长度和超限申请。
     def test_bounded_allocation(self):

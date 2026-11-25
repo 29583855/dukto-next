@@ -2,6 +2,7 @@
 from pathlib import Path
 import hashlib
 import re
+import shlex
 import socket
 import time
 import uuid
@@ -138,3 +139,152 @@ def verify_saf_file_export(output):
                 sha256=hashlib.sha256(payload).hexdigest(), fileName=name,
                 processRestarts=0, deviceTest=False, wifiDiscoveryTest=False,
                 directoryExportTest=False, cloudProviderTest=False)
+
+
+# 日期：2026-11-26；目录样本同时覆盖中文名称、嵌套二进制、空文件及空目录。
+def directory_fixtures(root):
+    return [(root, None), (root + "/空目录", None), (root + "/nested", None),
+            (root + "/nested/中文 sample.bin", "系统目录授权 / SAF\n".encode("utf-8") + bytes(range(256)) * 129),
+            (root + "/zero.bin", b"")]
+
+
+# 日期：2026-11-26；只在外部Downloads播种样本，应用私有文档由真实选择器导入或网络接收产生。
+def seed_external_tree(output, root):
+    fixtures = directory_fixtures(root)
+    seed = output / "external-seed"
+    for name, data in fixtures:
+        target = seed / name
+        if data is None:
+            target.mkdir(parents=True, exist_ok=True)
+        else:
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(data)
+    adb("shell", "mkdir", "-p", "/sdcard/Download")
+    adb("push", str(seed / root), "/sdcard/Download/" + root)
+    return fixtures
+
+
+# 日期：2026-11-26；按系统真实名称点击树授权与确认按钮，缺少可访问节点即失败并保留现场。
+def grant_download_tree(output, root):
+    open_downloads(output)
+    click_label(output, "tree-open-" + root, root)
+    deadline = time.monotonic() + 15
+    while True:
+        tree = wait_picker(output, "tree-grant")
+        label = next((label for label in ("Use this folder", "USE THIS FOLDER")
+                      if find_label(tree, label) is not None), None)
+        if label is not None:
+            click_label(output, "tree-use", label)
+            break
+        if time.monotonic() >= deadline:
+            raise RuntimeError("系统目录选择器缺少授权按钮")
+        time.sleep(0.3)
+    deadline = time.monotonic() + 15
+    while True:
+        tree = ui_tree(output, "tree-confirm")
+        label = next((label for label in ("Allow", "ALLOW")
+                      if find_label(tree, label) is not None), None)
+        if label is not None:
+            click_label(output, "tree-allow", label)
+            return
+        if time.monotonic() >= deadline:
+            raise RuntimeError("系统目录授权确认未出现")
+        time.sleep(0.3)
+
+
+# 日期：2026-11-26；应用状态与每个落盘条目均需满足，空文件不能被空目录或反向替代。
+def verify_tree_content(fixtures, external=False):
+    for name, data in fixtures:
+        if external:
+            path = "/sdcard/Download/" + name
+            adb("shell", shlex.join(["test", "-d" if data is None else "-f", path]))
+            if data is not None and adb("exec-out", "sh", "-c", shlex.quote(shlex.join(["cat", path])), binary=True) != data:
+                raise RuntimeError("系统目录导出内容错误: " + name)
+        else:
+            directories = sandbox("find", ".", "-type", "d", "-name", "Documents").splitlines()
+            if len(directories) != 1:
+                raise RuntimeError("无法唯一定位应用文档目录")
+            path = directories[0] + "/" + name
+            sandbox("test", "-d" if data is None else "-f", path)
+            if data is not None:
+                wait_for_file(path, data)
+
+
+# 日期：2026-11-26；等待真实产品完成状态，保留系统节点快照以区分授权失败与产品复制失败。
+def wait_message(output, text):
+    deadline = time.monotonic() + 30
+    while find_label(ui_tree(output, "tree-product-completed"), text) is None:
+        if time.monotonic() >= deadline:
+            raise RuntimeError("产品目录操作未完成: " + text)
+        time.sleep(0.3)
+
+
+# 日期：2026-11-26；从原始APK执行目录发送、导入与导出，不注入产品入口，不重发掩盖失败。
+def verify_saf_directory(output):
+    output = Path(output) / "saf-directory"
+    output.mkdir(parents=True, exist_ok=True)
+    pid = adb("shell", "pidof", "org.duktonext.mobile").strip()
+    tree = ui_tree(output, "before-directory")
+    if find_label(tree, "Close") is not None:
+        click_label(output, "close-files", "Close")
+    source_root = "dukto-tree-" + uuid.uuid4().hex
+    fixtures = seed_external_tree(output, source_root)
+    click_label(output, "directory-manual-cancel", "IP 连接 · 发送到指定设备")
+    enter_target(output, "10.0.2.2")
+    click_label(output, "directory-send-cancel", "发送文件夹", scroll=True)
+    wait_picker(output, "directory-cancel")
+    adb("shell", "input", "keyevent", "KEYCODE_BACK")
+    click_label(output, "directory-manual-reopen", "IP 连接 · 发送到指定设备")
+    enter_target(output, "10.0.2.2")
+    click_label(output, "directory-send-reopen", "发送文件夹", scroll=True)
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as listener:
+        listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        listener.bind(("0.0.0.0", 4644))
+        listener.listen(1)
+        listener.settimeout(40)
+        grant_download_tree(output, source_root)
+        connection, _ = listener.accept()
+        with connection:
+            connection.settimeout(30)
+            sent = receive_files(connection, fixtures)
+    (output / "directory-send-completed.png").write_bytes(adb("exec-out", "screencap", "-p", binary=True))
+    click_label(output, "directory-application-files", "应用文件")
+    click_label(output, "directory-import", "导入目录")
+    grant_download_tree(output, source_root)
+    wait_message(output, "已导入1项到应用文件目录")
+    verify_tree_content(fixtures)
+    (output / "directory-import-completed.png").write_bytes(adb("exec-out", "screencap", "-p", binary=True))
+    click_label(output, "directory-files-close", "Close")
+    exported_root = "a-directory-export-" + uuid.uuid4().hex
+    received = directory_fixtures(exported_root)
+    port = int(adb("forward", "tcp:0", "tcp:4644").strip())
+    try:
+        send_r6(port, received)
+        verify_tree_content(received)
+    finally:
+        adb("forward", "--remove", "tcp:" + str(port))
+    target = "dukto-target-" + uuid.uuid4().hex
+    adb("shell", "mkdir", "-p", "/sdcard/Download/" + target)
+    click_label(output, "directory-export-files", "应用文件")
+    click_label(output, "directory-export-open", "[目录] " + exported_root)
+    click_label(output, "directory-export-cancel", "导出目录")
+    wait_picker(output, "directory-export-cancel-picker")
+    adb("shell", "input", "keyevent", "KEYCODE_BACK")
+    click_label(output, "directory-export-reopen", "导出目录")
+    grant_download_tree(output, target)
+    wait_message(output, "已完成系统导出")
+    verify_tree_content([(target + "/" + name, data) for name, data in received], external=True)
+    if adb("shell", "pidof", "org.duktonext.mobile").strip() != pid:
+        raise RuntimeError("系统目录操作期间产品进程意外重启")
+    log = adb("logcat", "-d", "--pid=" + pid)
+    (output / "directory-logcat.txt").write_text(log, "utf-8")
+    if re.search(r"FATAL EXCEPTION|Fatal signal|OutOfMemoryError|ForegroundServiceDidNotStartInTimeException", log):
+        raise RuntimeError("系统目录操作期间出现运行异常")
+    (output / "directory-export-completed.png").write_bytes(adb("exec-out", "screencap", "-p", binary=True))
+    return dict(passed=True, systemDocumentTreePicker=True, realUiActions=True,
+                independentDirectorySend=sent, importContentVerified=True,
+                receiveBeforeExport=True, exportContentVerified=True,
+                emptyDirectory=True, emptyFile=True, utf8Path=True,
+                sendCancelAndReopen=True, exportCancelAndReopen=True,
+                processRestarts=0, sendRetries=0, deviceTest=False,
+                wifiDiscoveryTest=False, cloudProviderTest=False)
