@@ -95,3 +95,13 @@ jobs:
           mkdir -p DuktoNextMobile/build-inbox
           clang++ -std=c++14 -fobjc-arc -framework Foundation -I DuktoNextMobile/platform/ios/share DuktoNextMobile/platform/ios/share/Inbox.mm DuktoNextMobile/tests/ios/inbox_tests.mm -o DuktoNextMobile/build-inbox/inbox-tests
           DuktoNextMobile/build-inbox/inbox-tests
+      - name: Compile actual iOS arm64 share extension without signing
+        run: |
+          cmake -S DuktoNextMobile/platform/ios/share -B DuktoNextMobile/build-share -G Xcode -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_SYSROOT=iphoneos -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=15.0 -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED=NO
+          cmake --build DuktoNextMobile/build-share --config Release
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mobile-ios-share-${{ github.run_id }}
+          path: DuktoNextMobile/build-share/Release-iphoneos/DuktoShare.appex/**
+          if-no-files-found: warn
