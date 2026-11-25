@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 import platform
+import re
 import shutil
 import subprocess
 import tarfile
@@ -64,6 +65,21 @@ def licenses(source, prefix, name):
         (json.dumps({"source": name, "files": entries}, ensure_ascii=False, indent=2) + "\n").encode("utf-8"))
 
 
+# 日期：2026-11-25；Qt5的Android前置特性会清空配置命令的链接参数，必须修补该重置点。
+def patch_android_alignment(qtbase):
+    feature = qtbase / "mkspecs/features/android/default_pre.prf"
+    original = feature.read_bytes()
+    patched, count = re.subn(rb"(?m)^QMAKE_LFLAGS[ \t]*=[ \t]*$",
+                             b"QMAKE_LFLAGS = -Wl,-z,max-page-size=16384 -Wl,-z,common-page-size=16384",
+                             original)
+    if count != 1:
+        raise ValueError("Qt Android链接参数重置点不匹配，拒绝生成4KiB库")
+    feature.write_bytes(patched)
+    return {"path": "mkspecs/features/android/default_pre.prf",
+            "beforeSha256": hashlib.sha256(original).hexdigest(),
+            "afterSha256": hashlib.sha256(patched).hexdigest()}
+
+
 # 日期：2026-11-25；Qt5保留C++14，移动平台使用同一版本Qt私有头与库；先编译依赖再进入应用门禁。
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -118,6 +134,7 @@ def main():
         patched = original.replace(b"/System/Library/Frameworks/OpenGL.framework/Headers \\\n    /System/Library/Frameworks/AGL.framework/Headers/", b"/System/Library/Frameworks/OpenGL.framework/Headers")
         patched = patched.replace(b"-framework OpenGL -framework AGL", b"-framework OpenGL")
         config.write_bytes(patched)
+    alignment_patch = patch_android_alignment(sources["qtbase"]) if args.platform == "android" else None
     run(configure, sources["openssl"], environment, work / "openssl.log")
     run(["make", "-j" + str(args.jobs)], sources["openssl"], environment, work / "openssl.log")
     run(["make", "install_sw"], sources["openssl"], environment, work / "openssl.log")
@@ -145,6 +162,7 @@ def main():
         run(["make", "install"], build, environment, work / (name + ".log"))
         licenses(sources[name], prefix, name)
     receipt = {"platform": args.platform, "sourceBuild": True, "dependencies": lock,
+               "androidAlignmentPatch": alignment_patch,
                "host": platform.platform(), "builderSha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
                "deviceTestsPassed": False, "signedForDistribution": False}
     (prefix / "dependency-manifest.json").write_text(json.dumps(receipt, indent=2) + "\n", "utf-8")

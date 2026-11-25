@@ -322,6 +322,17 @@
       "reason": "Qt与应用原生编译完成，正式APK的Gradle依赖下载遇Maven Central HTTP429",
       "fix": "正式Qt部署副本加入合同测试已验通的Google Central镜像，等待完整APK验包",
       "deviceTestsPassed": false
+    },
+    {
+      "runId": 45607824144,
+      "jobId": 139183190828,
+      "commit": "fd3ac1d5",
+      "platform": "android",
+      "result": "qtbase_elf_16k_alignment_failed",
+      "reason": "APK完整生成且签名/ZIP对齐通过，但QtCore/Gui/Network/Sql及qtbase插件LOAD段仍为4096；Qt Android default_pre.prf显式清空QMAKE_LFLAGS",
+      "fix": "对固定Qt源码的唯一QMAKE_LFLAGS重置点注入16KiB max/common参数，记录前后SHA256，再完整重建；不改写ELF或放宽门禁",
+      "artifactId": 15018347373,
+      "deviceTestsPassed": false
     }
   ]
 }
