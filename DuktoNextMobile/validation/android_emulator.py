@@ -118,6 +118,7 @@ def main():
     parser.add_argument("--sha256", required=True)
     parser.add_argument("--source", required=True)
     parser.add_argument("--r6-receive", action="store_true")
+    parser.add_argument("--r6-send", action="store_true")
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
     receipt = {"passed": False, "deviceTest": False, "scope": "Android模拟器安装启动原始arm64开发APK",
@@ -174,6 +175,17 @@ def main():
         if args.r6_receive:
             receipt["r6Receive"] = verify_r6_receive()
             receipt["steps"].append("productionApkR6ReceiveAndHash")
+        if args.r6_send:
+            from android_send import verify_text_send
+            receipt["r6Send"] = verify_text_send(args.output)
+            receipt["steps"].append("productionApkSharedTextUiSendAndHash")
+        # 日期：2026-11-25；传输后的崩溃同样必须使本轮失败，不能只核对启动日志。
+        final_log = adb("logcat", "-d", "--pid=" + pid, timeout=60)
+        (args.output / "final-logcat.txt").write_text(final_log, "utf-8")
+        receipt["runtimeErrors"] = [line for line in final_log.splitlines() if re.search(
+            r"FATAL EXCEPTION|Fatal signal|QQmlApplicationEngine failed|module .+ is not installed|Cannot load library", line)]
+        if receipt["runtimeErrors"]:
+            raise RuntimeError("应用传输期间出现运行错误")
         receipt["passed"] = True
         receipt["visualReviewPending"] = True
     except Exception as error:
