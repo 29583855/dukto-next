@@ -15,6 +15,8 @@ jobs:
         run: sudo apt-get update -qq && sudo apt-get install -y qtbase5-dev ninja-build
       - name: Test package inspection boundaries
         run: python -m unittest discover -s DuktoNextMobile/scripts -p '*_tests.py' -v
+      - name: Test independent wire validation boundaries
+        run: python -m unittest discover -s DuktoNextMobile/validation -p '*_tests.py' -v
       - name: Compile and exercise import transactions
         run: |
           cmake -S DuktoNextMobile/tests -B DuktoNextMobile/build-storage -G Ninja -DCMAKE_BUILD_TYPE=Release

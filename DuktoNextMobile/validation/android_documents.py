@@ -28,6 +28,10 @@ def wait_picker(output, stage):
 # 日期：2026-11-26；从可见系统根目录选择Downloads，名称来自系统英文测试镜像。
 def open_downloads(output):
     tree = wait_picker(output, "picker-initial")
+    # 日期：2026-11-26；树选择器可直接显示存储根，系统节点为Download而非侧栏Downloads。
+    if find_label(tree, "Download") is not None:
+        click_label(output, "picker-download-directory", "Download")
+        return
     if find_label(tree, "Show roots") is not None:
         click_label(output, "picker-roots", "Show roots")
     click_label(output, "picker-downloads", "Downloads")
