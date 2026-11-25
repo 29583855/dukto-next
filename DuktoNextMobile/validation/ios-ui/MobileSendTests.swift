@@ -82,9 +82,13 @@ final class MobileSendTests: XCTestCase {
         port.tap()
         let initialPort = try XCTUnwrap(port.value as? String)
         XCTAssertEqual(initialPort, "4644")
+        capture(app, "port-keyboard-ready")
+        // 日期：2026-11-26；数字键盘删除键可为Button且名称大小写不同，按实际语义节点查找。
+        let delete = app.keyboards.firstMatch.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier ==[c] %@ OR label ==[c] %@", "delete", "delete"))
+            .firstMatch
+        XCTAssertTrue(delete.waitForExistence(timeout: 5), "系统数字键盘缺少删除控件")
         for _ in initialPort {
-            let delete = app.keyboards.keys["delete"]
-            XCTAssertTrue(delete.exists)
             delete.tap()
         }
         try tapKeyboard(app, "49231")
