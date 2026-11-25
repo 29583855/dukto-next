@@ -32,6 +32,14 @@ final class MobileSendTests: XCTestCase {
         let host = app.textFields["目标 IP 或主机名"]
         XCTAssertTrue(host.waitForExistence(timeout: 10))
         host.tap()
+        // 日期：2026-11-26；新模拟器首次键盘教学会覆盖焦点，按系统实际按钮关闭并留存现场。
+        let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+        let keyboardContinue = springboard.buttons["Continue"]
+        if keyboardContinue.waitForExistence(timeout: 3) && keyboardContinue.isHittable {
+            capture(springboard, "keyboard-onboarding")
+            keyboardContinue.tap()
+            host.tap()
+        }
         host.typeText("127.0.0.1")
         let port = app.textFields["目标端口"]
         XCTAssertTrue(port.waitForExistence(timeout: 10))

@@ -11,7 +11,8 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <application android:name="org.qtproject.qt5.android.bindings.QtApplication" android:label="Dukto Next" android:allowNativeHeapPointerTagging="false" android:hardwareAccelerated="true" android:allowBackup="false" android:usesCleartextTraffic="true" android:extractNativeLibs="true">
         <service android:name="org.duktonext.mobile.TransferService" android:exported="false" android:foregroundServiceType="dataSync" android:stopWithTask="true" />
-        <activity android:name="org.duktonext.mobile.DuktoActivity" android:label="Dukto Next" android:exported="true" android:launchMode="singleTop" android:configChanges="orientation|uiMode|screenLayout|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|keyboard|keyboardHidden|navigation|density" android:screenOrientation="unspecified">
+        <!-- 日期：2026-11-26；跨应用分享复用唯一Qt窗口，避免在来源任务中创建第二个QtActivity。 -->
+        <activity android:name="org.duktonext.mobile.DuktoActivity" android:label="Dukto Next" android:exported="true" android:launchMode="singleTask" android:configChanges="orientation|uiMode|screenLayout|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|keyboard|keyboardHidden|navigation|density" android:screenOrientation="unspecified">
             <intent-filter><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.LAUNCHER" /></intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
