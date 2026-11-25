@@ -1,0 +1,21 @@
+{
+  "date": "2026-11-26",
+  "sourceCommit": "fe8515be25231b760bba0f56ad20665aa8e795d2",
+  "run": 45701336406,
+  "job": 139511912967,
+  "artifact": 15063708103,
+  "passed": false,
+  "passedSubsteps": [
+    "completeQtAppBuildInstallStartup",
+    "32SequentialR6Receive",
+    "keyboardTeachingDismissed",
+    "targetHostAndPortTypedAndVerified"
+  ],
+  "failureStage": "Before send: production text editor exact-content assertion",
+  "expected": "Dukto iOS production UI send / ASCII 20261126",
+  "actual": "Fulton iOS production UI send / ASCII 20261126",
+  "finding": "iOS系统预测纠错替换了Dukto，尚未点击发送；不能归因为发送器或接收器失败",
+  "change": "移动副本正文TextArea增加Qt.ImhNoPredictiveText，保持原文测试及接收端逐字核对",
+  "verificationPending": true,
+  "deviceTest": false
+}

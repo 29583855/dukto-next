@@ -702,6 +702,8 @@ Rectangle {
                     objectName: "textEditor"
                     // 日期：2026-11-26；正文提供明确读屏名称，移动系统可按语义定位实际编辑控件。
                     Accessible.name: textEditor.readOnly ? "接收的文字正文" : "发送文字正文"
+                    // 日期：2026-11-26；传输正文保持用户逐字输入，避免iOS将Dukto等原文自动纠正为其他单词。
+                    inputMethodHints: Qt.ImhNoPredictiveText
                     textFormat: TextEdit.PlainText
                     selectByMouse: true
                     selectByKeyboard: true
