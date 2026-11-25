@@ -10,9 +10,9 @@ android {
     }
     testOptions {
         unitTests.includeAndroidResources = true
-        // 日期：2026-11-25；使用Maven Central正式主机，避免repo1下载测试SDK时被429限流。
+        // 日期：2026-11-25；使用Google提供的Maven Central镜像，两个Central主机在CI均返回429。
         unitTests.all {
-            systemProperty 'robolectric.dependency.repo.url', 'https://repo.maven.apache.org/maven2'
+            systemProperty 'robolectric.dependency.repo.url', 'https://maven-central.storage-download.googleapis.com/maven2'
         }
     }
 }
