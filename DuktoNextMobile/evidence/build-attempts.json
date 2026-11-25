@@ -190,6 +190,56 @@
       "reason": "现代Gradle BUILD SUCCESSFUL并生成APK；打包函数被Path局部变量遮蔽抛TypeError",
       "fix": "修复package_source命名后继续真实验包",
       "deviceTestsPassed": false
+    },
+    {
+      "runId": 45601311359,
+      "jobId": 139160643490,
+      "commit": "653a93d7",
+      "platform": "ios",
+      "result": "native_passed_inspector_header_false_positive",
+      "reason": "otool -L首行是被检查二进制的自身路径，验包器误判为外部动态依赖",
+      "fix": "仅检查后续依赖条目，另加真实文件和归档权限回归",
+      "deviceTestsPassed": false
+    },
+    {
+      "runId": 45601311359,
+      "jobId": 139160643860,
+      "commit": "653a93d7",
+      "platform": "android",
+      "result": "share_java_compile_failed",
+      "reason": "Intent.setClipData返回void，不能链式调用addFlags",
+      "fix": "分步建立Intent及ClipData；同时修复测试夹具调用",
+      "deviceTestsPassed": false
+    },
+    {
+      "runId": 45601311343,
+      "jobId": 139160643393,
+      "commit": "653a93d7",
+      "platform": "host",
+      "result": "qml_readonly_implicit_height",
+      "reason": "Qt5 Label的implicitHeight只读，前次布局修复无效",
+      "fix": "改为固定有界Dialog高度配合ScrollView换行内容，新增实际打开弹窗截图",
+      "deviceTestsPassed": false
+    },
+    {
+      "runId": 45601719029,
+      "jobId": 139162054256,
+      "commit": "7e82d871",
+      "platform": "android-jvm",
+      "result": "sdk_tool_not_on_path",
+      "reason": "runner未在PATH提供sdkmanager",
+      "fix": "通过官方setup-android安装固定测试SDK",
+      "deviceTestsPassed": false
+    },
+    {
+      "runId": 45602034908,
+      "jobId": 139163126414,
+      "commit": "dd75ecf4",
+      "platform": "android-jvm",
+      "result": "androidx_property_missing",
+      "reason": "Robolectric的AndroidX依赖要求启用android.useAndroidX",
+      "fix": "独立测试工程补gradle.properties，不改变生产Qt依赖",
+      "deviceTestsPassed": false
     }
   ]
 }
