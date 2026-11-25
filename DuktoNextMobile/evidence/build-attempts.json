@@ -393,6 +393,16 @@
       "reason": "O_PATH适配消除了根目录read拒绝；控制器初始化仍抛Permission4/path，QML未加载。",
       "fix": "仅在移动入口解析QStandardPaths提供的私有沙箱根；保留所有用户路径及子目录逐层拒绝链接，等待APK复验。",
       "deviceTestsPassed": false
+    },
+    {
+      "run": 45623396580,
+      "job": 139237159911,
+      "platform": "storage-host",
+      "result": "test_target_missing_private_root_error_dependency",
+      "reason": "新增私有根入口使用统一core/error，独立mobile-files-tests没有声明共享头路径和错误实现，编译失败；尚未运行测试。",
+      "fix": "仅给该真实协调器测试目标补齐../shared/src包含路径和core/error.cpp；不使用替身绕过错误。",
+      "deviceTestsPassed": false,
+      "logSha256": "4ec4e407b264cb51976bbeb2d9c452cea3e492d7648584b76458d1083a995d7c"
     }
   ]
 }
