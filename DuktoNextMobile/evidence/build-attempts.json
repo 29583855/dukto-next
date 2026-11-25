@@ -29,6 +29,17 @@
       "reason": "Controller使用QColor但未直接包含QColor头文件，核心库已编译通过",
       "fix": "显式包含QColor；重新运行完整控制器及QML渲染门禁",
       "deviceTestsPassed": false
+    },
+    {
+      "runId": 45587770613,
+      "jobId": 139113672657,
+      "commit": "941bac24",
+      "platform": "android",
+      "result": "dependencies_passed_app_cmake_failed",
+      "reason": "Qt5与OpenSSL源码编译安装通过，但Android交叉CMake的目标根搜索未包含安装前缀，找不到Qt5Config.cmake",
+      "fix": "明确传入Qt5_DIR及CMAKE_FIND_ROOT_PATH，复用已成功的依赖缓存继续应用编译",
+      "artifactId": 15010841201,
+      "deviceTestsPassed": false
     }
   ]
 }

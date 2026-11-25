@@ -27,8 +27,11 @@ def main():
     app.mkdir(exist_ok=True)
     environment = dict(os.environ)
     qt = prefix / "qt"
+    # 日期：2026-11-25；交叉工具链默认只搜索目标根，显式指定已安装Qt配置及依赖根。
     command = ["cmake", "-S", root, "-B", core, "-G", "Ninja", "-DCMAKE_BUILD_TYPE=Release",
-               "-DCMAKE_PREFIX_PATH=" + str(qt), "-DOPENSSL_ROOT_DIR=" + str(prefix / "openssl"),
+               "-DCMAKE_PREFIX_PATH=" + str(qt), "-DQt5_DIR=" + str(qt / "lib/cmake/Qt5"),
+               "-DCMAKE_FIND_ROOT_PATH=" + str(prefix),
+               "-DOPENSSL_ROOT_DIR=" + str(prefix / "openssl"),
                "-DOPENSSL_USE_STATIC_LIBS=TRUE", "-DDUKTO_BUILD_GUI=OFF", "-DDUKTO_BUILD_TESTS=OFF"]
     if args.platform == "android":
         ndk = Path(environment["ANDROID_NDK_ROOT"])
