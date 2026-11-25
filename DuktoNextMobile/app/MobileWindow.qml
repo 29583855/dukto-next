@@ -118,23 +118,35 @@ ApplicationWindow {
     Dialog {
         id: filesDialog
         objectName: "mobileFilesDialog"
+        parent: Overlay.overlay
         modal: true
         anchors.centerIn: parent
         width: Math.min(window.width - 16, 700)
-        height: Math.max(260, window.height - 80)
+        height: Math.max(0, window.height - 32)
         title: window.directoryMode ? "选择应用目录" : "应用文件"
         standardButtons: window.directoryMode ? Dialog.Ok | Dialog.Cancel : Dialog.Close
         onAccepted: mobileFiles.finishDirectory(window.browsing)
         onRejected: { if (window.directoryMode) mobileFiles.finishDirectory("") }
         contentItem: ColumnLayout {
-            Label { text: window.browsing; textFormat: Text.PlainText; wrapMode: Text.WrapAnywhere; Layout.fillWidth: true }
-            RowLayout {
+            Label { text: window.browsing; textFormat: Text.PlainText; wrapMode: Text.WrapAnywhere; Layout.fillWidth: true; Layout.minimumWidth: 0 }
+            // 日期：2026-11-26；操作按钮随可用宽度自动换行，避免手机窄屏上右侧按钮被裁切。
+            Flow {
+                objectName: "mobileFilesActions"
+                Layout.fillWidth: true
+                Layout.minimumWidth: 0
+                Layout.preferredWidth: 0
+                spacing: 6
                 Button { text: "上层"; enabled: window.browsing !== mobileFiles.documents; onClicked: window.goUp() }
                 Button { text: "刷新"; onClicked: window.refreshFiles() }
                 Button { text: "新建目录"; onClicked: newDirectoryDialog.open() }
                 Button { text: "导出目录"; visible: !window.directoryMode; enabled: !mobileFiles.busy; onClicked: mobileFiles.exportPath(window.browsing) }
             }
-            RowLayout {
+            Flow {
+                objectName: "mobileFilesImports"
+                Layout.fillWidth: true
+                Layout.minimumWidth: 0
+                Layout.preferredWidth: 0
+                spacing: 6
                 visible: !window.directoryMode
                 Button { text: "导入文件"; enabled: !mobileFiles.busy; onClicked: mobileFiles.importIntoDocuments(false) }
                 Button { text: "导入目录"; enabled: !mobileFiles.busy; onClicked: mobileFiles.importIntoDocuments(true) }
@@ -144,16 +156,20 @@ ApplicationWindow {
                 enabled: !mobileFiles.busy && !controller.busy && !controller.server.busy
                 onClicked: cleanupDialog.open()
             }
-            Label { text: "每页最多512项，可继续翻页。点目录进入，点文件通过系统导出。"; textFormat: Text.PlainText; wrapMode: Text.Wrap; Layout.fillWidth: true }
+            Label { text: "每页最多512项，可继续翻页。点目录进入，点文件通过系统导出。"; textFormat: Text.PlainText; wrapMode: Text.Wrap; Layout.fillWidth: true; Layout.minimumWidth: 0 }
             RowLayout {
-                Button { text: "上一页"; enabled: window.filePage > 0; onClicked: { window.filePage--; window.refreshFiles() } }
-                Label { text: "第" + (window.filePage + 1) + "页 / 本页" + window.fileRows.length + "项" }
-                Button { text: "下一页"; enabled: window.nextCursor.length > 0; onClicked: window.nextFiles() }
+                Layout.fillWidth: true
+                Layout.minimumWidth: 0
+                Button { Layout.minimumWidth: 0; Layout.fillWidth: true; text: "上一页"; enabled: window.filePage > 0; onClicked: { window.filePage--; window.refreshFiles() } }
+                Label { Layout.minimumWidth: 0; Layout.fillWidth: true; text: "第" + (window.filePage + 1) + "页 / 本页" + window.fileRows.length + "项"; textFormat: Text.PlainText; wrapMode: Text.Wrap; horizontalAlignment: Text.AlignHCenter }
+                Button { Layout.minimumWidth: 0; Layout.fillWidth: true; text: "下一页"; enabled: window.nextCursor.length > 0; onClicked: window.nextFiles() }
             }
             ListView {
                 clip: true
                 Layout.fillWidth: true
                 Layout.fillHeight: true
+                Layout.minimumWidth: 0
+                Layout.minimumHeight: 0
                 model: window.fileRows
                 delegate: ItemDelegate {
                     width: ListView.view.width

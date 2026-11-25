@@ -65,6 +65,25 @@ QJsonObject objectGroups(QObject *root, QObject *engine) {
         result.insert(it.key(), it.value());
     return result;
 }
+// 日期：2026-11-26；实测弹窗内容和每个可见操作按钮的边界，不能用无布局警告代替可操作性。
+bool fileActionsFit(QObject *root) {
+    auto dialog = root->findChild<QObject *>(QStringLiteral("mobileFilesDialog"));
+    auto content = dialog ? dialog->property("contentItem").value<QQuickItem *>() : nullptr;
+    if (!content || content->width() > dialog->property("availableWidth").toDouble() + 0.5)
+        return false;
+    for (const auto &name :
+         {QStringLiteral("mobileFilesActions"), QStringLiteral("mobileFilesImports")}) {
+        auto actions = root->findChild<QQuickItem *>(name);
+        if (!actions || actions->width() <= 0 || actions->width() > content->width() + 0.5)
+            return false;
+        for (auto child : actions->childItems()) {
+            if (child->isVisible() &&
+                (child->x() < -0.5 || child->x() + child->width() > actions->width() + 0.5))
+                return false;
+        }
+    }
+    return true;
+}
 struct State {
     int step = 0;
     int cycles = 0;
@@ -118,7 +137,8 @@ void startUiStress(QQmlApplicationEngine &engine, Controller &controller, bool &
                     narrow ? QVariantMap{{"files", 2}, {"text", QString(2048, QChar(0x6587))}}
                            : QVariantMap{};
                 ok = ok && header && header->setProperty("incomingShare", incoming);
-                window->resize(narrow ? 360 : 820, narrow ? 640 : 430);
+                window->resize(narrow ? (state->cycles % 4 == 0 ? 320 : 360) : 820,
+                               narrow ? 640 : 430);
                 auto font = originalFont;
                 if (font.pointSizeF() > 0)
                     font.setPointSizeF(font.pointSizeF() * (narrow ? 1.5 : 1.0));
@@ -141,9 +161,14 @@ void startUiStress(QQmlApplicationEngine &engine, Controller &controller, bool &
                 ok = ok && invoke("sendDialog", "close");
             } else if (state->step == 9)
                 ok = ok && invoke("mobileFilesDialog", "open");
-            else if (state->step == 10)
+            else if (state->step == 10) {
+                ok = ok && fileActionsFit(root);
+                if (state->cycles == 0)
+                    ok = window->grabWindow().save(
+                             QStringLiteral("mobile-smoke-files-narrow.png")) &&
+                         ok;
                 ok = ok && invoke("mobileFilesDialog", "close");
-            else {
+            } else {
                 engine.collectGarbage();
                 ok = ok && !window->grabWindow().isNull();
                 ++state->cycles;
@@ -170,6 +195,8 @@ void startUiStress(QQmlApplicationEngine &engine, Controller &controller, bool &
                         {"layoutWarnings", layoutWarnings.load()},
                         {"sendFormResizeAndScroll", true},
                         {"dynamicShareHeader", true},
+                        {"fileActionsWithinDialog", true},
+                        {"minimumWindowWidth", 320},
                         {"warmupCycles", 30},
                         {"rssGrowthKiB", double(state->lastKiB - state->baselineKiB)},
                         {"objectGrowth", state->lastObjects - state->baselineObjects},
