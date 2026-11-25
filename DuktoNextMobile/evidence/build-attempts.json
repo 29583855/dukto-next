@@ -354,6 +354,16 @@
       "reason": "xcrun simctl list runtimes -j在120秒内未返回；尚未启动测试应用，没有应用测试收据",
       "fix": "仅重跑失败任务，job139202602063在iOS26.2实际窗口/模态/恢复/隐藏拒绝通过；artifact15022640353；原基础设施失败继续保留",
       "deviceTestsPassed": false
+    },
+    {
+      "run": 45617256473,
+      "job": 139215751209,
+      "platform": "android-emulator-api30",
+      "result": "failure",
+      "artifact": 15022443551,
+      "reason": "原始arm64 APK安装成功；Android11 libndk_translation.so不支持指令0x5ee1b801，SIGILL退出；非手机原生arm64失败证据",
+      "fix": "保留失败收据，继续在API35镜像测试同一APK；不修改业务代码或关闭指令检查",
+      "deviceTestsPassed": false
     }
   ]
 }

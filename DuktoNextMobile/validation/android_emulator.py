@@ -13,7 +13,8 @@ from PIL import Image, ImageStat
 def adb(*args, binary=False, timeout=45):
     result = subprocess.run(["adb", *args], capture_output=True, timeout=timeout)
     if result.returncode:
-        raise RuntimeError(result.stderr.decode("utf-8", "replace") + result.stdout.decode("utf-8", "replace"))
+        raise RuntimeError("ADB命令失败: " + " ".join(args) + ": " +
+                           result.stderr.decode("utf-8", "replace") + result.stdout.decode("utf-8", "replace"))
     return result.stdout if binary else result.stdout.decode("utf-8", "replace")
 
 
@@ -24,7 +25,7 @@ def main():
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
-    receipt = {"passed": False, "deviceTest": False, "scope": "Android11模拟器安装启动原始arm64开发APK",
+    receipt = {"passed": False, "deviceTest": False, "scope": "Android模拟器安装启动原始arm64开发APK",
                "sourceCommit": "45647c484f818ad7b16f10b1b3b03d72b7145f30", "steps": []}
     try:
         digest = hashlib.sha256(args.apk.read_bytes()).hexdigest()

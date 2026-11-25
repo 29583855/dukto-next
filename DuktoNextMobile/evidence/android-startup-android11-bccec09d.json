@@ -1,0 +1,23 @@
+{
+  "passed": false,
+  "deviceTest": false,
+  "scope": "Android11模拟器安装启动原始arm64开发APK",
+  "sourceCommit": "45647c484f818ad7b16f10b1b3b03d72b7145f30",
+  "steps": [
+    "originalApkHashAndAbi",
+    "install"
+  ],
+  "apkSha256": "750908dbf8d4b5698b7550966cab251f17a4f81fe932533f12df0e4a03c7c9e6",
+  "abiList": "x86_64,x86,arm64-v8a,armeabi-v7a,armeabi",
+  "systemVersion": "11",
+  "nativeBridge": "libndk_translation.so",
+  "installOutput": "Performing Streamed Install\nSuccess",
+  "launchOutput": "Starting: Intent { cmp=org.duktonext.mobile/.DuktoActivity }\nStatus: ok\nLaunchState: COLD\nActivity: org.duktonext.mobile/.DuktoActivity\nTotalTime: 2953\nWaitTime: 2995\nComplete\n",
+  "error": "",
+  "validationCommit": "bccec09de16fa68e1afec5ee34b1b7106be22d78",
+  "run": 45617256473,
+  "job": 139215751209,
+  "artifact": 15022443551,
+  "observedFailure": "Android11 x86_64 ARM转译层libndk_translation.so报Undefined instruction 0x5ee1b801后SIGILL，APK安装和Activity调起成功但进程退出，未生成界面通过证据",
+  "nextAction": "使用新Android系统镜像继续测试；本记录不证明原生arm64手机也发生同样问题"
+}
