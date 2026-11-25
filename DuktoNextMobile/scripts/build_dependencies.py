@@ -26,8 +26,16 @@ def run(command, directory, environment, log):
 # 日期：2026-11-25；下载固定SHA256源码并使用Python安全解压，不执行研究仓库中的代码。
 def extract(source, work):
     archive = work / Path(source["url"]).name
-    with urllib.request.urlopen(source["url"], timeout=180) as response, archive.open("wb") as output:
-        shutil.copyfileobj(response, output)
+    # 日期：2026-11-25；显式指定本地源码归档时禁止联网，完整源码交付可复用相同构建入口。
+    source_cache = os.environ.get("DUKTO_SOURCE_ARCHIVES")
+    if source_cache:
+        cached = Path(source_cache) / archive.name
+        if cached.is_symlink() or not cached.is_file():
+            raise ValueError("离线源码缺失或不是普通文件: " + source["name"])
+        shutil.copyfile(cached, archive)
+    else:
+        with urllib.request.urlopen(source["url"], timeout=180) as response, archive.open("wb") as output:
+            shutil.copyfileobj(response, output)
     with archive.open("rb") as stream:
         if hashlib.file_digest(stream, "sha256").hexdigest() != source["sha256"]:
             raise ValueError("依赖摘要错误: " + source["name"])

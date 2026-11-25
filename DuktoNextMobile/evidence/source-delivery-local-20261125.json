@@ -1,0 +1,21 @@
+{
+  "date": "2026-11-25",
+  "command": "python -X utf8 -m unittest discover -s DuktoNextMobile/scripts -p '*_tests.py' -v",
+  "passed": true,
+  "testsRun": 17,
+  "newTestMethods": 5,
+  "nativeRebuildPassed": false,
+  "deviceTestsPassed": false,
+  "failureHistory": [
+    {
+      "stage": "initial exact-commit test",
+      "error": "test_exact_commit_offline_reproducible failed: Git archive returned CRLF where committed blob used LF",
+      "resolution": "Read ls-tree and cat-file --batch blobs directly instead of git archive; exact-byte assertion passed."
+    }
+  ],
+  "files": {
+    "build_dependencies.py": "b623c4a8c1e0a1958401d9d8978d54e6d80d48441f43d8cbe2000c40d6d323a8",
+    "source_bundle.py": "aafcddf7aaa1e00a35318b91530c42cfa33a7c9883ef42eae847338efc42adbd",
+    "source_bundle_tests.py": "fe1c6dec8ed0b63fab9057dce96bf87e9d6441e121cf964d76b3cc79109c4eaa"
+  }
+}

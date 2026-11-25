@@ -1,0 +1,135 @@
+name: Mobile complete source delivery and rebuild
+on:
+  push:
+    branches: [codex/mobile-platforms]
+    paths: ['DuktoNextMobile/scripts/source_bundle.py', 'DuktoNextMobile/scripts/source_bundle_tests.py', 'DuktoNextMobile/scripts/build_dependencies.py', '.github/workflows/mobile-source.yml']
+  workflow_dispatch:
+    inputs:
+      source_ref:
+        description: 包含源码交付工具的分支或提交
+        required: true
+        default: codex/mobile-platforms
+permissions:
+  contents: read
+jobs:
+  source-bundle:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    outputs:
+      source_commit: ${{ steps.source-commit.outputs.commit }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_ref || github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Record immutable source commit
+        id: source-commit
+        run: echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - name: Test exact-source and archive boundaries
+        run: python -m unittest discover -s DuktoNextMobile/scripts -p '*_tests.py' -v
+      - uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/mobile-upstream
+          key: mobile-upstream-${{ hashFiles('DuktoNextMobile/scripts/dependencies.json') }}
+      - name: Export exact tracked source and locked original archives
+        run: python -u -X utf8 DuktoNextMobile/scripts/source_bundle.py create --ref HEAD --output source-delivery --cache "$RUNNER_TEMP/mobile-upstream"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mobile-complete-source-${{ github.run_id }}
+          path: source-delivery/**
+          if-no-files-found: error
+  rebuild:
+    needs: source-bundle
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: android
+            os: ubuntu-24.04
+          - platform: ios
+            os: macos-15
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.source-bundle.outputs.source_commit }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: mobile-complete-source-${{ github.run_id }}
+          path: ${{ runner.temp }}/mobile-source-delivery
+      - name: Verify delivery then use only extracted application and dependency source
+        shell: python
+        run: |
+          import json, os, subprocess, sys, tarfile
+          from pathlib import Path
+          sys.path.insert(0, 'DuktoNextMobile/scripts')
+          from source_bundle import verify
+          directory = Path(os.environ['RUNNER_TEMP']) / 'mobile-source-delivery'
+          archives = list(directory.glob('*.tar.gz'))
+          if len(archives) != 1:
+              raise SystemExit('source archive count mismatch')
+          receipt = verify(archives[0])
+          commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
+          if receipt['sourceCommit'] != commit:
+              raise SystemExit('source archive commit mismatch')
+          destination = Path(os.environ['RUNNER_TEMP']) / 'mobile-extracted-source'
+          destination.mkdir()
+          with tarfile.open(archives[0]) as bundle:
+              bundle.extractall(destination, filter='data')
+          root = destination / ('DuktoNextMobile-source-' + commit[:12])
+          with open(os.environ['GITHUB_ENV'], 'a') as output:
+              output.write('MOBILE_PROJECT=' + str(root / 'DuktoNextMobile') + '\n')
+              output.write('DUKTO_SOURCE_ARCHIVES=' + str(root / 'upstream') + '\n')
+          Path('source-rebuild-verification.json').write_text(json.dumps(receipt, indent=2) + '\n')
+      - uses: actions/setup-java@v4
+        if: matrix.platform == 'android'
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        if: matrix.platform == 'android'
+        with:
+          packages: platform-tools
+      - name: Prepare Android build tools
+        if: matrix.platform == 'android'
+        run: |
+          sdkmanager 'platforms;android-35' 'build-tools;35.0.0' 'ndk;27.2.12479018'
+          echo "ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/27.2.12479018" >> "$GITHUB_ENV"
+          sudo apt-get update -qq
+          sudo apt-get install -y ninja-build libgl1-mesa-dev libxkbcommon-dev libxcb-xinerama0-dev
+      - name: Record actual toolchain
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/mobile-source-build"
+          python --version > "$RUNNER_TEMP/mobile-source-build/toolchain.txt"
+          cmake --version >> "$RUNNER_TEMP/mobile-source-build/toolchain.txt"
+          if [ "${{ matrix.platform }}" = ios ]; then
+            xcodebuild -version >> "$RUNNER_TEMP/mobile-source-build/toolchain.txt"
+            xcrun --sdk iphoneos --show-sdk-version >> "$RUNNER_TEMP/mobile-source-build/toolchain.txt"
+          else
+            java -version 2>> "$RUNNER_TEMP/mobile-source-build/toolchain.txt"
+            cat "$ANDROID_NDK_ROOT/source.properties" >> "$RUNNER_TEMP/mobile-source-build/toolchain.txt"
+          fi
+      - name: Rebuild all Qt and OpenSSL dependencies from delivered original archives
+        shell: bash
+        run: python -u -X utf8 "$MOBILE_PROJECT/scripts/build_dependencies.py" --platform ${{ matrix.platform }} --prefix "$RUNNER_TEMP/mobile-source-install" --work "$RUNNER_TEMP/mobile-source-dependencies" --jobs 3
+      - name: Rebuild full application and extension from delivered source
+        shell: bash
+        run: python -u -X utf8 "$MOBILE_PROJECT/scripts/build_app.py" --platform ${{ matrix.platform }} --prefix "$RUNNER_TEMP/mobile-source-install" --build "$RUNNER_TEMP/mobile-source-build"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mobile-source-rebuild-${{ matrix.platform }}-${{ github.run_id }}
+          if-no-files-found: warn
+          path: |
+            source-rebuild-verification.json
+            ${{ runner.temp }}/mobile-source-build/toolchain.txt
+            ${{ runner.temp }}/mobile-source-build/build-receipt.json
+            ${{ runner.temp }}/mobile-source-build/packages/${{ matrix.platform }}/**
+            ${{ runner.temp }}/mobile-source-dependencies/*.log
