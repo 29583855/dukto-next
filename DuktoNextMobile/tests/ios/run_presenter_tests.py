@@ -51,8 +51,9 @@ def main():
     try:
         run("xcrun", "simctl", "boot", device)
         print(run("xcrun", "simctl", "bootstatus", device, "-b", timeout=180))
-        print(run("xcrun", "simctl", "install", device, str(app)))
-        print(run("xcrun", "simctl", "launch", device, info["CFBundleIdentifier"]))
+        # 日期：2026-11-26；新运行时首次安装服务启动较慢，单次有界等待，不重跑掩盖失败。
+        print(run("xcrun", "simctl", "install", device, str(app), timeout=240))
+        print(run("xcrun", "simctl", "launch", device, info["CFBundleIdentifier"], timeout=180))
         container = Path(run("xcrun", "simctl", "get_app_container", device, info["CFBundleIdentifier"], "data"))
         receipt = container / "Documents/presenter-test.json"
         deadline = time.monotonic() + 45

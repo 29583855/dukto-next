@@ -15,6 +15,31 @@ final class MobileSendTests: XCTestCase {
         print("MOBILE_UI_TREE " + name + "\n" + app.debugDescription)
     }
 
+    // 日期：2026-11-26；首次滑行教学遮住键盘，按真实Preview节点和失败截图中的Continue关闭。
+    @MainActor
+    func dismissKeyboardTeaching(_ app: XCUIApplication) {
+        let preview = app.descendants(matching: .any)
+            .matching(identifier: "UIKeyboardLayoutStar Preview").firstMatch
+        let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+        let appContinue = app.buttons["Continue"]
+        let systemContinue = springboard.buttons["Continue"]
+        if preview.waitForExistence(timeout: 3) {
+            capture(app, "keyboard-teaching-preview")
+            capture(springboard, "keyboard-teaching-system")
+            if appContinue.exists && appContinue.isHittable {
+                appContinue.tap()
+            } else if systemContinue.exists && systemContinue.isHittable {
+                systemContinue.tap()
+            } else {
+                // 日期：2026-11-26；run45696801627真屏幕的Continue位于中下方，教学未导出按钮节点。
+                app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.948)).tap()
+            }
+            let closed = NSPredicate(format: "exists == false")
+            expectation(for: closed, evaluatedWith: preview)
+            waitForExpectations(timeout: 10)
+        }
+    }
+
     // 日期：2026-11-26；逐键点击实际系统键盘，避免Qt5虚拟字段缺失键盘焦点属性阻止XCTest输入。
     @MainActor
     func tapKeyboard(_ app: XCUIApplication, _ text: String) throws {
@@ -62,19 +87,7 @@ final class MobileSendTests: XCTestCase {
         let host = app.textFields["目标 IP 或主机名"]
         XCTAssertTrue(host.waitForExistence(timeout: 10))
         host.tap()
-        // 日期：2026-11-26；新模拟器首次键盘教学会覆盖焦点，按系统实际按钮关闭并留存现场。
-        let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
-        let appKeyboardContinue = app.buttons["Continue"]
-        let systemKeyboardContinue = springboard.buttons["Continue"]
-        if appKeyboardContinue.waitForExistence(timeout: 2) && appKeyboardContinue.isHittable {
-            capture(app, "keyboard-onboarding")
-            appKeyboardContinue.tap()
-            host.tap()
-        } else if systemKeyboardContinue.waitForExistence(timeout: 2) && systemKeyboardContinue.isHittable {
-            capture(springboard, "keyboard-onboarding")
-            systemKeyboardContinue.tap()
-            host.tap()
-        }
+        dismissKeyboardTeaching(app)
         capture(app, "keyboard-ready")
         try tapKeyboard(app, "127.0.0.1")
         let port = app.textFields["目标端口"]
