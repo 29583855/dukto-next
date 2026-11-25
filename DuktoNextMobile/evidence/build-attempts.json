@@ -240,6 +240,26 @@
       "reason": "Robolectric的AndroidX依赖要求启用android.useAndroidX",
       "fix": "独立测试工程补gradle.properties，不改变生产Qt依赖",
       "deviceTestsPassed": false
+    },
+    {
+      "runId": 45602034580,
+      "jobId": 139163124754,
+      "commit": "dd75ecf4",
+      "platform": "android",
+      "result": "apk_elf_16k_alignment_failed",
+      "reason": "APK签名及ZIP对齐通过，QtAndroidExtras库ELF LOAD段未满足16KiB；后续Qt模块未继承qtbase命令行链接参数",
+      "fix": "每个Android Qt模块qmake显式传max-page-size=16384并重建依赖；等待新产物验包",
+      "deviceTestsPassed": false
+    },
+    {
+      "runId": 45602453665,
+      "jobId": 139164570586,
+      "commit": "ae0fa03c",
+      "platform": "android-jvm",
+      "result": "test_sdk_download_http429",
+      "reason": "Java编译完成，Robolectric下载android-all-instrumented时repo1.maven.org返回HTTP429，测试未执行",
+      "fix": "测试SDK下载改用repo.maven.apache.org正式主机后复验",
+      "deviceTestsPassed": false
     }
   ]
 }

@@ -125,7 +125,9 @@ def main():
             continue
         build = work / (name + "-build")
         build.mkdir()
-        run([qt / "bin/qmake", sources[name]], build, environment, work / (name + ".log"))
+        # 日期：2026-11-25；每个Qt模块独立qmake，不会继承qtbase配置命令的链接参数。
+        module_options = ["QMAKE_LFLAGS+=-Wl,-z,max-page-size=16384"] if args.platform == "android" else []
+        run([qt / "bin/qmake", sources[name], *module_options], build, environment, work / (name + ".log"))
         run(["make", "-j" + str(args.jobs)], build, environment, work / (name + ".log"))
         run(["make", "install"], build, environment, work / (name + ".log"))
         licenses(sources[name], prefix, name)

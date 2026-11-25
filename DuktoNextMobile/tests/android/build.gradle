@@ -8,7 +8,13 @@ android {
         main { java.srcDirs = ['build/production', 'fixtures']; manifest.srcFile 'AndroidManifest.xml' }
         test { java.srcDirs = ['src'] }
     }
-    testOptions { unitTests.includeAndroidResources = true }
+    testOptions {
+        unitTests.includeAndroidResources = true
+        // 日期：2026-11-25；使用Maven Central正式主机，避免repo1下载测试SDK时被429限流。
+        unitTests.all {
+            systemProperty 'robolectric.dependency.repo.url', 'https://repo.maven.apache.org/maven2'
+        }
+    }
 }
 tasks.register('stageProductionJava', Copy) {
     from '../../platform/android/src'
