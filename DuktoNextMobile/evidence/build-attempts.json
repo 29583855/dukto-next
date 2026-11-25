@@ -150,6 +150,16 @@
       "reason": "--gradle --no-build仍不生成模板；核对Qt源码确认--no-build跳过模板、自定义源码、资源及属性准备，先前Ant布局诊断不完整",
       "fix": "构建项目私有Gradle8.9/AGP8.7.3模板，由完整androiddeployqt负责复制模板和生成资源，移除--no-build",
       "deviceTestsPassed": false
+    },
+    {
+      "runId": 45598991765,
+      "jobId": 139152540530,
+      "commit": "12859aff",
+      "platform": "android",
+      "result": "gradle_resources_manifest_failed",
+      "reason": "现代Gradle完整部署已成功准备资源；应用清单引用Qt5.15已移除的bundled_in_lib/bundled_in_assets数组，aapt明确拒绝",
+      "fix": "与Qt5.15官方模板对齐移除旧数组，补bundle_local_qt_libs、部署工具生成的jar及静态初始化类，禁用旧Qt不兼容堆指针标记",
+      "deviceTestsPassed": false
     }
   ]
 }

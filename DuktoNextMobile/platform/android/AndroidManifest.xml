@@ -9,7 +9,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <application android:name="org.qtproject.qt5.android.bindings.QtApplication" android:label="Dukto Next" android:allowBackup="false" android:usesCleartextTraffic="true" android:extractNativeLibs="true">
+    <application android:name="org.qtproject.qt5.android.bindings.QtApplication" android:label="Dukto Next" android:allowNativeHeapPointerTagging="false" android:hardwareAccelerated="true" android:allowBackup="false" android:usesCleartextTraffic="true" android:extractNativeLibs="true">
         <service android:name="org.duktonext.mobile.TransferService" android:exported="false" android:foregroundServiceType="dataSync" android:stopWithTask="true" />
         <activity android:name="org.duktonext.mobile.DuktoActivity" android:label="Dukto Next" android:exported="true" android:launchMode="singleTop" android:configChanges="orientation|uiMode|screenLayout|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|keyboard|keyboardHidden|navigation|density" android:screenOrientation="unspecified">
             <intent-filter><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.LAUNCHER" /></intent-filter>
@@ -18,11 +18,12 @@
             <meta-data android:name="android.app.repository" android:value="default" />
             <meta-data android:name="android.app.qt_libs_resource_id" android:resource="@array/qt_libs" />
             <meta-data android:name="android.app.bundled_libs_resource_id" android:resource="@array/bundled_libs" />
-            <meta-data android:name="android.app.bundled_in_lib_resource_id" android:resource="@array/bundled_in_lib" />
-            <meta-data android:name="android.app.bundled_in_assets_resource_id" android:resource="@array/bundled_in_assets" />
             <meta-data android:name="android.app.load_local_libs_resource_id" android:resource="@array/load_local_libs" />
-            <meta-data android:name="android.app.load_local_jars" android:value="jar/QtAndroid.jar" />
-            <meta-data android:name="android.app.static_init_classes" android:value="" />
+            <meta-data android:name="android.app.load_local_jars" android:value="-- %%INSERT_LOCAL_JARS%% --" />
+            <meta-data android:name="android.app.static_init_classes" android:value="-- %%INSERT_INIT_CLASSES%% --" />
+            <meta-data android:name="android.app.bundle_local_qt_libs" android:value="-- %%BUNDLE_LOCAL_QT_LIBS%% --" />
+            <meta-data android:name="android.app.background_running" android:value="true" />
+            <meta-data android:name="android.app.extract_android_style" android:value="minimal" />
             <meta-data android:name="android.app.use_local_qt_libs" android:value="1" />
             <meta-data android:name="android.app.libs_prefix" android:value="/data/local/tmp/qt/" />
         </activity>
