@@ -1,9 +1,13 @@
-"""日期：2026-11-25；在真实Android模拟器上验收既有arm64 APK的安装与首屏，不代替真机验收。"""
+"""日期：2026-11-25；验收原始arm64 APK安装、首屏与可选R6接收，不代替真机验收。"""
 import argparse
 import hashlib
 import json
 from pathlib import Path
 import re
+import shlex
+import socket
+import struct
+import uuid
 import subprocess
 import time
 from PIL import Image, ImageStat
@@ -18,6 +22,76 @@ def adb(*args, binary=False, timeout=45):
     return result.stdout if binary else result.stdout.decode("utf-8", "replace")
 
 
+# 日期：2026-11-25；run-as只访问调试包自身沙箱，所有路径按Android shell规则引用。
+def sandbox(*arguments, binary=False):
+    return adb("shell", shlex.join(["run-as", "org.duktonext.mobile", *arguments]), binary=binary)
+
+
+# 日期：2026-11-25；独立构造R6帧发送给完整APK，不调用宿主替身或被测序列化代码。
+def send_r6(port, entries):
+    total = sum(len(data) for _, data in entries if data is not None)
+    header = struct.pack("<qq", len(entries), total)
+    with socket.create_connection(("127.0.0.1", port), timeout=15) as client:
+        client.settimeout(30)
+        for offset in range(0, len(header), 3):
+            client.sendall(header[offset:offset + 3])
+        for name, data in entries:
+            client.sendall(name.encode("utf-8") + b"\0" +
+                           struct.pack("<q", -1 if data is None else len(data)))
+            if data is not None:
+                client.sendall(data)
+        client.shutdown(socket.SHUT_WR)
+        if client.recv(1) != b"":
+            raise RuntimeError("R6接收端未按协议关闭连接")
+
+
+# 日期：2026-11-25；通过ADB转发验证应用真实接收器及落盘，不能替代Wi-Fi发现或手机互通。
+def verify_r6_receive():
+    directories = sandbox("find", ".", "-type", "d", "-name", "Documents").splitlines()
+    if len(directories) != 1 or not directories[0].startswith("./"):
+        raise RuntimeError("无法唯一定位应用文档目录")
+    directory = directories[0]
+    root = "r6-emulator-" + uuid.uuid4().hex
+    payload = ("真实APK接收验证\n".encode("utf-8") * 65537) + bytes(range(256))
+    collision_name = root + "-中文 sample.bin"
+    entries = [(root, None), (root + "/空目录", None),
+               (root + "/中文 sample.bin", payload), (root + "/zero", b""),
+               (collision_name, payload)]
+    port = int(adb("forward", "tcp:0", "tcp:4644").strip())
+    result = {"passed": False, "transport": "ADB TCP forward to production APK R6 port4644",
+              "wifiDiscoveryTest": False, "fileSha256": hashlib.sha256(payload).hexdigest(),
+              "fileBytes": len(payload)}
+    try:
+        send_r6(port, entries)
+        deadline = time.monotonic() + 20
+        while True:
+            try:
+                received = sandbox("cat", directory + "/" + root + "/中文 sample.bin", binary=True)
+                if received == payload:
+                    break
+            except RuntimeError:
+                pass
+            if time.monotonic() >= deadline:
+                raise RuntimeError("APK接收文件未按期提交或内容不一致")
+            time.sleep(0.2)
+        if sandbox("cat", directory + "/" + root + "/zero", binary=True) != b"":
+            raise RuntimeError("空文件内容错误")
+        if not sandbox("ls", "-ld", directory + "/" + root + "/空目录").startswith("d"):
+            raise RuntimeError("空目录未创建")
+        # 日期：2026-11-25；再次发送同名文件，必须保留旧内容并生成编号副本。
+        replacement = b"collision replacement\n"
+        send_r6(port, [(collision_name, replacement)])
+        collision = sandbox("cat", directory + "/" + root + "-中文 sample (2).bin", binary=True)
+        original = sandbox("cat", directory + "/" + collision_name, binary=True)
+        if collision != replacement or original != payload:
+            raise RuntimeError("同名冲突覆盖旧文件或副本内容错误")
+        result.update(passed=True, emptyDirectory=True, emptyFile=True, utf8Path=True,
+                      originalPreserved=True, collisionCopy=True)
+        return result
+    finally:
+        adb("forward", "--remove", "tcp:" + str(port))
+
+
 # 日期：2026-11-25；只对指定构建哈希的原始APK测试，禁止用替换ABI或宿主假实现冒充。
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -25,6 +99,7 @@ def main():
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--sha256", required=True)
     parser.add_argument("--source", required=True)
+    parser.add_argument("--r6-receive", action="store_true")
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
     receipt = {"passed": False, "deviceTest": False, "scope": "Android模拟器安装启动原始arm64开发APK",
@@ -78,6 +153,9 @@ def main():
         if max(deviations) < 8:
             raise RuntimeError("前台图像接近空白，拒绝视为界面启动通过")
         receipt["steps"].append("foregroundAliveAndNonBlankFrame")
+        if args.r6_receive:
+            receipt["r6Receive"] = verify_r6_receive()
+            receipt["steps"].append("productionApkR6ReceiveAndHash")
         receipt["passed"] = True
         receipt["visualReviewPending"] = True
     except Exception as error:
