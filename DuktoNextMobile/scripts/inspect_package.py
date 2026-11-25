@@ -64,7 +64,7 @@ def inspect_android(apk, environment):
 
 
 # 日期：2026-11-25；核对设备Mach-O与系统权限说明，未签名app只作为构建产物。
-def inspect_ios(app):
+def inspect_ios(app, require_share_extension=False):
     with (app / "Info.plist").open("rb") as source:
         info = plistlib.load(source)
     binary = app / info["CFBundleExecutable"]
@@ -85,6 +85,8 @@ def inspect_ios(app):
         raise ValueError("iOS链接包含构建机路径")
     extension = app / "PlugIns/DuktoShare.appex"
     extension_info = None
+    if require_share_extension and not extension.is_dir():
+        raise ValueError("iOS缺少必需分享扩展")
     if extension.exists():
         with (extension / "Info.plist").open("rb") as source:
             extension_info = plistlib.load(source)
@@ -96,7 +98,14 @@ def inspect_ios(app):
             ext_header = source.read(8)
         if ext_header != b"\xcf\xfa\xed\xfe\x0c\x00\x00\x01" or not os.access(executable, os.X_OK):
             raise ValueError("iOS分享扩展架构或执行位错误")
-        extension_info = {"bundleId": extension_info["CFBundleIdentifier"], "executableSha256": digest(executable)}
+        if extension_info.get("MinimumOSVersion") != "15.0" or set(extension_info.get("UIDeviceFamily", [])) != {1, 2}:
+            raise ValueError("iOS分享扩展系统或设备范围不匹配")
+        ext_links = subprocess.check_output(["xcrun", "otool", "-L", executable], text=True)
+        ext_dependencies = [line.strip().split(" (", 1)[0] for line in ext_links.splitlines()[1:] if line.strip()]
+        if any(not link.startswith(("/System/Library/", "/usr/lib/")) for link in ext_dependencies):
+            raise ValueError("iOS分享扩展包含非系统依赖")
+        extension_info = {"bundleId": extension_info["CFBundleIdentifier"], "executableSha256": digest(executable),
+                          "minimumOS": extension_info["MinimumOSVersion"], "linkedLibraries": ext_links}
     return {"shareExtension": extension_info, "kind": "unsigned-device-app", "bundleId": info["CFBundleIdentifier"],
             "minimumOS": info["MinimumOSVersion"], "architecture": "arm64",
             "executableSha256": digest(binary), "executableBytes": binary.stat().st_size,
@@ -104,7 +113,7 @@ def inspect_ios(app):
 
 
 # 日期：2026-11-25；将检查通过的开发产物放入独立目录，保留iOS执行权限和校验收据。
-def package(platform, artifacts, destination, environment):
+def package(platform, artifacts, destination, environment, require_share_extension=False):
     destination.mkdir(parents=True, exist_ok=True)
     if platform == "android":
         if len(artifacts) != 1:
@@ -114,9 +123,11 @@ def package(platform, artifacts, destination, environment):
         shutil.copy2(artifacts[0], output)
     else:
         # 日期：2026-11-25；qmake可能有多个相同输出位置，分别核验后只归档一个。
-        results = [inspect_ios(app) for app in artifacts]
+        results = [inspect_ios(app, require_share_extension=require_share_extension) for app in artifacts]
         if len({item["executableSha256"] for item in results}) != 1:
             raise ValueError("iOS多个app内容不一致")
+        if len({item["shareExtension"]["executableSha256"] if item["shareExtension"] else None for item in results}) != 1:
+            raise ValueError("iOS多个app分享扩展内容不一致")
         receipt = results[0]
         output = destination / "DuktoNextMobile-ios-arm64-unsigned.tar.gz"
         with tarfile.open(output, "w:gz") as archive:

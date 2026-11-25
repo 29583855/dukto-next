@@ -115,7 +115,8 @@ def main():
             raise ValueError("iOS分享扩展产物数量错误")
         for application in artifacts:
             shutil.copytree(extensions[0], application / "PlugIns/DuktoShare.appex", dirs_exist_ok=True)
-    inspection = package(args.platform, artifacts, build / "packages" / args.platform, environment)
+    inspection = package(args.platform, artifacts, build / "packages" / args.platform, environment,
+                         require_share_extension=args.platform == "ios")
     package_dir = build / "packages" / args.platform
     shutil.copytree(prefix / "licenses", package_dir / "licenses", dirs_exist_ok=True)
     shutil.copy2(prefix / "dependency-manifest.json", package_dir / "dependency-manifest.json")

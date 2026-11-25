@@ -44,6 +44,33 @@ class PackageInspectionTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "构建机路径"):
             inspect_ios(self.app)
 
+    # 日期：2026-11-25；实际新包必须包含扩展，旧包夹具只在显式兼容模式允许缺省。
+    @patch("inspect_package.subprocess.check_output")
+    def test_required_extension_and_its_metadata(self, output):
+        output.return_value = "binary:\n\t/usr/lib/libSystem.B.dylib (compatibility version 1.0.0)\n"
+        with self.assertRaisesRegex(ValueError, "必需分享扩展"):
+            inspect_ios(self.app, require_share_extension=True)
+        extension = self.app / "PlugIns/DuktoShare.appex"
+        extension.mkdir(parents=True)
+        executable = extension / "DuktoShare"
+        executable.write_bytes(self.binary.read_bytes())
+        executable.chmod(0o755)
+        info = {"CFBundleExecutable": "DuktoShare", "CFBundleIdentifier": "org.duktonext.mobile.share",
+                "MinimumOSVersion": "15.0", "UIDeviceFamily": [1, 2],
+                "NSExtension": {"NSExtensionPointIdentifier": "com.apple.share-services"}}
+        (extension / "Info.plist").write_bytes(plistlib.dumps(info))
+        receipt = inspect_ios(self.app, require_share_extension=True)
+        self.assertEqual(receipt["shareExtension"]["bundleId"], "org.duktonext.mobile.share")
+        output.side_effect = ["main:\n\t/usr/lib/libSystem.B.dylib (compatibility version 1.0.0)\n",
+                              "extension:\n\t@rpath/libUnbundled.dylib (compatibility version 1.0.0)\n"]
+        with self.assertRaisesRegex(ValueError, "非系统依赖"):
+            inspect_ios(self.app, require_share_extension=True)
+        output.side_effect = None
+        info["CFBundleIdentifier"] = "wrong.bundle"
+        (extension / "Info.plist").write_bytes(plistlib.dumps(info))
+        with self.assertRaisesRegex(ValueError, "标识不匹配"):
+            inspect_ios(self.app, require_share_extension=True)
+
     # 日期：2026-11-25；相同ELF输入仅改变LOAD页对齐，拒绝4KiB而接受16KiB并检查架构。
     def test_every_load_requires_16k(self):
         image = bytearray(120)
