@@ -25,16 +25,24 @@ def wait_picker(output, stage):
         time.sleep(0.3)
 
 
-# 日期：2026-11-26；从可见系统根目录选择Downloads，名称来自系统英文测试镜像。
+# 日期：2026-11-26；等待目录内容加载后按真实节点导航，不能把空白初帧当作根目录列表。
 def open_downloads(output):
-    tree = wait_picker(output, "picker-initial")
-    # 日期：2026-11-26；树选择器可直接显示存储根，系统节点为Download而非侧栏Downloads。
-    if find_label(tree, "Download") is not None:
-        click_label(output, "picker-download-directory", "Download")
-        return
-    if find_label(tree, "Show roots") is not None:
-        click_label(output, "picker-roots", "Show roots")
-    click_label(output, "picker-downloads", "Downloads")
+    deadline = time.monotonic() + 15
+    roots_opened = False
+    while True:
+        tree = wait_picker(output, "picker-initial")
+        if find_label(tree, "Download") is not None:
+            click_label(output, "picker-download-directory", "Download")
+            return
+        if find_label(tree, "Downloads") is not None:
+            click_label(output, "picker-downloads", "Downloads")
+            return
+        if not roots_opened and find_label(tree, "Show roots") is not None:
+            click_label(output, "picker-roots", "Show roots")
+            roots_opened = True
+        if time.monotonic() >= deadline:
+            raise RuntimeError("系统目录列表加载后仍缺少Download或Downloads节点")
+        time.sleep(0.3)
 
 
 # 日期：2026-11-26；只播种外部样本，选择和发送均由原始APK及系统控件完成。

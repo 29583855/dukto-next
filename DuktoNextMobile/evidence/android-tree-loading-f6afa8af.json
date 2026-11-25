@@ -1,0 +1,19 @@
+{
+  "date": "2026-11-26",
+  "run": 45698145357,
+  "job": 139500881738,
+  "artifact": 15062127320,
+  "validationSource": "f6afa8af",
+  "apkSource": "659a2b44",
+  "passed": false,
+  "priorChecksPassed": [
+    "32 batches R6 receive",
+    "UI text send",
+    "cold and warm content files",
+    "SAF file send",
+    "SAF file export"
+  ],
+  "failure": "首次picker-initial仅标题和授权按钮，尚无目录节点；后续picker-downloads已有Download，测试过早选择侧栏Downloads。",
+  "productDirectoryTransferVerified": false,
+  "fix": "有界等待真实Download或Downloads节点出现后导航，保留超时失败。"
+}
