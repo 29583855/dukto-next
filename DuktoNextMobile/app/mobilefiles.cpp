@@ -18,11 +18,11 @@ MobileFiles *MobileFiles::instance_ = nullptr;
 // 日期：2026-11-25；同一宿主只创建一个选择协调器，公开目录与私有配置隔离。
 MobileFiles::MobileFiles(QObject *parent) : QObject(parent) {
     instance_ = this;
-#ifdef Q_OS_ANDROID
+#ifdef Q_OS_IOS
+    documents_ = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+#else
     documents_ = QDir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation))
                      .filePath(QStringLiteral("Documents"));
-#else
-    documents_ = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
 #endif
     connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit, this,
             &MobileFiles::cancelOperation);
@@ -61,6 +61,7 @@ QStringList MobileFiles::select(bool folder) {
     message_ = QStringLiteral("请选择文档，选择后会复制到应用沙箱；请保持应用在前台");
     emit changed();
     QEventLoop loop;
+    nativeWaiter_ = &loop;
     auto paths = std::make_shared<QStringList>();
     QPointer<QEventLoop> waiter(&loop);
     QPointer<MobileFiles> guard(this);
@@ -79,6 +80,7 @@ QStringList MobileFiles::select(bool folder) {
         });
     });
     loop.exec();
+    nativeWaiter_ = nullptr;
     mobile::cancelDocumentPicker();
     busy_ = false;
     emit changed();
@@ -245,6 +247,8 @@ void MobileFiles::chooseColor() {
 // 日期：2026-11-25；退出时停止原生选择及复制，晚到回调不访问已经返回的等待栈。
 void MobileFiles::cancelOperation() {
     mobile::cancelDocumentPicker();
+    if (nativeWaiter_)
+        nativeWaiter_->quit();
     if (directoryWaiter_)
         directoryWaiter_->quit();
 }

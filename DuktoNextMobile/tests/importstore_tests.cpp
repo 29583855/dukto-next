@@ -47,6 +47,30 @@ class ImportStoreTests final : public QObject {
         QCOMPARE(copied.result(), original.result());
         qInfo().noquote() << "large-import bytes=" << size << "sha256=" << copied.result().toHex();
     }
+    // 日期：2026-11-25；已提交暂存跨事务计入预算，活动事务锁阻止并发超额导入。
+    void retainedQuotaAndLock() {
+        QTemporaryDir root;
+        ImportStore::Limits limits;
+        limits.bytes = 5;
+        ImportStore first(root.path(), limits);
+        ImportStore concurrent(root.path(), limits);
+        QVERIFY(!concurrent.error().isEmpty());
+        QByteArray data("abc");
+        QBuffer one(&data);
+        QVERIFY(one.open(QIODevice::ReadOnly));
+        QVERIFY2(first.copy(one, "one", 3), qPrintable(first.error()));
+        const auto retained = first.commit();
+        QVERIFY(!retained.isEmpty());
+        ImportStore second(root.path(), limits);
+        QVERIFY(second.error().isEmpty());
+        QBuffer two(&data);
+        QVERIFY(two.open(QIODevice::ReadOnly));
+        QVERIFY(!second.copy(two, "two", 3));
+        QVERIFY(second.commit().isEmpty());
+        QFile kept(QDir(retained).filePath("one"));
+        QVERIFY(kept.open(QIODevice::ReadOnly));
+        QCOMPARE(kept.readAll(), data);
+    }
     // 日期：2026-11-25；验证中文目录、空文件和二进制内容的实际提交结果。
     void commitContent() {
         QTemporaryDir root;

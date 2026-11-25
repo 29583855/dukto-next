@@ -63,5 +63,6 @@ class MobileFiles final : public QObject {
     QString message_;
     bool busy_ = false;
     QEventLoop *directoryWaiter_ = nullptr;
+    QEventLoop *nativeWaiter_ = nullptr;
     QString selectedDirectory_;
 };

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QIODevice>
+#include <QLockFile>
 #include <QSet>
 #include <QString>
 #include <QTemporaryDir>
@@ -35,6 +36,7 @@ class ImportStore final {
     bool validate(const QString &relative);
     // 日期：2026-11-25；保留首错并使事务失效，失败后不能提交部分文件。
     bool fail(const QString &message);
+    std::unique_ptr<QLockFile> budgetLock_;
     std::unique_ptr<QTemporaryDir> temporary_;
     Limits limits_;
     QSet<QString> entries_;

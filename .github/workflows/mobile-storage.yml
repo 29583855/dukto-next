@@ -26,7 +26,7 @@ jobs:
       - name: Install host compile and render dependencies
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y ninja-build libssl-dev qtbase5-dev qtbase5-private-dev qtdeclarative5-dev qtdeclarative5-private-dev qtquickcontrols2-5-dev qtquickcontrols2-5-private-dev qml-module-qtquick-controls2 qml-module-qtquick-layouts qml-module-qtquick2 qml-module-qtgraphicaleffects xvfb
+          sudo apt-get install -y ninja-build libssl-dev qtbase5-dev qtbase5-private-dev qtdeclarative5-dev qtdeclarative5-private-dev qtquickcontrols2-5-dev qtquickcontrols2-5-private-dev qml-module-qtquick-controls2 qml-module-qtquick-layouts qml-module-qtquick2 qml-module-qtgraphicaleffects fonts-noto-cjk xvfb
       - name: Compile real mobile controllers under C++14
         run: |
           cmake -S DuktoNextMobile -B DuktoNextMobile/build-host -G Ninja -DDUKTO_MOBILE_HOST_CHECK=ON -DCMAKE_BUILD_TYPE=Release
@@ -36,10 +36,10 @@ jobs:
           QT_QUICK_BACKEND: software
           XDG_DATA_HOME: ${{ runner.temp }}/mobile-host-data
           XDG_CONFIG_HOME: ${{ runner.temp }}/mobile-host-config
-        run: xvfb-run -a DuktoNextMobile/build-host/dukto-mobile-host --smoke-test
+        run: timeout 60s xvfb-run -a DuktoNextMobile/build-host/dukto-mobile-host --smoke-test
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: mobile-host-render-${{ github.run_id }}
-          path: mobile-smoke.png
+          path: mobile-smoke-*.png
           if-no-files-found: ignore

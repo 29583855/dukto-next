@@ -1,6 +1,7 @@
 #include "importstore.h"
 
 #include <QDir>
+#include <QDirIterator>
 #include <QFile>
 #include <QFileInfo>
 #include <QStorageInfo>
@@ -14,6 +15,35 @@ ImportStore::ImportStore(const QString &root, Limits limits) : limits_(limits) {
         fail(QStringLiteral("导入根目录或预算无效"));
         return;
     }
+    // 日期：2026-11-25；锁覆盖整次事务，既有暂存计入总配额，重启不能绕过磁盘预算。
+    const auto lockPath = QDir(root).filePath(QStringLiteral(".import-budget.lock"));
+    budgetLock_.reset(new QLockFile(lockPath));
+    if (!budgetLock_->tryLock(0)) {
+        fail(QStringLiteral("另一个导入或清理正在运行，请稍后重试"));
+        return;
+    }
+    qint64 used = 0;
+    int count = 0;
+    QDirIterator retained(root, QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Hidden,
+                          QDirIterator::Subdirectories);
+    while (retained.hasNext()) {
+        retained.next();
+        const auto entry = retained.fileInfo();
+        if (entry.absoluteFilePath() == lockPath)
+            continue;
+        if (++count > 65536 || entry.isSymLink() || (!entry.isDir() && !entry.isFile())) {
+            fail(QStringLiteral("暂存条目超限或类型无效，请管理导入暂存"));
+            return;
+        }
+        if (entry.isFile()) {
+            if (entry.size() > limits_.bytes - used) {
+                fail(QStringLiteral("已有暂存已占满导入总预算，请先清理不再需要的暂存"));
+                return;
+            }
+            used += entry.size();
+        }
+    }
+    limits_.bytes -= used;
     temporary_.reset(new QTemporaryDir(QDir(root).filePath(QStringLiteral("import-XXXXXX"))));
     if (!temporary_->isValid())
         fail(QStringLiteral("无法创建导入暂存目录"));
@@ -113,6 +143,7 @@ QString ImportStore::commit() {
         return QString();
     committed_ = true;
     temporary_->setAutoRemove(false);
+    budgetLock_.reset();
     return temporary_->path();
 }
 
@@ -130,5 +161,6 @@ qint64 ImportStore::bytes() const {
 bool ImportStore::fail(const QString &message) {
     if (error_.isEmpty())
         error_ = message;
+    budgetLock_.reset();
     return false;
 }

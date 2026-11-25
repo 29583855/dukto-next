@@ -9,3 +9,9 @@ add_executable(mobile-storage-tests importstore_tests.cpp ../app/importstore.cpp
 target_include_directories(mobile-storage-tests PRIVATE ../app)
 target_link_libraries(mobile-storage-tests PRIVATE Qt5::Core Qt5::Test)
 add_test(NAME mobile-storage COMMAND mobile-storage-tests)
+
+# 日期：2026-11-25；沙箱分页与路径隔离使用真实协调器，原生提供器只使用明确失败的替身。
+add_executable(mobile-files-tests mobilefiles_tests.cpp ../app/mobilefiles.cpp platformfiles_stub.cpp)
+target_include_directories(mobile-files-tests PRIVATE ../app)
+target_link_libraries(mobile-files-tests PRIVATE Qt5::Core Qt5::Test)
+add_test(NAME mobile-files COMMAND mobile-files-tests)

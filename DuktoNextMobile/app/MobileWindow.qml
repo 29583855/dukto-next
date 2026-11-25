@@ -90,6 +90,7 @@ ApplicationWindow {
     }
     Dialog {
         id: filesDialog
+        objectName: "mobileFilesDialog"
         modal: true
         anchors.centerIn: parent
         width: Math.min(window.width - 16, 700)

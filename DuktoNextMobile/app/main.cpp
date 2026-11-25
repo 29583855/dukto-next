@@ -45,19 +45,54 @@ int main(int argc, char *argv[]) {
         engine.load(QUrl(QStringLiteral("qrc:/mobile/MobileWindow.qml")));
         if (engine.rootObjects().isEmpty())
             return 3;
+        QTimer smokeTimer;
+        int smokeStep = 0;
         if (smoke) {
-            QTimer::singleShot(1500, &application, [&] {
-                auto window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+            smokeTimer.setInterval(700);
+            QObject::connect(&smokeTimer, &QTimer::timeout, &application, [&] {
+                auto root = engine.rootObjects().first();
+                auto window = qobject_cast<QQuickWindow *>(root);
+                const QStringList names{"welcome", "devices", "history", "about",
+                                        "server",  "send",    "files",   "landscape"};
                 const auto frame = window ? window->grabWindow() : QImage();
                 if (qmlFailed || frame.isNull() ||
-                    !frame.save(QStringLiteral("mobile-smoke.png"))) {
+                    !frame.save(QStringLiteral("mobile-smoke-%1.png").arg(names.at(smokeStep)))) {
                     application.exit(4);
                     return;
                 }
-                QTextStream(stdout)
-                    << "Mobile QML loaded, controller initialized, frame rendered\n";
-                application.exit(0);
+                // 日期：2026-11-25；切换真实界面并留图，缺少控件或QML告警均使门禁失败。
+                const auto invoke = [root](const char *name, const char *method) {
+                    const auto item = root->findChild<QObject *>(QString::fromLatin1(name));
+                    return item && QMetaObject::invokeMethod(item, method);
+                };
+                bool ok = true;
+                if (smokeStep == 0) {
+                    controller.acceptTerms();
+                    ok = invoke("termsDialog", "close");
+                } else if (smokeStep == 1 || smokeStep == 2) {
+                    auto tabs = root->findChild<QObject *>(QStringLiteral("mainTabs"));
+                    ok = tabs && tabs->setProperty("currentIndex", smokeStep);
+                } else if (smokeStep == 3) {
+                    ok = invoke("serverDialog", "open");
+                } else if (smokeStep == 4) {
+                    ok = invoke("serverDialog", "close") && invoke("sendDialog", "open");
+                } else if (smokeStep == 5) {
+                    ok = invoke("sendDialog", "close") && invoke("mobileFilesDialog", "open");
+                } else if (smokeStep == 6) {
+                    ok = invoke("mobileFilesDialog", "close");
+                    window->resize(820, 430);
+                } else {
+                    QTextStream(stdout) << "Mobile QML loaded and eight real views rendered\n";
+                    application.exit(0);
+                    return;
+                }
+                if (!ok) {
+                    application.exit(5);
+                    return;
+                }
+                ++smokeStep;
             });
+            smokeTimer.start();
         }
         return application.exec();
     } catch (const dukto::Error &error) {
