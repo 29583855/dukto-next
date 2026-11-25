@@ -1,0 +1,24 @@
+{
+  "date": "2026-11-26",
+  "sourceCommit": "1ea646e526e465ba9bbf6e36adbdac6f90a093fb",
+  "apkSource": "790afac87a5bf58d625c9432b5a4b75aa2cacc04",
+  "run": 45703052836,
+  "job": 139517859486,
+  "artifact": 15063339251,
+  "passed": false,
+  "passedSubsteps": [
+    "32SequentialR6Receive",
+    "textSend",
+    "coldAndWarmContentUriSend",
+    "systemFileSendCancelReopen",
+    "systemFileExportCancelReopenReadback",
+    "externalTreeSeedReadback",
+    "systemDirectorySendIndependentWireCheck"
+  ],
+  "failureStage": "Directory import: remembered system tree navigation",
+  "finding": "真实UI已位于上次选择的子目录；Download面包屑文字enabled=false，启用父容器存在，原测试只查启用文字节点。尚未执行目录导入和导出完整断言。",
+  "change": "相同目标目录直接授权；其他目标按真实Download面包屑启用父容器返回下载目录。保留独立逐字内容断言。",
+  "localReceiverTests": 6,
+  "verificationPending": true,
+  "deviceTest": false
+}

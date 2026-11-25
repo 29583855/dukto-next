@@ -10,7 +10,7 @@ import uuid
 
 from android_emulator import adb, sandbox, send_r6, wait_for_file
 from android_send import (click_label, enter_target, find_label, receive_files,
-                          ui_tree)
+                          tap_node, ui_tree)
 
 
 # 日期：2026-11-26；确认系统提供器实际显示，不能把产品占位页当作原生文档选择器。
@@ -32,6 +32,20 @@ def open_downloads(output):
     roots_opened = False
     while True:
         tree = wait_picker(output, "picker-initial")
+        if find_label(tree, "Files in Download") is not None:
+            return
+        # 日期：2026-11-26；系统树选择器会记忆子目录，面包屑文字禁用时点击其真实启用父容器。
+        parents = {child: parent for parent in tree.iter() for child in parent}
+        breadcrumb = next((node for node in tree.iter("node")
+                           if node.get("text") == "Download"
+                           and node.get("resource-id", "").endswith(":id/breadcrumb_text")), None)
+        if breadcrumb is not None:
+            target = breadcrumb if breadcrumb.get("enabled") == "true" else parents[breadcrumb]
+            tap_node(target)
+            time.sleep(0.3)
+            if time.monotonic() >= deadline:
+                raise RuntimeError("下载目录面包屑点击后未进入Download")
+            continue
         if find_label(tree, "Download") is not None:
             click_label(output, "picker-download-directory", "Download")
             return
@@ -189,8 +203,10 @@ def seed_external_tree(output, root):
 
 # 日期：2026-11-26；按系统真实名称点击树授权与确认按钮，缺少可访问节点即失败并保留现场。
 def grant_download_tree(output, root):
-    open_downloads(output)
-    click_label(output, "tree-open-" + root, root)
+    tree = wait_picker(output, "tree-before-navigation")
+    if find_label(tree, "Files in " + root) is None:
+        open_downloads(output)
+        click_label(output, "tree-open-" + root, root)
     deadline = time.monotonic() + 15
     while True:
         tree = wait_picker(output, "tree-grant")
