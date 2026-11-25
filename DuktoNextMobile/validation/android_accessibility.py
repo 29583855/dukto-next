@@ -1,5 +1,6 @@
 """日期：2026-11-25；为模拟器启用独立无障碍服务，产品APK及业务状态保持原样。"""
 from contextlib import contextmanager
+import json
 import os
 from pathlib import Path
 import subprocess
@@ -25,7 +26,7 @@ def build_helper(output):
     classes.mkdir(parents=True, exist_ok=True)
     dex.mkdir(exist_ok=True)
     run("javac", "-source", "8", "-target", "8", "-bootclasspath", android,
-        "-d", classes, source / "ValidationAccessibility.java")
+        "-d", classes, *sorted(source.glob("*.java")))
     run(tools / "d8", "--lib", android, "--output", dex, *classes.rglob("*.class"))
     unsigned, aligned, signed = [build / name for name in ["unsigned.apk", "aligned.apk", "helper.apk"]]
     run(tools / "aapt", "package", "-f", "-M", source / "AndroidManifest.xml",
@@ -51,12 +52,29 @@ def accessibility_session(output):
     apk = build_helper(output)
     adb("install", "-r", str(apk), timeout=90)
     try:
+        # 日期：2026-11-26；显式启动辅助包，等待系统完成安装注册和服务绑定后才创建产品控件。
+        adb("shell", "am", "start", "--user", "0", "-W", "-n",
+            "org.duktonext.validation/.ValidationActivity")
         services = component if original in ("null", "") else original + ":" + component
         adb("shell", "settings", "put", "secure", "enabled_accessibility_services", services)
         adb("shell", "settings", "put", "secure", "accessibility_enabled", "1")
-        time.sleep(1)
-        (output / "accessibility-services.txt").write_text(
-            adb("shell", "dumpsys", "accessibility"), "utf-8")
+        deadline = time.monotonic() + 25
+        while True:
+            state = adb("shell", "dumpsys", "accessibility")
+            logs = adb("logcat", "-d", "-s", "DuktoValidation:I", "*:S")
+            (output / "accessibility-services.txt").write_text(state, "utf-8")
+            (output / "accessibility-helper-log.txt").write_text(logs, "utf-8")
+            snapshot = {name: adb("shell", "settings", "get", "secure", name).strip()
+                        for name in ("enabled_accessibility_services", "accessibility_enabled")}
+            (output / "accessibility-settings.json").write_text(
+                json.dumps(snapshot, ensure_ascii=False, indent=2) + "\n", "utf-8")
+            if "accessibility-bound" in logs and component in snapshot["enabled_accessibility_services"]:
+                break
+            if time.monotonic() >= deadline:
+                (output / "accessibility-package.txt").write_text(
+                    adb("shell", "dumpsys", "package", "org.duktonext.validation"), "utf-8")
+                raise RuntimeError("辅助无障碍服务未实际绑定，停止界面测试，详见系统状态和服务日志")
+            time.sleep(0.5)
         yield
     finally:
         for name, value in [("enabled_accessibility_services", original), ("accessibility_enabled", enabled)]:
