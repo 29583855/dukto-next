@@ -531,46 +531,72 @@ QJsonObject LegacyJob::receive() {
     return result;
 }
 
-// 日期：2026-11-06；兼容接收保留原版单活动连接约定，端口使用共用独占监听适配器。
+// 日期：2026-11-25；保持单活动任务及最多一个有时限的等待连接，覆盖上一批EOF后的线程收尾。
 LegacyListener::LegacyListener(QString output, int timeoutMs, QObject *parent,
                                const QString &catalogPath)
     : TcpListener(parent), output_(std::move(output)), timeoutMs_(timeoutMs),
       catalogPath_(catalogPath) {
     qRegisterMetaType<dukto::LegacyResult>();
     setMaxPendingConnections(1);
+    pendingTimer_.setSingleShot(true);
+    connect(&pendingTimer_, &QTimer::timeout, this, &LegacyListener::clearPending);
 }
 
 // 日期：2026-11-04；监听退出时先取消子任务，保证无悬空信号或后台写入。
 LegacyListener::~LegacyListener() {
     close();
+    clearPending();
     if (active_) {
         active_->cancel();
         active_->wait();
     }
 }
 
-// 日期：2026-11-04；网络对象仍由工作线程自己关闭。
+// 日期：2026-11-25；先释放等待连接，再通知活动线程自行关闭网络对象。
 void LegacyListener::cancel() {
+    clearPending();
     if (active_)
         active_->cancel();
 }
 
 // 日期：2026-11-04；不销毁 socket，不存在重建监听器时抢占端口的窗口。
 bool LegacyListener::setOutput(const QString &output) {
-    if (active_ || !QFileInfo(output).isDir())
+    if (active_ || pendingDescriptor_ != -1 || !QFileInfo(output).isDir())
         return false;
     output_ = output;
     return true;
 }
 
-// 日期：2026-11-04；忙时显式断开新连接，不能无限排队占用描述符。
+// 日期：2026-11-25；旧线程退出前只保留一个描述符，超过额度的新连接立即断开。
 void LegacyListener::incomingConnection(qintptr descriptor) {
-    if (active_) {
-        QTcpSocket rejected;
-        rejected.setSocketDescriptor(descriptor);
-        rejected.abort();
+    if (!active_) {
+        startReceive(descriptor);
         return;
     }
+    if (pendingDescriptor_ == -1) {
+        pendingDescriptor_ = descriptor;
+        pendingTimer_.start(qMax(1, timeoutMs_));
+        return;
+    }
+    QTcpSocket rejected;
+    rejected.setSocketDescriptor(descriptor);
+    rejected.abort();
+}
+
+// 日期：2026-11-25；等待连接从未创建跨线程Qt对象，关闭时临时接管并立即释放。
+void LegacyListener::clearPending() {
+    pendingTimer_.stop();
+    if (pendingDescriptor_ == -1)
+        return;
+    const qintptr descriptor = pendingDescriptor_;
+    pendingDescriptor_ = -1;
+    QTcpSocket rejected;
+    rejected.setSocketDescriptor(descriptor);
+    rejected.abort();
+}
+
+// 日期：2026-11-25；描述符只交给新工作线程，监听线程不读取文件或网络正文。
+void LegacyListener::startReceive(qintptr descriptor) {
     LegacyRequest request;
     request.descriptor = descriptor;
     request.output = output_;
@@ -584,10 +610,19 @@ void LegacyListener::incomingConnection(qintptr descriptor) {
                 {"total", "0"}});
     connect(active_, &LegacyJob::event, this, &LegacyListener::event);
     connect(active_, &LegacyJob::result, this, &LegacyListener::result);
-    // 日期：2026-11-04；仅在线程真正退出后归还活动槽位。
-    connect(active_, &QThread::finished, this, [this]() {
-        active_->deleteLater();
+    // 日期：2026-11-25；旧线程完全退出后取出等待连接，避免EOF后的下一批被拒绝。
+    auto *job = active_;
+    connect(job, &QThread::finished, this, [this, job]() {
+        job->deleteLater();
+        if (active_ != job)
+            return;
         active_ = nullptr;
+        pendingTimer_.stop();
+        if (pendingDescriptor_ != -1) {
+            const qintptr descriptor = pendingDescriptor_;
+            pendingDescriptor_ = -1;
+            startReceive(descriptor);
+        }
     });
     active_->start();
 }

@@ -4,6 +4,7 @@
 #include <QElapsedTimer>
 #include <QJsonObject>
 #include <QThread>
+#include <QTimer>
 #include <atomic>
 #include <memory>
 
@@ -99,10 +100,16 @@ class LegacyListener final : public TcpListener {
     void incomingConnection(qintptr descriptor) override;
 
   private:
+    // 日期：2026-11-25；仅在线程槽位空闲时转交描述符并启动接收。
+    void startReceive(qintptr descriptor);
+    // 日期：2026-11-25；取消或超时时关闭唯一等待连接，停止计时并归还描述符。
+    void clearPending();
     QString output_;
     int timeoutMs_;
     QString catalogPath_;
     LegacyJob *active_ = nullptr;
+    qintptr pendingDescriptor_ = -1;
+    QTimer pendingTimer_;
 };
 } // namespace dukto
 
