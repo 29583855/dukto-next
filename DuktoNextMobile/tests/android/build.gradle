@@ -18,7 +18,7 @@ android {
 }
 tasks.register('stageProductionJava', Copy) {
     from '../../platform/android/src'
-    include '**/IncomingShare.java', '**/TransferService.java', '**/Documents.java'
+    include '**/IncomingShare.java', '**/TransferService.java', '**/Documents.java', '**/SafeContentInsets.java'
     into 'build/production'
 }
 preBuild.dependsOn stageProductionJava
