@@ -40,9 +40,26 @@ def send_r6(port, entries):
                            struct.pack("<q", -1 if data is None else len(data)))
             if data is not None:
                 client.sendall(data)
-        client.shutdown(socket.SHUT_WR)
+        # 日期：2026-11-25；保持写端开放，EOF必须来自接收器，避免主动FIN被误判为提交确认。
         if client.recv(1) != b"":
             raise RuntimeError("R6接收端未按协议关闭连接")
+
+
+# 日期：2026-11-25；最终落盘是独立验收条件，按有界期限等待，绝不重发或放宽内容核对。
+def wait_for_file(path, expected):
+    deadline = time.monotonic() + 20
+    last_error = ""
+    while True:
+        try:
+            actual = sandbox("cat", path, binary=True)
+            if actual == expected:
+                return actual
+            last_error = "内容不一致，实际字节数=" + str(len(actual))
+        except RuntimeError as error:
+            last_error = str(error)
+        if time.monotonic() >= deadline:
+            raise RuntimeError("APK文件未按期正确提交: " + path + ": " + last_error)
+        time.sleep(0.2)
 
 
 # 日期：2026-11-25；通过ADB转发验证应用真实接收器及落盘，不能替代Wi-Fi发现或手机互通。
@@ -63,17 +80,7 @@ def verify_r6_receive():
               "fileBytes": len(payload)}
     try:
         send_r6(port, entries)
-        deadline = time.monotonic() + 20
-        while True:
-            try:
-                received = sandbox("cat", directory + "/" + root + "/中文 sample.bin", binary=True)
-                if received == payload:
-                    break
-            except RuntimeError:
-                pass
-            if time.monotonic() >= deadline:
-                raise RuntimeError("APK接收文件未按期提交或内容不一致")
-            time.sleep(0.2)
+        wait_for_file(directory + "/" + root + "/中文 sample.bin", payload)
         if sandbox("cat", directory + "/" + root + "/zero", binary=True) != b"":
             raise RuntimeError("空文件内容错误")
         if not sandbox("ls", "-ld", directory + "/" + root + "/空目录").startswith("d"):
@@ -81,7 +88,7 @@ def verify_r6_receive():
         # 日期：2026-11-25；再次发送同名文件，必须保留旧内容并生成编号副本。
         replacement = b"collision replacement\n"
         send_r6(port, [(collision_name, replacement)])
-        collision = sandbox("cat", directory + "/" + root + "-中文 sample (2).bin", binary=True)
+        collision = wait_for_file(directory + "/" + root + "-中文 sample (2).bin", replacement)
         original = sandbox("cat", directory + "/" + collision_name, binary=True)
         if collision != replacement or original != payload:
             raise RuntimeError("同名冲突覆盖旧文件或副本内容错误")
@@ -160,6 +167,11 @@ def main():
         receipt["visualReviewPending"] = True
     except Exception as error:
         receipt["error"] = str(error)
+        try:
+            (args.output / "failure-sandbox.txt").write_text(
+                sandbox("find", ".", "-maxdepth", "5", "-type", "f"), "utf-8")
+        except Exception as sandbox_error:
+            receipt["sandboxCaptureError"] = str(sandbox_error)
         try:
             (args.output / "failure-logcat.txt").write_text(adb("logcat", "-d", timeout=30), "utf-8")
         except Exception as log_error:
