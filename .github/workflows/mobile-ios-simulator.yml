@@ -2,7 +2,7 @@ name: Mobile complete Qt iOS simulator validation
 on:
   push:
     branches: [codex/mobile-platforms]
-    paths: ['DuktoNextMobile/validation/build_ios_simulator.py', 'DuktoNextMobile/validation/ios_simulator.py', '.github/workflows/mobile-ios-simulator.yml']
+    paths: ['DuktoNextMobile/validation/build_ios_simulator.py', 'DuktoNextMobile/validation/ios_simulator.py', 'DuktoNextMobile/validation/ios_send.py', 'DuktoNextMobile/validation/ios-ui/**', '.github/workflows/mobile-ios-simulator.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -22,6 +22,7 @@ jobs:
           xcrun --sdk iphonesimulator --show-sdk-version >> DuktoNextMobile/build-ios-simulator/toolchain.txt
           uname -m >> DuktoNextMobile/build-ios-simulator/toolchain.txt
           python -m pip install Pillow==11.3.0
+          gem install --user-install xcodeproj --version 1.27.0 --no-document
       - uses: actions/cache/restore@v4
         id: simulator-cache
         with:
@@ -38,7 +39,7 @@ jobs:
           key: ${{ steps.simulator-cache.outputs.cache-primary-key }}
       - name: Build complete production source app for simulator
         run: python -u -X utf8 DuktoNextMobile/validation/build_ios_simulator.py --phase application --prefix "${{ runner.temp }}/dukto-ios-simulator/install" --work DuktoNextMobile/build-ios-simulator
-      - name: Install launch and receive using complete Qt app
+      - name: Install launch receive and send using complete Qt app
         run: python -u -X utf8 DuktoNextMobile/validation/ios_simulator.py --build DuktoNextMobile/build-ios-simulator
       - uses: actions/upload-artifact@v4
         if: always()
@@ -50,5 +51,6 @@ jobs:
             DuktoNextMobile/build-ios-simulator/*.txt
             DuktoNextMobile/build-ios-simulator/*.png
             DuktoNextMobile/build-ios-simulator/*.log
+            DuktoNextMobile/build-ios-simulator/ios-ui.xcresult/**
             ${{ runner.temp }}/dukto-ios-simulator/dependencies/*.log
             ${{ runner.temp }}/dukto-ios-simulator/dependencies/phase-receipt.json
