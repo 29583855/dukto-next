@@ -1,0 +1,97 @@
+{
+  "date": "2026-11-26",
+  "sourceCommit": "41f58de885a9fe4fb2c754cb6bb7167d1cc7f666",
+  "applicationBaseline": "142612c45ef25166452e41dcb03da44e0737f43a",
+  "runId": 45718123061,
+  "jobId": 139569306176,
+  "artifactId": 15072380980,
+  "passed": false,
+  "deviceTest": false,
+  "stage": "xcrun simctl launch org.duktonext.presenter.tests",
+  "timeoutSeconds": 180,
+  "productExecuted": null,
+  "observation": "UIKit26测试程序启动调用超时，随后容器查询也超时，未取得产品测试收据；截图仍为系统桌面。其他五项通过，本轮不记为六项全部通过。",
+  "nextAction": "aee38da0已触发新整轮，原失败保留；不改产品或增加盲目启动重试。",
+  "rawEvidenceDirectory": "DuktoNextMobile/release/development/test-evidence/uikit-launch-timeout-41f58de8",
+  "files": [
+    {
+      "path": "artifact/failure.png",
+      "bytes": 466618,
+      "sha256": "7fcfb309cf74f5ebc7283241d51423780901e41953e44cbd2d096fc177ecb751"
+    },
+    {
+      "path": "artifact/presenter-runner.json",
+      "bytes": 19128,
+      "sha256": "0f6b89a2551f9555a98963fa972add726b8070ef6087bad4d65b530677da15a1"
+    },
+    {
+      "path": "artifact/PresenterTests.app/_CodeSignature/CodeResources",
+      "bytes": 1798,
+      "sha256": "811dec1428d6be0d9c0f0d840f4e50f151f0ecdc9c2b9ee23be61a183dfb500c"
+    },
+    {
+      "path": "artifact/PresenterTests.app/Info.plist",
+      "bytes": 773,
+      "sha256": "944fd0ba42ce1dd07cdf8c9d09d0c1bd99a5b361e21cebf023833a082eed78e0"
+    },
+    {
+      "path": "artifact/PresenterTests.app/PresenterTests",
+      "bytes": 92496,
+      "sha256": "d38a4c5c213f7d9bb76539246117a405347f9c1d432dbfc3ab33d7456a9f94c8"
+    },
+    {
+      "path": "artifact/screen.txt",
+      "bytes": 146,
+      "sha256": "71672e5d5c8f232f750efb76a4a9fdc2d8efe93addaa67352c860bd9be2857dd"
+    },
+    {
+      "path": "artifact/system-log.txt",
+      "bytes": 153683,
+      "sha256": "ebf07cb69b6d57cf4fc4b173408da73d9a0d7525bfa0acba9275c70020f942e7"
+    },
+    {
+      "path": "job.log",
+      "bytes": 31261,
+      "sha256": "5e5308d8dc80476e9a65c9d688ba971d16c4fbb57c8ec6b0d875735b0de9d430"
+    }
+  ],
+  "productTestReceiptObtained": false,
+  "runJobs": [
+    {
+      "id": 139569305784,
+      "name": "ios-inbox-contract",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 139569306116,
+      "name": "storage-tests",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 139569306176,
+      "name": "ios-presenter-simulator (26)",
+      "status": "completed",
+      "conclusion": "failure"
+    },
+    {
+      "id": 139569306231,
+      "name": "ios-presenter-simulator (18)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 139569306278,
+      "name": "android-java-contract",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 139569306488,
+      "name": "host-ui-check",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ]
+}
