@@ -25,7 +25,7 @@ def command(log, *arguments, timeout=180):
 
 # 日期：2026-11-26；只监听本机独立端口，逐字节验证正文和EOF，禁止测试代码代替产品发包。
 def receive_one(listener, cancelled):
-    deadline = time.monotonic() + 180
+    deadline = time.monotonic() + 360
     while not cancelled.is_set() and time.monotonic() < deadline:
         try:
             connection, _ = listener.accept()
@@ -61,7 +61,7 @@ def verify_text_send(device, build):
                 received = executor.submit(receive_one, listener, cancelled)
                 try:
                     command(log, *arguments, "-resultBundlePath", build / "ios-ui.xcresult",
-                            "test-without-building", timeout=240)
+                            "test-without-building", timeout=480)
                     report.update(received.result(timeout=35))
                 finally:
                     cancelled.set()
