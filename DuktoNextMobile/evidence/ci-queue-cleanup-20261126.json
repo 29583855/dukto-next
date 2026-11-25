@@ -1,0 +1,124 @@
+{
+  "recordedAt": "2026-11-25T17:04:35.496667+00:00",
+  "ordinaryMobileBuild": {
+    "run": 45641725617,
+    "conclusion": "failure",
+    "androidJob": 139301869249,
+    "androidConclusion": "success",
+    "iosJob": 139301868567,
+    "iosConclusion": "cancelled",
+    "iosCancellationCause": "not determined",
+    "independentSourceRebuildRun": 45643527076,
+    "independentSourceRebuildPassed": true
+  },
+  "desktopCancellation": {
+    "date": "2026-11-25T16:55:09.015316+00:00",
+    "run": 45647488563,
+    "action": "force-cancel",
+    "httpStatus": 202,
+    "response": "{}",
+    "reason": "Previous normal cancel returned HTTP500; four-platform desktop baseline already independently passed."
+  },
+  "duplicateDesktopCancellations": {
+    "date": "2026-11-25T16:55:44.014061+00:00",
+    "reason": "Mobile-only branch duplicates; desktop baseline run45641725369 all four platforms passed. Keep mobile validation runs.",
+    "results": [
+      {
+        "run": 45657166109,
+        "head": "3695607774e81481a3a0f2db75862e46b5d236e7",
+        "httpStatus": 202,
+        "response": "{}"
+      },
+      {
+        "run": 45655786312,
+        "head": "c97d65c0e0a3ee422fa734b23c08e42143d1280d",
+        "httpStatus": 202,
+        "response": "{}"
+      },
+      {
+        "run": 45652293559,
+        "head": "cd7675500e11f728792f2dd5fba438cd2ad24308",
+        "httpStatus": 202,
+        "response": "{}"
+      },
+      {
+        "run": 45651420740,
+        "head": "1cbed529e59e492d2e0125dd348946626f98446e",
+        "httpStatus": 202,
+        "response": "{}"
+      },
+      {
+        "run": 45650719352,
+        "head": "bd24ea38c4802c2c0524aca9656583b4323f927d",
+        "httpStatus": 202,
+        "response": "{}"
+      },
+      {
+        "run": 45650646118,
+        "head": "1eac963f643aca7c39600b358f51e78010e9f225",
+        "httpStatus": 202,
+        "response": "{}"
+      },
+      {
+        "run": 45649617899,
+        "head": "b6f750f7fdcbf282491f55d5343381aefa849dca",
+        "httpStatus": 202,
+        "response": "{}"
+      }
+    ]
+  },
+  "desktopBaselineRun": 45641725369,
+  "desktopBaselineAllFourPassed": true,
+  "mobileValidationRunsPreserved": [
+    45652546771,
+    45650719141
+  ],
+  "cancelledRunsCountAsPassed": false,
+  "prereleaseTagDuplicateDesktopCancellation": {
+    "date": "2026-11-25T17:19:59.491348+00:00",
+    "run": 45657475147,
+    "branch": "mobile-dev-20261126-40d4cec7",
+    "reason": "Mobile prerelease tag duplicated desktop baseline already verified by run45641725369; release upload does not change desktop source",
+    "cancelStatus": 202,
+    "passed": false,
+    "jobsBeforeCancel": [
+      {
+        "id": 139357921536,
+        "name": "native (macos-15, brew)",
+        "status": "in_progress",
+        "conclusion": null
+      },
+      {
+        "id": 139357922152,
+        "name": "native (macos-15-intel, brew)",
+        "status": "in_progress",
+        "conclusion": null
+      },
+      {
+        "id": 139357922160,
+        "name": "native (ubuntu-22.04, system)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 139357922234,
+        "name": "native (windows-2022, 5.15.2, win64_msvc2019_64)",
+        "status": "in_progress",
+        "conclusion": null
+      }
+    ],
+    "finalStatus": "completed",
+    "finalConclusion": "cancelled"
+  },
+  "queuedAndroidSuperseded": {
+    "run": 45652546771,
+    "requestedAt": "2026-11-25T17:27:58.826194+00:00",
+    "statusBeforeCancel": "queued",
+    "jobsBeforeCancel": 0,
+    "normalCancelHttpStatus": 409,
+    "reason": "Queued over one hour without any job; supersede with combined original APK text and content URI files UI validation",
+    "passed": false,
+    "forceCancelHttpStatus": 409,
+    "forceCancelError": "{\"message\":\"Cannot cancel a workflow run that has not been queued yet.\",\"documentation_url\":\"https://docs.github.com/rest/actions/workflow-runs#force-cancel-a-workflow-run\",\"status\":\"409\"}"
+  }
+}

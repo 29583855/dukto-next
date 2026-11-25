@@ -4,6 +4,9 @@
     <uses-sdk android:minSdkVersion="29" android:targetSdkVersion="35" />
     <application android:label="Dukto validation accessibility" android:hasCode="true">
         <activity android:name=".ValidationActivity" android:exported="true" />
+        <activity android:name=".ValidationShareActivity" android:exported="true" />
+        <provider android:name=".ValidationFiles" android:authorities="org.duktonext.validation.files"
+                  android:exported="false" android:grantUriPermissions="true" />
         <service android:name=".ValidationAccessibility" android:exported="true"
                  android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
             <intent-filter><action android:name="android.accessibilityservice.AccessibilityService" /></intent-filter>

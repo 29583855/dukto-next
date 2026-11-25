@@ -22,7 +22,7 @@ jobs:
           xcrun --sdk iphonesimulator --show-sdk-version >> DuktoNextMobile/build-ios-simulator/toolchain.txt
           uname -m >> DuktoNextMobile/build-ios-simulator/toolchain.txt
           python -m pip install Pillow==11.3.0
-      - uses: actions/cache@v4
+      - uses: actions/cache/restore@v4
         id: simulator-cache
         with:
           path: ${{ runner.temp }}/dukto-ios-simulator/install
@@ -30,6 +30,12 @@ jobs:
       - name: Build locked Qt and OpenSSL specifically for simulator
         if: steps.simulator-cache.outputs.cache-hit != 'true'
         run: python -u -X utf8 DuktoNextMobile/validation/build_ios_simulator.py --phase dependencies --prefix "${{ runner.temp }}/dukto-ios-simulator/install" --work "${{ runner.temp }}/dukto-ios-simulator/dependencies"
+      # 日期：2026-11-26；依赖完成即保存，应用阶段失败仍保留可复用的模拟器依赖缓存。
+      - uses: actions/cache/save@v4
+        if: steps.simulator-cache.outputs.cache-hit != 'true'
+        with:
+          path: ${{ runner.temp }}/dukto-ios-simulator/install
+          key: ${{ steps.simulator-cache.outputs.cache-primary-key }}
       - name: Build complete production source app for simulator
         run: python -u -X utf8 DuktoNextMobile/validation/build_ios_simulator.py --phase application --prefix "${{ runner.temp }}/dukto-ios-simulator/install" --work DuktoNextMobile/build-ios-simulator
       - name: Install launch and receive using complete Qt app

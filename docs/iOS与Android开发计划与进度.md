@@ -273,7 +273,17 @@ f20c51ab完整六项回归run45630841540全部通过：Android23项合同、iOS1
 - [x] 40d4cec7完整源码包本地逐项核验：279项源码、7份依赖归档；SHA256 `aefdc1a790107728f47193f45ef06a0728075a35ae6f7e3c1f4391dec7f68d74`。历史f20c51ab源码也已完成本地复核。
 - [x] 原始40d4cec7 APK连续32批接收子项三轮通过：run45646121729、45647531770、45649744553；中文、空文件/目录、同名副本与原件、逐批摘要，无重试或重启。ADB转发模拟器测试，不等于Wi-Fi或真机互通。
 - [ ] Android界面发送整轮验收：前三轮控件定位失败，第四轮辅助服务被AppOps拒绝；保留全部失败证据。cd767550已修正辅助包AppOps授权，run45652546771等待复验。
-- [ ] 完整Qt iOS应用模拟器运行：run45650719141排队；UIKit合同不替代完整应用。
+- [ ] 完整Qt iOS应用模拟器运行：run45650719141/job139334151969已开始构建专用依赖，尚未完成；UIKit合同不替代完整应用。
 - [ ] 真机系统提供器、跨设备、后台/切网/锁屏、长时及读屏、Apple签名和正式发行。
 
 当前目录、包摘要与范围见独立项目的《当前验收状态》。收据：`validation-40d4cec7.json`、`android-validation-attempts-40d4cec7.json`、两平台`source-rebuild-40d4cec7.json`及`source-local-40d4cec7.json`，均在`DuktoNextMobile/evidence/`。未签名iOS归档和调试APK不作为正式客户包。
+
+## 2026-11-26：完整模拟器复验跟进
+
+- [x] 下载定位iOS run45650719141失败：独立Qt/OpenSSL依赖及核心编译通过，qmake报`Unknown option -sdk`；应用未生成、未安装，原始artifact15045973054保留。
+- [x] 修正模拟器qmake SDK参数为`QMAKE_MAC_SDK=iphonesimulator`；依赖成功即保存缓存。此项仅表示修改已完成，完整iOS复验仍未通过。
+- [x] Android系统只读content URI分享中文二进制与空文件的辅助工具已实现；本地独立R6接收解析器5项测试通过，包含分片与无效报文拒绝。
+- [ ] 完整Qt iOS应用安装、启动、首屏及连续32批接收：修复后等待CI复验，不以UIKit合同代替。
+- [ ] Android原始APK连续32批接收、真实界面文字与文件发送整轮：等待新增CI；旧run45652546771异常排队无作业，普通及强制取消均HTTP409，保留失败记录。
+
+证据见`evidence/ios-simulator-attempts-20261126.json`、`evidence/ci-queue-cleanup-20261126.json`。本节更新前文仍构建/仍排队的即时状态，不删除历史失败。

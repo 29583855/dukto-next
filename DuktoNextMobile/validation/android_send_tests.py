@@ -4,7 +4,7 @@ import struct
 import threading
 import unittest
 
-from android_send import receive_exact, receive_text
+from android_send import file_fixtures, receive_exact, receive_files, receive_text
 
 
 class IndependentReceiverTests(unittest.TestCase):
@@ -45,6 +45,66 @@ class IndependentReceiverTests(unittest.TestCase):
                     sender.shutdown(socket.SHUT_WR)
                     with self.assertRaises((RuntimeError, ValueError)):
                         receive_text(receiver, b"x")
+
+    # 日期：2026-11-26；独立组装文件帧，避免调用被测应用的序列化器。
+    def file_wire(self, fixtures):
+        return (struct.pack("<qq", len(fixtures), sum(len(data) for _, data in fixtures)) +
+                b"".join(name.encode("utf-8") + b"\0" + struct.pack("<q", len(data)) + data
+                         for name, data in fixtures))
+
+    # 日期：2026-11-26；真实大小样本任意分片下核对中文名称、全部二进制和空文件。
+    def test_file_content_and_empty(self):
+        fixtures = file_fixtures()
+        wire = self.file_wire(list(reversed(fixtures)))
+        receiver, sender = socket.socketpair()
+        receiver.settimeout(3)
+        failures = []
+
+        # 日期：2026-11-26；独立线程分片发送，避免大帧受本机socket缓冲区大小影响。
+        def send():
+            try:
+                with sender:
+                    for offset in range(0, len(wire), 997):
+                        sender.sendall(wire[offset:offset + 997])
+            except Exception as error:
+                failures.append(error)
+
+        worker = threading.Thread(target=send)
+        worker.start()
+        try:
+            with receiver:
+                result = receive_files(receiver, fixtures)
+            self.assertEqual(result["bytes"], sum(len(data) for _, data in fixtures))
+            self.assertEqual({item["name"] for item in result["files"]}, {name for name, _ in fixtures})
+            self.assertTrue(result["emptyFile"])
+        finally:
+            worker.join(timeout=3)
+        self.assertFalse(worker.is_alive())
+        self.assertFalse(failures)
+
+    # 日期：2026-11-26；错误条目、总长、名称、正文、截断及额外尾部一律不能通过。
+    def test_invalid_file_frames(self):
+        fixtures = [("中文 x", b"x"), ("empty", b"")]
+        valid = self.file_wire(fixtures)
+        invalid = [valid[:-1], valid + b"extra", valid.replace(b"x\0", b"y\0", 1),
+                   struct.pack("<qq", 3, 1) + valid[16:],
+                   struct.pack("<qq", 2, 2) + valid[16:],
+                   valid.replace(b"empty\0", "中文 x".encode("utf-8") + b"\0"),
+                   valid.replace("中文 x".encode("utf-8"), b"\xff"),
+                   valid[:16] + b"a" * 512,
+                   self.file_wire([("中文 x", b"y"), ("empty", b"")]),
+                   valid.replace(struct.pack("<q", 1) + b"x", struct.pack("<q", -1) + b"x")]
+        for wire in invalid:
+            with self.subTest(frame=wire[:40]):
+                receiver, sender = socket.socketpair()
+                with receiver, sender:
+                    receiver.settimeout(3)
+                    sender.sendall(wire)
+                    sender.shutdown(socket.SHUT_WR)
+                    with self.assertRaises((RuntimeError, ValueError)):
+                        receive_files(receiver, fixtures)
+        with self.assertRaises(ValueError):
+            receive_files(None, [("same", b"x"), ("same", b"y")])
 
     # 日期：2026-11-25；验收工具自身同样有内存上限，拒绝负长度和超限申请。
     def test_bounded_allocation(self):

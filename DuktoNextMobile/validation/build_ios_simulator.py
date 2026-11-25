@@ -71,7 +71,8 @@ def application(root, prefix, build, environment):
          "-DOPENSSL_USE_STATIC_LIBS=TRUE", "-DDUKTO_BUILD_GUI=OFF", "-DDUKTO_BUILD_TESTS=OFF"],
         root, environment, log)
     run(["cmake", "--build", core, "--parallel", "3"], root, environment, log)
-    run([qt / "bin/qmake", root / "DuktoNextMobile.pro", "-sdk", "iphonesimulator",
+    # 日期：2026-11-26；qmake使用SDK变量，-sdk仅适用于configure/xcodebuild。
+    run([qt / "bin/qmake", root / "DuktoNextMobile.pro", "QMAKE_MAC_SDK=iphonesimulator",
          "CORE_BUILD=" + str(core), "OPENSSL_PREFIX=" + str(openssl), "CONFIG+=release",
          "QMAKE_APPLE_SIMULATOR_ARCHS=arm64"], app, environment, log)
     projects = list(app.glob("*.xcodeproj"))

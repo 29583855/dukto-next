@@ -120,7 +120,10 @@ def main():
     parser.add_argument("--source", required=True)
     parser.add_argument("--r6-receive", action="store_true")
     parser.add_argument("--r6-send", action="store_true")
+    parser.add_argument("--r6-file-send", action="store_true")
     args = parser.parse_args()
+    if args.r6_file_send and not args.r6_send:
+        parser.error("--r6-file-send requires --r6-send for the same onboarding and helper session")
     args.output.mkdir(parents=True, exist_ok=True)
     receipt = {"passed": False, "deviceTest": False, "scope": "Android模拟器安装启动原始arm64开发APK",
                "sourceCommit": args.source, "steps": []}
@@ -186,6 +189,10 @@ def main():
             from android_send import verify_text_send
             receipt["r6Send"] = verify_text_send(args.output)
             receipt["steps"].append("productionApkSharedTextUiSendAndHash")
+        if args.r6_file_send:
+            from android_send import verify_file_send
+            receipt["r6FileSend"] = verify_file_send(args.output)
+            receipt["steps"].append("productionApkContentUriFilesUiSendAndHash")
         # 日期：2026-11-25；传输后的崩溃同样必须使本轮失败，不能只核对启动日志。
         final_log = adb("logcat", "-d", "--pid=" + pid, timeout=60)
         (args.output / "final-logcat.txt").write_text(final_log, "utf-8")

@@ -49,6 +49,47 @@ def receive_text(connection, expected):
             "utf8Text": True, "independentWireParser": True}
 
 
+# 日期：2026-11-26；提供固定中文二进制与空文件，来源提供器和独立接收器共用公开样本。
+def file_fixtures():
+    return [("中文 sample.bin", "系统content授权文件 / UTF-8\n".encode("utf-8") + bytes(range(256)) * 512),
+            ("empty zero.bin", b"")]
+
+
+# 日期：2026-11-26；独立检查R6文件批次，名称、数量、总长、正文和EOF缺一不可。
+def receive_files(connection, fixtures):
+    expected = dict(fixtures)
+    if len(expected) != len(fixtures):
+        raise ValueError("验收样本名称重复")
+    count, total = struct.unpack("<qq", receive_exact(connection, 16))
+    if count != len(fixtures) or total != sum(len(data) for data in expected.values()):
+        raise RuntimeError("APK文件批次条目数或总长错误")
+    files = []
+    for _ in range(count):
+        name = bytearray()
+        while len(name) < 512:
+            value = receive_exact(connection, 1)
+            if value == b"\0":
+                break
+            name.extend(value)
+        else:
+            raise RuntimeError("APK文件名称未结束")
+        try:
+            name = bytes(name).decode("utf-8", errors="strict")
+        except UnicodeDecodeError as error:
+            raise RuntimeError("APK文件名称不是UTF-8") from error
+        if name not in expected:
+            raise RuntimeError("APK文件名称错误或重复: " + name)
+        data = expected.pop(name)
+        size, = struct.unpack("<q", receive_exact(connection, 8))
+        if size != len(data) or receive_exact(connection, size) != data:
+            raise RuntimeError("APK文件长度或内容不一致: " + name)
+        files.append({"name": name, "bytes": size, "sha256": hashlib.sha256(data).hexdigest()})
+    if expected or connection.recv(1) != b"":
+        raise RuntimeError("APK文件批次缺少条目或包含额外数据")
+    return {"bytes": total, "files": files, "independentWireParser": True,
+            "utf8Path": True, "emptyFile": True, "perFileContentVerified": True}
+
+
 # 日期：2026-11-25；通过系统无障碍树定位实际可见控件，保留每一步原始XML供复核。
 def ui_tree(output, stage):
     path = "/sdcard/dukto-mobile-validation.xml"
@@ -149,3 +190,46 @@ def verify_text_send_ui(output):
 # 日期：2026-11-25；服务由安装验收在首次启动前统一管理，此处只操作真实界面。
 def verify_text_send(output):
     return verify_text_send_ui(output)
+
+
+# 日期：2026-11-26；来源应用通过系统只读授权分享两份文件，真实QML按钮发送给独立接收器。
+def verify_file_send(output):
+    output = Path(output) / "r6-file-send"
+    output.mkdir(parents=True, exist_ok=True)
+    original_pid = adb("shell", "pidof", "org.duktonext.mobile").strip()
+    if not original_pid:
+        raise RuntimeError("文件发送前应用没有运行")
+    launch = adb("shell", "am", "start", "-W", "-n",
+                 "org.duktonext.validation/.ValidationShareActivity")
+    (output / "share-launch.txt").write_text(launch, "utf-8")
+    if "Status: ok" not in launch:
+        raise RuntimeError("系统文件分享来源Activity未正常启动")
+    click_label(output, "manual", "IP 连接 · 发送到指定设备")
+    tree = ui_tree(output, "target")
+    fields = [node for node in tree.iter("node")
+              if node.get("class") == "android.widget.EditText"
+              and node.get("enabled") == "true" and node.get("text") != "4644"]
+    if len(fields) != 1:
+        raise RuntimeError("无法唯一定位文件发送目标地址输入框")
+    if fields[0].get("text") != "10.0.2.2":
+        tap_node(fields[0])
+        adb("shell", "input", "keycombination", "113", "29")
+        adb("shell", "input", "text", "10.0.2.2")
+        adb("shell", "input", "keyevent", "KEYCODE_BACK")
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as listener:
+        listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        listener.bind(("0.0.0.0", 4644))
+        listener.listen(1)
+        listener.settimeout(40)
+        click_label(output, "submit", "发送系统分享文件（2项）")
+        connection, peer = listener.accept()
+        with connection:
+            connection.settimeout(30)
+            result = receive_files(connection, file_fixtures())
+    if adb("shell", "pidof", "org.duktonext.mobile").strip() != original_pid:
+        raise RuntimeError("文件发送期间应用进程被替换")
+    (output / "send-completed.png").write_bytes(adb("exec-out", "screencap", "-p", binary=True))
+    result.update(passed=True, systemContentUriShare=True, realUiActions=True,
+                  transport="Android emulator 10.0.2.2 TCP4644 to independent host receiver",
+                  sendRetries=0, processRestarts=0, deviceTest=False, wifiDiscoveryTest=False)
+    return result

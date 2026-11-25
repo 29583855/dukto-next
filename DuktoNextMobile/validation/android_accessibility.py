@@ -29,8 +29,15 @@ def build_helper(output):
         "-d", classes, *sorted(source.glob("*.java")))
     run(tools / "d8", "--lib", android, "--output", dex, *classes.rglob("*.class"))
     unsigned, aligned, signed = [build / name for name in ["unsigned.apk", "aligned.apk", "helper.apk"]]
+    # 日期：2026-11-26；资产供系统content提供器读取，独立接收器仍逐字节核对线协议内容。
+    assets = build / "assets"
+    assets.mkdir(exist_ok=True)
+    from android_send import file_fixtures
+    fixtures = file_fixtures()
+    (assets / "sample").write_bytes(fixtures[0][1])
+    (assets / "empty").write_bytes(fixtures[1][1])
     run(tools / "aapt", "package", "-f", "-M", source / "AndroidManifest.xml",
-        "-I", android, "-S", source / "res", "-F", unsigned)
+        "-I", android, "-S", source / "res", "-A", assets, "-F", unsigned)
     with zipfile.ZipFile(unsigned, "a", zipfile.ZIP_DEFLATED) as bundle:
         bundle.write(dex / "classes.dex", "classes.dex")
     key = build / "validation.jks"
