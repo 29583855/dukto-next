@@ -5,9 +5,11 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QMap>
 #include <QQmlApplicationEngine>
 #include <QQuickWindow>
 #include <QRegularExpression>
+#include <QSet>
 #include <QTextStream>
 #include <QTimer>
 #include <memory>
@@ -22,6 +24,26 @@ qint64 residentKiB() {
                            .match(QString::fromLatin1(status.readAll()));
     return match.hasMatch() ? match.captured(1).toLongLong() : -1;
 }
+// 日期：2026-11-25；按类型及直接父级归组，诊断压力操作中持续增加的实际存活对象。
+QJsonObject objectGroups(QObject *root, QObject *engine) {
+    QSet<QObject *> objects;
+    for (auto scope : {root, engine})
+        for (auto object : scope->findChildren<QObject *>())
+            objects.insert(object);
+    QMap<QString, int> groups;
+    for (auto object : objects) {
+        auto parent = object->parent();
+        QString key = QString::fromLatin1(object->metaObject()->className());
+        if (parent)
+            key += QStringLiteral(" <- ") + QString::fromLatin1(parent->metaObject()->className()) +
+                   QStringLiteral("[") + parent->objectName() + QStringLiteral("]");
+        ++groups[key];
+    }
+    QJsonObject result;
+    for (auto it = groups.cbegin(); it != groups.cend(); ++it)
+        result.insert(it.key(), it.value());
+    return result;
+}
 struct State {
     int step = 0;
     int cycles = 0;
@@ -30,6 +52,7 @@ struct State {
     qint64 lastKiB = 0;
     int lastObjects = 0;
     QJsonArray samples;
+    QJsonObject baselineGroups;
 };
 } // namespace
 // 日期：2026-11-25；真实控件经过30轮预热后持续190轮，超过16MiB或32个存活对象增长使门禁失败。
@@ -84,6 +107,7 @@ void startUiStress(QQmlApplicationEngine &engine, Controller &controller, bool &
                 if (state->cycles == 30) {
                     state->baselineKiB = state->lastKiB;
                     state->baselineObjects = state->lastObjects;
+                    state->baselineGroups = objectGroups(root, &engine);
                 }
             }
             if (state->cycles >= 220) {
@@ -98,6 +122,8 @@ void startUiStress(QQmlApplicationEngine &engine, Controller &controller, bool &
                                    {"objectBudget", 32},
                                    {"passed", ok},
                                    {"deviceTestsPassed", false},
+                                   {"baselineGroups", state->baselineGroups},
+                                   {"finalGroups", objectGroups(root, &engine)},
                                    {"samples", state->samples}};
                 QFile output(QStringLiteral("mobile-ui-stress.json"));
                 ok = output.open(QIODevice::WriteOnly) &&

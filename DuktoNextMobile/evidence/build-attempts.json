@@ -260,6 +260,37 @@
       "reason": "Java编译完成，Robolectric下载android-all-instrumented时repo1.maven.org返回HTTP429，测试未执行",
       "fix": "测试SDK下载改用repo.maven.apache.org正式主机后复验",
       "deviceTestsPassed": false
+    },
+    {
+      "runId": 45603475985,
+      "jobId": 139168159277,
+      "commit": "67615cb1",
+      "platform": "android-jvm",
+      "result": "gradle_dependency_http429",
+      "reason": "Gradle依赖解析阶段Maven Central返回HTTP429，未生成实际测试报告",
+      "fix": "Gradle及Robolectric统一增加Google Maven Central镜像；run45605290424实际20项通过",
+      "deviceTestsPassed": false
+    },
+    {
+      "runId": 45603895859,
+      "jobId": 139169613673,
+      "commit": "dac66be5",
+      "platform": "android-jvm",
+      "result": "gradle_dependency_http429",
+      "reason": "Gradle依赖解析阶段Maven Central返回HTTP429，未生成实际测试报告",
+      "fix": "Gradle及Robolectric统一增加Google Maven Central镜像；run45605290424实际20项通过",
+      "deviceTestsPassed": false
+    },
+    {
+      "runId": 45605290424,
+      "jobId": 139174475246,
+      "commit": "ba7749f6",
+      "platform": "host-ui-stress",
+      "result": "live_objects_growth_failed",
+      "reason": "220轮后，30轮预热基线到结束RSS增长584KiB，存活对象增长760，超过32门限",
+      "fix": "保留失败JSON；新增类型/父级分组定位，不放宽门限",
+      "artifactId": 15016913069,
+      "deviceTestsPassed": false
     }
   ]
 }

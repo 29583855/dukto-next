@@ -120,6 +120,8 @@ def main():
     shutil.copytree(prefix / "licenses", package_dir / "licenses", dirs_exist_ok=True)
     shutil.copy2(prefix / "dependency-manifest.json", package_dir / "dependency-manifest.json")
     shutil.copy2(root / "LICENSE", package_dir / "LICENSE")
+    # 日期：2026-11-25；开发产物随附实际限制、验收状态和签名说明，避免脱离源码目录后误用。
+    shutil.copytree(root / "docs", package_dir / "docs", dirs_exist_ok=True)
     receipt = {"packageInspection": inspection, "platform": args.platform, "buildPassed": True, "deviceTestsPassed": False,
                "signedForDistribution": False, "artifacts": [str(path) for path in artifacts]}
     (build / "build-receipt.json").write_text(json.dumps(receipt, indent=2) + "\n", "utf-8")
