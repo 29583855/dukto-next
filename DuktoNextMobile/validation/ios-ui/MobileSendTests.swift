@@ -197,4 +197,53 @@ final class MobileSendTests: XCTestCase {
         expectation(for: closed, evaluatedWith: cancelled)
         waitForExpectations(timeout: 20)
     }
+
+    // 日期：2026-11-26；真实Files目录选择必须取消后重开，进入授权目录再确认，由独立接收器核对结构。
+    @MainActor
+    func testSendDirectoryFromSystemDocuments() throws {
+        continueAfterFailure = false
+        let app = XCUIApplication(bundleIdentifier: "org.duktonext.mobile")
+        app.activate()
+        defer { capture(app, "directory-final") }
+        for attempt in 0..<2 {
+            let manual = app.buttons["IP 连接 · 发送到指定设备"]
+            XCTAssertTrue(manual.waitForExistence(timeout: 15))
+            manual.tap()
+            XCTAssertEqual(app.textFields["目标 IP 或主机名"].value as? String, "127.0.0.1")
+            XCTAssertEqual(app.textFields["目标端口"].value as? String, "49231")
+            let folder = app.buttons["发送文件夹"]
+            XCTAssertTrue(folder.waitForExistence(timeout: 10))
+            folder.tap()
+            capture(app, "directory-picker-" + String(attempt))
+            let cancel = app.buttons["Cancel"]
+            XCTAssertTrue(cancel.waitForExistence(timeout: 15))
+            if attempt == 0 { cancel.tap() }
+        }
+        let folderName = "a-ios-directory-probe"
+        if !documentCell(app, folderName).exists {
+            if !documentCell(app, "Dukto Next").exists {
+                let local = app.buttons["On My iPhone"]
+                if !local.exists {
+                    let browse = app.buttons["Browse"].firstMatch
+                    XCTAssertTrue(browse.waitForExistence(timeout: 15))
+                    XCTAssertTrue(browse.isHittable)
+                    browse.tap()
+                }
+                XCTAssertTrue(local.waitForExistence(timeout: 15))
+                XCTAssertTrue(local.isHittable)
+                local.tap()
+            }
+            tapDocumentCell(app, "Dukto Next")
+        }
+        capture(app, "directory-application")
+        tapDocumentCell(app, folderName)
+        capture(app, "directory-selected")
+        let open = app.buttons["Open"]
+        XCTAssertTrue(open.waitForExistence(timeout: 10))
+        XCTAssertTrue(open.isHittable)
+        open.tap()
+        let cancelled = app.buttons["Cancel"]
+        expectation(for: NSPredicate(format: "exists == false"), evaluatedWith: cancelled)
+        waitForExpectations(timeout: 20)
+    }
 }

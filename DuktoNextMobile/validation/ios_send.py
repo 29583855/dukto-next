@@ -137,3 +137,75 @@ def verify_file_send(device, build, documents):
     finally:
         (build / "ios-documents-send.json").write_text(
             json.dumps(report, ensure_ascii=False, indent=2) + "\n", "utf-8")
+
+
+# 日期：2026-11-26；目录先由产品接收入库，再经系统Files授权发送，逐条核对中文、空文件、空目录和源保留。
+def verify_directory_send(device, build, documents):
+    folder = "a-ios-directory-probe"
+    payload = "iOS目录系统授权\n".encode("utf-8") + bytes(range(256)) * 259
+    fixtures = [(folder, None), (folder + "/中文 空格.bin", payload),
+                (folder + "/empty.bin", b""), (folder + "/空目录", None)]
+    report = {"passed": False, "deviceTest": False, "realUiActions": True,
+              "systemDocumentPicker": True, "pickerCancelAndReopen": False,
+              "wifiDiscoveryTest": False, "cloudProviderTest": False}
+    log = build / "ios-directory-ui.log"
+    try:
+        send_r6(4644, fixtures)
+        deadline = time.monotonic() + 20
+        while True:
+            ready = all((documents / name).is_dir() if data is None else
+                        (documents / name).is_file() and (documents / name).read_bytes() == data
+                        for name, data in fixtures)
+            if ready:
+                break
+            if time.monotonic() >= deadline:
+                raise RuntimeError("目录样本未由真实R6接收器完整提交")
+            time.sleep(0.1)
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as listener:
+            listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            listener.bind(("127.0.0.1", 49231))
+            listener.listen(1)
+            listener.settimeout(0.25)
+            cancelled = threading.Event()
+
+            # 日期：2026-11-26；只接收产品产生的连接，任何路径、哨兵、内容或EOF不符立即失败。
+            def receive_directory():
+                deadline = time.monotonic() + 360
+                while not cancelled.is_set() and time.monotonic() < deadline:
+                    try:
+                        connection, _ = listener.accept()
+                    except socket.timeout:
+                        continue
+                    with connection:
+                        connection.settimeout(30)
+                        return receive_files(connection, fixtures)
+                raise RuntimeError("系统目录选择未产生真实发送连接")
+
+            with ThreadPoolExecutor(max_workers=1) as executor:
+                received = executor.submit(receive_directory)
+                try:
+                    command(log, "xcodebuild", "-project", build / "ui" / "MobileSendTests.xcodeproj",
+                            "-scheme", "MobileSendTests", "-configuration", "Debug",
+                            "-destination", "platform=iOS Simulator,id=" + device,
+                            "-derivedDataPath", build / "ui-derived", "CODE_SIGNING_ALLOWED=NO",
+                            "CODE_SIGNING_REQUIRED=NO", "-parallel-testing-enabled", "NO",
+                            "-only-testing:MobileSendTests/MobileSendTests/testSendDirectoryFromSystemDocuments",
+                            "-resultBundlePath", build / "ios-directory.xcresult",
+                            "test-without-building", timeout=480)
+                    report.update(received.result(timeout=35))
+                finally:
+                    cancelled.set()
+        for name, data in fixtures:
+            path = documents / name
+            if not (path.is_dir() if data is None else path.is_file() and path.read_bytes() == data):
+                raise RuntimeError("目录发送后源文件或目录被改变: " + name)
+        report.update(passed=True, pickerCancelAndReopen=True, sourcePreserved=True,
+                      receiveBeforeSelecting=True, sendRetries=0, processRestarts=0,
+                      transport="iOS simulator system Files directory to production Qt R6 sender")
+        return report
+    except Exception as error:
+        report["error"] = str(error)
+        raise
+    finally:
+        (build / "ios-directory-send.json").write_text(
+            json.dumps(report, ensure_ascii=False, indent=2) + "\n", "utf-8")
