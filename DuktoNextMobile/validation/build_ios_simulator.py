@@ -81,8 +81,10 @@ def application(root, prefix, build, environment):
     run(["xcodebuild", "-project", projects[0], "-scheme", "DuktoNextMobile", "-configuration", "Release",
          "-sdk", "iphonesimulator", "-destination", "generic/platform=iOS Simulator",
          "-derivedDataPath", build / "DerivedData", "CODE_SIGNING_ALLOWED=NO",
-         "CODE_SIGNING_REQUIRED=NO", "CODE_SIGN_IDENTITY=", "build"], app, environment, log)
-    apps = list((build / "DerivedData/Build/Products").glob("Release-iphonesimulator/DuktoNextMobile.app"))
+         "CODE_SIGNING_REQUIRED=NO", "CODE_SIGN_IDENTITY=",
+         "CONFIGURATION_BUILD_DIR=" + str(build / "products"), "build"], app, environment, log)
+    # 日期：2026-11-26；覆盖qmake工程自带输出目录，不能假定产物位于DerivedData。
+    apps = list((build / "products").glob("DuktoNextMobile.app"))
     if len(apps) != 1:
         raise ValueError("完整模拟器应用产物数量错误")
     # 日期：2026-11-25；模拟器仅作本地ad-hoc签名，不具备设备安装/App Group发行权限。

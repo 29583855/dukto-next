@@ -148,6 +148,38 @@
         "failure-sandbox.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "failure-screen.png": "0947d10b162c865aa9ec74a150def87a0a0bbe967e0ddd58fb48808a580ae25d"
       }
+    },
+    {
+      "run": 45669159268,
+      "job": 139399400214,
+      "artifact": 15048747672,
+      "wholeRunPassed": false,
+      "r6ReceivePassed": true,
+      "sequentialBatches": 32,
+      "textSendPassed": false,
+      "fileSendPassed": false,
+      "accessibilityBound": true,
+      "freshNonceSnapshotPassed": true,
+      "layoutWarnings": 41861,
+      "error": "读取目标控件树45秒超时；发送窗口出现recursive rearrange/Polish loop，未开始发送；系统分享进入尚未证明",
+      "files": {
+        "accessibility-appops.txt": "9c1ba6e22851a4d338b02a4f2865dfe287d44589076a18c9763bba245901978b",
+        "accessibility-bound.xml": "4a2e9f66f3a00d0f87ee9009c9284482d2e4cd85f7d52ee701a55169d90d7ec8",
+        "accessibility-helper-log.txt": "681d0ffb45b2bf11012b0d3d0aec867084c841a87f2834fb57ee27bacfdc7c84",
+        "accessibility-services.txt": "661abe68d15d2e7bcaebc21f5bf8af8dbb52001f4e92733642dbba6a9ec636e8",
+        "accessibility-settings.json": "7eaef24268d453c3630fd2617f2fc0f49d4a6ab6c338a3e7decb4027ba53529c",
+        "activity.txt": "ae4cc683b2926109b719b2034bc0505d5a71d095def1742209e1161b5649ccef",
+        "android-startup.json": "8424c9a794f600fdc265845c43db07d872b3b3c667647d241db17d8adaf9c19c",
+        "failure-logcat.txt": "d890c8ffac72b5447682e133b283bca88f3b8f9d9b01277517ab0fc412fe2b79",
+        "failure-sandbox.txt": "0256332dec7d18695a4e56903f38980545c847a0b302f7c3ca264fa4ee75d72c",
+        "failure-screen.png": "86cfa1ea088e04c44608bd0ab67a322040f627734ca3d61ea24e9fb009b21574",
+        "logcat.txt": "70e84b8252872da0910a923181f3383e5712a737f81da75658f1cc9905c355ca",
+        "r6-send/initial.xml": "c2b657ecb32686d10ae7051c83a5096fae267f4854ddc9d261a3ceba7b687f38",
+        "r6-send/manual.xml": "1c74669d28b42c1e8edce564fc080c4eec3fe268393b1af341538f2b8e223599",
+        "r6-send/share-launch.txt": "2645f752664fbb9e96602c35e19b22341645537220ccb9b903e317c56e8289e7",
+        "r6-send/welcome.xml": "2990f673d2057bba9a3f550096ce67376bd8127965da3d3f826ff5a87dcf593c",
+        "startup.png": "94e5f7568129f28bc9976fb3cc623b7419e5cec70ee79c8d5c49958220a624c3"
+      }
     }
   ],
   "accessibilityFailure": {
@@ -159,8 +191,8 @@
   },
   "pendingFix": {
     "date": "2026-11-26",
-    "description": "Recognize actual Android Bound-service label instead of absent package name; additionally require fresh nonce snapshot from live service before launching product",
+    "description": "辅助服务绑定及新鲜nonce快照已通过；发送窗口改为ScrollView宽度单向约束的Column，待新APK复验",
     "validatedInCI": false,
-    "productApkModified": false
+    "productApkModified": true
   }
 }

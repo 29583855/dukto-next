@@ -15,6 +15,32 @@
       "deviceTest": false,
       "fix": "Use qmake QMAKE_MAC_SDK=iphonesimulator; save completed dependency cache before application stage",
       "fixValidatedInCI": false
+    },
+    {
+      "run": 45666106081,
+      "job": 139388560595,
+      "artifact": 15049831195,
+      "passed": false,
+      "stage": "locate application output",
+      "dependenciesBuildPassed": true,
+      "coreBuildPassed": true,
+      "appBuildPassed": true,
+      "installed": false,
+      "deviceTest": false,
+      "error": "xcodebuild返回成功，但DerivedData预期目录没有DuktoNextMobile.app",
+      "fix": "显式CONFIGURATION_BUILD_DIR并在该目录查找.app",
+      "fixValidatedInCI": false,
+      "files": {
+        "_temp/dukto-ios-simulator/dependencies/openssl.log": "e400f84e4398c57c06d3cb0df5f7d735d2f822d212d2ba79be34c38cd262f1c1",
+        "_temp/dukto-ios-simulator/dependencies/phase-receipt.json": "9c8b96ddda682e970d568aed5676fc03ec6ff40f45382a2c59fdcaca8163edcc",
+        "_temp/dukto-ios-simulator/dependencies/qtbase.log": "a30c7c64743110f843ce9e543b356f4d32847f4f7408b1400710e18e92960c3d",
+        "_temp/dukto-ios-simulator/dependencies/qtdeclarative.log": "6184ebf24bd54d8f0ef98c77585f578e1838675f2aa64164a875d91bcd19d087",
+        "_temp/dukto-ios-simulator/dependencies/qtgraphicaleffects.log": "4a74a7edf68b581adddcd22f0d5a13f59ebcb62076d2d1508b6f78c2bd02c878",
+        "_temp/dukto-ios-simulator/dependencies/qtquickcontrols2.log": "467a3fb3297b6148c3e450ee283b59d938757cc23e8e917c3d90a1c800f93421",
+        "dukto-next/dukto-next/DuktoNextMobile/build-ios-simulator/application.log": "def9d8070283ad60d0e51a82de73c573cf87635a0422c3376c5e472aef45788a",
+        "dukto-next/dukto-next/DuktoNextMobile/build-ios-simulator/phase-receipt.json": "51f927f2020eebc721c867d616a3d35e30fe6d3d4e6eb578fad8be5586ef3c1d",
+        "dukto-next/dukto-next/DuktoNextMobile/build-ios-simulator/toolchain.txt": "291a1ce5bc2d95ed2fe49308c679c6ef463591bbfea4ee64f603d1150a3ca84f"
+      }
     }
   ]
 }

@@ -541,15 +541,23 @@ Rectangle {
             }
         }
 
+        // 日期：2026-11-26；滚动区域单向约束内容宽度，避免触屏字体下隐式尺寸反复参与布局。
         contentItem: ScrollView {
-            clip: true
+            id: sendScroll
 
-            ColumnLayout {
-                width: sendDialog.availableWidth
+            objectName: "sendScroll"
+            clip: true
+            contentWidth: availableWidth
+            ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+
+            Column {
+                width: sendScroll.availableWidth
                 spacing: 10
 
                 Label {
                     textFormat: Text.PlainText
+                    width: parent.width
+                    wrapMode: Text.WordWrap
                     text: "目标 IP 或主机名"
                     color: "#777"
                 }
@@ -558,12 +566,13 @@ Rectangle {
                     id: hostInput
 
                     objectName: "hostInput"
-                    Layout.fillWidth: true
+                    width: parent.width
                     placeholderText: "192.168.1.10"
                     selectByMouse: true
                 }
 
-                RowLayout {
+                Row {
+                    spacing: 10
                     Label {
                         textFormat: Text.PlainText
                         text: "端口"
@@ -585,7 +594,7 @@ Rectangle {
 
                     Button {
                         objectName: "sendAction" + index
-                        Layout.fillWidth: true
+                        width: parent.width
                         text: modelData
                         enabled: !controller.busy && hostInput.text.trim().length > 0 && (index !== 1 || controller.clipboardAvailable)
                         onClicked: {
@@ -614,7 +623,7 @@ Rectangle {
 
                 Button {
                     objectName: "sendSharedFilesButton"
-                    Layout.fillWidth: true
+                    width: parent.width
                     visible: Number(mobileFiles.incoming.files || 0) > 0
                     text: "发送系统分享文件（" + (mobileFiles.incoming.files || 0) + "项）"
                     enabled: !controller.busy && !mobileFiles.busy && hostInput.text.trim().length > 0
@@ -626,7 +635,7 @@ Rectangle {
 
                 Button {
                     objectName: "sendSharedTextButton"
-                    Layout.fillWidth: true
+                    width: parent.width
                     visible: String(mobileFiles.incoming.text || "").length > 0
                     text: "查看系统分享文字"
                     enabled: !controller.busy && !mobileFiles.busy && hostInput.text.trim().length > 0
@@ -646,7 +655,7 @@ Rectangle {
                     text: "文件与目录通过系统文档选择器导入。截图请先用系统截图，再选择图片文件。"
                     color: "#888"
                     wrapMode: Text.WordWrap
-                    Layout.fillWidth: true
+                    width: parent.width
                 }
 
             }
