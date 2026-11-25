@@ -178,8 +178,8 @@ def seed_external_tree(output, root):
             adb("shell", shlex.join(["mkdir", "-p", destination]))
         else:
             adb("push", str(seed / name), destination)
-            adb("shell", "am", "broadcast", "-a", "android.intent.action.MEDIA_SCANNER_SCAN_FILE",
-                "-d", "file://" + destination)
+            adb("shell", shlex.join(["am", "broadcast", "-a", "android.intent.action.MEDIA_SCANNER_SCAN_FILE",
+                                     "-d", "file://" + destination]))
     verify_tree_content(fixtures, external=True)
     (output / "external-seed-verified.txt").write_text(
         adb("shell", shlex.join(["find", "/sdcard/Download/" + root])), "utf-8")

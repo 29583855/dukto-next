@@ -48,6 +48,7 @@ def main():
         raise RuntimeError("没有iPhone16模拟设备类型")
     print("Selected runtime:", runtime["name"], flush=True)
     device = run("xcrun", "simctl", "create", "DuktoPresenterTests", phones[0]["identifier"], runtime["identifier"])
+    runner = {"passed": False, "deviceTest": False, "runtime": runtime, "device": device}
     try:
         run("xcrun", "simctl", "boot", device)
         print(run("xcrun", "simctl", "bootstatus", device, "-b", timeout=180))
@@ -66,9 +67,36 @@ def main():
         print(json.dumps(result, ensure_ascii=False, indent=2))
         if result.get("passed") is not True:
             raise RuntimeError("UIKit传统窗口回归失败")
+        runner["passed"] = True
+    except Exception as error:
+        runner["error"] = str(error)
+        # 日期：2026-11-26；启动超时时先收集原生收据和系统日志，不能在删除模拟器后丢失原因。
+        probes = [
+            ("container", ("xcrun", "simctl", "get_app_container", device, info["CFBundleIdentifier"], "data")),
+            ("system-log", ("xcrun", "simctl", "spawn", device, "log", "show", "--last", "5m",
+                            "--style", "compact", "--predicate",
+                            'process == "PresenterTests" OR eventMessage CONTAINS "org.duktonext.presenter.tests"')),
+            ("screen", ("xcrun", "simctl", "io", device, "screenshot", str(build / "failure.png")))
+        ]
+        for name, arguments in probes:
+            try:
+                output = run(*arguments, timeout=30)
+                (build / (name + ".txt")).write_text(output + "\n", "utf-8")
+                if name == "container":
+                    native = Path(output) / "Documents/presenter-test.json"
+                    if native.is_file():
+                        shutil.copy2(native, build / "presenter-native-after-failure.json")
+            except Exception as diagnostic_error:
+                runner[name + "Error"] = str(diagnostic_error)
+        raise
     finally:
-        run("xcrun", "simctl", "shutdown", device)
-        run("xcrun", "simctl", "delete", device)
+        (build / "presenter-runner.json").write_text(
+            json.dumps(runner, ensure_ascii=False, indent=2) + "\n", "utf-8")
+        for action in ("shutdown", "delete"):
+            try:
+                run("xcrun", "simctl", action, device, timeout=30)
+            except Exception as cleanup_error:
+                print("模拟器清理失败：", cleanup_error, flush=True)
 
 
 if __name__ == "__main__":

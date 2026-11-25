@@ -1,0 +1,23 @@
+{
+  "date": "2026-11-26",
+  "passed": false,
+  "run": 45699746948,
+  "sourceCommit": "54f37b9b",
+  "failures": [
+    {
+      "runtimeMajor": 18,
+      "job": 139506416591,
+      "stage": "simctl launch",
+      "timeoutSeconds": 180
+    },
+    {
+      "runtimeMajor": 26,
+      "job": 139506416782,
+      "stage": "simctl launch",
+      "timeoutSeconds": 180
+    }
+  ],
+  "nativeAssertionsExecuted": "unknown",
+  "fix": "后续失败时采集app沙箱原生收据、系统日志及截图，runner收据始终写入；未放宽启动或原生断言",
+  "retestPassed": false
+}

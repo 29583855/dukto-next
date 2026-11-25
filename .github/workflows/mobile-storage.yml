@@ -130,5 +130,5 @@ jobs:
         if: always()
         with:
           name: mobile-ios-presenter-${{ matrix.runtime-major }}-${{ github.run_id }}
-          path: DuktoNextMobile/build-presenter/presenter-test.json
+          path: DuktoNextMobile/build-presenter/*
           if-no-files-found: warn
