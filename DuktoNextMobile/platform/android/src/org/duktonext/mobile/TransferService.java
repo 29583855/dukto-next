@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class TransferService extends Service {
     private static final String CHANNEL = "dukto-transfers";
+    private static final String IDLE = "org.duktonext.mobile.TRANSFER_IDLE";
     private static final String CANCEL = "org.duktonext.mobile.CANCEL_TRANSFER";
     private static final AtomicBoolean requested = new AtomicBoolean(false);
     private static final AtomicBoolean stopped = new AtomicBoolean(false);
@@ -27,18 +28,19 @@ public final class TransferService extends Service {
     private PowerManager.WakeLock wakeLock;
     private WifiManager.WifiLock wifiLock;
     private boolean finishing;
+    private int latestStartId;
+    private final Runnable idleStop = this::stopIfIdle;
     private final Runnable deadline = () -> finishTransfer(true);
 
-    // 日期：2026-11-25；仅由可见活动任务调用启动，系统拒绝时返回false并保留前台传输。
-    public static boolean setActive(Context context, boolean active) {
+    // 日期：2026-11-26；结束请求排队交给服务，禁止外部stopService抢先销毁待提升的前台启动。
+    public static synchronized boolean setActive(Context context, boolean active) {
         try {
             if (active) {
                 stopped.set(false);
-                requested.set(true);
-                context.startForegroundService(new Intent(context, TransferService.class));
-            } else {
-                requested.set(false);
-                context.stopService(new Intent(context, TransferService.class));
+                if (!requested.getAndSet(true))
+                    context.startForegroundService(new Intent(context, TransferService.class));
+            } else if (requested.getAndSet(false)) {
+                context.startService(new Intent(context, TransferService.class).setAction(IDLE));
             }
             return active;
         } catch (RuntimeException error) {
@@ -93,16 +95,19 @@ public final class TransferService extends Service {
     // 日期：2026-11-26；取消及过期启动也先履行前台提升，再收尾；长任务才取得限时系统锁。
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        latestStartId = startId;
+        handler.removeCallbacks(idleStop);
         try {
             promoteForeground();
             if (intent != null && CANCEL.equals(intent.getAction())) {
                 finishTransfer(true);
                 return START_NOT_STICKY;
             }
-            if (!requested.get() || finishing) {
-                finishTransfer(false);
+            if (!requested.get()) {
+                handler.postDelayed(idleStop, 750L);
                 return START_NOT_STICKY;
             }
+            finishing = false;
             if (wakeLock == null) {
                 PowerManager power = getSystemService(PowerManager.class);
                 wakeLock = power.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "DuktoNext:Transfer");
@@ -141,6 +146,7 @@ public final class TransferService extends Service {
         if (unexpected)
             stopped.set(true);
         handler.removeCallbacks(deadline);
+        handler.removeCallbacks(idleStop);
         if (wifiLock != null && wifiLock.isHeld())
             wifiLock.release();
         if (wakeLock != null && wakeLock.isHeld())
@@ -151,6 +157,17 @@ public final class TransferService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         return null;
+    }
+    // 日期：2026-11-26；合并短批次结束并按最新启动编号停止，排队的新任务不能被旧收尾截断。
+    private void stopIfIdle() {
+        synchronized (TransferService.class) {
+            if (requested.get())
+                return;
+            if (stopSelfResult(latestStartId)) {
+                finishing = true;
+                stopForeground(STOP_FOREGROUND_REMOVE);
+            }
+        }
     }
     // 日期：2026-11-25；先记录取消，再移除通知与服务，Qt在250毫秒轮询中收尾。
     private void finishTransfer(boolean signal) {

@@ -90,6 +90,8 @@ public class TransferServiceTest {
             Robolectric.buildService(TransferService.class).create();
         assertNotNull(shadowOf(controller.get()).getLastForegroundNotification());
         controller.get().onStartCommand(new Intent(context, TransferService.class), 0, 1);
+        assertNotNull(shadowOf(controller.get()).getLastForegroundNotification());
+        shadowOf(Looper.getMainLooper()).idleFor(Duration.ofSeconds(1));
         assertNull(shadowOf(controller.get()).getLastForegroundNotification());
         assertTrue(shadowOf(controller.get()).isStoppedBySelf());
         assertFalse(TransferService.alive());
@@ -103,8 +105,35 @@ public class TransferServiceTest {
         controller.get().onTimeout(1, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC);
         assertTrue(shadowOf(controller.get()).isForegroundStopped());
         controller.get().onStartCommand(new Intent(context, TransferService.class), 0, 2);
+        shadowOf(Looper.getMainLooper()).idleFor(Duration.ofSeconds(1));
         assertTrue(shadowOf(controller.get()).isForegroundStopped());
         assertNull(shadowOf(controller.get()).getLastForegroundNotification());
+        controller.destroy();
+    }
+    // 日期：2026-11-26；短任务在服务创建前结束，完成入口必须排队普通启动而非外部停止。
+    @Test
+    public void completionQueuesIdleWithoutStoppingPendingCreation() {
+        assertTrue(TransferService.setActive(context, true));
+        assertNotNull(shadowOf(RuntimeEnvironment.getApplication()).getNextStartedService());
+        TransferService.setActive(context, false);
+        Intent idle = shadowOf(RuntimeEnvironment.getApplication()).getNextStartedService();
+        assertNotNull(idle);
+        assertEquals("org.duktonext.mobile.TRANSFER_IDLE", idle.getAction());
+        assertNull(shadowOf(RuntimeEnvironment.getApplication()).getNextStoppedService());
+    }
+    // 日期：2026-11-26；下一批在空闲延迟内开始时，旧批次结束不能停止新传输。
+    @Test
+    public void nextBatchCancelsIdleStop() {
+        ServiceController<TransferService> controller = start();
+        TransferService.setActive(context, false);
+        controller.get().onStartCommand(new Intent(context, TransferService.class), 0, 2);
+        assertTrue(TransferService.setActive(context, true));
+        controller.get().onStartCommand(new Intent(context, TransferService.class), 0, 3);
+        shadowOf(Looper.getMainLooper()).idleFor(Duration.ofSeconds(1));
+        assertTrue(TransferService.alive());
+        assertFalse(shadowOf(controller.get()).isStoppedBySelf());
+        assertNotNull(shadowOf(controller.get()).getLastForegroundNotification());
+        TransferService.setActive(context, false);
         controller.destroy();
     }
 }
