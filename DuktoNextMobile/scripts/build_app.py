@@ -104,6 +104,10 @@ def main():
         if not artifacts:
             raise ValueError("未生成iOS app")
     inspection = package(args.platform, artifacts, build / "packages" / args.platform, environment)
+    package_dir = build / "packages" / args.platform
+    shutil.copytree(prefix / "licenses", package_dir / "licenses", dirs_exist_ok=True)
+    shutil.copy2(prefix / "dependency-manifest.json", package_dir / "dependency-manifest.json")
+    shutil.copy2(root / "LICENSE", package_dir / "LICENSE")
     receipt = {"packageInspection": inspection, "platform": args.platform, "buildPassed": True, "deviceTestsPassed": False,
                "signedForDistribution": False, "artifacts": [str(path) for path in artifacts]}
     (build / "build-receipt.json").write_text(json.dumps(receipt, indent=2) + "\n", "utf-8")

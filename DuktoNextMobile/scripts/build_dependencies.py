@@ -44,11 +44,24 @@ def extract(source, work):
 def licenses(source, prefix, name):
     destination = prefix / "licenses" / name
     destination.mkdir(parents=True, exist_ok=True)
-    for path in source.iterdir():
-        if path.is_file() and path.name.upper().startswith(("LICENSE", "COPYING", "NOTICE")):
-            shutil.copy2(path, destination / path.name)
-    if (source / "LICENSES").is_dir():
-        shutil.copytree(source / "LICENSES", destination / "LICENSES", dirs_exist_ok=True)
+    entries = []
+    # 日期：2026-11-25；递归保存Qt内嵌字体/图片/压缩库等第三方声明及归属元数据，保留来源相对路径。
+    for path in sorted(source.rglob("*")):
+        if path.is_symlink() or not path.is_file():
+            continue
+        relative = path.relative_to(source)
+        upper = path.name.upper()
+        if not (upper.startswith(("LICENSE", "LICENCE", "COPYING", "NOTICE")) or
+                upper == "QT_ATTRIBUTION.JSON" or "LICENSES" in relative.parts):
+            continue
+        target = destination / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(path, target)
+        entries.append({"path": relative.as_posix(), "sha256": hashlib.sha256(path.read_bytes()).hexdigest()})
+    if not entries:
+        raise ValueError("依赖未收集到许可证: " + name)
+    (destination / "license-manifest.json").write_bytes(
+        (json.dumps({"source": name, "files": entries}, ensure_ascii=False, indent=2) + "\n").encode("utf-8"))
 
 
 # 日期：2026-11-25；Qt5保留C++14，移动平台使用同一版本Qt私有头与库；先编译依赖再进入应用门禁。
