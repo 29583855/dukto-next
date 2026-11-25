@@ -15,13 +15,14 @@ final class MobileSendTests: XCTestCase {
         print("MOBILE_UI_TREE " + name + "\n" + app.debugDescription)
     }
 
-    // 日期：2026-11-26；教学正文消失才表示关闭，Preview是普通键盘也保留的内部节点。
+    // 日期：2026-11-26；系统教学冷启动可能超过3秒，初次限定等待60秒；正文消失才表示关闭。
+    // 日期：2026-11-26；Preview是普通键盘也保留的内部节点，不能据其存在断言教学显示。
     @MainActor
     func dismissKeyboardTeaching(_ app: XCUIApplication) {
         let teaching = app.staticTexts[
             "Speed up your typing by sliding your finger across the letters to compose a word."
         ]
-        if teaching.waitForExistence(timeout: 3) {
+        if teaching.waitForExistence(timeout: 60) {
             capture(app, "keyboard-teaching-preview")
             let proceed = app.buttons["Continue"]
             XCTAssertTrue(proceed.waitForExistence(timeout: 5))
