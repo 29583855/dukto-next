@@ -45,7 +45,9 @@ jobs:
           QT_QUICK_BACKEND: software
           XDG_DATA_HOME: ${{ runner.temp }}/mobile-host-data
           XDG_CONFIG_HOME: ${{ runner.temp }}/mobile-host-config
-        run: timeout 60s xvfb-run -a DuktoNextMobile/build-host/dukto-mobile-host --smoke-test
+        run: |
+          timeout 60s xvfb-run -a DuktoNextMobile/build-host/dukto-mobile-host --smoke-test
+          timeout 180s xvfb-run -a DuktoNextMobile/build-host/dukto-mobile-host --stress-test
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -67,6 +69,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
+          cache-read-only: false
       - uses: android-actions/setup-android@v3
         with:
           packages: platform-tools platforms;android-35 build-tools;35.0.0

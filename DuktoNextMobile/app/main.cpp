@@ -2,6 +2,9 @@
 #include "core/error.h"
 #include "mobilefiles.h"
 #include "mobilelifecycle.h"
+#ifdef DUKTO_MOBILE_HOST_TEST
+#include "uistress.h"
+#endif
 
 #include <QDir>
 #include <QGuiApplication>
@@ -101,6 +104,10 @@ int main(int argc, char *argv[]) {
             });
             smokeTimer.start();
         }
+#ifdef DUKTO_MOBILE_HOST_TEST
+        if (application.arguments().contains(QStringLiteral("--stress-test")))
+            startUiStress(engine, controller, qmlFailed);
+#endif
         return application.exec();
     } catch (const dukto::Error &error) {
         QTextStream(stderr) << error.what() << '\n';
