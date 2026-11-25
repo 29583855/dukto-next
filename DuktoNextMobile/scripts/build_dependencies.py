@@ -108,6 +108,11 @@ def main():
     run(configure, sources["openssl"], environment, work / "openssl.log")
     run(["make", "-j" + str(args.jobs)], sources["openssl"], environment, work / "openssl.log")
     run(["make", "install_sw"], sources["openssl"], environment, work / "openssl.log")
+    # 日期：2026-11-25；Qt5的Android链接规则固定追加ABI后缀，保留通用库供CMake使用。
+    if args.platform == "android":
+        for name in ("ssl", "crypto"):
+            shutil.copy2(openssl / "lib" / ("lib" + name + ".a"),
+                         openssl / "lib" / ("lib" + name + "_arm64-v8a.a"))
     licenses(sources["openssl"], prefix, "openssl")
     build = work / "qtbase-build"
     build.mkdir()

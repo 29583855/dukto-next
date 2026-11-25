@@ -9,6 +9,16 @@
       "reason": "setup-android默认安装的tools包已不可获取",
       "fix": "显式设置packages: platform-tools",
       "deviceTestsPassed": false
+    },
+    {
+      "runId": 45585414486,
+      "jobId": 139105624788,
+      "commit": "29e85ab4",
+      "platform": "android",
+      "result": "failed_qt_network_link",
+      "reason": "Qt5 Android寻找libssl_arm64-v8a及libcrypto_arm64-v8a，但OpenSSL输出通用名称",
+      "fix": "复制同一静态归档增加ABI命名，通用归档仍供CMake使用",
+      "deviceTestsPassed": false
     }
   ]
 }
