@@ -90,13 +90,17 @@ def receive_files(connection, fixtures):
             "utf8Path": True, "emptyFile": True, "perFileContentVerified": True}
 
 
-# 日期：2026-11-25；通过系统无障碍树定位实际可见控件，保留每一步原始XML供复核。
+# 日期：2026-11-26；从持久系统服务读取真实控件树，拒绝旧快照且不创建临时UiAutomation。
 def ui_tree(output, stage):
-    path = "/sdcard/dukto-mobile-validation.xml"
-    adb("shell", "uiautomator", "dump", "--compressed", path, timeout=30)
-    raw = adb("shell", "cat", path)
+    token = uuid.uuid4().hex
+    adb("shell", "am", "broadcast", "-a", "org.duktonext.validation.SNAPSHOT",
+        "-p", "org.duktonext.validation", "--es", "token", token)
+    raw = adb("shell", "run-as", "org.duktonext.validation", "cat", "files/tree.xml")
+    tree = ET.fromstring(raw)
+    if tree.get("token") != token:
+        raise RuntimeError("系统无障碍快照未更新，拒绝使用旧控件树")
     (output / (stage + ".xml")).write_text(raw, "utf-8")
-    return ET.fromstring(raw)
+    return tree
 
 
 # 日期：2026-11-25；严格从控件矩形中心点击，不用固定屏幕坐标掩盖布局问题。
@@ -114,7 +118,8 @@ def tap_node(node):
 def find_label(tree, label):
     nodes = [node for node in tree.iter("node")
              if label in (node.get("text"), node.get("content-desc"))
-             and node.get("enabled") == "true"]
+             and node.get("enabled") == "true"
+             and node.get("visible-to-user", "true") == "true"]
     return next((node for node in nodes if node.get("clickable") == "true"),
                 nodes[0] if nodes else None)
 

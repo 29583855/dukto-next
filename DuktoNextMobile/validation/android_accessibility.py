@@ -71,7 +71,7 @@ def accessibility_session(output):
         services = component if original in ("null", "") else original + ":" + component
         adb("shell", "settings", "put", "secure", "enabled_accessibility_services", services)
         adb("shell", "settings", "put", "secure", "accessibility_enabled", "1")
-        deadline = time.monotonic() + 25
+        deadline = time.monotonic() + 45
         while True:
             state = adb("shell", "dumpsys", "accessibility")
             logs = adb("logcat", "-d", "-s", "DuktoValidation:I", "*:S")
@@ -81,8 +81,16 @@ def accessibility_session(output):
                         for name in ("enabled_accessibility_services", "accessibility_enabled")}
             (output / "accessibility-settings.json").write_text(
                 json.dumps(snapshot, ensure_ascii=False, indent=2) + "\n", "utf-8")
-            if "accessibility-bound" in logs and component in snapshot["enabled_accessibility_services"]:
+            bound_services = state.split("Bound services:", 1)[-1].split("Enabled services:", 1)[0]
+            if ("accessibility-bound" in logs
+                    and component in snapshot["enabled_accessibility_services"]
+                    and "org.duktonext.validation" in bound_services):
                 break
+            # 日期：2026-11-26；安装异步广播可能重置设置，按实际读回结果恢复，不能冒充绑定成功。
+            if snapshot["enabled_accessibility_services"] != services:
+                adb("shell", "settings", "put", "secure", "enabled_accessibility_services", services)
+            if snapshot["accessibility_enabled"] != "1":
+                adb("shell", "settings", "put", "secure", "accessibility_enabled", "1")
             if time.monotonic() >= deadline:
                 (output / "accessibility-package.txt").write_text(
                     adb("shell", "dumpsys", "package", "org.duktonext.validation"), "utf-8")

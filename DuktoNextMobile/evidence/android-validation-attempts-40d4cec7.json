@@ -78,6 +78,54 @@
         "accessibility-helper-log.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "accessibility-package.txt": "19d629705df492576ef8367d80bb22dc9590b5ee8fd1a2508dddb266248aa346"
       }
+    },
+    {
+      "run": 45665980852,
+      "job": 139388130053,
+      "artifact": 15048480158,
+      "wholeRunPassed": false,
+      "r6ReceivePassed": true,
+      "sequentialBatches": 32,
+      "textSendPassed": false,
+      "fileSendPassed": false,
+      "error": "没有找到界面控件: IP 连接 · 发送到指定设备",
+      "files": {
+        "accessibility-appops.txt": "9c1ba6e22851a4d338b02a4f2865dfe287d44589076a18c9763bba245901978b",
+        "accessibility-services.txt": "07fbbcd64aed39cf8b6fd05a87a46adb7948ae46d3e766dab120cd5754853773",
+        "accessibility-settings.json": "7eaef24268d453c3630fd2617f2fc0f49d4a6ab6c338a3e7decb4027ba53529c",
+        "activity.txt": "a8d99daee660ed4b1613eca0b69fe8d569d53c97c9be5e8e41f88be473601ee7",
+        "android-startup.json": "7edcd3a9a2a989c60e6d1120142a10d37b5944431b13bbe4a2df7a0fd96481a2",
+        "failure-logcat.txt": "f092f82bd6c54e005a2b6aee96ad8351ceca329f6efd8ea91fb31a16e021566d",
+        "failure-sandbox.txt": "3c371e7b022ee103abefd0b29202cf480802e449705c05ec571beda411205270",
+        "failure-screen.png": "3d12eff822ef19fe816c1238d6abe636e2e1cb33695b9d564320edfdb73f690c",
+        "logcat.txt": "27136984b9a22d738fdeb68d98d1c05af8f5de303856a7e89f76f94201e7957e",
+        "startup.png": "eabfd19ba5b56798260166c417942bc948fe67cefc0e2b2945ff7cc58e516d5f",
+        "r6-send/initial.xml": "178244586ff41987d48b0087d5c24928657d7c52f0dee74fa3cacef39effd8b4",
+        "r6-send/manual.xml": "a150c642c1275e43f1d406c87e1d518979d8612fb8292ecfd6d84616935e8881",
+        "r6-send/share-launch.txt": "0f2da25cafd495f47bb79e1387b3820e030aa03cdcb41d07eeb22d03f0c8af67",
+        "r6-send/welcome.xml": "5763ae31fc86784ebc294a15f8a0d7ebe62f69d7089e4d5d9ccf41980c86109c"
+      }
+    },
+    {
+      "run": 45666470929,
+      "job": 139389857195,
+      "artifact": 15047352030,
+      "wholeRunPassed": false,
+      "r6ReceivePassed": false,
+      "sequentialBatches": 0,
+      "textSendPassed": false,
+      "fileSendPassed": false,
+      "error": "辅助无障碍服务未实际绑定，停止界面测试，详见系统状态和服务日志",
+      "files": {
+        "accessibility-appops.txt": "9c1ba6e22851a4d338b02a4f2865dfe287d44589076a18c9763bba245901978b",
+        "accessibility-package.txt": "ad7fed6c076e0f75b32da2efc10d732e84ae81e492edaf6f6918647225f805d6",
+        "accessibility-services.txt": "83a90e21bdfe54ba2296456b807273679d92cc56dc9befd574cfcfeb989461a3",
+        "accessibility-settings.json": "6299de0b9232386f42f15f6064271cfb09e66ce1236ecf728042c7b38a36a56b",
+        "android-startup.json": "e0052baface85093e16ee4791560905a06c7aeb232440a92dd4fe6ab752f72a1",
+        "failure-logcat.txt": "51ffe7c997e0b7e443acf7db53afc68a5faa0b1f0453adc46ca6297d0cf5ce07",
+        "failure-sandbox.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "failure-screen.png": "1a0c09e43a2fa386abe382eed2e0a16bcb867493276ddd631459010e8da5d029"
+      }
     }
   ],
   "accessibilityFailure": {
@@ -86,5 +134,11 @@
     "fixCommit": "cd7675500e11f728792f2dd5fba438cd2ad24308",
     "retestRun": 45652546771,
     "retestPassed": false
+  },
+  "pendingFix": {
+    "date": "2026-11-26",
+    "description": "Persistent AccessibilityService exports actual Android node tree with nonce; wait for real bound-service state and reapply settings only if installation resets them",
+    "validatedInCI": false,
+    "productApkModified": false
   }
 }
