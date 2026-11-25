@@ -1,0 +1,20 @@
+{
+  "date": "2026-11-26",
+  "sourceCommit": "fe8515be25231b760bba0f56ad20665aa8e795d2",
+  "run": 45701372759,
+  "job": 139512052192,
+  "artifact": 15062817232,
+  "passed": false,
+  "apkSource": "659a2b44f1cec05e45ea56b9ec18b6a28ab19c22",
+  "passedSubsteps": [
+    "32SequentialR6Receive",
+    "textUiSend",
+    "warmAndColdContentUriSend",
+    "systemFilePickerCancelReopenSend",
+    "systemFileExportCancelReopen"
+  ],
+  "failureStage": "seed_external_tree/verify_tree_content: prior to product directory selection",
+  "reason": "外部样本中文空格路径的逐字节读取不一致；未进入目录产品操作，尚不能归因为产品目录故障",
+  "nextAction": "远端exec-out改单层路径引用并保存实际字节、长度、摘要和远端独立元数据，等待复验",
+  "deviceTest": false
+}

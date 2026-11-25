@@ -1,6 +1,7 @@
 """日期：2026-11-26；经真实Android系统文档选择器取消、重选和发送，独立核对文件。"""
 from pathlib import Path
 import hashlib
+import json
 import re
 import shlex
 import socket
@@ -180,7 +181,7 @@ def seed_external_tree(output, root):
             adb("push", str(seed / name), destination)
             adb("shell", shlex.join(["am", "broadcast", "-a", "android.intent.action.MEDIA_SCANNER_SCAN_FILE",
                                      "-d", "file://" + destination]))
-    verify_tree_content(fixtures, external=True)
+    verify_tree_content(fixtures, external=True, output=output)
     (output / "external-seed-verified.txt").write_text(
         adb("shell", shlex.join(["find", "/sdcard/Download/" + root])), "utf-8")
     return fixtures
@@ -215,13 +216,26 @@ def grant_download_tree(output, root):
 
 
 # 日期：2026-11-26；应用状态与每个落盘条目均需满足，空文件不能被空目录或反向替代。
-def verify_tree_content(fixtures, external=False):
+def verify_tree_content(fixtures, external=False, output=None):
     for name, data in fixtures:
         if external:
             path = "/sdcard/Download/" + name
             adb("shell", shlex.join(["test", "-d" if data is None else "-f", path]))
-            if data is not None and adb("exec-out", "sh", "-c", shlex.quote(shlex.join(["cat", path])), binary=True) != data:
-                raise RuntimeError("系统目录导出内容错误: " + name)
+            if data is not None:
+                # 日期：2026-11-26；exec-out使用单层远端命令引用，保留中文和空格路径且避免重复sh解析。
+                actual = adb("exec-out", shlex.join(["cat", path]), binary=True)
+                if actual != data:
+                    diagnostic = dict(path=name, expectedBytes=len(data), actualBytes=len(actual),
+                                      expectedSha256=hashlib.sha256(data).hexdigest(),
+                                      actualSha256=hashlib.sha256(actual).hexdigest(),
+                                      actualPrefixHex=actual[:96].hex(),
+                                      remoteMetadata=adb("shell", shlex.join(["ls", "-ln", path])),
+                                      remoteHash=adb("shell", shlex.join(["sha256sum", path])))
+                    if output is not None:
+                        (Path(output) / "tree-content-mismatch.json").write_text(
+                            json.dumps(diagnostic, ensure_ascii=False, indent=2) + "\n", "utf-8")
+                        (Path(output) / "tree-content-actual.bin").write_bytes(actual)
+                    raise RuntimeError("系统目录内容错误: " + json.dumps(diagnostic, ensure_ascii=False))
         else:
             directories = sandbox("find", ".", "-type", "d", "-name", "Documents").splitlines()
             if len(directories) != 1:
@@ -295,7 +309,8 @@ def verify_saf_directory(output):
     click_label(output, "directory-export-reopen", "导出目录")
     grant_download_tree(output, target)
     wait_message(output, "已完成系统导出")
-    verify_tree_content([(target + "/" + name, data) for name, data in received], external=True)
+    verify_tree_content([(target + "/" + name, data) for name, data in received],
+                        external=True, output=output)
     if adb("shell", "pidof", "org.duktonext.mobile").strip() != pid:
         raise RuntimeError("系统目录操作期间产品进程意外重启")
     log = adb("logcat", "-d", "--pid=" + pid)
