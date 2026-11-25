@@ -1,0 +1,20 @@
+name: Mobile storage regression
+on:
+  push:
+    branches: [codex/mobile-platforms]
+    paths: ['DuktoNextMobile/tests/**', 'DuktoNextMobile/app/importstore.*', '.github/workflows/mobile-storage.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  storage-tests:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Qt test dependencies
+        run: sudo apt-get update -qq && sudo apt-get install -y qtbase5-dev ninja-build
+      - name: Compile and exercise import transactions
+        run: |
+          cmake -S DuktoNextMobile/tests -B DuktoNextMobile/build-storage -G Ninja
+          cmake --build DuktoNextMobile/build-storage
+          ctest --test-dir DuktoNextMobile/build-storage --output-on-failure

@@ -2,7 +2,7 @@ name: Mobile C++14 build gates
 on:
   push:
     branches: [codex/mobile-platforms]
-    paths: ['DuktoNextMobile/**', '.github/workflows/mobile-build.yml']
+    paths: ['DuktoNextMobile/scripts/**', 'DuktoNextMobile/CMakeLists.txt', 'DuktoNextMobile/DuktoNextMobile.pro', 'DuktoNextMobile/app/main.cpp', 'DuktoNextMobile/app/mobile.qrc', 'DuktoNextMobile/platform/**', 'DuktoNextMobile/shared/**']
   workflow_dispatch:
 permissions:
   contents: read
