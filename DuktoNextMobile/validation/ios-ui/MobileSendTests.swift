@@ -159,25 +159,45 @@ final class MobileSendTests: XCTestCase {
         XCTAssertTrue(documentNavigation(app).waitForExistence(timeout: 60), "系统Files导航栏未出现")
     }
 
-    // 日期：2026-11-26；按系统返回按钮逐级回到取消入口，不能把后台Cancel元素或More当成取消。
+    // 日期：2026-11-26；真实导航按钮可能被同坐标Other节点影响可点击判定，保留节点并验证屏内位置。
+    @MainActor
+    func tapSystemNavigationButton(_ app: XCUIApplication, _ button: XCUIElement) {
+        XCTAssertTrue(button.exists)
+        XCTAssertTrue(button.isEnabled)
+        if button.isHittable {
+            button.tap()
+        } else {
+            capture(app, "picker-navigation-hit-test")
+            let frame = button.frame
+            XCTAssertGreaterThan(frame.width, 0)
+            XCTAssertGreaterThan(frame.height, 0)
+            XCTAssertTrue(documentNavigation(app).frame.contains(frame))
+            XCTAssertTrue(app.frame.contains(frame))
+            button.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        }
+    }
+
+    // 日期：2026-11-26；等待实际Cancel或返回按钮出现，取消仍必须由系统选择器关闭及重开验证。
     @MainActor
     func cancelSystemDocuments(_ app: XCUIApplication) {
         let navigation = documentNavigation(app)
         for level in 0..<6 {
             let cancel = navigation.buttons["Cancel"]
-            if cancel.exists && cancel.isHittable {
-                cancel.tap()
-                waitForDocumentPickerClosed(app)
-                return
-            }
-            capture(app, "picker-cancel-navigation-" + String(level))
             let back = navigation.buttons.matching(NSPredicate(
                 format: "label IN %@", ["On My iPhone", "Browse", "Back", "Dukto Next",
                                         "a-ios-io-source", "a-ios-io-export", "a-ios-directory-probe"]
             )).firstMatch
-            XCTAssertTrue(back.waitForExistence(timeout: 5), "系统Files缺少可验证的返回或取消按钮")
-            XCTAssertTrue(back.isHittable)
-            back.tap()
+            let ready = NSPredicate { _, _ in cancel.exists || back.exists }
+            expectation(for: ready, evaluatedWith: app)
+            waitForExpectations(timeout: 30)
+            capture(app, "picker-cancel-navigation-" + String(level))
+            if cancel.exists {
+                tapSystemNavigationButton(app, cancel)
+                waitForDocumentPickerClosed(app)
+                return
+            }
+            XCTAssertTrue(back.exists, "系统Files缺少可验证的返回或取消按钮")
+            tapSystemNavigationButton(app, back)
         }
         XCTFail("系统Files返回六级后仍缺少取消入口")
     }
