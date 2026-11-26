@@ -57,10 +57,21 @@ def seek(output, label, upward=True):
     for index in range(13):
         tree = ui_tree(output, "seek-" + str(time.time_ns()))
         node = find_label(tree, label)
+        direction = upward
         if node is not None:
-            return node
+            # 日期：2026-11-26；Qt可能把被底部状态区遮挡的一条边报为可见，须先滚入正文安全区域。
+            tab = find_label(tree, "连接与文件")
+            windows = [bounds(n) for n in tree.iter("node")
+                       if n.get("package") == "org.duktonext.mobile"]
+            _, top, _, bottom = max(windows, key=lambda b: (b[2] - b[0]) * (b[3] - b[1]))
+            safe_top = bounds(tab)[3] + 24
+            safe_bottom = bottom - (bottom - top) // 5
+            _, node_top, _, node_bottom = bounds(node)
+            if node_top >= safe_top and node_bottom <= safe_bottom:
+                return node
+            direction = node_top >= safe_top
         if index < 12:
-            scroll_server(tree, upward)
+            scroll_server(tree, direction)
     raise RuntimeError("服务器页面控件不可达：" + label)
 
 
