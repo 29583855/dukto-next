@@ -166,7 +166,14 @@ def verify_next(output, probe):
             click_label(output, "expand-pair", "首次连接：展开配对设置")
             enter(output, "服务器 IP:端口（默认 4646）", "127.0.0.1:" + port)
             enter(output, "核对服务器 SHA-256 指纹", identity["fingerprint"])
-            app_directory = sandbox("pwd").strip()
+            # 日期：2026-11-26；run-as的逻辑工作目录可能是应用链接，输入规范路径以遵守核心逐级拒绝链接规则。
+            logical_directory = sandbox("pwd").strip()
+            app_directory = sandbox("readlink", "-f", ".").strip()
+            if not app_directory.startswith("/data/"):
+                raise RuntimeError("无法核对应用规范私有目录")
+            sandbox("test", "-d", app_directory)
+            receipt["sandboxDirectory"] = {"logical": logical_directory, "canonical": app_directory,
+                                           "aliasResolved": logical_directory != app_directory}
             enter(output, "配对文件路径", app_directory + "/" + private_path + "/pairing.json")
             tap_node(seek(output, "配对并保存资料"))
             wait_status(output, "配对成功；客户端 UUID：")
