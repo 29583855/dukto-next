@@ -14,6 +14,10 @@ on:
       apk_source:
         description: APK源码提交
         required: true
+      next_ui:
+        description: 仅补测原始APK的Next服务器页面（配对、浏览、上传下载）
+        type: boolean
+        default: false
       ios:
         description: 同时验证完整iOS26构建
         type: boolean
@@ -34,6 +38,13 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+      - name: Build independent host Next service from mobile core
+        if: inputs.next_ui
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ninja-build libssl-dev qtbase5-dev qtbase5-private-dev qtdeclarative5-dev qtdeclarative5-private-dev qtquickcontrols2-5-dev qtquickcontrols2-5-private-dev
+          cmake -S DuktoNextMobile -B DuktoNextMobile/build-next-probe -G Ninja -DDUKTO_MOBILE_HOST_CHECK=ON -DDUKTO_BUILD_GUI=OFF -DDUKTO_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release
+          cmake --build DuktoNextMobile/build-next-probe --target dukto-mobile-probe --parallel 3
       - uses: actions/download-artifact@v4
         with:
           name: ${{ inputs.apk_artifact || format('mobile-android-{0}', inputs.apk_run) }}
@@ -69,7 +80,7 @@ jobs:
           profile: pixel_2
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
-          script: python -X utf8 DuktoNextMobile/validation/android_emulator.py --apk "$ORIGINAL_APK" --output DuktoNextMobile/build-emulator --sha256 "$APK_SHA256" --source "$APK_SOURCE" --r6-receive --r6-send --r6-file-send --r6-cold-file-send --saf-file-send --saf-file-export --saf-directory
+          script: python -X utf8 DuktoNextMobile/validation/android_emulator.py --apk "$ORIGINAL_APK" --output DuktoNextMobile/build-emulator --sha256 "$APK_SHA256" --source "$APK_SOURCE" --r6-send ${{ inputs.next_ui && '--next-server --probe DuktoNextMobile/build-next-probe/dukto-mobile-probe' || '--r6-receive --r6-file-send --r6-cold-file-send --saf-file-send --saf-file-export --saf-directory' }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:
