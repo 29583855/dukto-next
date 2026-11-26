@@ -31,25 +31,31 @@ def main():
             "CFBundleShortVersionString": "1.0", "MinimumOSVersion": "15.0", "LSRequiresIPhoneOS": True,
             "UIDeviceFamily": [1, 2], "UILaunchScreen": {}}
     (app / "Info.plist").write_bytes(plistlib.dumps(info))
-    sdk = run("xcrun", "--sdk", "iphonesimulator", "--show-sdk-path")
-    print(run("xcrun", "--sdk", "iphonesimulator", "clang++", "-std=c++14", "-fobjc-arc", "-isysroot", sdk,
-              "-target", "arm64-apple-ios15.0-simulator", "-framework", "UIKit", "-framework", "Foundation",
-              "-I" + str(root / "platform/ios"), str(root / "platform/ios/presenter.mm"),
-              str(root / "tests/ios/presenter_tests.mm"), "-o", str(app / "PresenterTests")))
-    print(run("codesign", "--force", "--sign", "-", str(app)))
-    runtimes = json.loads(run("xcrun", "simctl", "list", "runtimes", "-j"))["runtimes"]
-    candidates = [r for r in runtimes if r.get("isAvailable") and "iOS" in r["identifier"] and int(r["version"].split(".")[0]) == args.runtime_major]
-    if not candidates:
-        raise RuntimeError("没有要求的iOS模拟器运行时")
-    runtime = max(candidates, key=lambda r: tuple(int(n) for n in r["version"].split(".")))
-    types = json.loads(run("xcrun", "simctl", "list", "devicetypes", "-j"))["devicetypes"]
-    phones = [t for t in types if t["name"] == "iPhone 16"]
-    if not phones:
-        raise RuntimeError("没有iPhone16模拟设备类型")
-    print("Selected runtime:", runtime["name"], flush=True)
-    device = run("xcrun", "simctl", "create", "DuktoPresenterTests", phones[0]["identifier"], runtime["identifier"])
-    runner = {"passed": False, "deviceTest": False, "runtime": runtime, "device": device}
+    # 日期：2026-11-26；运行时查询也纳入失败收据；冷启动一次最多300秒，不重试或重启服务。
+    device = None
+    runner = {"passed": False, "deviceTest": False, "requestedRuntimeMajor": args.runtime_major,
+              "stage": "compile-and-query-runtime", "runtimeQueryTimeoutSeconds": 300}
     try:
+        sdk = run("xcrun", "--sdk", "iphonesimulator", "--show-sdk-path")
+        print(run("xcrun", "--sdk", "iphonesimulator", "clang++", "-std=c++14", "-fobjc-arc", "-isysroot", sdk,
+                  "-target", "arm64-apple-ios15.0-simulator", "-framework", "UIKit", "-framework", "Foundation",
+                  "-I" + str(root / "platform/ios"), str(root / "platform/ios/presenter.mm"),
+                  str(root / "tests/ios/presenter_tests.mm"), "-o", str(app / "PresenterTests")))
+        print(run("codesign", "--force", "--sign", "-", str(app)))
+        runtimes = json.loads(run("xcrun", "simctl", "list", "runtimes", "-j", timeout=300))["runtimes"]
+        candidates = [r for r in runtimes if r.get("isAvailable") and "iOS" in r["identifier"] and int(r["version"].split(".")[0]) == args.runtime_major]
+        if not candidates:
+            raise RuntimeError("没有要求的iOS模拟器运行时")
+        runner["stage"] = "select-device"
+        runtime = max(candidates, key=lambda r: tuple(int(n) for n in r["version"].split(".")))
+        runner["runtime"] = runtime
+        types = json.loads(run("xcrun", "simctl", "list", "devicetypes", "-j"))["devicetypes"]
+        phones = [t for t in types if t["name"] == "iPhone 16"]
+        if not phones:
+            raise RuntimeError("没有iPhone16模拟设备类型")
+        print("Selected runtime:", runtime["name"], flush=True)
+        device = run("xcrun", "simctl", "create", "DuktoPresenterTests", phones[0]["identifier"], runtime["identifier"])
+        runner.update(device=device, stage="boot")
         run("xcrun", "simctl", "boot", device)
         print(run("xcrun", "simctl", "bootstatus", device, "-b", timeout=180))
         # 日期：2026-11-26；新运行时首次安装服务启动较慢，单次有界等待，不重跑掩盖失败。
@@ -78,6 +84,8 @@ def main():
                             'process == "PresenterTests" OR eventMessage CONTAINS "org.duktonext.presenter.tests"')),
             ("screen", ("xcrun", "simctl", "io", device, "screenshot", str(build / "failure.png")))
         ]
+        if not device:
+            probes = [("simulator-processes", ("pgrep", "-lf", "CoreSimulator"))]
         for name, arguments in probes:
             try:
                 output = run(*arguments, timeout=30)
@@ -92,7 +100,7 @@ def main():
     finally:
         (build / "presenter-runner.json").write_text(
             json.dumps(runner, ensure_ascii=False, indent=2) + "\n", "utf-8")
-        for action in ("shutdown", "delete"):
+        for action in (("shutdown", "delete") if device else ()):
             try:
                 run("xcrun", "simctl", action, device, timeout=30)
             except Exception as cleanup_error:

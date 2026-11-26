@@ -1,0 +1,529 @@
+{
+  "date": "2026-11-26",
+  "runId": 45740853368,
+  "jobId": 139645203151,
+  "artifactId": 15081357279,
+  "validationSourceCommit": "4adf9cff03fcad892f87b7c15fff9e1afe421f5b",
+  "applicationBaseline": "142612c45ef25166452e41dcb03da44e0737f43a",
+  "apkSha256": "a46a883a344a4c3e9a42307eac4345f65066aacbca5ab26fc37aa7374b800900",
+  "jobConclusion": "success",
+  "passed": true,
+  "deviceTest": false,
+  "artifactZipBytes": 1627927,
+  "artifactZipSha256": "99a316fc18e50e41cc9b5441adff8901070a7e232d420d20db641b4b42bcd337",
+  "downloadedZipDigestVerified": true,
+  "result": {
+    "passed": true,
+    "deviceTest": false,
+    "scope": "Android模拟器安装启动原始arm64开发APK",
+    "sourceCommit": "142612c45ef25166452e41dcb03da44e0737f43a",
+    "steps": [
+      "originalApkHashAndAbi",
+      "install",
+      "foregroundAliveAndNonBlankFrame",
+      "productionApkSharedTextUiSendAndHash",
+      "productionApkNextUiPairBrowseUploadDownloadAndReadBack"
+    ],
+    "apkSha256": "a46a883a344a4c3e9a42307eac4345f65066aacbca5ab26fc37aa7374b800900",
+    "abiList": "x86_64,arm64-v8a",
+    "systemVersion": "15",
+    "nativeBridge": "libndk_translation.so",
+    "installOutput": "Performing Streamed Install\nSuccess",
+    "accessibilityEnabledBeforeLaunch": true,
+    "systemDirectoryAliases": "drwxrwx--x 245 system system 16384 2026-11-26 02:17 /data/data\ndrwxrwx--x 245 system system 16384 2026-11-26 02:17 /data/user/0",
+    "launchOutput": "Starting: Intent { cmp=org.duktonext.mobile/.DuktoActivity }\nStatus: ok\nLaunchState: COLD\nActivity: org.duktonext.mobile/.DuktoActivity\nTotalTime: 2369\nWaitTime: 2381\nComplete\n",
+    "pid": "3633",
+    "runtimeErrors": [],
+    "screenshotSize": [
+      1080,
+      1920
+    ],
+    "frameStddev": [
+      24.40818995617965,
+      20.946287844712906,
+      26.117110874756733
+    ],
+    "r6Send": {
+      "bytes": 86,
+      "sha256": "822946d5e66cb7a089dd900e00eb6786b19ed61197a8011be5069a1c552f7112",
+      "utf8Text": true,
+      "independentWireParser": true,
+      "passed": true,
+      "transport": "Android emulator 10.0.2.2 TCP4644 to independent host receiver",
+      "systemShareText": true,
+      "realUiActions": true,
+      "notificationGranted": true,
+      "validationAccessibilityService": true,
+      "sendRetries": 0,
+      "processRestarts": 0,
+      "deviceTest": false,
+      "fileSendTest": false,
+      "wifiDiscoveryTest": false
+    },
+    "nextServer": {
+      "passed": true,
+      "deviceTest": false,
+      "wifiDiscoveryTest": false,
+      "transport": "ADB reverse TCP to independent Linux host Next TLS service",
+      "realUiActions": true,
+      "sendRetries": 0,
+      "processRestarts": 0,
+      "checks": [
+        "uiPairWithPinnedFingerprint",
+        "uiAuthenticatedBrowse",
+        "uiDownloadAndIndependentSandboxReadBack",
+        "uiSystemShareUploadAndIndependentServerReadBack",
+        "keepBothPreservesOriginal"
+      ],
+      "pairingSelection": {
+        "systemDocumentPicker": true,
+        "cancelAndReopen": true,
+        "manualSandboxPath": false
+      },
+      "download": {
+        "bytes": 65818,
+        "sha256": "e7f20018e76c5bcbcfdfec3bcf8510ca43259a263dea4a3e3f28ac340c20fb86",
+        "emptyFile": true,
+        "emptyDirectory": true,
+        "unicodePath": true
+      },
+      "upload": [
+        {
+          "name": "中文 sample (2).bin",
+          "bytes": 131106,
+          "sha256": "220c7482d4da0a96aa1d6547953b3cc343d94712f370559ae77024b4f592dbd2"
+        },
+        {
+          "name": "empty zero (2).bin",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    "visualReviewPending": true
+  },
+  "archive": "DuktoNextMobile/release/development/test-evidence/android-next-4adf9cff",
+  "visualReviewPending": true,
+  "limits": [
+    "Android15 x86_64模拟器通过原生转译运行原始arm64 APK",
+    "ADB reverse连接独立Linux Next服务，不代表Wi-Fi发现、手机真机、桌面互通或Server2012",
+    "未验证正式签名与长期后台运行"
+  ],
+  "files": [
+    {
+      "path": "accessibility-appops.txt",
+      "bytes": 34,
+      "sha256": "9c1ba6e22851a4d338b02a4f2865dfe287d44589076a18c9763bba245901978b"
+    },
+    {
+      "path": "accessibility-bound.xml",
+      "bytes": 2768,
+      "sha256": "19bea9b8b064f642724b80cfbe2241db98fb34899fe7b0b11db500d79e155441"
+    },
+    {
+      "path": "accessibility-helper/aligned.apk",
+      "bytes": 9177,
+      "sha256": "e8817f0f9428f287caa66687d631c5a38b1e935d97e732c6dc334a5c9df567b9"
+    },
+    {
+      "path": "accessibility-helper/assets/empty",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "accessibility-helper/assets/sample",
+      "bytes": 131106,
+      "sha256": "220c7482d4da0a96aa1d6547953b3cc343d94712f370559ae77024b4f592dbd2"
+    },
+    {
+      "path": "accessibility-helper/classes/org/duktonext/validation/ValidationAccessibility$1.class",
+      "bytes": 988,
+      "sha256": "325e0526dd0209d4449c9a136c40719484cd7b902147cd470ad89f69700495bd"
+    },
+    {
+      "path": "accessibility-helper/classes/org/duktonext/validation/ValidationAccessibility.class",
+      "bytes": 6158,
+      "sha256": "c00f3a29a31c0195373489c54450c9ef0411a8ba4ad684d1be1b86c823a9a331"
+    },
+    {
+      "path": "accessibility-helper/classes/org/duktonext/validation/ValidationActivity.class",
+      "bytes": 360,
+      "sha256": "ba698b8c43c91a3f9ff38b91f6543306f6f7771c87d59b592dafed6b0abfb29a"
+    },
+    {
+      "path": "accessibility-helper/classes/org/duktonext/validation/ValidationFiles.class",
+      "bytes": 3997,
+      "sha256": "19ad92ea150a12a317d00d5476cd5eb07f251203200ffa90bd883c143315cb68"
+    },
+    {
+      "path": "accessibility-helper/classes/org/duktonext/validation/ValidationShareActivity.class",
+      "bytes": 1805,
+      "sha256": "2d70110e0f61e216090eb566acb80f0c462bd7d40cf03a7292454c9e69b66c36"
+    },
+    {
+      "path": "accessibility-helper/dex/classes.dex",
+      "bytes": 11440,
+      "sha256": "418efcefd9181740d8b74d010665ca8d2e8dd22c6de52823eb7c655ed415b6da"
+    },
+    {
+      "path": "accessibility-helper/helper.apk",
+      "bytes": 16969,
+      "sha256": "e31d22c009ca59d50dae40cacfa10c6f4e880c1160b24c89b8abc0e6b3848f77"
+    },
+    {
+      "path": "accessibility-helper/helper.apk.idsig",
+      "bytes": 5515,
+      "sha256": "186e63bc87cd7e2eafbbbbab1e1292b677c0435d93a8914c51ebab09c4bd86b2"
+    },
+    {
+      "path": "accessibility-helper/unsigned.apk",
+      "bytes": 9172,
+      "sha256": "30a5dfeee70d7db8fadb3efa1e93e63af266ec4780da9af95a17e88d80e1de20"
+    },
+    {
+      "path": "accessibility-helper/validation.jks",
+      "bytes": 2608,
+      "sha256": "d45fd98c4651fc5b169f915da0949dc910eb25c8be4a6cf44cea73eb3cfc041b"
+    },
+    {
+      "path": "accessibility-helper-log.txt",
+      "bytes": 98,
+      "sha256": "ec3cd6980d0b67dc0ddc44b61a38ef7acb8868a267095a1479312bf09e7c142f"
+    },
+    {
+      "path": "accessibility-services.txt",
+      "bytes": 5352,
+      "sha256": "4857f3ad238e71dfe4b53b5a5f46edd4c514c474b7812daecd569d2118d42b92"
+    },
+    {
+      "path": "accessibility-settings.json",
+      "bytes": 124,
+      "sha256": "7eaef24268d453c3630fd2617f2fc0f49d4a6ab6c338a3e7decb4027ba53529c"
+    },
+    {
+      "path": "activity.txt",
+      "bytes": 30321,
+      "sha256": "7a0af2303617ed0057d4807346028c874787efd5a3360584f0d73333c7cf0649"
+    },
+    {
+      "path": "android-startup.json",
+      "bytes": 2959,
+      "sha256": "31e3bddd915af658f7e25807a15b9e35baa0e948b2d58a8202e38c742fccfdb9"
+    },
+    {
+      "path": "final-logcat.txt",
+      "bytes": 30761,
+      "sha256": "17594783b81e0df9c65f6bf081fef193cea953d651be96268c610f9415e6cc4f"
+    },
+    {
+      "path": "github-job.log",
+      "bytes": 146854,
+      "sha256": "cbcd5440b07b45ae72c87e04cf33072b4a8ede361f9d59677f0d0d3deaee2798"
+    },
+    {
+      "path": "logcat.txt",
+      "bytes": 10279,
+      "sha256": "957e077bd5a487d0517f5a50755e4591ca5621e52c8cd781c562e150d1b8c8cb"
+    },
+    {
+      "path": "next-server/adjacent-1795659477347414792.xml",
+      "bytes": 55800,
+      "sha256": "28af90227f1cd82ef99fd565882b139ed6636f46ea95a38f098d06e90af0ae2f"
+    },
+    {
+      "path": "next-server/adjacent-1795659485601933079.xml",
+      "bytes": 55674,
+      "sha256": "166828aa38a1bbf99607931e3150bf627f336b04c15d39a45745e14710abe5ef"
+    },
+    {
+      "path": "next-server/adjacent-1795659499688392763.xml",
+      "bytes": 56243,
+      "sha256": "fe812715fcd329197959a84be8ea259bea6e095a17934b7805688b29b75d650e"
+    },
+    {
+      "path": "next-server/download-choose-directory.xml",
+      "bytes": 61287,
+      "sha256": "eab6b06a6d62c3b2dfeec6a0e6f9cfa0be124d8b3b2df67d69b1c06a65100bda"
+    },
+    {
+      "path": "next-server/expand-pair.xml",
+      "bytes": 55801,
+      "sha256": "7d6317a3230cf1cba1dae8d641d971bb152f13a758d55e823009bb8a12b8158a"
+    },
+    {
+      "path": "next-server/home-0.xml",
+      "bytes": 15253,
+      "sha256": "ee71ab1241d1e200b5f7d0df582d6b4d89f8598b1f21697954b7caf66d1669c4"
+    },
+    {
+      "path": "next-server/next-server.json",
+      "bytes": 1084,
+      "sha256": "493fcf735a0cf619451be18a99c0e95091f6d75fd7ae800e50d579bdc1df1827"
+    },
+    {
+      "path": "next-server/open-server.xml",
+      "bytes": 15253,
+      "sha256": "d0458f05bcc37412e9db4630aa6049339672d3ad280109418abbc30af5cf2201"
+    },
+    {
+      "path": "next-server/pairing-cancel-0.xml",
+      "bytes": 7898,
+      "sha256": "e27039699193a948b563a54b4181a131b6dd09d66fd4d46d8c8aa02cc1824082"
+    },
+    {
+      "path": "next-server/pairing-cancel-1.xml",
+      "bytes": 55674,
+      "sha256": "1b61c56581951fa3f5858ac89768723e31029cdbec470fe447833d1192929e46"
+    },
+    {
+      "path": "next-server/pairing-import-1795659489251923064.xml",
+      "bytes": 1313,
+      "sha256": "dd4b12aafd412f71c56bfaf6aa6b4540f86cac1f55e5788596fad9275c7b1c9d"
+    },
+    {
+      "path": "next-server/pairing-import-1795659489830574483.xml",
+      "bytes": 55677,
+      "sha256": "d15001cae2f2726fb870e6e9b966c643860ea469ed3ab9b0e35480db7a5dfd07"
+    },
+    {
+      "path": "next-server/pairing-picker-cancel.xml",
+      "bytes": 7898,
+      "sha256": "7f3afaf7038b7bc9c7d7be8d259990b34bf109424051dbc73449201be000cc0b"
+    },
+    {
+      "path": "next-server/pairing-select.xml",
+      "bytes": 8804,
+      "sha256": "33e20915e4f5412296106271c9951f6c64e2bf7218f51c56dfae8d4d431f5083"
+    },
+    {
+      "path": "next-server/picker-downloads.xml",
+      "bytes": 4478,
+      "sha256": "c68e9b25f6c3948ce9fb776a1798138ef90581ecddb1528f6b8b4b19f27c959a"
+    },
+    {
+      "path": "next-server/picker-initial.xml",
+      "bytes": 4478,
+      "sha256": "c36d6a157d72ad329a500529a7b04790cce7ab66e7a100437847de8d94ad992b"
+    },
+    {
+      "path": "next-server/picker-roots.xml",
+      "bytes": 7898,
+      "sha256": "cf0db0ba9b0d21e5c699b46b53cd8ca73e5a14e1e50c54ba164d03498537a28c"
+    },
+    {
+      "path": "next-server/reopen-server.xml",
+      "bytes": 15164,
+      "sha256": "dd45f354c86d153c16a6c551287cb4b0b3e71756737a162180b8ff8354c3933c"
+    },
+    {
+      "path": "next-server/return-home.xml",
+      "bytes": 56453,
+      "sha256": "eb47696d6f37a2ba9bba505e9a9a4e9185889e7653710960284a9d6de15d6b3f"
+    },
+    {
+      "path": "next-server/seek-1795659469210886175.xml",
+      "bytes": 55799,
+      "sha256": "5c5a9514e2f0df4ce7cef7cda8aa239b928d992e6471bb89229440d652ef3ddb"
+    },
+    {
+      "path": "next-server/seek-1795659472419023864.xml",
+      "bytes": 55800,
+      "sha256": "94b1e2d4d4db584eba518cd0d47835235159bc45b3c1cea85e43f5c543aab98e"
+    },
+    {
+      "path": "next-server/seek-1795659477107628326.xml",
+      "bytes": 55800,
+      "sha256": "16e710805709d6f41e04ababdaa689638990006182d1f18438700cc404806bf1"
+    },
+    {
+      "path": "next-server/seek-1795659485438469769.xml",
+      "bytes": 55674,
+      "sha256": "5ef323ebd8f7cad06a8c936a25373941e3dd70c52a9e5aba218e175562accbf5"
+    },
+    {
+      "path": "next-server/seek-1795659490714637921.xml",
+      "bytes": 55677,
+      "sha256": "7f795733e5ed4bdbbafc07cd2a16cb8a63357aee1e54597fabb2673d05b97bcb"
+    },
+    {
+      "path": "next-server/seek-1795659494742366483.xml",
+      "bytes": 55719,
+      "sha256": "1f58f3a7150a92c0f95502340e4fab7ef76f01b210593d8c704e2ca9b667939d"
+    },
+    {
+      "path": "next-server/seek-1795659494946168170.xml",
+      "bytes": 55721,
+      "sha256": "60239b82cb4615e4cd47bdb3aae08ccbae373e445508562f96e0d14f2537bdb4"
+    },
+    {
+      "path": "next-server/seek-1795659496313213666.xml",
+      "bytes": 56238,
+      "sha256": "4d0ab423b74bcc6c48a1275ca6c540647bff5a60b1ce5f854d007c8c899d5aa9"
+    },
+    {
+      "path": "next-server/seek-1795659498113996401.xml",
+      "bytes": 56238,
+      "sha256": "ec0214405c3817ee5ab235ac086873ee78004d0ab2d296eb0e928814d57174a9"
+    },
+    {
+      "path": "next-server/seek-1795659499087234421.xml",
+      "bytes": 56243,
+      "sha256": "e0ed6693b0abb3f93aab1ad078d963be15561f756fb3c450a3ca9224ab96ac06"
+    },
+    {
+      "path": "next-server/seek-1795659501631736512.xml",
+      "bytes": 56244,
+      "sha256": "137f511573ab0898b893f050c044ee5cae61ad08345cd01418cef318af8528b4"
+    },
+    {
+      "path": "next-server/seek-1795659503098758964.xml",
+      "bytes": 56233,
+      "sha256": "92512248a48e05c13b0751e198b00e0ab09bb5a54ce9744c92476ebf2da0b490"
+    },
+    {
+      "path": "next-server/seek-1795659511021671718.xml",
+      "bytes": 56473,
+      "sha256": "b50749c88291ce94bccaf19d66f0809f835aab35ac7ac3a2ffe7f3a31c93c5bb"
+    },
+    {
+      "path": "next-server/seek-1795659512014333231.xml",
+      "bytes": 56447,
+      "sha256": "06679b3f02d8a988fab4212adab67071db3a1bfae375fb701381a41c23501978"
+    },
+    {
+      "path": "next-server/service-events.jsonl",
+      "bytes": 84,
+      "sha256": "71bfdfe7a588b6580079a1e075a98d5c13a72185ef38b839197fb884fde6ff19"
+    },
+    {
+      "path": "next-server/service-stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "next-server/share-ready.xml",
+      "bytes": 15164,
+      "sha256": "40ca4bc357ba22ac386f890e1813ea430969a9267b86dce2e2e3794a06027de7"
+    },
+    {
+      "path": "next-server/status-1795659490901898075.xml",
+      "bytes": 55723,
+      "sha256": "f8ef1a2f6a9402c583f7a710cd26bf9e7dfe04a8b96b99e42b2f9df885243657"
+    },
+    {
+      "path": "next-server/status-1795659492994766909.xml",
+      "bytes": 55780,
+      "sha256": "bcd0b8eb8030515289f87ae00bd03056c6e4bcfdf57cafaf3b51dfbc29afa4e5"
+    },
+    {
+      "path": "next-server/status-1795659494493278384.png",
+      "bytes": 193942,
+      "sha256": "42997d2947bded8fe274185fc0338b5514fff3c904999faa4d601addf35ccf4b"
+    },
+    {
+      "path": "next-server/status-1795659495191918581.xml",
+      "bytes": 56238,
+      "sha256": "591805d52e9a52222a37f748c81fca7c3d3c677a9499cae38c0d311a8cad5a77"
+    },
+    {
+      "path": "next-server/status-1795659496110265298.png",
+      "bytes": 149771,
+      "sha256": "33a26d9d18923d41c7af51f6c9148e7396e11d5bdc6f35ca429995964ba75b45"
+    },
+    {
+      "path": "next-server/status-1795659503737196618.xml",
+      "bytes": 56502,
+      "sha256": "92e447c441ba302527e732f7ea890c7e2897029fd1562413d092ea8f1ded3c5e"
+    },
+    {
+      "path": "next-server/status-1795659506320654293.xml",
+      "bytes": 56502,
+      "sha256": "3ad3c0ca53d5225a14577b2a23131ec440284be67b1cedee5d21eb8c623954cd"
+    },
+    {
+      "path": "next-server/status-1795659508097002644.xml",
+      "bytes": 56515,
+      "sha256": "8d5bbff0eca39f40bb64fc69d08b1ebf08719e1cfca77c6ec3abbf639e3890f6"
+    },
+    {
+      "path": "next-server/status-1795659509644222200.png",
+      "bytes": 165747,
+      "sha256": "aa5f2d835062f597b0a867a92eacd240d13fcf0d8289957571dbddcb07dd1e4a"
+    },
+    {
+      "path": "next-server/status-1795659512655336128.xml",
+      "bytes": 56455,
+      "sha256": "fa466fedc1a3610bc27c37342f3c8c6e2149cc55c3a5ced6992e41b1d565c6b2"
+    },
+    {
+      "path": "next-server/status-1795659515832135195.png",
+      "bytes": 165755,
+      "sha256": "9b6bda48cd47563bd7811343c96d0c4f7140e7fe389e5e79c63e946bad6c7efe"
+    },
+    {
+      "path": "r6-send/address-entered.png",
+      "bytes": 181975,
+      "sha256": "0af3b859c079a18a9b72e2c6ea7fc6a594b131364c119620fbe45c46091409d8"
+    },
+    {
+      "path": "r6-send/initial.xml",
+      "bytes": 15396,
+      "sha256": "821777a01a8cdd28d5dca80571c98663132149c0b938ed64ad21981820a30f1a"
+    },
+    {
+      "path": "r6-send/input-method.txt",
+      "bytes": 718270,
+      "sha256": "ee9419444713445a96d9744a55a851212836f2a882143d4f881beef84eccded4"
+    },
+    {
+      "path": "r6-send/manual.xml",
+      "bytes": 13774,
+      "sha256": "8336c00a3361527ab66d55f7ffc89e6a2b0a058dc1742bc8885b9fee413b93ed"
+    },
+    {
+      "path": "r6-send/send-completed.png",
+      "bytes": 179807,
+      "sha256": "35411f3498e2df1fd64dcd71475a9cd6febd5bbe8cdd61f201f5e8c8701b3fd3"
+    },
+    {
+      "path": "r6-send/send-editor.png",
+      "bytes": 134983,
+      "sha256": "436abe899bf3dc1866f58120e08cc906c3f92849c00412f66cd7a1fd05848ecf"
+    },
+    {
+      "path": "r6-send/share-launch.txt",
+      "bytes": 334,
+      "sha256": "621433a6cc714628e00cbd0cce94b2a8ff63a2064b03893b4ccf16d19bc927c1"
+    },
+    {
+      "path": "r6-send/share-ready.xml",
+      "bytes": 13774,
+      "sha256": "c48f0bfe62aa1be47f9e8ec7cd4b5d6172e0cd6cb8328489417855c6a92dbf67"
+    },
+    {
+      "path": "r6-send/shared-text.xml",
+      "bytes": 19351,
+      "sha256": "247f5c5d12793ff10d6852da8eaa7aa3be750fae7ff82a12dcfbf96ec21ff88d"
+    },
+    {
+      "path": "r6-send/submit.xml",
+      "bytes": 23117,
+      "sha256": "0b67d70f428951c7d6e9c18cf2ba3e4e6d414ba10bb78e4b99f70f6855aecb1d"
+    },
+    {
+      "path": "r6-send/target.xml",
+      "bytes": 19360,
+      "sha256": "5c20206a4b83af2a41eb90842c8f951903fbd1344739a379abb349003bd7dadc"
+    },
+    {
+      "path": "r6-send/welcome.xml",
+      "bytes": 15396,
+      "sha256": "e2972a90e004f5f0ac46239cd0d848c47c4ff4bc6f2fb69abaff4e5cbbff346e"
+    },
+    {
+      "path": "startup.png",
+      "bytes": 185015,
+      "sha256": "ec1b47d53e2fffe829903a97c118457fdeb48d545e24b620504b7ebe7ca0e064"
+    }
+  ]
+}
