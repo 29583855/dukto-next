@@ -844,6 +844,11 @@
   "rawEvidenceDirectory": "DuktoNextMobile/release/development/test-evidence/ios-complete-9333dc8f",
   "files": [
     {
+      "path": "139611440198.log",
+      "bytes": 78046,
+      "sha256": "74c09206e1bfb62ecb63c9198d7748fb17f24ff2752ab9788e83b93976aabb77"
+    },
+    {
       "path": "after-receive.png",
       "bytes": 280534,
       "sha256": "02398a84a971195d0879352b915cc69df7989a33e937d532378ceb6359d2ca0d"
@@ -2867,6 +2872,44 @@
       "path": "toolchain.txt",
       "bytes": 41,
       "sha256": "291a1ce5bc2d95ed2fe49308c679c6ef463591bbfea4ee64f603d1150a3ca84f"
+    },
+    {
+      "path": "visual-review/sheet-0.jpg",
+      "bytes": 380542,
+      "sha256": "86157c9c276447437365b88b3912d7bec1c5e34c744e3d77610a890fbe01b879"
+    },
+    {
+      "path": "visual-review/sheet-35.jpg",
+      "bytes": 69940,
+      "sha256": "793ee33f5e4b7de37b439942f9758c8338ddcd5ca42c0c4f281722bb5d347d3a"
     }
-  ]
+  ],
+  "artifactZipSha256Source": "GitHub artifact metadata/upload digest; not independently downloaded ZIP hash in this receipt",
+  "postRunManifestReview": {
+    "passed": true,
+    "date": "2026-11-26",
+    "originalArtifactFileCount": 405,
+    "originalFilesSizeAndSha256Rechecked": true,
+    "fixedFixtureManifestReconstructed": true,
+    "fourOperationManifestsExactlyMatch": true,
+    "sourceFixtureManifestExactlyMatches": true,
+    "payloadBytes": 66326,
+    "payloadSha256": "eca7f8733b4254566d99b650e6724b9acdb3922d6292a84513d44de24e61e6bc",
+    "emptyFileSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "scope": "本机复核原始证据摘要及CI回读清单；实际落盘逐字节回读在CI执行，此复核不代替重新执行或真机测试。"
+  },
+  "visualReview": {
+    "date": "2026-11-26",
+    "reviewed": true,
+    "uniqueXcresultImages": 40,
+    "contactSheets": [
+      "visual-review/sheet-0.jpg",
+      "visual-review/sheet-35.jpg"
+    ],
+    "additionalImages": [
+      "startup.png",
+      "after-receive.png"
+    ],
+    "observation": "人工查看40张去重xcresult截图的两张联系表以及启动/接收后截图；可见真实Files Open/Save、源/目标目录、中文/空文件/空目录、产品文件列表与系统键盘。启动及接收后截图显示欢迎弹窗，后续截图显示主界面及存储操作。原CI visualReviewPending字段原样保留，人工复核另记；截图不证明真机、云提供器或替代内容回读。"
+  }
 }
