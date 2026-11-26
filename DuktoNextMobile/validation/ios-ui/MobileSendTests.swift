@@ -302,7 +302,7 @@ final class MobileSendTests: XCTestCase {
         waitForDocumentPickerClosed(app)
     }
 
-    // 日期：2026-11-26；只沿系统导航按钮返回应用Files根，不点击后台同名Qt文字。
+    // 日期：2026-11-26；Files记忆导入子目录，沿已观察的源目录及系统返回按钮回到应用根。
     @MainActor
     func openApplicationDocuments(_ app: XCUIApplication, _ required: String) {
         for _ in 0..<5 {
@@ -313,7 +313,7 @@ final class MobileSendTests: XCTestCase {
                 continue
             }
             var navigated = false
-            for label in ["Dukto Next", "On My iPhone", "Browse"] {
+            for label in ["a-ios-io-source", "Dukto Next", "On My iPhone", "Browse"] {
                 let back = app.navigationBars.buttons[label].firstMatch
                 if back.exists && back.isHittable {
                     back.tap()

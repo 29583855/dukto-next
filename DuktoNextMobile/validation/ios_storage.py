@@ -74,8 +74,9 @@ def verify_storage(device, build, documents):
                     "-resultBundlePath", build / ("ios-storage-" + name + ".xcresult"),
                     "test-without-building", timeout=480)
             operation["diskReadback"] = wait_entries(documents, entries, directory)
-            operation.update(passed=True, cancelAndReopen=True, sourcePreserved=True)
+            # 日期：2026-11-26；源内容独立回读通过后，才登记源保留与该项通过。
             wait_entries(documents, fixtures)
+            operation.update(passed=True, cancelAndReopen=True, sourcePreserved=True)
         wait_entries(documents, [(filename, payload)] + content)
         report.update(passed=True, processRestarts=0, sendRetries=0,
                       fixturesReceivedByProductionR6=True, sourcePreserved=True,
