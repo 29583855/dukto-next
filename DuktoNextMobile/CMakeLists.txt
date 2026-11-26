@@ -193,4 +193,7 @@ endif()
 if(DUKTO_MOBILE_HOST_CHECK)
     add_executable(dukto-mobile-listener-tests tests/legacy_listener_tests.cpp)
     target_link_libraries(dukto-mobile-listener-tests PRIVATE dukto-core)
+    # 日期：2026-11-26；资料边界测试直接链接移动核心，输出不含认证资料。
+    add_executable(dukto-mobile-profile-tests tests/profile_tests.cpp)
+    target_link_libraries(dukto-mobile-profile-tests PRIVATE dukto-core)
 endif()

@@ -409,7 +409,8 @@ int runServiceCommand(const QCommandLineParser &parser, const QStringList &argum
             "arguments");
     }
     if (command != "pair" && command != "auth" && command != "rotate" && command != "list" &&
-        command != "trust" && command != "profile-info" && command != "upload" &&
+        command != "trust" && command != "profile-info" && command != "profiles" &&
+        command != "profile-update" && command != "profile-delete" && command != "upload" &&
         command != "download" && command != "tasks" && command != "task" && command != "pause" &&
         command != "cancel" && command != "task-items" && !resuming)
         throw dukto::Error(dukto::ExitCode::Config, QStringLiteral("远程命令无效"), "arguments");
@@ -420,6 +421,33 @@ int runServiceCommand(const QCommandLineParser &parser, const QStringList &argum
     auto boundClients = stateRoot("clients", true);
     auto &clients = *boundClients;
     const auto alias = parser.value("profile");
+    if (command == "profiles" || command == "profile-update" || command == "profile-delete") {
+        QStringList allowed{"state-directory", "j", "json", "non-interactive"};
+        if (command == "profiles")
+            allowed.append("cursor");
+        else
+            allowed.append("profile");
+        if (command == "profile-update")
+            allowed.append({"to", "server-name", "timeout"});
+        for (const auto &option : parser.optionNames())
+            if (!allowed.contains(option) || parser.values(option).size() > 1 ||
+                parser.optionNames().count(option) > 1)
+                throw dukto::Error(dukto::ExitCode::Config,
+                                   QStringLiteral("资料管理选项无效或重复"), "arguments");
+        if (command == "profiles")
+            output(dukto::listProfiles(clients, parser.value("cursor")));
+        else if (command == "profile-delete")
+            output(dukto::removeProfile(clients, alias));
+        else {
+            const auto target = dukto::parseEndpoint(parser.value("to"), 4646);
+            const auto current = dukto::loadProfile(clients, alias);
+            output(dukto::updateProfileEndpoint(
+                clients, alias, target.host, target.port,
+                parser.isSet("server-name") ? parser.value("server-name") : current.peerName,
+                timeout(parser)));
+        }
+        return 0;
+    }
     if (command == "profile-info") {
         output(dukto::profileInfo(clients, alias));
         return 0;

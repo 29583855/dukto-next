@@ -36,6 +36,15 @@ ClientProfile loadProfile(const PrivateStore &store, const QString &alias);
 void saveProfile(PrivateStore &store, const ClientProfile &profile);
 // 日期：2026-11-05；读取资料公开目标和指纹供人工核对，绝不公开访问秘密或待轮换秘密。
 QJsonObject profileInfo(const PrivateStore &store, const QString &alias);
+// 日期：2026-11-26；分页只公开至多100份资料摘要，扫描有界且支持取消，不读取非资料文件。
+QJsonObject listProfiles(const PrivateStore &store, const QString &after = QString(),
+                         const std::atomic_bool *cancel = nullptr);
+// 日期：2026-11-26；以原指纹、服务UUID和凭据认证新地址后原子保存，失败保持旧资料。
+QJsonObject updateProfileEndpoint(PrivateStore &store, const QString &alias, const QString &host,
+                                  quint16 port, const QString &peerName, int timeoutMs,
+                                  const std::atomic_bool *cancel = nullptr);
+// 日期：2026-11-26；同一别名锁内仅删除本地资料，拒绝丢失待确认轮换，不撤销远端授权。
+QJsonObject removeProfile(PrivateStore &store, const QString &alias);
 // 日期：2026-11-05；新秘密先持久保存，轮换回包丢失时先验证新秘密后重试原秘密，串行锁防重复轮换。
 QJsonObject rotateProfile(PrivateStore &store, const QString &alias, int timeoutMs,
                           const std::atomic_bool *cancel = nullptr);

@@ -2,7 +2,7 @@ name: Mobile complete iOS Next server UI validation
 on:
   push:
     branches: [codex/mobile-platforms]
-    paths: ['DuktoNextMobile/validation/ios_next.py', 'DuktoNextMobile/validation/ios-ui/NextServerTests.swift', '.github/workflows/mobile-ios-next.yml']
+    paths: ['DuktoNextMobile/shared/**', 'DuktoNextMobile/app/**', 'DuktoNextMobile/tools/**', 'DuktoNextMobile/CMakeLists.txt', 'DuktoNextMobile/validation/ios_next.py', 'DuktoNextMobile/validation/ios-ui/NextServerTests.swift', '.github/workflows/mobile-ios-next.yml']
   workflow_dispatch:
 permissions:
   contents: read

@@ -384,7 +384,8 @@ int runApplication(int argc, char **argv) {
     parser.addVersionOption();
     parser.addPositionalArgument(
         "command", "discover / send / send-text / receive / receipts / "
-                   "serve / client / pair / auth / rotate / profile-info / trust / list / "
+                   "serve / client / pair / auth / rotate / profiles / profile-update / "
+                   "profile-delete / profile-info / trust / list / "
                    "upload / download / tasks / task "
                    "/ task-items / pause / cancel / resume / doctor / state / config / help");
     parser.addPositionalArgument(
@@ -524,6 +525,7 @@ int runApplication(int argc, char **argv) {
                 : QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
         if (command == "serve" || command == "client" || command == "pair" || command == "auth" ||
             command == "rotate" || command == "profile-info" || command == "trust" ||
+            command == "profiles" || command == "profile-update" || command == "profile-delete" ||
             command == "list" || command == "upload" || command == "download" ||
             command == "tasks" || command == "task" || command == "task-items" ||
             command == "pause" || command == "cancel" || command == "resume")

@@ -122,13 +122,20 @@ void startUiStress(QQmlApplicationEngine &engine, Controller &controller, bool &
                 ok = ok && tabs && tabs->setProperty("currentIndex", state->step);
             } else if (state->step == 3)
                 ok = ok && invoke("serverDialog", "open");
-            else if (state->step == 4)
+            else if (state->step == 4) {
+                // 日期：2026-11-26；实际展开资料表单，覆盖窄屏重排及新增确认框反复打开释放。
+                auto profiles = root->findChild<QObject *>(QStringLiteral("serverProfilesExpand"));
+                ok = ok && profiles && profiles->setProperty("checked", true);
                 ok = ok && invoke("discardUploadDialog", "open");
-            else if (state->step == 5)
+            } else if (state->step == 5) {
                 ok = ok && invoke("discardUploadDialog", "close");
-            else if (state->step == 6)
+                ok = ok && invoke("serverDeleteProfileDialog", "open");
+            } else if (state->step == 6) {
+                ok = ok && invoke("serverDeleteProfileDialog", "close");
+                auto profiles = root->findChild<QObject *>(QStringLiteral("serverProfilesExpand"));
+                ok = ok && profiles && profiles->setProperty("checked", false);
                 ok = ok && invoke("serverDialog", "close");
-            else if (state->step == 7) {
+            } else if (state->step == 7) {
                 // 日期：2026-11-26；发送表单覆盖窄屏、横屏与放大字体，主动触发真实尺寸重排。
                 const bool narrow = state->cycles % 2 == 0;
                 // 日期：2026-11-26；注入与系统分享同形的视图快照，覆盖动态横幅和丢弃按钮。

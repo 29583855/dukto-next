@@ -64,6 +64,7 @@ class ServerPanel final : public QObject {
     Q_PROPERTY(int sessionSeconds READ sessionSeconds NOTIFY changed)
     Q_PROPERTY(QVariantMap itemPage READ itemPage NOTIFY changed)
     Q_PROPERTY(QVariantMap budget READ budget NOTIFY changed)
+    Q_PROPERTY(QVariantMap profilePage READ profilePage NOTIFY changed)
   public:
     // 日期：2026-11-04；独立保存服务器资料/接收日志，保留原版设备页与接收配置。
     explicit ServerPanel(const QString &directory, QObject *parent = nullptr);
@@ -111,7 +112,9 @@ class ServerPanel final : public QObject {
     QVariantMap itemPage() const;
     // 日期：2026-11-08；独立保留最后一次明确查询的固定四类别报告，失败时清空以免误用旧余额。
     QVariantMap budget() const;
-    // 日期：2026-11-04；执行显式用户动作，额外控制槽使活动传输可被暂停/取消。
+    // 日期：2026-11-26；仅公开当前至多100份资料，刷新和翻页替换旧页。
+    QVariantMap profilePage() const;
+    // 日期：2026-11-26；资料操作复用有界后台槽，避免界面线程发起TLS连接。
     Q_INVOKABLE void execute(const QString &operation, const QVariantMap &options);
     // 日期：2026-11-04；启动/停止本机 TLS 服务，不自动共享用户目录或开放 R6 接收。
     Q_INVOKABLE void setServing(bool enabled, const QString &address, int port);
@@ -150,6 +153,7 @@ class ServerPanel final : public QObject {
     int sessionSeconds_ = 86400;
     QJsonObject itemPage_;
     QJsonObject budget_;
+    QJsonObject profilePage_;
     ServerAction *action_ = nullptr;
     ServerAction *control_ = nullptr;
     dukto::ServiceListener *listener_ = nullptr;

@@ -8,7 +8,50 @@ Rectangle {
     property var panel
     property color accent: "#268600"
 
+    property string editingAlias: ""
+
     signal closeRequested()
+
+    // 日期：2026-11-26；IPv6回填使用方括号，别名仅代表本机资料，不替换服务端共享名。
+    function profileTarget(item) {
+        return (item.host.indexOf(":") >= 0 ? "[" + item.host + "]" : item.host) + ":" + item.port;
+    }
+
+    // 日期：2026-11-26；选择公开摘要后独立编辑目标，实际认证始终重新读取私有资料。
+    function selectProfile(item) {
+        profile.text = item.profile;
+        editingAlias = item.profile;
+        editTarget.text = profileTarget(item);
+        editPeerName.text = item.peerName;
+        target.text = editTarget.text;
+        fingerprint.text = item.fingerprint;
+    }
+
+    Dialog {
+        id: deleteProfileDialog
+        objectName: "serverDeleteProfileDialog"
+        property string selectedAlias: ""
+        title: "删除本机连接资料"
+        modal: true
+        width: Math.min(page.width - 24, 480)
+        height: Math.min(page.height - 24, 330)
+        x: (page.width - width) / 2
+        y: Math.max(12, (page.height - height) / 2)
+        standardButtons: Dialog.Ok | Dialog.Cancel
+        contentItem: ScrollView {
+            clip: true
+            Label {
+                width: deleteProfileDialog.availableWidth
+                text: "资料：" + deleteProfileDialog.selectedAlias + "\n删除后本机需要重新配对才能连接。远端授权仍保留，请到服务端另行撤销；其他资料、任务和暂存文件保留。"
+                textFormat: Text.PlainText
+                wrapMode: Text.WrapAnywhere
+            }
+        }
+        onAccepted: {
+            if (!panel.busy && !panel.controlBusy && !controller.busy && !mobileFiles.busy)
+                panel.execute("profile-delete", {"profile": selectedAlias});
+        }
+    }
 
     Dialog {
         id: discardDialog
@@ -263,6 +306,8 @@ Rectangle {
                             objectName: "serverProfile"
                             text: "default"
                             placeholderText: "资料别名"
+                            // 日期：2026-11-26；Qt iOS不以占位符提供名称，显式标注供读屏与系统UI定位。
+                            Accessible.name: placeholderText
                             Layout.fillWidth: true
                             maximumLength: 64
                         }
@@ -280,6 +325,125 @@ Rectangle {
                             onClicked: panel.execute("rotate", page.remoteOptions())
                         }
 
+                    }
+
+                    CheckBox {
+                        id: showProfiles
+                        objectName: "serverProfilesExpand"
+                        text: "选择 / 管理已保存资料"
+                        onCheckedChanged: {
+                            if (checked && !panel.busy)
+                                panel.execute("profiles", {});
+                        }
+                    }
+
+                    GroupBox {
+                        visible: showProfiles.checked
+                        title: "本机连接资料（每页最多100项）"
+                        Layout.fillWidth: true
+
+                        ColumnLayout {
+                            width: parent.width
+                            spacing: 8
+
+                            RowLayout {
+                                Button {
+                                    objectName: "serverProfilesRefresh"
+                                    text: "刷新首页"
+                                    enabled: !panel.busy
+                                    onClicked: panel.execute("profiles", {})
+                                }
+                                Button {
+                                    objectName: "serverProfilesNext"
+                                    text: "下一页"
+                                    enabled: !panel.busy && panel.profilePage.more === true
+                                    onClicked: panel.execute("profiles", {"after": panel.profilePage.after})
+                                }
+                            }
+
+                            Label {
+                                text: "点击资料回填别名；别名由本机配对时设置，和服务端共享名分别填写。配对、修改或删除成功后请刷新列表。"
+                                textFormat: Text.PlainText
+                                wrapMode: Text.WrapAnywhere
+                                Layout.fillWidth: true
+                            }
+
+                            ListView {
+                                id: savedProfiles
+                                objectName: "serverProfilesList"
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: Math.min(240, count * 76)
+                                clip: true
+                                reuseItems: true
+                                model: panel.profilePage.entries || []
+                                delegate: ItemDelegate {
+                                    width: ListView.view.width
+                                    height: 76
+                                    contentItem: Label {
+                                        text: modelData.profile + (modelData.paired ? " · 已配对" : " · 待配对") + "\n" + page.profileTarget(modelData)
+                                        textFormat: Text.PlainText
+                                        wrapMode: Text.WrapAnywhere
+                                        elide: Text.ElideRight
+                                        maximumLineCount: 3
+                                    }
+                                    onClicked: page.selectProfile(modelData)
+                                }
+                            }
+
+                            Label {
+                                text: page.editingAlias ? "正在管理：" + page.editingAlias : "请选择一份资料后修改或删除"
+                                textFormat: Text.PlainText
+                                wrapMode: Text.WrapAnywhere
+                                Layout.fillWidth: true
+                            }
+                            TextField {
+                                id: editTarget
+                                objectName: "serverProfileTarget"
+                                placeholderText: "新服务器 IP:端口"
+                                // 日期：2026-11-26；Qt iOS不以占位符提供名称，显式标注供读屏与系统UI定位。
+                                Accessible.name: placeholderText
+                                Layout.fillWidth: true
+                                maximumLength: 4096
+                                enabled: page.editingAlias.length > 0
+                            }
+                            TextField {
+                                id: editPeerName
+                                objectName: "serverProfilePeerName"
+                                placeholderText: "证书中的服务器名（原资料默认值）"
+                                // 日期：2026-11-26；Qt iOS不以占位符提供名称，显式标注供读屏与系统UI定位。
+                                Accessible.name: placeholderText
+                                Layout.fillWidth: true
+                                maximumLength: 253
+                                enabled: page.editingAlias.length > 0
+                            }
+                            Label {
+                                text: "保存前会用原指纹、服务ID及凭据认证新地址，失败时原资料保留。证书更换请使用下方指纹迁移；轮换待确认时先完成轮换。"
+                                textFormat: Text.PlainText
+                                wrapMode: Text.WrapAnywhere
+                                Layout.fillWidth: true
+                            }
+                            Button {
+                                objectName: "serverProfileSave"
+                                text: "验证新地址并保存"
+                                Layout.fillWidth: true
+                                enabled: page.editingAlias.length > 0 && !panel.busy && !panel.controlBusy && !controller.busy && !mobileFiles.busy
+                                onClicked: panel.execute("profile-update", {
+                                    "profile": page.editingAlias,
+                                    "target": editTarget.text,
+                                    "peerName": editPeerName.text
+                                })
+                            }
+                            Button {
+                                objectName: "serverProfileDelete"
+                                text: "删除本机资料…"
+                                Layout.fillWidth: true
+                                enabled: page.editingAlias.length > 0 && !panel.busy && !panel.controlBusy && !controller.busy && !mobileFiles.busy
+                                onClicked: {
+                                    deleteProfileDialog.selectedAlias = page.editingAlias;
+                                    deleteProfileDialog.open();
+                                }
+                            }
+                        }
                     }
 
                     CheckBox {
@@ -301,6 +465,8 @@ Rectangle {
 
                                 objectName: "serverTarget"
                                 placeholderText: "服务器 IP:端口（默认 4646）"
+                                // 日期：2026-11-26；Qt iOS不以占位符提供名称，显式标注供读屏与系统UI定位。
+                                Accessible.name: placeholderText
                                 Layout.fillWidth: true
                                 maximumLength: 4096
                             }
@@ -310,6 +476,8 @@ Rectangle {
 
                                 objectName: "serverFingerprint"
                                 placeholderText: "核对服务器 SHA-256 指纹"
+                                // 日期：2026-11-26；Qt iOS不以占位符提供名称，显式标注供读屏与系统UI定位。
+                                Accessible.name: placeholderText
                                 Layout.fillWidth: true
                                 maximumLength: 64
                             }
@@ -320,6 +488,8 @@ Rectangle {
 
                                     objectName: "serverCredential"
                                     placeholderText: "配对文件路径"
+                                    // 日期：2026-11-26；Qt iOS不以占位符提供名称，显式标注供读屏与系统UI定位。
+                                    Accessible.name: placeholderText
                                     Layout.fillWidth: true
                                     maximumLength: 4096
                                 }
@@ -449,6 +619,8 @@ Rectangle {
 
                         objectName: "serverRemotePath"
                         placeholderText: "共享内相对路径；空表示共享根"
+                        // 日期：2026-11-26；Qt iOS不以占位符提供名称，显式标注供读屏与系统UI定位。
+                        Accessible.name: placeholderText
                         maximumLength: 4096
                         Layout.fillWidth: true
                     }
@@ -516,6 +688,8 @@ Rectangle {
 
                             objectName: "serverOutput"
                             placeholderText: "本地保存目录（须已存在）"
+                            // 日期：2026-11-26；Qt iOS不以占位符提供名称，显式标注供读屏与系统UI定位。
+                            Accessible.name: placeholderText
                             Layout.fillWidth: true
                             maximumLength: 4096
                         }

@@ -11,11 +11,13 @@
 #include "transferservice.h"
 
 #include <QDir>
+#include <QDirIterator>
 #include <QElapsedTimer>
 #include <QJsonArray>
 #include <QLockFile>
 #include <QRegularExpression>
 #include <QTcpSocket>
+#include <algorithm>
 #include <limits>
 
 namespace dukto {
@@ -172,7 +174,8 @@ void saveProfile(PrivateStore &store, const ClientProfile &profile) {
     lock.setStaleLockTime(0);
     if (!lock.tryLock(0))
         throw Error(ExitCode::Permission, QStringLiteral("客户端资料正在修改，请重试"), "profile");
-    if (store.exists(profileName(profile.alias))) {
+    // 日期：2026-11-26；配对必须已有准备记录，删除后迟到的配对响应不能重建已删除资料。
+    {
         const auto current = loadProfile(store, profile.alias);
         if (!current.pendingCredential.isEmpty() || !profile.pendingCredential.isEmpty() ||
             !secureEqual(current.credential, profile.credential) ||
@@ -204,6 +207,109 @@ QJsonObject profileInfo(const PrivateStore &store, const QString &alias) {
             {"message", QStringLiteral("资料 %1；目标 %2:%3；SHA-256 指纹：%4")
                             .arg(alias, profile.host, QString::number(profile.port),
                                  QString::fromLatin1(profile.fingerprint.toHex()))}};
+}
+
+// 日期：2026-11-26；单层扫描最多4096项，内存只保留排序后101个别名，每页读取至多100份公开摘要。
+QJsonObject listProfiles(const PrivateStore &store, const QString &after,
+                         const std::atomic_bool *cancel) {
+    if (cancel && cancel->load())
+        throw Error(ExitCode::Cancelled, QStringLiteral("资料列表查询已取消"), "profile");
+    if (!after.isEmpty())
+        profileName(after);
+    const auto identity = store.identity();
+    QStringList aliases;
+    QDirIterator entries(store.directory(),
+                         QDir::AllEntries | QDir::Hidden | QDir::System | QDir::NoDotAndDotDot);
+    int scanned = 0;
+    while (entries.hasNext()) {
+        if (cancel && cancel->load())
+            throw Error(ExitCode::Cancelled, QStringLiteral("资料列表查询已取消"), "profile");
+        entries.next();
+        if (++scanned > 4096)
+            throw Error(ExitCode::Config,
+                        QStringLiteral("资料目录超过4096项扫描上限，未返回部分列表"), "profile");
+        const auto name = entries.fileName();
+        if (!name.startsWith("profile-") || !name.endsWith(".json"))
+            continue;
+        const auto alias = name.mid(8, name.size() - 13);
+        profileName(alias);
+        if (alias <= after)
+            continue;
+        const auto position = std::lower_bound(aliases.begin(), aliases.end(), alias);
+        aliases.insert(position, alias);
+        if (aliases.size() > 101)
+            aliases.removeLast();
+    }
+    const bool more = aliases.size() > 100;
+    if (more)
+        aliases.removeLast();
+    QJsonArray page;
+    for (const auto &alias : aliases) {
+        if (cancel && cancel->load())
+            throw Error(ExitCode::Cancelled, QStringLiteral("资料列表查询已取消"), "profile");
+        auto info = profileInfo(store, alias);
+        info.remove("message");
+        info.remove("event");
+        info.remove("eventVersion");
+        page.append(info);
+    }
+    if (store.identity() != identity)
+        throw Error(ExitCode::Integrity, QStringLiteral("资料根已改变，请重新查询"), "profile");
+    return {
+        {"eventVersion", 1}, {"event", "profiles"},
+        {"entries", page},   {"after", aliases.isEmpty() ? after : aliases.last()},
+        {"more", more},      {"message", QStringLiteral("本页已保存资料 %1 项").arg(page.size())}};
+}
+
+// 日期：2026-11-26；编辑地址不接受新证书或新凭据，完整认证成功且未取消时才写入同一资料。
+QJsonObject updateProfileEndpoint(PrivateStore &store, const QString &alias, const QString &host,
+                                  quint16 port, const QString &peerName, int timeoutMs,
+                                  const std::atomic_bool *cancel) {
+    const auto endpoint = parseEndpoint(host, port);
+    if (peerName.isEmpty() || peerName != peerName.trimmed() || peerName.toUtf8().size() > 253)
+        throw Error(ExitCode::Config, QStringLiteral("证书服务器名无效"), "profile");
+    QLockFile lock(store.directory() + "/" + profileName(alias) + ".lock");
+    lock.setStaleLockTime(0);
+    if (!lock.tryLock(0))
+        throw Error(ExitCode::Permission, QStringLiteral("客户端资料正在修改，请重试"), "profile");
+    auto profile = loadProfile(store, alias);
+    if (!profile.paired || !profile.pendingCredential.isEmpty())
+        throw Error(ExitCode::Permission, QStringLiteral("请先完成配对及待确认的凭据轮换"),
+                    "profile");
+    profile.host = endpoint.host;
+    profile.port = endpoint.port;
+    profile.peerName = peerName;
+    RemoteClient remote(profile, timeoutMs, cancel);
+    remote.authenticate();
+    remote.close();
+    if (cancel && cancel->load())
+        throw Error(ExitCode::Cancelled, QStringLiteral("资料修改已取消，原资料保留"), "profile");
+    writeProfile(store, profile);
+    auto result = profileInfo(store, alias);
+    result["event"] = "profile-updated";
+    result["message"] =
+        QStringLiteral("新地址通过原服务身份认证，资料已保存；凭据、授权和任务身份保留");
+    return result;
+}
+
+// 日期：2026-11-26；删除同一资料键，任务和上传暂存另行管理，服务端授权须在服务端单独撤销。
+QJsonObject removeProfile(PrivateStore &store, const QString &alias) {
+    QLockFile lock(store.directory() + "/" + profileName(alias) + ".lock");
+    lock.setStaleLockTime(0);
+    if (!lock.tryLock(0))
+        throw Error(ExitCode::Permission, QStringLiteral("客户端资料正在修改，请重试"), "profile");
+    const auto profile = loadProfile(store, alias);
+    if (!profile.pendingCredential.isEmpty())
+        throw Error(ExitCode::Permission, QStringLiteral("凭据轮换尚待确认，请先完成轮换再删除"),
+                    "profile");
+    store.remove(profileName(alias));
+    return {
+        {"eventVersion", 1},
+        {"event", "profile-deleted"},
+        {"profile", alias},
+        {"serverRevoked", false},
+        {"message",
+         QStringLiteral("已删除本机资料；远端授权仍保留，请在服务器另行撤销。任务与暂存未删除")}};
 }
 
 // 日期：2026-11-05；恢复仅在新秘密明确认证拒绝后使用原秘密，网络或证书错误保留待确认状态。
@@ -855,4 +961,6 @@ void ServiceListener::incomingConnection(qintptr descriptor) {
 } // namespace dukto
 
 // 日期：2026-11-25；连接集合只在监听器所属主线程维护。
-int dukto::ServiceListener::activeConnections() const { return workers_.size(); }
+int dukto::ServiceListener::activeConnections() const {
+    return workers_.size();
+}

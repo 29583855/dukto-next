@@ -203,6 +203,21 @@ void ServerAction::run() {
         auto boundClients = stateRoot("clients", true);
         auto &clients = *boundClients;
         const auto alias = options_.value("profile", "default").toString();
+        if (operation_ == "profiles") {
+            result_ = dukto::listProfiles(clients, options_["after"].toString(), &cancelled_);
+            return;
+        }
+        if (operation_ == "profile-delete") {
+            result_ = dukto::removeProfile(clients, alias);
+            return;
+        }
+        if (operation_ == "profile-update") {
+            const auto target = dukto::parseEndpoint(options_["target"].toString(), 4646);
+            result_ =
+                dukto::updateProfileEndpoint(clients, alias, target.host, target.port,
+                                             options_["peerName"].toString(), 30000, &cancelled_);
+            return;
+        }
         if (operation_ == "profile-info") {
             result_ = dukto::profileInfo(clients, alias);
             return;
@@ -520,11 +535,19 @@ QVariantMap ServerPanel::budget() const {
     return budget_.toVariantMap();
 }
 
+// 日期：2026-11-26；公开资料页不复用目录或授权主体列表。
+QVariantMap ServerPanel::profilePage() const {
+    return profilePage_.toVariantMap();
+}
+
 // 日期：2026-11-05；按实际返回类型刷新模型，错误保留既有任务供重新查询与恢复。
 void ServerPanel::accept(const QJsonObject &event, int code) {
     if (event.isEmpty())
         return;
     outcome_ = event;
+    if (event["event"] == "profile-updated" || event["event"] == "profile-deleted" ||
+        event["event"] == "paired")
+        profilePage_ = {};
     if (event["event"] == "state-budget")
         budget_ = event;
     if (event.contains("taskId") && event.contains("state")) {
@@ -567,6 +590,8 @@ void ServerPanel::accept(const QJsonObject &event, int code) {
         status_ = event["available"].toBool()
                       ? QStringLiteral("本页接收明细%1项").arg(event["entries"].toArray().size())
                       : QStringLiteral("本机接收记录或冻结清单不可用");
+    } else if (event["event"] == "profiles") {
+        profilePage_ = event;
     } else if (event["event"] == "clients") {
         clients_ = event["entries"].toArray();
         clientsAfter_ = event["after"].toString();

@@ -42,6 +42,8 @@ jobs:
           cat mobile-path-traversal.json
           python DuktoNextMobile/tests/interop/legacy_integration.py DuktoNextMobile/build-host/dukto-mobile-probe --report mobile-legacy.json
           python DuktoNextMobile/tests/interop/service_integration.py DuktoNextMobile/build-host/dukto-mobile-probe --report mobile-service.json
+          DuktoNextMobile/build-host/dukto-mobile-profile-tests > mobile-profile-contract.json
+          python DuktoNextMobile/tests/interop/profile_integration.py DuktoNextMobile/build-host/dukto-mobile-probe --report mobile-profile-integration.json
           for lanes in 1 2 4 8 16; do
             python DuktoNextMobile/tests/interop/transfer_integration.py DuktoNextMobile/build-host/dukto-mobile-probe --threads "$lanes" --report "mobile-next-${lanes}.json"
           done
