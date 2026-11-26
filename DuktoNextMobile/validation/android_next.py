@@ -10,6 +10,7 @@ import tempfile
 import time
 
 from android_emulator import adb, sandbox, wait_for_file
+from android_documents import cancel_picker, open_downloads, wait_picker
 from android_send import click_label, file_fixtures, find_label, tap_node, ui_tree, wait_share_ready
 
 
@@ -77,6 +78,44 @@ def enter(output, label, value, upward=True):
     time.sleep(0.3)
 
 
+# 日期：2026-11-26；选择输入框后紧邻的真实按钮，避免多个“选择”控件被错误匹配。
+def choose_adjacent(output, label):
+    seek(output, label)
+    tree = ui_tree(output, "adjacent-" + str(time.time_ns()))
+    field = find_label(tree, label)
+    parents = {child: parent for parent in tree.iter() for child in parent}
+    siblings = list(parents[field])
+    index = siblings.index(field)
+    if index + 1 >= len(siblings):
+        raise RuntimeError("输入框缺少相邻选择按钮：" + label)
+    button = siblings[index + 1]
+    if find_label(button, "选择") is None:
+        raise RuntimeError("相邻控件不是可用选择按钮：" + label)
+    tap_node(button)
+
+
+# 日期：2026-11-26；凭据经真实系统选择器导入，先取消重开；不手工猜测应用进程私有路径。
+def import_pairing(output, credential, external):
+    adb("shell", "mkdir", "-p", "/sdcard/Download")
+    adb("push", str(credential), external)
+    adb("shell", "am", "broadcast", "-a", "android.intent.action.MEDIA_SCANNER_SCAN_FILE",
+        "-d", "file://" + external)
+    choose_adjacent(output, "配对文件路径")
+    wait_picker(output, "pairing-picker-cancel")
+    cancel_picker(output, "pairing-cancel")
+    choose_adjacent(output, "配对文件路径")
+    open_downloads(output)
+    click_label(output, "pairing-select", external.rsplit("/", 1)[1])
+    deadline = time.monotonic() + 20
+    while True:
+        tree = ui_tree(output, "pairing-import-" + str(time.time_ns()))
+        if find_label(tree, "配对并保存资料") is not None:
+            return
+        if time.monotonic() >= deadline:
+            raise RuntimeError("系统配对文件选择后未返回服务器页面")
+        time.sleep(0.3)
+
+
 # 日期：2026-11-26；等待实际产品状态并及时暴露操作错误，不以点击返回判断成功。
 def wait_status(output, expected):
     deadline = time.monotonic() + 45
@@ -116,7 +155,7 @@ def verify_next(output, probe):
                "realUiActions": True, "sendRetries": 0, "processRestarts": 0, "checks": []}
     process = None
     port = None
-    private_path = "files/next-validation"
+    external = "/sdcard/Download/dukto-next-ui-pairing.json"
     original_pid = adb("shell", "pidof", "org.duktonext.mobile").strip()
     try:
         with tempfile.TemporaryDirectory(prefix="dukto-next-ui-") as temporary:
@@ -131,15 +170,8 @@ def verify_next(output, probe):
             permissions = ["--allow-browse", "--allow-download", "--allow-upload"]
             service_command(probe, state, ["serve", "share", "add", "--share", "docs", "--path", str(shared), *permissions])
             offer = service_command(probe, state, ["serve", "pairing", "--share", "docs", *permissions])
-            # 日期：2026-11-26；凭据只在临时目录和应用私有目录使用，禁止写进测试附件。
-            sandbox("mkdir", "-p", private_path)
+            # 日期：2026-11-26；凭据正文留在临时文件，系统选择器导入后立即移除外部副本。
             credential = Path(offer["credentialFile"])
-            staged = "/data/local/tmp/next-validation.json"
-            adb("push", str(credential), staged)
-            sandbox("cp", staged, private_path + "/pairing.json")
-            sandbox("chmod", "700", private_path)
-            sandbox("chmod", "600", private_path + "/pairing.json")
-            adb("shell", "rm", staged)
             # 日期：2026-11-26；仅使用回环空闲端口，端口竞争时失败而非盲目重跑。
             with socket.socket() as reservation:
                 reservation.bind(("127.0.0.1", 0))
@@ -166,15 +198,10 @@ def verify_next(output, probe):
             click_label(output, "expand-pair", "首次连接：展开配对设置")
             enter(output, "服务器 IP:端口（默认 4646）", "127.0.0.1:" + port)
             enter(output, "核对服务器 SHA-256 指纹", identity["fingerprint"])
-            # 日期：2026-11-26；run-as的逻辑工作目录可能是应用链接，输入规范路径以遵守核心逐级拒绝链接规则。
-            logical_directory = sandbox("pwd").strip()
-            app_directory = sandbox("readlink", "-f", ".").strip()
-            if not app_directory.startswith("/data/"):
-                raise RuntimeError("无法核对应用规范私有目录")
-            sandbox("test", "-d", app_directory)
-            receipt["sandboxDirectory"] = {"logical": logical_directory, "canonical": app_directory,
-                                           "aliasResolved": logical_directory != app_directory}
-            enter(output, "配对文件路径", app_directory + "/" + private_path + "/pairing.json")
+            import_pairing(output, credential, external)
+            adb("shell", "rm", external)
+            receipt["pairingSelection"] = {"systemDocumentPicker": True, "cancelAndReopen": True,
+                                            "manualSandboxPath": False}
             tap_node(seek(output, "配对并保存资料"))
             wait_status(output, "配对成功；客户端 UUID：")
             receipt["checks"].append("uiPairWithPinnedFingerprint")
@@ -187,12 +214,16 @@ def verify_next(output, probe):
             wait_status(output, "当前页 1 项")
             receipt["checks"].append("uiAuthenticatedBrowse")
             enter(output, "共享内相对路径；空表示共享根", "bundle")
-            sandbox("mkdir", "-p", private_path + "/download")
-            enter(output, "本地保存目录（须已存在）", app_directory + "/" + private_path + "/download")
+            choose_adjacent(output, "本地保存目录（须已存在）")
+            click_label(output, "download-choose-directory", "OK")
+            directories = sandbox("find", "files", "-type", "d", "-name", "Documents").splitlines()
+            if len(directories) != 1:
+                raise RuntimeError("无法唯一定位应用下载目录")
+            download_directory = directories[0]
             tap_node(seek(output, "下载"))
             wait_status(output, "任务状态：completed")
             # 日期：2026-11-26；目标位置由独立遍历确定，再逐字节检查文件和空目录，不能只看UI成功。
-            matches = sandbox("find", private_path + "/download", "-type", "f", "-name", "中文 sample.bin").splitlines()
+            matches = sandbox("find", download_directory, "-type", "f", "-name", "中文 sample.bin").splitlines()
             if len(matches) != 1:
                 raise RuntimeError("下载目标文件数量错误")
             downloaded = matches[0]
@@ -237,6 +268,6 @@ def verify_next(output, probe):
             # 日期：2026-11-26；服务事件不含凭据正文，仅保存公开协议执行记录。
             (output / "service-events.jsonl").write_text(out, "utf-8")
             (output / "service-stderr.txt").write_text(err, "utf-8")
-        sandbox("rm", "-rf", private_path)
+        adb("shell", "rm", "-f", external)
         (output / "next-server.json").write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", "utf-8")
     return receipt

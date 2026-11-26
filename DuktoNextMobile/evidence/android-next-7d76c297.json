@@ -1,0 +1,329 @@
+{
+  "date": "2026-11-26",
+  "runId": 45738497110,
+  "jobId": 139637441595,
+  "artifactId": 15079694440,
+  "validationSourceCommit": "7d76c297be60957cead93711003b383880f75ae6",
+  "applicationBaseline": "142612c45ef25166452e41dcb03da44e0737f43a",
+  "apkSha256": "a46a883a344a4c3e9a42307eac4345f65066aacbca5ab26fc37aa7374b800900",
+  "jobConclusion": "failure",
+  "passed": false,
+  "deviceTest": false,
+  "artifactZipBytes": 1738857,
+  "artifactZipSha256": "1294c9391547c45b1768cd14f2c8b517a4e5806082820da6ced4087adbb3e91a",
+  "downloadedZipDigestVerified": true,
+  "result": {
+    "passed": false,
+    "deviceTest": false,
+    "scope": "Android模拟器安装启动原始arm64开发APK",
+    "sourceCommit": "142612c45ef25166452e41dcb03da44e0737f43a",
+    "steps": [
+      "originalApkHashAndAbi",
+      "install",
+      "foregroundAliveAndNonBlankFrame",
+      "productionApkSharedTextUiSendAndHash"
+    ],
+    "apkSha256": "a46a883a344a4c3e9a42307eac4345f65066aacbca5ab26fc37aa7374b800900",
+    "abiList": "x86_64,arm64-v8a",
+    "systemVersion": "15",
+    "nativeBridge": "libndk_translation.so",
+    "installOutput": "Performing Streamed Install\nSuccess",
+    "accessibilityEnabledBeforeLaunch": true,
+    "systemDirectoryAliases": "drwxrwx--x 245 system system 16384 2026-11-26 01:55 /data/data\ndrwxrwx--x 245 system system 16384 2026-11-26 01:55 /data/user/0",
+    "launchOutput": "Starting: Intent { cmp=org.duktonext.mobile/.DuktoActivity }\nStatus: ok\nLaunchState: COLD\nActivity: org.duktonext.mobile/.DuktoActivity\nTotalTime: 3058\nWaitTime: 3061\nComplete\n",
+    "pid": "2962",
+    "runtimeErrors": [],
+    "screenshotSize": [
+      1080,
+      1920
+    ],
+    "frameStddev": [
+      24.40558659357156,
+      20.943524613896106,
+      26.11461714605441
+    ],
+    "r6Send": {
+      "bytes": 86,
+      "sha256": "a9dc16cbd656032e2a19c9750f117c668de28ae17e8628010bc9eabbdf118a57",
+      "utf8Text": true,
+      "independentWireParser": true,
+      "passed": true,
+      "transport": "Android emulator 10.0.2.2 TCP4644 to independent host receiver",
+      "systemShareText": true,
+      "realUiActions": true,
+      "notificationGranted": true,
+      "validationAccessibilityService": true,
+      "sendRetries": 0,
+      "processRestarts": 0,
+      "deviceTest": false,
+      "fileSendTest": false,
+      "wifiDiscoveryTest": false
+    },
+    "error": "服务器页面返回错误： 操作失败（4）：无法安全打开接收目录：Not a directory",
+    "receiptCaptureError": "ADB命令失败: shell run-as org.duktonext.mobile cat ./files/history/receipts.sqlite: cat: ./files/history/receipts.sqlite: No such file or directory\n"
+  },
+  "archive": "DuktoNextMobile/release/development/test-evidence/android-next-7d76c297",
+  "visualReviewPending": true,
+  "limits": [
+    "Android15 x86_64模拟器通过原生转译运行原始arm64 APK",
+    "ADB reverse连接独立Linux Next服务，不代表Wi-Fi发现、手机真机、桌面互通或Server2012",
+    "未验证正式签名与长期后台运行"
+  ],
+  "files": [
+    {
+      "path": "accessibility-appops.txt",
+      "bytes": 34,
+      "sha256": "9c1ba6e22851a4d338b02a4f2865dfe287d44589076a18c9763bba245901978b"
+    },
+    {
+      "path": "accessibility-bound.xml",
+      "bytes": 4850,
+      "sha256": "713f391572a0971ef186415a287a877a31c9d7f9e5619a97f6dec53db77b8d96"
+    },
+    {
+      "path": "accessibility-helper/aligned.apk",
+      "bytes": 9177,
+      "sha256": "c977533969b57af0d435417f8e80a4945f855b17e586124cb43c3a64ae9e159f"
+    },
+    {
+      "path": "accessibility-helper/assets/empty",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "accessibility-helper/assets/sample",
+      "bytes": 131106,
+      "sha256": "220c7482d4da0a96aa1d6547953b3cc343d94712f370559ae77024b4f592dbd2"
+    },
+    {
+      "path": "accessibility-helper/classes/org/duktonext/validation/ValidationAccessibility$1.class",
+      "bytes": 988,
+      "sha256": "325e0526dd0209d4449c9a136c40719484cd7b902147cd470ad89f69700495bd"
+    },
+    {
+      "path": "accessibility-helper/classes/org/duktonext/validation/ValidationAccessibility.class",
+      "bytes": 6158,
+      "sha256": "c00f3a29a31c0195373489c54450c9ef0411a8ba4ad684d1be1b86c823a9a331"
+    },
+    {
+      "path": "accessibility-helper/classes/org/duktonext/validation/ValidationActivity.class",
+      "bytes": 360,
+      "sha256": "ba698b8c43c91a3f9ff38b91f6543306f6f7771c87d59b592dafed6b0abfb29a"
+    },
+    {
+      "path": "accessibility-helper/classes/org/duktonext/validation/ValidationFiles.class",
+      "bytes": 3997,
+      "sha256": "19ad92ea150a12a317d00d5476cd5eb07f251203200ffa90bd883c143315cb68"
+    },
+    {
+      "path": "accessibility-helper/classes/org/duktonext/validation/ValidationShareActivity.class",
+      "bytes": 1805,
+      "sha256": "2d70110e0f61e216090eb566acb80f0c462bd7d40cf03a7292454c9e69b66c36"
+    },
+    {
+      "path": "accessibility-helper/dex/classes.dex",
+      "bytes": 11440,
+      "sha256": "418efcefd9181740d8b74d010665ca8d2e8dd22c6de52823eb7c655ed415b6da"
+    },
+    {
+      "path": "accessibility-helper/helper.apk",
+      "bytes": 16969,
+      "sha256": "e15817eb6935284f78d4eccd7bb49a6482fdaa06e9f1e3e3b032aa0f3955042b"
+    },
+    {
+      "path": "accessibility-helper/helper.apk.idsig",
+      "bytes": 5515,
+      "sha256": "1da55b7667435a5f0652c16ea34befd84b6758b7a74ee4c656dc169f852a94ac"
+    },
+    {
+      "path": "accessibility-helper/unsigned.apk",
+      "bytes": 9172,
+      "sha256": "ecd03b0db1cc2c7dd7d3e059dc408e51bbfdd9ae0e0e12f1a50007b081004ad7"
+    },
+    {
+      "path": "accessibility-helper/validation.jks",
+      "bytes": 2608,
+      "sha256": "55c29d7f7de133fb4989418f9da7e17a53ee6deaad03db91f1f521d7294c555c"
+    },
+    {
+      "path": "accessibility-helper-log.txt",
+      "bytes": 98,
+      "sha256": "8466993466017acc62081e20e3767d0f5015047dfaf3dbc45b7af4f226ed64ec"
+    },
+    {
+      "path": "accessibility-services.txt",
+      "bytes": 5343,
+      "sha256": "a5b457fca6acb1e3488e1267516cbd60f9fd1a9b9b2a3966bb6baaab97945278"
+    },
+    {
+      "path": "accessibility-settings.json",
+      "bytes": 124,
+      "sha256": "7eaef24268d453c3630fd2617f2fc0f49d4a6ab6c338a3e7decb4027ba53529c"
+    },
+    {
+      "path": "activity.txt",
+      "bytes": 30178,
+      "sha256": "8e5339135392bbce241d666a703ac62df70b8626dcbc29a80fa1a1888fe03e51"
+    },
+    {
+      "path": "android-startup.json",
+      "bytes": 1985,
+      "sha256": "088f02d9cff702cb03f2a25e7dbd7f1721df68f765242cd845bce298380c8ecb"
+    },
+    {
+      "path": "failure-logcat.txt",
+      "bytes": 4128686,
+      "sha256": "3d8c19f819f8c81c86be563e2f53db9893cc6451b068288e71a4525447731899"
+    },
+    {
+      "path": "failure-sandbox.txt",
+      "bytes": 1816,
+      "sha256": "f75410d570a884e04ebae3bd8111b09e92faf8dfa8c12aed1c0ea73782bd456c"
+    },
+    {
+      "path": "failure-screen.png",
+      "bytes": 199220,
+      "sha256": "24a700f722af072380ef69fa45aedb9402191b7f60c4ff7eca102d5d336398d6"
+    },
+    {
+      "path": "final-logcat.txt",
+      "bytes": 28878,
+      "sha256": "bd00c6e8e0fab02220efda23a7c5589cbc6b702543797565ec1f45d2704cc810"
+    },
+    {
+      "path": "github-job.log",
+      "bytes": 135494,
+      "sha256": "7fcc5c22af894a5d0327feeef61690bc723ef90a6ad2959f9f0b4bec789f9b1a"
+    },
+    {
+      "path": "logcat.txt",
+      "bytes": 10281,
+      "sha256": "9694b8615b8aaf99006ff7e796f44ce5993345d376cec1ce666937dc32747c41"
+    },
+    {
+      "path": "next-server/expand-pair.xml",
+      "bytes": 55801,
+      "sha256": "358a391398553af84aba82c883e50467c2ac5e91caec935416c49f334e6e53af"
+    },
+    {
+      "path": "next-server/failure.png",
+      "bytes": 199702,
+      "sha256": "f9095024238166c8f25bfd87f518981f20ca1448cfce87723129e099bf0f510a"
+    },
+    {
+      "path": "next-server/home-0.xml",
+      "bytes": 15253,
+      "sha256": "6db8efdc05f8599fd1ef1606c02683b74574e5ec5dbd14175012d307f0eb2639"
+    },
+    {
+      "path": "next-server/next-server.json",
+      "bytes": 515,
+      "sha256": "d168ecf19b97aade80202e76b2bc6f5a2c8ac5d26706ea8894c1515ae3d45920"
+    },
+    {
+      "path": "next-server/open-server.xml",
+      "bytes": 15253,
+      "sha256": "538934b9187298f89915f9212550e99bb27526524637d27f067ffb1ca7ce0d54"
+    },
+    {
+      "path": "next-server/seek-1795658177544960907.xml",
+      "bytes": 55799,
+      "sha256": "7b2528b8243526c8ff5b107b48600c3a175b6bcccde3915965703ad6a673c938"
+    },
+    {
+      "path": "next-server/seek-1795658181526691127.xml",
+      "bytes": 55800,
+      "sha256": "4349202ebc42e63d070dadf2c720e40c099a62a17e0c5a0c2be7ac5903484dde"
+    },
+    {
+      "path": "next-server/seek-1795658189417125776.xml",
+      "bytes": 55800,
+      "sha256": "f11a43735a91df080006b3eb960e3a3d3da11b0f9eae0a09095f7c0f8cda5ff0"
+    },
+    {
+      "path": "next-server/seek-1795658195848436241.xml",
+      "bytes": 55799,
+      "sha256": "2cbc5d31c6f21de705aee27add576226a5ad1340d4a443c57db66ffd5f254411"
+    },
+    {
+      "path": "next-server/service-events.jsonl",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "next-server/service-stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "next-server/status-1795658196687514199.xml",
+      "bytes": 55818,
+      "sha256": "a766a078e0f5410d2ab52a71310d74781b615b3a275caf76c9f659a0b9575208"
+    },
+    {
+      "path": "r6-send/address-entered.png",
+      "bytes": 182799,
+      "sha256": "04a83b786798cccd38d3381b9d8ac0496ba40b2a950e0913068c5e05083dfbf4"
+    },
+    {
+      "path": "r6-send/initial.xml",
+      "bytes": 15396,
+      "sha256": "9f946e9df1b41dc4c4c74c0f29aafadbc5c9e7a8337eee50460734be3b8ba8d3"
+    },
+    {
+      "path": "r6-send/input-method.txt",
+      "bytes": 691509,
+      "sha256": "0a1c67d22297b18b5b3059095675fa138b0c313634c5ad5eb2d5b1485992a08e"
+    },
+    {
+      "path": "r6-send/manual.xml",
+      "bytes": 13774,
+      "sha256": "64973bbd305b7bace9d9b4270655bd2b347de2370eb17330a03a7bb43cbfdf89"
+    },
+    {
+      "path": "r6-send/send-completed.png",
+      "bytes": 179998,
+      "sha256": "549aeeb8b8395d835e66baca111135e92c18d1b67b179840cb62c4e238492a66"
+    },
+    {
+      "path": "r6-send/send-editor.png",
+      "bytes": 134778,
+      "sha256": "58f7a229babbe7d86a8f019691b44a50e9a3b014da68c5dbbef88b40a89d9c71"
+    },
+    {
+      "path": "r6-send/share-launch.txt",
+      "bytes": 334,
+      "sha256": "f33c6f64f186f97ebae47ab7cde5956ec97884d4410d036f8ecf47f700c0de0e"
+    },
+    {
+      "path": "r6-send/share-ready.xml",
+      "bytes": 13774,
+      "sha256": "6b5bafffb7466ffa18b19eb6872ba6408bd2ed4c7731650dc0c507424a7e1e81"
+    },
+    {
+      "path": "r6-send/shared-text.xml",
+      "bytes": 19351,
+      "sha256": "6f32f64b08a17f338a853cdceedbd6ccc460680e67497aaa10a394acc344bcff"
+    },
+    {
+      "path": "r6-send/submit.xml",
+      "bytes": 23117,
+      "sha256": "45076cc2416eff8960aa6856c1131938aedb196e7b393988f8a4246505064876"
+    },
+    {
+      "path": "r6-send/target.xml",
+      "bytes": 19360,
+      "sha256": "5ca4cfa1430d9c4316135000e9b3eb2fab7daca64261d1d69546ab9c1e073841"
+    },
+    {
+      "path": "r6-send/welcome.xml",
+      "bytes": 15396,
+      "sha256": "be82812959d345478d9ffbc442e39af2f1c05099c79dcfa0c199f83db474fbf3"
+    },
+    {
+      "path": "startup.png",
+      "bytes": 184746,
+      "sha256": "325e04fbee06d3f6f3e16327ca4afb371417102ef760332a037b777899c02aea"
+    }
+  ]
+}
