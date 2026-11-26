@@ -127,6 +127,8 @@ def main():
     parser.add_argument("--saf-file-send", action="store_true")
     parser.add_argument("--saf-file-export", action="store_true")
     parser.add_argument("--saf-directory", action="store_true")
+    parser.add_argument("--next-server", action="store_true")
+    parser.add_argument("--probe", type=Path)
     args = parser.parse_args()
     if args.r6_file_send and not args.r6_send:
         parser.error("--r6-file-send requires --r6-send for the same onboarding and helper session")
@@ -134,6 +136,8 @@ def main():
         parser.error("SAF gates require the text-send onboarding and helper session")
     if args.r6_cold_file_send and not args.r6_file_send:
         parser.error("--r6-cold-file-send requires the warm file-send gate")
+    if args.next_server and (not args.r6_send or args.probe is None):
+        parser.error("Next gate requires --r6-send and an independent --probe")
     args.output.mkdir(parents=True, exist_ok=True)
     receipt = {"passed": False, "deviceTest": False, "scope": "Android模拟器安装启动原始arm64开发APK",
                "sourceCommit": args.source, "steps": []}
@@ -225,6 +229,10 @@ def main():
             from android_documents import verify_saf_directory
             receipt["safDirectory"] = verify_saf_directory(args.output)
             receipt["steps"].append("productionApkSafDirectorySendImportExportAndReadBack")
+        if args.next_server:
+            from android_next import verify_next
+            receipt["nextServer"] = verify_next(args.output, args.probe.resolve())
+            receipt["steps"].append("productionApkNextUiPairBrowseUploadDownloadAndReadBack")
         receipt["passed"] = True
         receipt["visualReviewPending"] = True
     except Exception as error:
