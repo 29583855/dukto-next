@@ -385,10 +385,16 @@ final class MobileSendTests: XCTestCase {
         importFromSystem(app, true)
     }
 
+    // 日期：2026-11-26；Qt列表ItemDelegate实际映射为Other，按精确名称选择行而非同名StaticText。
+    @MainActor
+    func applicationFileEntry(_ app: XCUIApplication, _ label: String) -> XCUIElement {
+        return app.otherElements.matching(NSPredicate(format: "label == %@", label)).firstMatch
+    }
+
     // 日期：2026-11-26；实际导出选择器取消重开，并由系统复制到指定目标目录。
     @MainActor
     func exportToSystem(_ app: XCUIApplication, _ directory: Bool) {
-        let action = app.buttons[directory ? "导出目录" : "a-ios-import.bin"]
+        let action = directory ? app.buttons["导出目录"] : applicationFileEntry(app, "a-ios-import.bin")
         for attempt in 0..<2 {
             XCTAssertTrue(action.waitForExistence(timeout: 15))
             XCTAssertTrue(action.isEnabled && action.isHittable)
@@ -429,7 +435,7 @@ final class MobileSendTests: XCTestCase {
         let app = XCUIApplication(bundleIdentifier: "org.duktonext.mobile")
         app.activate()
         defer { capture(app, "storage-export-directory-final") }
-        let folder = app.buttons["[目录] a-ios-import-directory"]
+        let folder = applicationFileEntry(app, "[目录] a-ios-import-directory")
         XCTAssertTrue(folder.waitForExistence(timeout: 15))
         XCTAssertTrue(folder.isHittable)
         folder.tap()
